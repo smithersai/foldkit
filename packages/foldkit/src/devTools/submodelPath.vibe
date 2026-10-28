@@ -1,14 +1,12 @@
-import { Option, Schema, pipe } from 'effect'
-
 export const GOT_MESSAGE_PATTERN = /^Got.+Message$/
 
-const Tagged = Schema.Struct({ _tag: Schema.String })
+schema Tagged { _tag: string }
 export const isTagged = Schema.is(Tagged)
 
 /** Submodel chain information extracted from a recorded Message. */
 export type SubmodelInfo = Readonly<{
   submodelPath: ReadonlyArray<string>
-  maybeLeafTag: Option.Option<string>
+  maybeLeafTag: Option<string>
 }>
 
 /**
@@ -46,10 +44,6 @@ export const extractSubmodelInfo = (
 
   return {
     submodelPath: path,
-    maybeLeafTag: pipe(
-      current,
-      Option.liftPredicate(isTagged),
-      Option.map(({ _tag }) => _tag),
-    ),
+    maybeLeafTag: Option.liftPredicate(current, isTagged).map(({ _tag }) => _tag),
   }
 }
