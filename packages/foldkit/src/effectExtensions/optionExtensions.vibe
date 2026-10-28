@@ -1,6 +1,6 @@
-import { Function, String } from 'effect'
+import { Function, String as Str } from 'effect'
 
-export const fromString = Option.liftPredicate(String.isNonEmpty)
+export const fromString = Option.liftPredicate(Str.isNonEmpty)
 
 export const when: {
   <A>(value: A): (condition: boolean) => Option<A>

@@ -1,4 +1,4 @@
-import { Array, Number, Option, Predicate, Schema, String, flow } from 'effect'
+import { Array as Arr, Number as Num, String as Str, flow } from 'effect'
 
 // RULES + MESSAGES
 
@@ -6,7 +6,7 @@ import { Array, Number, Option, Predicate, Schema, String, flow } from 'effect'
 export type RuleMessage<A> = string | ((value: A) => string)
 
 /** A tuple of a predicate and error message used for field validation. */
-export type Rule<A> = readonly [Predicate.Predicate<A>, RuleMessage<A>]
+export type Rule<A> = readonly [Predicate<A>, RuleMessage<A>]
 
 /** Resolves a `RuleMessage` to a concrete string, applying it to the value when the message is a function. */
 export const resolveMessage = <A>(message: RuleMessage<A>, value: A): string =>
@@ -19,7 +19,7 @@ export const minLength = (
   min: number,
   message?: RuleMessage<string>,
 ): Rule<string> => [
-  flow(String.length, Number.isGreaterThanOrEqualTo(min)),
+  flow(Str.length, Num.isGreaterThanOrEqualTo(min)),
   message ?? `Must be at least ${min} characters`,
 ]
 
@@ -28,7 +28,7 @@ export const maxLength = (
   max: number,
   message?: RuleMessage<string>,
 ): Rule<string> => [
-  flow(String.length, Number.isLessThanOrEqualTo(max)),
+  flow(Str.length, Num.isLessThanOrEqualTo(max)),
   message ?? `Must be at most ${max} characters`,
 ]
 
@@ -36,7 +36,7 @@ export const maxLength = (
 export const pattern = (
   regex: RegExp,
   message: RuleMessage<string> = 'Invalid format',
-): Rule<string> => [flow(String.match(regex), Option.isSome), message]
+): Rule<string> => [flow(Str.match(regex), Option.isSome), message]
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -70,7 +70,7 @@ export const startsWith = (
   prefix: string,
   message?: RuleMessage<string>,
 ): Rule<string> => [
-  String.startsWith(prefix),
+  Str.startsWith(prefix),
   message ?? `Must start with ${prefix}`,
 ]
 
@@ -79,7 +79,7 @@ export const endsWith = (
   suffix: string,
   message?: RuleMessage<string>,
 ): Rule<string> => [
-  String.endsWith(suffix),
+  Str.endsWith(suffix),
   message ?? `Must end with ${suffix}`,
 ]
 
@@ -88,7 +88,7 @@ export const includes = (
   substring: string,
   message?: RuleMessage<string>,
 ): Rule<string> => [
-  String.includes(substring),
+  Str.includes(substring),
   message ?? `Must contain ${substring}`,
 ]
 
@@ -106,9 +106,9 @@ export const oneOf = (
   values: ReadonlyArray<string>,
   message?: RuleMessage<string>,
 ): Rule<string> => {
-  const joinedValues = Array.join(values, ', ')
+  const joinedValues = Arr.join(values, ', ')
   return [
-    value => Array.contains(values, value),
+    value => Arr.contains(values, value),
     message ?? `Must be one of: ${joinedValues}`,
   ]
 }
@@ -120,7 +120,7 @@ export const minItems = (
   min: number,
   message?: RuleMessage<ReadonlyArray<unknown>>,
 ): Rule<ReadonlyArray<unknown>> => [
-  flow(Array.length, Number.isGreaterThanOrEqualTo(min)),
+  flow(Arr.length, Num.isGreaterThanOrEqualTo(min)),
   message ?? `Must select at least ${min}`,
 ]
 
@@ -129,7 +129,7 @@ export const maxItems = (
   max: number,
   message?: RuleMessage<ReadonlyArray<unknown>>,
 ): Rule<ReadonlyArray<unknown>> => [
-  flow(Array.length, Number.isLessThanOrEqualTo(max)),
+  flow(Arr.length, Num.isLessThanOrEqualTo(max)),
   message ?? `Must select at most ${max}`,
 ]
 
