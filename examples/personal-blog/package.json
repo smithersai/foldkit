@@ -9,11 +9,11 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@effect/platform-browser": "4.0.0",
+    "@effect/platform-browser": "4.0.6",
     "@foldkit/markdown": "workspace:*",
     "@foldkit/ui": "workspace:*",
     "clsx": "^2.1.1",
-    "effect": "4.0.0",
+    "effect": "4.0.6",
     "foldkit": "workspace:*"
   },
   "devDependencies": {
