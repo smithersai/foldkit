@@ -1,5 +1,3 @@
-import { Match } from 'effect'
-
 /** Controls when a feature is shown. */
 export type Visibility = 'Development' | 'Always'
 
@@ -8,8 +6,7 @@ export type Visibility = 'Development' | 'Always'
  *  Callers pass whether Vite's dev server is active, and DevTools also requires
  *  a top-level window. */
 export const isVisible = (show: Visibility, isDevelopment: boolean): boolean =>
-  Match.value(show).pipe(
-    Match.when('Always', () => true),
-    Match.when('Development', () => isDevelopment),
-    Match.exhaustive,
-  )
+  match (show) {
+    when 'Always': true;
+    when 'Development': isDevelopment;
+  }
