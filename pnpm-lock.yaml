@@ -6037,7 +6037,7 @@ packages:
     resolution: {integrity: sha512-KzIbH/9tXat2u30jf+smMwFCsno4wHVdNmzFyL+T/L3UGqqk6JKfVqOFOZEpZSHADH1k40ab6NUIXZq422ov3Q==}
 
   vibelang-runtime@file:.vibelang-toolchain/vibelang-runtime-0.0.11.tgz:
-    resolution: {integrity: sha512-H5gJxxv5Rx5yQ7nG9AzjXyS9vI4RW16ztUZKpCMNm7hBwxMPn3e0Q4iD2N/5fSuP0jPDLpOHJ6bDCDpVjHkeqg==, tarball: file:.vibelang-toolchain/vibelang-runtime-0.0.11.tgz}
+    resolution: {integrity: sha512-z1mPqEfvh4UqQKK5mY6U1gUXQI8UfUEpHugKC9MC+UsBRtGkz1GJBiC/prTxn9D4BWzm1sNmtYszw1flmyxVVw==, tarball: file:.vibelang-toolchain/vibelang-runtime-0.0.11.tgz}
     version: 0.0.11
     engines: {bun: '>=1.4', node: '>=26'}
     peerDependencies:
@@ -6062,7 +6062,7 @@ packages:
       vite: '>=7 <9'
 
   vibelang@file:.vibelang-toolchain/vibelang-0.0.11.tgz:
-    resolution: {integrity: sha512-hwn+YW5Av3QEmJCfb+d4H+i6eDgBQdY1O4VucnLFWQdOeMkPfP7kFMgQjE0UM7hVmaZD6LhVHYCHhwSXsk92rA==, tarball: file:.vibelang-toolchain/vibelang-0.0.11.tgz}
+    resolution: {integrity: sha512-9ihWsqwcsZrFc22uaHhRc5fnN7hczUa6qZ5GmRs+bjCRsMTfCQ92QtgkABSTnqYSrpVzk896ySpNjj6rGE1KJw==, tarball: file:.vibelang-toolchain/vibelang-0.0.11.tgz}
     version: 0.0.11
     engines: {node: '>=26'}
     hasBin: true
@@ -8581,7 +8581,7 @@ snapshots:
     dependencies:
       '@types/node': 26.4.0
       '@types/whatwg-mimetype': 3.0.2
-      '@types/ws': 8.18.1
+      '@types/ws': 8.18.2
       buffer-image-size: 0.6.4
       entities: 7.0.1
       whatwg-mimetype: 3.0.0
