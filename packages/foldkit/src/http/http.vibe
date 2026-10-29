@@ -1,5 +1,3 @@
-import { Layer } from 'effect'
-import { FetchHttpClient, HttpClient } from 'effect/http'
 
 /**
  * A Fetch-backed `HttpClient` Layer with trace header propagation disabled by
@@ -43,7 +41,7 @@ import { FetchHttpClient, HttpClient } from 'effect/http'
  * })
  * ```
  */
-export const layer: Layer.Layer<HttpClient.HttpClient> = Layer.provide(
+export const layer: Layer<HttpClient> = Layer.provide(
   FetchHttpClient.layer,
   Layer.succeed(HttpClient.TracerPropagationEnabled, false),
 )
