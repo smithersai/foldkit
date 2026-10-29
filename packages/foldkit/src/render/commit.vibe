@@ -1,4 +1,4 @@
-import { Array, Context } from 'effect'
+import { Array as Arr } from 'effect'
 
 // COMMIT SIGNAL
 
@@ -18,13 +18,11 @@ import { Array, Context } from 'effect'
  * built outside a runtime (tests, standalone helpers) see no service and fall
  * back to the frame-counting behavior.
  */
-export class RenderCommit extends Context.Service<
-  RenderCommit,
-  {
-    readonly isCommitPending: () => boolean
-    readonly onNextCommit: (callback: () => void) => () => void
-  }
->()('@foldkit/RenderCommit') {}
+export service RenderCommit {
+  static readonly key = '@foldkit/RenderCommit'
+  isCommitPending: () => boolean
+  onNextCommit: (callback: () => void) => () => void
+}
 
 /** @internal The runtime's half of {@link RenderCommit}: the service value to
  *  provide, plus the two calls that drive it. */
@@ -67,7 +65,7 @@ export const createCommitNotifier = (): CommitNotifier => {
     // the next commit rather than being invoked by this one.
     notifyCommitted: () => {
       isPending = false
-      const notified = Array.fromIterable(callbacks)
+      const notified = Arr.fromIterable(callbacks)
       callbacks.clear()
       notified.forEach(callback => callback())
     },

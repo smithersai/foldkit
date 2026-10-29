@@ -1,10 +1,10 @@
-import { Function, String as Str } from 'effect'
+import { Function as Fn, String as Str } from 'effect'
 
 export const fromString = Option.liftPredicate(Str.isNonEmpty)
 
 export const when: {
   <A>(value: A): (condition: boolean) => Option<A>
   <A>(condition: boolean, value: A): Option<A>
-} = Function.dual(2, <A>(condition: boolean, value: A): Option<A> =>
+} = Fn.dual(2, <A>(condition: boolean, value: A): Option<A> =>
   Option.liftPredicate(value, () => condition),
 )
