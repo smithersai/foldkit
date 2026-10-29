@@ -1,13 +1,4 @@
-import {
-  Context,
-  Effect,
-  Function,
-  Predicate,
-  Queue,
-  Schema,
-  Scope,
-  Stream,
-} from 'effect'
+import { Function as Fn } from 'effect'
 
 /** Effect service tag that observes Mount lifecycle events. The runtime
  *  provides an implementation that buffers events for DevTools history;
@@ -15,30 +6,23 @@ import {
  *  with an OnMount attribute is inserted and `ended` when it is destroyed.
  *  Test renderers do not provide this service, since snabbdom hooks never
  *  fire in their VNode-only environment. */
-export class MountTracker extends Context.Service<
-  MountTracker,
-  {
-    readonly started: (name: string, args?: Record<string, unknown>) => void
-    readonly ended: (name: string, args?: Record<string, unknown>) => void
-  }
->()('@foldkit/MountTracker') {}
+export service MountTracker {
+  static readonly key = '@foldkit/MountTracker'
+  started: (name: string, args?: Record<string, unknown>) => void
+  ended: (name: string, args?: Record<string, unknown>) => void
+}
 
 /** The state of the DOM currently owned by the Foldkit renderer. `Live` means
  *  it represents the current live Model. `Paused` means time travel has
  *  installed a historical view while the live application continues running. */
-export const ViewState = Schema.Literals(['Live', 'Paused'])
-
-/** The state of the DOM currently owned by the Foldkit renderer. */
-export type ViewState = typeof ViewState.Type
+export schema ViewState = 'Live' | 'Paused'
 
 /** @internal Runtime state used by `OnMount` to supply
  *  `viewStateChanges`. */
-export class MountRuntime extends Context.Service<
-  MountRuntime,
-  {
-    readonly captureViewStateChanges: () => Stream.Stream<ViewState>
-  }
->()('@foldkit/MountRuntime') {}
+export service MountRuntime {
+  static readonly key = '@foldkit/MountRuntime'
+  captureViewStateChanges: () => Stream<ViewState>
+}
 
 /** Type-level brand for MountDefinition values. */
 /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
@@ -64,24 +48,24 @@ export type MountDefinitionTypeId = typeof MountDefinitionTypeId
  *  `Mount.defineStream` exposes the raw Stream shape for continuous-event
  *  cases. */
 export type MountAction<Message, E = never> = Readonly<{
-  name: string
-  args?: Record<string, unknown>
-  f: (
+  mutable name: string
+  mutable args?: Record<string, unknown>
+  mutable f: (
     element: Element,
-    viewStateChanges: Stream.Stream<ViewState>,
-  ) => Stream.Stream<Message, E>
+    viewStateChanges: Stream<ViewState>,
+  ) => Stream<Message, E>
 }>
 
 /** A Mount definition for a Mount with no declared args. Call as `Definition()` to produce a MountAction. */
 export interface MountDefinitionNoArgs<Name extends string, ResultMessage> {
-  readonly [MountDefinitionTypeId]: MountDefinitionTypeId
-  readonly name: Name
+  [MountDefinitionTypeId]: MountDefinitionTypeId
+  name: Name
   (): Readonly<{
-    name: Name
-    f: (
+    mutable name: Name
+    mutable f: (
       element: Element,
-      viewStateChanges: Stream.Stream<ViewState>,
-    ) => Stream.Stream<ResultMessage>
+      viewStateChanges: Stream<ViewState>,
+    ) => Stream<ResultMessage>
   }>
 }
 
@@ -91,15 +75,15 @@ export interface MountDefinitionWithArgs<
   Fields extends Schema.Struct.Fields,
   ResultMessage,
 > {
-  readonly [MountDefinitionTypeId]: MountDefinitionTypeId
-  readonly name: Name
+  [MountDefinitionTypeId]: MountDefinitionTypeId
+  name: Name
   (args: Schema.Schema.Type<Schema.Struct<Fields>>): Readonly<{
-    name: Name
-    args: Schema.Schema.Type<Schema.Struct<Fields>>
-    f: (
+    mutable name: Name
+    mutable args: Schema.Schema.Type<Schema.Struct<Fields>>
+    mutable f: (
       element: Element,
-      viewStateChanges: Stream.Stream<ViewState>,
-    ) => Stream.Stream<ResultMessage>
+      viewStateChanges: Stream<ViewState>,
+    ) => Stream<ResultMessage>
   }>
 }
 
@@ -126,23 +110,23 @@ type ViewStateChangesFieldIsReserved =
 
 /** @internal Fields the runtime supplies to every Mount execution. */
 type ExecuteRuntimeInput = Readonly<{
-  element: Element
-  viewStateChanges: Stream.Stream<ViewState>
+  mutable element: Element
+  mutable viewStateChanges: Stream<ViewState>
 }>
 
 /** @internal Type-level rejection for args that collide with runtime fields. */
 type ReservedExecuteFields = Readonly<{
-  element?: ElementFieldIsReserved
-  viewStateChanges?: ViewStateChangesFieldIsReserved
+  mutable element?: ElementFieldIsReserved
+  mutable viewStateChanges?: ViewStateChangesFieldIsReserved
 }>
 
 /** @internal The shape {@link define} and {@link defineStream} read at
  *  runtime. The public overloads carry the precise types; this is only what
  *  the implementations destructure. */
 type DefineConfig = Readonly<{
-  args?: Schema.Struct.Fields
-  messages: ReadonlyArray<Schema.Top>
-  execute: any
+  mutable args?: Schema.Struct.Fields
+  mutable messages: ReadonlyArray<Schema.Top>
+  mutable execute: any
 }>
 
 /** @internal Stamps a callable Definition with its Mount name and the
@@ -162,7 +146,7 @@ const brandAsDefinition = (definition: unknown, name: string): void => {
  *  It emits `Live` immediately and never completes. Custom renderers and
  *  low-level MountAction wrappers can pass it as the required second argument
  *  to `MountAction.f` when the rendered view is always live. */
-export const liveViewStateChanges: Stream.Stream<ViewState> = Stream.concat(
+export const liveViewStateChanges: Stream<ViewState> = Stream.concat(
   Stream.make(ViewState.make('Live')),
   Stream.never,
 )
@@ -171,20 +155,18 @@ const wrapEffectAsStream =
   <Message>(
     toEffect: (
       element: Element,
-      viewStateChanges: Stream.Stream<ViewState>,
-    ) => Effect.Effect<Message, never, Scope.Scope>,
-  ) =>
+      viewStateChanges: Stream<ViewState>,
+    ) => Message!!Scope,
+  ): infer _ =>
   (
     element: Element,
-    viewStateChanges: Stream.Stream<ViewState>,
-  ): Stream.Stream<Message> =>
-    Stream.callback<Message>(queue =>
-      Effect.gen(function* () {
-        const message = yield* toEffect(element, viewStateChanges)
-        Queue.offerUnsafe(queue, message)
-        return yield* Effect.never
-      }),
-    )
+    viewStateChanges: Stream<ViewState>,
+  ): Stream<Message> =>
+    Stream.callback<Message>(queue => {
+      const message = toEffect(element, viewStateChanges)
+      Queue.offerUnsafe(queue, message)
+      return Effect.never()
+    })
 
 /**
  * Defines a one-shot Mount. Every input is a named field: `args` declares the
@@ -333,11 +315,11 @@ export function define<
 >(
   name: Name,
   config: Readonly<{
-    args: Fields & ReservedExecuteFields
-    messages: Messages
-    execute: (
+    mutable args: Fields & ReservedExecuteFields
+    mutable messages: Messages
+    mutable execute: (
       input: ExecuteRuntimeInput & Schema.Schema.Type<Schema.Struct<Fields>>,
-    ) => Effect.Effect<Schema.Schema.Type<Messages[number]>, never, Scope.Scope>
+    ) => Schema.Schema.Type<Messages[number]>!!Scope
   }>,
 ): MountDefinitionWithArgs<Name, Fields, Schema.Schema.Type<Messages[number]>>
 
@@ -347,32 +329,33 @@ export function define<
 >(
   name: Name,
   config: Readonly<{
-    args?: never
-    messages: Messages
-    execute: (
+    mutable args?: never
+    mutable messages: Messages
+    mutable execute: (
       input: ExecuteRuntimeInput,
-    ) => Effect.Effect<Schema.Schema.Type<Messages[number]>, never, Scope.Scope>
+    ) => Schema.Schema.Type<Messages[number]>!!Scope
   }>,
 ): MountDefinitionNoArgs<Name, Schema.Schema.Type<Messages[number]>>
 
 export function define(name: string, config: DefineConfig): unknown {
+  const executable: { execute: (input: any) => any!never!Scope } = config
   const isArgsDeclared = Predicate.isNotUndefined(config.args)
 
   if (isArgsDeclared) {
-    const definition = (args: any) => ({
+    const definition = (args: any): infer _ => ({
       name,
       args,
       f: wrapEffectAsStream((element, viewStateChanges) =>
-        config.execute({ ...args, element, viewStateChanges }),
+        executable.execute({ ...args, element, viewStateChanges }),
       ),
     })
     brandAsDefinition(definition, name)
     return definition
   } else {
-    const definition = () => ({
+    const definition = (): infer _ => ({
       name,
       f: wrapEffectAsStream((element, viewStateChanges) =>
-        config.execute({ element, viewStateChanges }),
+        executable.execute({ element, viewStateChanges }),
       ),
     })
     brandAsDefinition(definition, name)
@@ -507,11 +490,11 @@ export function defineStream<
 >(
   name: Name,
   config: Readonly<{
-    args: Fields & ReservedExecuteFields
-    messages: Messages
-    execute: (
+    mutable args: Fields & ReservedExecuteFields
+    mutable messages: Messages
+    mutable execute: (
       input: ExecuteRuntimeInput & Schema.Schema.Type<Schema.Struct<Fields>>,
-    ) => Stream.Stream<Schema.Schema.Type<Messages[number]>, never, never>
+    ) => Stream<Schema.Schema.Type<Messages[number]>, never, never>
   }>,
 ): MountDefinitionWithArgs<Name, Fields, Schema.Schema.Type<Messages[number]>>
 
@@ -521,23 +504,24 @@ export function defineStream<
 >(
   name: Name,
   config: Readonly<{
-    args?: never
-    messages: Messages
-    execute: (
+    mutable args?: never
+    mutable messages: Messages
+    mutable execute: (
       input: ExecuteRuntimeInput,
-    ) => Stream.Stream<Schema.Schema.Type<Messages[number]>, never, never>
+    ) => Stream<Schema.Schema.Type<Messages[number]>, never, never>
   }>,
 ): MountDefinitionNoArgs<Name, Schema.Schema.Type<Messages[number]>>
 
 export function defineStream(name: string, config: DefineConfig): unknown {
+  const executable: { execute: (input: any) => Stream<any, never, never> } = config
   const isArgsDeclared = Predicate.isNotUndefined(config.args)
 
   if (isArgsDeclared) {
-    const definition = (args: any) => ({
+    const definition = (args: any): infer _ => ({
       name,
       args,
-      f: (element: Element, viewStateChanges: Stream.Stream<ViewState>) =>
-        config.execute({
+      f: (element: Element, viewStateChanges: Stream<ViewState>): Stream<any, never, never> =>
+        executable.execute({
           ...args,
           element,
           viewStateChanges,
@@ -546,10 +530,10 @@ export function defineStream(name: string, config: DefineConfig): unknown {
     brandAsDefinition(definition, name)
     return definition
   } else {
-    const definition = () => ({
+    const definition = (): infer _ => ({
       name,
-      f: (element: Element, viewStateChanges: Stream.Stream<ViewState>) =>
-        config.execute({
+      f: (element: Element, viewStateChanges: Stream<ViewState>): Stream<any, never, never> =>
+        executable.execute({
           element,
           viewStateChanges,
         }),
@@ -568,14 +552,14 @@ export const mapMessage: {
     f: (message: A) => B,
   ): <E>(action: MountAction<A, E>) => MountAction<B, E>
   <A, B, E>(action: MountAction<A, E>, f: (message: A) => B): MountAction<B, E>
-} = Function.dual(
+} = Fn.dual(
   2,
   <A, B, E>(
     action: MountAction<A, E>,
     f: (message: A) => B,
   ): MountAction<B, E> => ({
     ...action,
-    f: (element: Element, viewStateChanges: Stream.Stream<ViewState>) =>
-      action.f(element, viewStateChanges).pipe(Stream.map(f)),
+    f: (element: Element, viewStateChanges: Stream<ViewState>) =>
+      action.f(element, viewStateChanges).map(f),
   }),
 )
