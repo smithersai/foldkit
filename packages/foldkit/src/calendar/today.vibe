@@ -25,13 +25,18 @@ import {
  * ```
  */
 export const today: {
-  /** The current calendar date in the browser's local timezone. */
+  /**
+   * The current calendar date in the browser's local timezone.
+   */
   mutable local: {
     year: number
     month: number
     day: number
   }!never!never
-  /** The current calendar date in a specific IANA timezone. */
+  /**
+   * The current calendar date in a specific IANA timezone
+   * (e.g. `"America/New_York"`, `"Europe/London"`, `"Asia/Tokyo"`).
+   */
   mutable inZone: (timeZone: string) => {
     year: number
     month: number

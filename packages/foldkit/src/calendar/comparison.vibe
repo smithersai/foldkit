@@ -164,14 +164,14 @@ export const max: {
  */
 export const between: {
   (options: {
-    readonly minimum: CalendarDate
-    readonly maximum: CalendarDate
+    minimum: CalendarDate
+    maximum: CalendarDate
   }): (self: CalendarDate) => boolean
   (
     self: CalendarDate,
     options: {
-      readonly minimum: CalendarDate
-      readonly maximum: CalendarDate
+      minimum: CalendarDate
+      maximum: CalendarDate
     },
   ): boolean
 } = Fn.dual(
@@ -179,8 +179,8 @@ export const between: {
   (
     self: CalendarDate,
     options: {
-      readonly minimum: CalendarDate
-      readonly maximum: CalendarDate
+      minimum: CalendarDate
+      maximum: CalendarDate
     },
   ): boolean =>
     Order(self, options.minimum) >= 0 && Order(self, options.maximum) <= 0,
@@ -204,14 +204,14 @@ export const between: {
  */
 export const clamp: {
   (options: {
-    readonly minimum: CalendarDate
-    readonly maximum: CalendarDate
+    minimum: CalendarDate
+    maximum: CalendarDate
   }): (self: CalendarDate) => CalendarDate
   (
     self: CalendarDate,
     options: {
-      readonly minimum: CalendarDate
-      readonly maximum: CalendarDate
+      minimum: CalendarDate
+      maximum: CalendarDate
     },
   ): CalendarDate
 } = Fn.dual(
@@ -219,8 +219,8 @@ export const clamp: {
   (
     self: CalendarDate,
     options: {
-      readonly minimum: CalendarDate
-      readonly maximum: CalendarDate
+      minimum: CalendarDate
+      maximum: CalendarDate
     },
   ): CalendarDate => {
     if (Order(self, options.minimum) < 0) {
