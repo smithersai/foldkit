@@ -1,21 +1,21 @@
-import { Array, Function as Fn, String as Str } from "effect"
+import { Array, Function, Option, Result, Schema, String, pipe } from 'effect'
 
-import { resolveMessage, type Rule, type RuleMessage } from "./rule.vibe"
+import { type Rule, type RuleMessage, resolveMessage } from './rule.vibe'
 
 // STATE
 
 /** The `NotValidated` state: user hasn't interacted yet. */
-export type NotValidated<A> = Readonly<{ _tag: "NotValidated"; value: A }>
+export type NotValidated<A> = Readonly<{ _tag: 'NotValidated'; value: A }>
 
 /** The `Validating` state: async validation is in flight. */
-export type Validating<A> = Readonly<{ _tag: "Validating"; value: A }>
+export type Validating<A> = Readonly<{ _tag: 'Validating'; value: A }>
 
 /** The `Valid` state: every rule passed. */
-export type Valid<A> = Readonly<{ _tag: "Valid"; value: A }>
+export type Valid<A> = Readonly<{ _tag: 'Valid'; value: A }>
 
 /** The `Invalid` state: one or more rules failed. Carries a non-empty `errors` array. */
 export type Invalid<A> = Readonly<{
-  _tag: "Invalid"
+  _tag: 'Invalid'
   value: A
   errors: Array.NonEmptyReadonlyArray<string>
 }>
@@ -27,7 +27,7 @@ export type Field<A> = NotValidated<A> | Validating<A> | Valid<A> | Invalid<A>
 export const NotValidated = <A>(
   field: Readonly<{ value: A }>,
 ): NotValidated<A> => ({
-  _tag: "NotValidated",
+  _tag: 'NotValidated',
   value: field.value,
 })
 
@@ -35,13 +35,13 @@ export const NotValidated = <A>(
 export const Validating = <A>(
   field: Readonly<{ value: A }>,
 ): Validating<A> => ({
-  _tag: "Validating",
+  _tag: 'Validating',
   value: field.value,
 })
 
 /** Constructs a `Valid` state. */
 export const Valid = <A>(field: Readonly<{ value: A }>): Valid<A> => ({
-  _tag: "Valid",
+  _tag: 'Valid',
   value: field.value,
 })
 
@@ -49,7 +49,7 @@ export const Valid = <A>(field: Readonly<{ value: A }>): Valid<A> => ({
 export const Invalid = <A>(
   field: Readonly<{ value: A; errors: Array.NonEmptyReadonlyArray<string> }>,
 ): Invalid<A> => ({
-  _tag: "Invalid",
+  _tag: 'Invalid',
   value: field.value,
   errors: field.errors,
 })
@@ -62,12 +62,12 @@ export const Invalid = <A>(
  *  `Schema.Boolean` in the Model; wrap it in `Field` only when it needs the
  *  validation lifecycle. Validation rules stay separate, in a `makeRules`
  *  bundle. */
-export const Field = <A, I>(valueSchema: Schema.Codec<A, I>): infer _ =>
+export const Field = <A, I>(valueSchema: Schema.Codec<A, I>) =>
   Schema.Union([
-    Schema.TaggedStruct("NotValidated", { value: valueSchema }),
-    Schema.TaggedStruct("Validating", { value: valueSchema }),
-    Schema.TaggedStruct("Valid", { value: valueSchema }),
-    Schema.TaggedStruct("Invalid", {
+    Schema.TaggedStruct('NotValidated', { value: valueSchema }),
+    Schema.TaggedStruct('Validating', { value: valueSchema }),
+    Schema.TaggedStruct('Valid', { value: valueSchema }),
+    Schema.TaggedStruct('Invalid', {
       value: valueSchema,
       errors: Schema.NonEmptyArray(Schema.String),
     }),
@@ -81,7 +81,7 @@ export const Field = <A, I>(valueSchema: Schema.Codec<A, I>): infer _ =>
  *  are accessible but treating them as stable is discouraged. Prefer the
  *  operations so internal shape changes don't break callers. */
 export type Rules<A> = Readonly<{
-  requiredMessage: Option<RuleMessage<A>>
+  requiredMessage: Option.Option<RuleMessage<A>>
   rules: ReadonlyArray<Rule<A>>
   isEmpty: (value: A) => boolean
 }>
@@ -101,8 +101,8 @@ export type MakeRulesOptions<A> = Readonly<{
 }>
 
 const isEmptyValue = (value: unknown): boolean => {
-  if (typeof value === "string") {
-    return Str.isEmpty(value)
+  if (typeof value === 'string') {
+    return String.isEmpty(value)
   }
   if (Array.isArray(value)) {
     return Array.isReadonlyArrayEmpty(value)
@@ -137,6 +137,9 @@ export const makeRules = <A = string>(
  *  })
  *  ```
  */
+// NOTE: match uses a refinement chain instead of Match because
+// tagsExhaustive returns Unify<B>, which does not reduce when the
+// handlers return a caller's naked generic.
 export const match: {
   <A, B, C = B, D = B, F = B>(
     handlers: Readonly<{
@@ -165,7 +168,7 @@ export const match: {
       ) => F
     }>,
   ): B | C | D | F
-} = Fn.dual(
+} = Function.dual(
   2,
   <A, B>(
     self: Field<A>,
@@ -180,20 +183,19 @@ export const match: {
         }>,
       ) => B
     }>,
-  ): B => match (self) {
-    when { _tag: 'NotValidated', let value }: handlers.onNotValidated(value);
-    when { _tag: 'Validating', let value }: handlers.onValidating(value);
-    when { _tag: 'Valid', let value }: handlers.onValid(value);
-    when { _tag: 'Invalid', let value, let errors }: handlers.onInvalid({ value, errors });
+  ): B => {
+    if (self._tag === 'NotValidated') {
+      return handlers.onNotValidated(self.value)
+    }
+    if (self._tag === 'Validating') {
+      return handlers.onValidating(self.value)
+    }
+    if (self._tag === 'Valid') {
+      return handlers.onValid(self.value)
+    }
+    return handlers.onInvalid({ value: self.value, errors: self.errors })
   },
 )
-
-// An empty value is Invalid with the required message, or NotValidated when
-// the field is optional.
-const requiredOrNotValidated = <A>(rules: Rules<A>, value: A): Field<A> => match (rules.requiredMessage) {
-  when Option.None: NotValidated({ value });
-  when Option.Some(let message): Invalid({ value, errors: [resolveMessage(message, value)] });
-}
 
 /** Validates a new value and returns the next field state.
  *
@@ -201,32 +203,52 @@ const requiredOrNotValidated = <A>(rules: Rules<A>, value: A): Field<A> => match
  *  required message. For optional fields, an empty value produces
  *  `NotValidated`. Non-empty values run through the field's rules;
  *  the first failure becomes `Invalid`, otherwise the result is `Valid`. */
-export const validate = <A>(rules: Rules<A>): infer _ => (value: A): Field<A> => {
-  if (rules.isEmpty(value)) {
-    return requiredOrNotValidated(rules, value)
+export const validate =
+  <A>(rules: Rules<A>) =>
+  (value: A): Field<A> => {
+    if (rules.isEmpty(value)) {
+      return Option.match(rules.requiredMessage, {
+        onNone: () => NotValidated({ value }),
+        onSome: message =>
+          Invalid({ value, errors: [resolveMessage(message, value)] }),
+      })
+    }
+    return pipe(
+      rules.rules,
+      Array.findFirst(([predicate]) => !predicate(value)),
+      Option.match({
+        onNone: () => Valid({ value }),
+        onSome: ([, message]) =>
+          Invalid({ value, errors: [resolveMessage(message, value)] }),
+      }),
+    )
   }
-  return match (Array.findFirst(rules.rules, ([predicate]) => !predicate(value))) {
-    when Option.None: Valid({ value });
-    when Option.Some(let failed): Invalid({ value, errors: [resolveMessage(failed[1], value)] });
-  }
-}
 
 /** Like `validate` but collects every failing rule into the
  *  `Invalid` state's errors array instead of stopping at the first. */
-export const validateAll = <A>(rules: Rules<A>): infer _ => (value: A): Field<A> => {
-  if (rules.isEmpty(value)) {
-    return requiredOrNotValidated(rules, value)
+export const validateAll =
+  <A>(rules: Rules<A>) =>
+  (value: A): Field<A> => {
+    if (rules.isEmpty(value)) {
+      return Option.match(rules.requiredMessage, {
+        onNone: () => NotValidated({ value }),
+        onSome: message =>
+          Invalid({ value, errors: [resolveMessage(message, value)] }),
+      })
+    }
+    return pipe(
+      rules.rules,
+      Array.filterMap(([predicate, message]) =>
+        !predicate(value)
+          ? Result.succeed(resolveMessage(message, value))
+          : Result.failVoid,
+      ),
+      Array.match({
+        onEmpty: () => Valid({ value }),
+        onNonEmpty: errors => Invalid({ value, errors }),
+      }),
+    )
   }
-  return rules.rules
-    |> Array.filterMap(%, ([predicate, message]) =>
-      !predicate(value)
-        ? Result.succeed(resolveMessage(message, value))
-        : Result.failVoid)
-    |> Array.match(%, {
-      onEmpty: () => Valid({ value }),
-      onNonEmpty: errors => Invalid({ value, errors }),
-    })
-}
 
 /** Returns true when the field's current state is acceptable given its
  *  rules. For required fields, only `Valid` returns `true`. For optional
@@ -237,26 +259,30 @@ export const validateAll = <A>(rules: Rules<A>): infer _ => (value: A): Field<A>
  *  answers "is this state an acceptable result?", which for an optional
  *  field is broader than `_tag === 'Valid'`. For pattern-matching on the
  *  state itself, check the `_tag` directly. */
-export const isValid = <A>(rules: Rules<A>): infer _ => (state: Field<A>): boolean => {
-  if (state._tag === "Invalid" || state._tag === "Validating") {
-    return false
+export const isValid =
+  <A>(rules: Rules<A>) =>
+  (state: Field<A>): boolean => {
+    if (state._tag === 'Invalid' || state._tag === 'Validating') {
+      return false
+    }
+    if (Option.isSome(rules.requiredMessage)) {
+      return state._tag === 'Valid'
+    }
+    return true
   }
-  if (Option.isSome(rules.requiredMessage)) {
-    return state._tag === "Valid"
-  }
-  return true
-}
 
 /** Returns true when the rules mark the field as required. Useful for
  *  rendering affordances like a `*` next to required field labels. */
-export const isRequired = <A>(rules: Rules<A>): boolean => Option.isSome(rules.requiredMessage)
+export const isRequired = <A>(rules: Rules<A>): boolean =>
+  Option.isSome(rules.requiredMessage)
 
 /** Returns true when the state's tag is `Invalid`. Tag-only predicate;
  *  unlike `!isValid(rules)(state)`, this does not treat `NotValidated`
  *  or `Validating` as errors. Use for "has the user seen a rule failure
  *  on this field?" affordances like red borders or per-step error
  *  indicators. */
-export const isInvalid = (state: Field<unknown>): boolean => state._tag === "Invalid"
+export const isInvalid = (state: Field<unknown>): boolean =>
+  state._tag === 'Invalid'
 
 /** Returns true when every field is acceptable per its rules, by `isValid`.
  *  Each pair is a field's `[state, rules]`. The pairs in one call share a
@@ -269,4 +295,5 @@ export const allValid = <A>(
 
 /** Returns true when any state in the input has tag `Invalid`. Use for
  *  "this step/section has errors" affordances, independent of rules. */
-export const anyInvalid = (states: ReadonlyArray<Field<unknown>>): boolean => Array.some(states, isInvalid)
+export const anyInvalid = (states: ReadonlyArray<Field<unknown>>): boolean =>
+  Array.some(states, isInvalid)

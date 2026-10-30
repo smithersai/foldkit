@@ -1,3 +1,3 @@
-export * from './fieldValidation.vibe'
+export * from './fieldValidation.js'
 
 export * as Rule from './rule.vibe'

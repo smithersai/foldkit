@@ -24,7 +24,7 @@ import type { Ports } from '../port/index.js'
 import { RenderCommit, createCommitNotifier } from '../render/commit.vibe'
 import type { Subscriptions } from '../subscription/subscription.js'
 import type { Return as UpdateReturn } from '../update/index.js'
-import { Url, fromString as urlFromString } from '../url/index.vibe'
+import { Url, fromString as urlFromString } from '../url/index.js'
 import {
   type RoutingConfig,
   addNavigationEventListeners,

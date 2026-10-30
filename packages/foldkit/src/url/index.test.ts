@@ -3,7 +3,7 @@ import { expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import { Url, fromString, toString } from './index.vibe'
+import { Url, fromString, toString } from './index.js'
 
 describe('fromString', () => {
   it('parses a full URL with all parts', () => {

@@ -12,7 +12,7 @@ import {
   pipe,
 } from 'effect'
 
-import { modifyFields } from '../struct/index.vibe'
+import { modifyFields } from '../struct/index.js'
 
 export const INIT_INDEX = -1
 const DEFAULT_KEYFRAME_INTERVAL = 31

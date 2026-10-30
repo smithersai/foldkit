@@ -9,7 +9,7 @@ import type { Html } from '../../html/index.js'
 import { __htmlBuilder, customElement } from '../../html/index.js'
 import type { RoutingApplicationConfigWithFlags } from '../../runtime/index.js'
 import type * as Update from '../../update/index.js'
-import type { Url } from '../../url/index.vibe'
+import type { Url } from '../../url/index.js'
 import type { VNode } from '../../vdom.vibe'
 import {
   FOLDKIT_APP_ATTRIBUTE,

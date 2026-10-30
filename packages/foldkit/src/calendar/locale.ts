@@ -1,7 +1,7 @@
 import { Array, Function, Option, Schema, pipe } from 'effect'
 
 import { defineTaggedUnion } from '../schema/index.js'
-import type { CalendarDate } from './calendarDate.vibe'
+import type { CalendarDate } from './calendarDate.js'
 import { DayOfWeek, dayOfWeek } from './info.vibe'
 
 const twelveStrings = Schema.Tuple([

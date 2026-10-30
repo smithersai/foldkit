@@ -3,7 +3,7 @@ import { describe, it } from 'vitest'
 
 import { Document, __htmlBuilder, __requireDispatch } from '../html/index.js'
 import { defineMessageUnion } from '../message/index.js'
-import { modifyFields } from '../struct/index.vibe'
+import { modifyFields } from '../struct/index.js'
 import type * as Update from '../update/index.js'
 import { makeApplication } from './makeApplication.js'
 

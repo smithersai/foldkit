@@ -6,7 +6,7 @@ import { describe, it } from '@effect/vitest'
 import {
   PreserveModelMessage,
   RestoreModelMessage,
-} from './modelPreservation.vibe'
+} from './modelPreservation.js'
 
 describe('RestoreModelMessage', () => {
   it('round-trips through JSON when no model is preserved (cold start)', () => {

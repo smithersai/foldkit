@@ -11,7 +11,7 @@ import { defineMessageUnion } from '../message/index.js'
 import * as PublicScene from '../scene/public.js'
 import { h } from '../snabbdom/index.js'
 import type { VNode } from '../snabbdom/index.js'
-import { modifyFields } from '../struct/index.vibe'
+import { modifyFields } from '../struct/index.js'
 import { defineView } from '../submodel/public.js'
 import type * as Update from '../update/index.js'
 import {

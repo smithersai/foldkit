@@ -1,5 +1,5 @@
 import { Order as EffectOrder, type Equivalence as Equivalence_ } from "effect";
-import type { CalendarDate } from "./calendarDate.vibe";
+import type { CalendarDate } from "./calendarDate.js";
 /**
  * Total ordering over calendar dates. Uses lexicographic comparison on
  * `year`, then `month`, then `day` — which matches calendar chronology

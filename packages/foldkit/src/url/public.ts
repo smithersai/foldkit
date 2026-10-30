@@ -1,1 +1,1 @@
-export { Url, fromString, toString } from './index.vibe'
+export { Url, fromString, toString } from './index.js'

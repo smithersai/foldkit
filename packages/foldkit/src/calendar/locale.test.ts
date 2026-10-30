@@ -1,7 +1,7 @@
 import { Schema, pipe } from 'effect'
 import { describe, expect, it } from 'vitest'
 
-import { make } from './calendarDate.vibe'
+import { make } from './calendarDate.js'
 import {
   DateFormat,
   DatePart,

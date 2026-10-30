@@ -4,7 +4,7 @@ import {
   PreserveModelMessage,
   RequestModelMessage,
   RestoreModelMessage,
-} from './modelPreservation.vibe'
+} from './modelPreservation.js'
 
 const encodePreserveModelMessage =
   Schema.encodeUnknownSync(PreserveModelMessage)

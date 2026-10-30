@@ -9,7 +9,7 @@ export {
   make,
   toDateLocal,
   unsafeMake,
-} from './calendarDate.vibe'
+} from './calendarDate.js'
 
 export {
   addDays,
@@ -45,7 +45,7 @@ export {
   startOfWeek,
 } from './info.vibe'
 
-export { today } from './today.vibe'
+export { today } from './today.js'
 
 export {
   DateFormat,

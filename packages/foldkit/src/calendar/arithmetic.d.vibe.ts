@@ -1,4 +1,4 @@
-import { type CalendarDate } from "./calendarDate.vibe";
+import { type CalendarDate } from "./calendarDate.js";
 /**
  * Adds `n` days to a calendar date. Negative `n` subtracts days.
  * Handles month and year rollovers correctly in both directions.

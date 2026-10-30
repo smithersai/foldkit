@@ -50,7 +50,7 @@ import { hasTrustedInnerHtml } from '../../propertyProvenance.js'
 import type { VNode } from '../../snabbdom/vnode.js'
 import { tagNameFromSelector } from '../../tagName.js'
 import type { Return as UpdateReturn } from '../../update/index.js'
-import { Url, fromString } from '../../url/index.vibe'
+import { Url, fromString } from '../../url/index.js'
 import { type ParsedFragmentModes, parseFragmentModes } from './fragment.js'
 import {
   controlledValueContent,

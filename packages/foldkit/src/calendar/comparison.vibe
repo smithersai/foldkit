@@ -1,6 +1,6 @@
 import { Order as EffectOrder, type Equivalence as Equivalence_, Function as Fn } from "effect"
 
-import type { CalendarDate } from "./calendarDate.vibe"
+import type { CalendarDate } from "./calendarDate.ts"
 
 /**
  * Total ordering over calendar dates. Uses lexicographic comparison on

@@ -19,7 +19,7 @@ import {
   match,
   validate,
   validateAll,
-} from './fieldValidation.vibe'
+} from './fieldValidation.js'
 import {
   type Rule,
   email,

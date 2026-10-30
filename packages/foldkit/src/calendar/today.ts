@@ -1,4 +1,10 @@
-import { fromDateInZone, fromDateLocal } from "./calendarDate.vibe"
+import { Clock, Effect } from 'effect'
+
+import {
+  type CalendarDate,
+  fromDateInZone,
+  fromDateLocal,
+} from './calendarDate.js'
 
 /**
  * Effect-based accessors for the current calendar date. Uses Effect's `Clock`
@@ -20,33 +26,20 @@ import { fromDateInZone, fromDateLocal } from "./calendarDate.vibe"
  * })
  * ```
  */
-export const today: {
+export const today = {
   /**
    * The current calendar date in the browser's local timezone.
    */
-  mutable local: {
-    year: number
-    month: number
-    day: number
-  }!never!never
-  /**
-   * The current calendar date in a specific IANA timezone
-   * (e.g. `"America/New_York"`, `"Europe/London"`, `"Asia/Tokyo"`).
-   */
-  mutable inZone: (timeZone: string) => {
-    year: number
-    month: number
-    day: number
-  }!never!never
-} = {
-  /**
-   * The current calendar date in the browser's local timezone.
-   */
-  local: () => fromDateLocal(new Date(Clock.currentTimeMillis())),
+  local: Effect.map(Clock.currentTimeMillis, (millis): CalendarDate =>
+    fromDateLocal(new Date(millis)),
+  ),
 
   /**
    * The current calendar date in a specific IANA timezone
    * (e.g. `"America/New_York"`, `"Europe/London"`, `"Asia/Tokyo"`).
    */
-  inZone: (timeZone: string) => fromDateInZone(new Date(Clock.currentTimeMillis()), timeZone),
+  inZone: (timeZone: string) =>
+    Effect.map(Clock.currentTimeMillis, (millis): CalendarDate =>
+      fromDateInZone(new Date(millis), timeZone),
+    ),
 }

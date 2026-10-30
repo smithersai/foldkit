@@ -15,7 +15,7 @@ import {
 import * as AsyncData from '../../asyncData/index.js'
 import * as Command from '../../command/index.js'
 import { defineMessageUnion } from '../../message/index.js'
-import { modifyFields } from '../../struct/index.vibe'
+import { modifyFields } from '../../struct/index.js'
 import * as Update from '../../update/index.js'
 import {
   type AsyncDataTransition,
