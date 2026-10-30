@@ -2315,6 +2315,112 @@ packages:
     resolution: {integrity: sha512-Xc3VhU02wqZ1HvHRJUwL09HkZSTvidqY5Ya0NXBSYOxAp+Ln9dcJr9fySI+CkONzP3PekQo9WdzCv0PGER/mOA==}
     engines: {node: '>=14.17.0'}
 
+  '@dprint/android-arm64@0.64.3':
+    resolution: {integrity: sha512-cRSS8GTClq/xDF3VBFAvkBwO4a0cwovwfUCyMhzKDIVvPOYr8A7zDd3fKoYfU4oCpEGZ4oFBhAw84S3ia1IRSA==}
+    cpu: [arm64]
+    os: [android]
+
+  '@dprint/android-x64@0.64.3':
+    resolution: {integrity: sha512-9dFcs/hXoGW9P/15QMN0zazg6ZmJq5aqDQxsbCM4i9ut7Mv5mH909ZsuuVSJNrIwaCUfFNYQTrGtALjK/CpK6g==}
+    cpu: [x64]
+    os: [android]
+
+  '@dprint/darwin-arm64@0.64.3':
+    resolution: {integrity: sha512-doIkcq1e6kbut7iGC3U+mEDrI8ncLPpZrfP0/jU4x12dX15tH7HUfoeW63AJbKL940rEBKPGemihDWA7DhGUKQ==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@dprint/darwin-x64@0.64.3':
+    resolution: {integrity: sha512-2tLgFrMGWa03WTcoXLjU1JAUmHgIUaq4I91Ik1xPx+jxt7NEkeo0qPny1bqFFtOkCkI13R5CkLAgTrNA5KK8PQ==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@dprint/freebsd-arm64@0.64.3':
+    resolution: {integrity: sha512-fJt4LMMxjNir4ingKZQ1sRSnqaTpAGR/WOmK+1AQDS4gg1cGI73Vqbe4Cgb3NZ5/0TwewNbAi7koGQXlAUNTOQ==}
+    cpu: [arm64]
+    os: [freebsd]
+
+  '@dprint/freebsd-x64@0.64.3':
+    resolution: {integrity: sha512-yfqzdI3Yt4H4AavLyWzE/HjJL17gzh8GIJF5OMNyBb8XeJPeB76U/sv7FgaURQKUr6AhIoPBqp4w+WlVftkCeg==}
+    cpu: [x64]
+    os: [freebsd]
+
+  '@dprint/linux-arm64-glibc@0.64.3':
+    resolution: {integrity: sha512-dJQ5PS0+7COmKG0NHy11pEoCfzeL1slrGuHWS0uQmyIbBskbItFnubR9KsD1J/UfYIq62rySvAm2D+MNw7cYOA==}
+    cpu: [arm64]
+    os: [linux]
+    libc: [glibc]
+
+  '@dprint/linux-arm64-musl@0.64.3':
+    resolution: {integrity: sha512-UVHeWWRAEQe3qUsM5UD7HnC8OGZIn0U864wuAHqMpGvf2ZcxE2OlGs0x0w6SU3Vwas/4XQqREkG/WgsCykeMNg==}
+    cpu: [arm64]
+    os: [linux]
+    libc: [musl]
+
+  '@dprint/linux-loong64-glibc@0.64.3':
+    resolution: {integrity: sha512-HK+8T+8TZ/xANv/8HX+W2YlpMOaHYUW4oUx2h7rUN7wcC79i7vCq6/N5qDwUIRvB5HgJ7e7ArMB5fLHgl79t3Q==}
+    cpu: [loong64]
+    os: [linux]
+    libc: [glibc]
+
+  '@dprint/linux-loong64-musl@0.64.3':
+    resolution: {integrity: sha512-ozGKUY98D9DwtXRjjwptDuimBK+FClns61wHrns8NTCKOucSPnOURn7YW3adq4uD1bPn1cAN7RxpsmiufZ1e2Q==}
+    cpu: [loong64]
+    os: [linux]
+    libc: [musl]
+
+  '@dprint/linux-ppc64-glibc@0.64.3':
+    resolution: {integrity: sha512-Whxvv7UcZX2GGiHIQy/IWmaMbfwV+9cRr9/Fpl628ipOnqzTjw7l/GVZstfDv5jQgsZYDADsgcb/xCF+zzZp4A==}
+    cpu: [ppc64]
+    os: [linux]
+    libc: [glibc]
+
+  '@dprint/linux-ppc64-musl@0.64.3':
+    resolution: {integrity: sha512-o3tW/Xv1BpjsUWEaSOGPZlnME2U+qPWR5QmnryeFyQZv8HIF4ustfIqz51w7g9X1R2J+yU0EYjEgIvPvijuFoQ==}
+    cpu: [ppc64]
+    os: [linux]
+    libc: [musl]
+
+  '@dprint/linux-riscv64-glibc@0.64.3':
+    resolution: {integrity: sha512-UngEpOD0KUWi9mPUGioYQnGuGon48+sz4sOsKzBNLYdxkeS7tlCFA3416QELcildYmHrsO79VYG9Sw6afvxzsQ==}
+    cpu: [riscv64]
+    os: [linux]
+    libc: [glibc]
+
+  '@dprint/linux-riscv64-musl@0.64.3':
+    resolution: {integrity: sha512-dGYX5X6SmVeIlxpGI6/p2Sgu0RH9oSwuuN+h+jyLo66zC9ei+3jb/+5snHuDoQLLpg5MC5KbJQvqfgCWKb4xAQ==}
+    cpu: [riscv64]
+    os: [linux]
+    libc: [musl]
+
+  '@dprint/linux-s390x-glibc@0.64.3':
+    resolution: {integrity: sha512-DsIPuN98Xz0RerI/kaQW8OGaIJGYpBhR5vPFRDb1EU1LUv8Cc4KdAFTyzGkS2CAIM3YyjgGABAxpln9NDsuKRg==}
+    cpu: [s390x]
+    os: [linux]
+    libc: [glibc]
+
+  '@dprint/linux-x64-glibc@0.64.3':
+    resolution: {integrity: sha512-wKVnD6eO8S4U8LbVcZy0l0ioJKfLbsL1OYUr0f4M99lrBv30RA385sii5Fq/NSM8O/sh9gII8zRvdtTMUWbImg==}
+    cpu: [x64]
+    os: [linux]
+    libc: [glibc]
+
+  '@dprint/linux-x64-musl@0.64.3':
+    resolution: {integrity: sha512-AhhAyhd4gG7UrP9NmV60fWf6EFHqZE3X9QW0B2LeoX9vt+rcWv3ejbGOFD8V4Wkg6LyPl49RyGgeltn9KTwD1g==}
+    cpu: [x64]
+    os: [linux]
+    libc: [musl]
+
+  '@dprint/win32-arm64@0.64.3':
+    resolution: {integrity: sha512-noAymd7nZiKB4pGEW4YbS01647n4pbBYv5GzXlFWYu408xuVWc5+b76Gua4IVO1gkiPtkBRIcmRBStXblfrRyw==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@dprint/win32-x64@0.64.3':
+    resolution: {integrity: sha512-i5yc2BcaLYX8MpvkfCSdIrbEic84AF1t7dKgJCB40m6ckxPUFygMkujfAGHLY4NNE+Q9i9RmRx6N0AiUBwcNVg==}
+    cpu: [x64]
+    os: [win32]
+
   '@effect/platform-browser@4.1.0':
     resolution: {integrity: sha512-IEyaPzejKozHDupOUSjQIgQYGv2C0I828up8z7/nvQTHzmQHUS2/tGMEwXX/FwAvnrWZ0H9MhlhTl18ZgCHQiQ==}
     peerDependencies:
@@ -4382,6 +4488,10 @@ packages:
   dompurify@3.4.14:
     resolution: {integrity: sha512-dVoH9z+MY+C9IilgGCk3YfFqjLi3fChm2OiKJMzh6axrJ5qwxqWaZamgmHrpv22CN/KdbZJuGEGgfQoL00LTdg==}
 
+  dprint@0.64.3:
+    resolution: {integrity: sha512-/ENhr1iBM1ZfDBdLRCwSuOZ6SCv6cN6Tl3xvtJDHJbFJYjiYy6AHrzPtU/FSCvEG16YTcCNqkO/xDBxaDHIh8w==}
+    hasBin: true
+
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
     engines: {node: '>= 0.4'}
@@ -6037,12 +6147,12 @@ packages:
     resolution: {integrity: sha512-KzIbH/9tXat2u30jf+smMwFCsno4wHVdNmzFyL+T/L3UGqqk6JKfVqOFOZEpZSHADH1k40ab6NUIXZq422ov3Q==}
 
   vibelang-runtime@file:.vibelang-toolchain/vibelang-runtime-0.0.11.tgz:
-    resolution: {integrity: sha512-+HGqlYzRBGRHjlT+9cGbQXe1+5JrnU8STodb+B59EGmRrJ6rCz9TAx7o9PSkppqOykNYWeiFBWP3bt6Im+NADg==, tarball: file:.vibelang-toolchain/vibelang-runtime-0.0.11.tgz}
+    resolution: {integrity: sha512-/ahMlUD5sUQSDE2gBwLdSeat1OV9ysHDRL2ybW+VxTJgtGu/Cew85WNOzhPBjBLYDuHj50R+Auh/ogegu05Vgw==, tarball: file:.vibelang-toolchain/vibelang-runtime-0.0.11.tgz}
     version: 0.0.11
-    engines: {bun: '>=1.4', node: '>=26'}
+    engines: {bun: '>=1.4', node: ^22.22.3 || >=24.11.1}
     peerDependencies:
       '@effect/platform-browser': 4.1.0
-      '@effect/platform-bun': 4.0.6
+      '@effect/platform-bun': 4.1.0
       '@effect/platform-node': 4.1.0
       effect: 4.1.0
     peerDependenciesMeta:
@@ -6054,17 +6164,17 @@ packages:
         optional: true
 
   vibelang-vite@file:.vibelang-toolchain/vibelang-vite-0.0.11.tgz:
-    resolution: {integrity: sha512-AH7u1zGUPdieDoYOPTJOAkTP/0VOg15c8qZDr7+Nw5JZatyS5UZL4oJVuCX8KRmJKXiAY8QPUIoUZ6oHuFz/7w==, tarball: file:.vibelang-toolchain/vibelang-vite-0.0.11.tgz}
+    resolution: {integrity: sha512-zOIwr+f6asOQQWgBRJovUc79U2EbJc6PfD+1VDv0NVJYKEIltCs2QzkJjQGaGOhzWxpJmclr67akccdksWb94Q==, tarball: file:.vibelang-toolchain/vibelang-vite-0.0.11.tgz}
     version: 0.0.11
-    engines: {node: '>=26'}
+    engines: {node: ^22.22.3 || >=24.11.1}
     peerDependencies:
       vibelang: 0.0.11
       vite: '>=7 <9'
 
   vibelang@file:.vibelang-toolchain/vibelang-0.0.11.tgz:
-    resolution: {integrity: sha512-V5CJyFnF73uI8jLwNtC8mKdH7JwKxwMHrXLdOKpKiOyaSUTnBAQWR4MSwP4UjS8t+bN7qTe6GFaYqM9CMZZcww==, tarball: file:.vibelang-toolchain/vibelang-0.0.11.tgz}
+    resolution: {integrity: sha512-ViXOPzK0B+pYYEZvbjLFbiIagmH2xE8c1Spysk6ar3RVVrYwQHjHswtBS6jPeDiVCGwtN0sxCaOA/dBfLi514w==, tarball: file:.vibelang-toolchain/vibelang-0.0.11.tgz}
     version: 0.0.11
-    engines: {node: '>=26'}
+    engines: {node: ^22.22.3 || >=24.11.1}
     hasBin: true
 
   vite@8.2.1:
@@ -6577,6 +6687,63 @@ snapshots:
       node-source-walk: 7.0.2
 
   '@discoveryjs/json-ext@1.1.0': {}
+
+  '@dprint/android-arm64@0.64.3':
+    optional: true
+
+  '@dprint/android-x64@0.64.3':
+    optional: true
+
+  '@dprint/darwin-arm64@0.64.3':
+    optional: true
+
+  '@dprint/darwin-x64@0.64.3':
+    optional: true
+
+  '@dprint/freebsd-arm64@0.64.3':
+    optional: true
+
+  '@dprint/freebsd-x64@0.64.3':
+    optional: true
+
+  '@dprint/linux-arm64-glibc@0.64.3':
+    optional: true
+
+  '@dprint/linux-arm64-musl@0.64.3':
+    optional: true
+
+  '@dprint/linux-loong64-glibc@0.64.3':
+    optional: true
+
+  '@dprint/linux-loong64-musl@0.64.3':
+    optional: true
+
+  '@dprint/linux-ppc64-glibc@0.64.3':
+    optional: true
+
+  '@dprint/linux-ppc64-musl@0.64.3':
+    optional: true
+
+  '@dprint/linux-riscv64-glibc@0.64.3':
+    optional: true
+
+  '@dprint/linux-riscv64-musl@0.64.3':
+    optional: true
+
+  '@dprint/linux-s390x-glibc@0.64.3':
+    optional: true
+
+  '@dprint/linux-x64-glibc@0.64.3':
+    optional: true
+
+  '@dprint/linux-x64-musl@0.64.3':
+    optional: true
+
+  '@dprint/win32-arm64@0.64.3':
+    optional: true
+
+  '@dprint/win32-x64@0.64.3':
+    optional: true
 
   '@effect/platform-browser@4.1.0(effect@4.1.0)':
     dependencies:
@@ -8247,6 +8414,28 @@ snapshots:
   dompurify@3.4.14:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
+
+  dprint@0.64.3:
+    optionalDependencies:
+      '@dprint/android-arm64': 0.64.3
+      '@dprint/android-x64': 0.64.3
+      '@dprint/darwin-arm64': 0.64.3
+      '@dprint/darwin-x64': 0.64.3
+      '@dprint/freebsd-arm64': 0.64.3
+      '@dprint/freebsd-x64': 0.64.3
+      '@dprint/linux-arm64-glibc': 0.64.3
+      '@dprint/linux-arm64-musl': 0.64.3
+      '@dprint/linux-loong64-glibc': 0.64.3
+      '@dprint/linux-loong64-musl': 0.64.3
+      '@dprint/linux-ppc64-glibc': 0.64.3
+      '@dprint/linux-ppc64-musl': 0.64.3
+      '@dprint/linux-riscv64-glibc': 0.64.3
+      '@dprint/linux-riscv64-musl': 0.64.3
+      '@dprint/linux-s390x-glibc': 0.64.3
+      '@dprint/linux-x64-glibc': 0.64.3
+      '@dprint/linux-x64-musl': 0.64.3
+      '@dprint/win32-arm64': 0.64.3
+      '@dprint/win32-x64': 0.64.3
 
   dunder-proto@1.0.1:
     dependencies:
@@ -10307,7 +10496,9 @@ snapshots:
       vibelang: file:.vibelang-toolchain/vibelang-0.0.11.tgz
       vite: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
 
-  vibelang@file:.vibelang-toolchain/vibelang-0.0.11.tgz: {}
+  vibelang@file:.vibelang-toolchain/vibelang-0.0.11.tgz:
+    dependencies:
+      dprint: 0.64.3
 
   vite@8.2.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1):
     dependencies:
