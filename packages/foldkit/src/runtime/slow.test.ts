@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { __htmlBuilder } from '../html/index.js'
 import { defineMessageUnion } from '../message/index.js'
-import { modifyFields } from '../struct/index.js'
+import { modifyFields } from '../struct/index.vibe'
 import * as Subscription from '../subscription/subscription.js'
 import type * as Update from '../update/index.js'
 import { makeElement } from './makeElement.js'

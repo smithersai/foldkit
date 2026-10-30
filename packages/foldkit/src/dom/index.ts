@@ -1,4 +1,4 @@
-export { ElementNotFound } from './error.js'
+export { ElementNotFound } from './error.vibe'
 export {
   advanceFocus,
   clickElement,

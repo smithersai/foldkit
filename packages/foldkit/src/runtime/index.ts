@@ -13,7 +13,7 @@ export type {
   DevToolsPosition,
 } from './devToolsConfig.js'
 
-export { Dispatch } from './dispatch.js'
+export { Dispatch } from './dispatch.vibe'
 
 export type {
   EmbedHandle,

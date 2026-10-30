@@ -1,0 +1,4 @@
+/** Error raised when a `FileReader` operation fails. */
+export error FileReadError {
+  reason: string
+}

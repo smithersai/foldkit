@@ -31,7 +31,7 @@ import type {
   DevToolsIntegration,
   DevToolsRenderBridge,
 } from './devToolsIntegration.js'
-import { Dispatch } from './dispatch.js'
+import { Dispatch } from './dispatch.vibe'
 import { applyDocumentMetadata } from './documentMetadata.js'
 import type { DuplicateIdScanner } from './duplicateIdScanner.js'
 import type { MessageQueue } from './messageQueue.js'

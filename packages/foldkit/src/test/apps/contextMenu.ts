@@ -3,7 +3,7 @@ import { Number, Schema } from 'effect'
 import type { Html, HtmlBuilder } from '../../html/index.js'
 import { defineMessageUnion } from '../../message/index.js'
 import { defineTaggedUnion } from '../../schema/index.js'
-import { modifyFields } from '../../struct/index.js'
+import { modifyFields } from '../../struct/index.vibe'
 import type * as Update from '../../update/index.js'
 
 // MODEL

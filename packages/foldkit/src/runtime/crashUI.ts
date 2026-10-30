@@ -11,7 +11,7 @@ import {
 } from '../html/index.js'
 import { MountTracker } from '../mount/index.vibe'
 import { VNode, __patchVNode } from '../vdom.js'
-import { Dispatch } from './dispatch.js'
+import { Dispatch } from './dispatch.vibe'
 import { applyDocumentMetadata } from './documentMetadata.js'
 
 /** Context provided to crash.view and crash.report when the runtime encounters

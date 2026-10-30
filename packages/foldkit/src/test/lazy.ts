@@ -14,7 +14,7 @@ import {
   observeLazyResolutions,
 } from '../html/lazy.js'
 import { MountTracker } from '../mount/index.vibe'
-import { Dispatch } from '../runtime/dispatch.js'
+import { Dispatch } from '../runtime/dispatch.vibe'
 
 type LazyMiss = Readonly<{
   slotId: number

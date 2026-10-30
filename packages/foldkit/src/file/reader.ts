@@ -1,6 +1,6 @@
 import { Effect } from 'effect'
 
-import { FileReadError } from './error.js'
+import { FileReadError } from './error.vibe'
 import type { File } from './file.vibe'
 
 type ReadMode = 'text' | 'dataUrl' | 'arrayBuffer'
