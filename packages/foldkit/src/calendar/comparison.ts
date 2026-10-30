@@ -1,6 +1,10 @@
-import { Order as EffectOrder, type Equivalence as Equivalence_, Function as Fn } from "effect"
+import {
+  Order as EffectOrder,
+  type Equivalence as Equivalence_,
+  Function,
+} from 'effect'
 
-import type { CalendarDate } from "./calendarDate.ts"
+import type { CalendarDate } from './calendarDate.js'
 
 /**
  * Total ordering over calendar dates. Uses lexicographic comparison on
@@ -47,7 +51,9 @@ export const Equivalence: Equivalence_.Equivalence<CalendarDate> = (a, b) =>
 export const isEqual: {
   (that: CalendarDate): (self: CalendarDate) => boolean
   (self: CalendarDate, that: CalendarDate): boolean
-} = Fn.dual(2, (self: CalendarDate, that: CalendarDate): boolean => Equivalence(self, that))
+} = Function.dual(2, (self: CalendarDate, that: CalendarDate): boolean =>
+  Equivalence(self, that),
+)
 
 /**
  * Returns `true` when `self` is strictly before `that`.
@@ -64,7 +70,7 @@ export const isEqual: {
 export const isBefore: {
   (that: CalendarDate): (self: CalendarDate) => boolean
   (self: CalendarDate, that: CalendarDate): boolean
-} = Fn.dual(
+} = Function.dual(
   2,
   (self: CalendarDate, that: CalendarDate): boolean => Order(self, that) < 0,
 )
@@ -75,7 +81,7 @@ export const isBefore: {
 export const isAfter: {
   (that: CalendarDate): (self: CalendarDate) => boolean
   (self: CalendarDate, that: CalendarDate): boolean
-} = Fn.dual(
+} = Function.dual(
   2,
   (self: CalendarDate, that: CalendarDate): boolean => Order(self, that) > 0,
 )
@@ -86,7 +92,7 @@ export const isAfter: {
 export const isBeforeOrEqual: {
   (that: CalendarDate): (self: CalendarDate) => boolean
   (self: CalendarDate, that: CalendarDate): boolean
-} = Fn.dual(
+} = Function.dual(
   2,
   (self: CalendarDate, that: CalendarDate): boolean => Order(self, that) <= 0,
 )
@@ -97,7 +103,7 @@ export const isBeforeOrEqual: {
 export const isAfterOrEqual: {
   (that: CalendarDate): (self: CalendarDate) => boolean
   (self: CalendarDate, that: CalendarDate): boolean
-} = Fn.dual(
+} = Function.dual(
   2,
   (self: CalendarDate, that: CalendarDate): boolean => Order(self, that) >= 0,
 )
@@ -120,7 +126,9 @@ export const isAfterOrEqual: {
 export const min: {
   (that: CalendarDate): (self: CalendarDate) => CalendarDate
   (self: CalendarDate, that: CalendarDate): CalendarDate
-} = Fn.dual(2, (self: CalendarDate, that: CalendarDate): CalendarDate => Order(self, that) <= 0 ? self : that)
+} = Function.dual(2, (self: CalendarDate, that: CalendarDate): CalendarDate =>
+  Order(self, that) <= 0 ? self : that,
+)
 
 /**
  * Returns the later of two calendar dates.
@@ -128,7 +136,9 @@ export const min: {
 export const max: {
   (that: CalendarDate): (self: CalendarDate) => CalendarDate
   (self: CalendarDate, that: CalendarDate): CalendarDate
-} = Fn.dual(2, (self: CalendarDate, that: CalendarDate): CalendarDate => Order(self, that) >= 0 ? self : that)
+} = Function.dual(2, (self: CalendarDate, that: CalendarDate): CalendarDate =>
+  Order(self, that) >= 0 ? self : that,
+)
 
 /**
  * Returns `true` when `self` is within the inclusive range `[minimum, maximum]`.
@@ -154,25 +164,26 @@ export const max: {
  */
 export const between: {
   (options: {
-    minimum: CalendarDate
-    maximum: CalendarDate
+    readonly minimum: CalendarDate
+    readonly maximum: CalendarDate
   }): (self: CalendarDate) => boolean
   (
     self: CalendarDate,
     options: {
-      minimum: CalendarDate
-      maximum: CalendarDate
+      readonly minimum: CalendarDate
+      readonly maximum: CalendarDate
     },
   ): boolean
-} = Fn.dual(
+} = Function.dual(
   2,
   (
     self: CalendarDate,
     options: {
-      minimum: CalendarDate
-      maximum: CalendarDate
+      readonly minimum: CalendarDate
+      readonly maximum: CalendarDate
     },
-  ): boolean => Order(self, options.minimum) >= 0 && Order(self, options.maximum) <= 0,
+  ): boolean =>
+    Order(self, options.minimum) >= 0 && Order(self, options.maximum) <= 0,
 )
 
 /**
@@ -193,23 +204,23 @@ export const between: {
  */
 export const clamp: {
   (options: {
-    minimum: CalendarDate
-    maximum: CalendarDate
+    readonly minimum: CalendarDate
+    readonly maximum: CalendarDate
   }): (self: CalendarDate) => CalendarDate
   (
     self: CalendarDate,
     options: {
-      minimum: CalendarDate
-      maximum: CalendarDate
+      readonly minimum: CalendarDate
+      readonly maximum: CalendarDate
     },
   ): CalendarDate
-} = Fn.dual(
+} = Function.dual(
   2,
   (
     self: CalendarDate,
     options: {
-      minimum: CalendarDate
-      maximum: CalendarDate
+      readonly minimum: CalendarDate
+      readonly maximum: CalendarDate
     },
   ): CalendarDate => {
     if (Order(self, options.minimum) < 0) {

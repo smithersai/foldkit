@@ -34,7 +34,7 @@ export {
   max,
   min,
   Order,
-} from './comparison.vibe'
+} from './comparison.js'
 
 export {
   DayOfWeek,

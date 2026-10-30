@@ -14,7 +14,7 @@ import {
   isEqual,
   max,
   min,
-} from './comparison.vibe'
+} from './comparison.js'
 
 describe('isEqual', () => {
   it('returns true for identical dates', () => {
