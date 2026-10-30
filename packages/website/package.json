@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "pretypecheck": "node ../../internal/api-reference-generator/generate.mjs",
     "typecheck": "tsc --noEmit",
-    "format": "oxfmt",
+    "format": "(oxfmt) && vibelang-format --write",
     "test": "vitest run",
     "openapi": "vite build --config vite.scripts.config.ts --ssr scripts/openApi.ts --outDir dist-scripts && node dist-scripts/openApi.js",
     "test:e2e": "playwright test",
@@ -54,6 +54,8 @@
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "^8.3.1",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.11",
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11.tgz",
+    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11.tgz"
   }
 }

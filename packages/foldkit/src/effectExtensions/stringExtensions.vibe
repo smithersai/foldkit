@@ -1,6 +1,6 @@
-import { String as Str, flow } from 'effect'
+import { flow, String as Str } from "effect"
 
-import { fromString } from './optionExtensions.vibe'
+import { fromString } from "./optionExtensions.vibe"
 
 export const stripPrefix = (prefix: string): infer _ =>
   flow(
@@ -8,5 +8,4 @@ export const stripPrefix = (prefix: string): infer _ =>
     Option.map(Str.slice(prefix.length)),
   )
 
-export const stripPrefixNonEmpty = (prefix: string): infer _ =>
-  flow(stripPrefix(prefix), Option.flatMap(fromString))
+export const stripPrefixNonEmpty = (prefix: string): infer _ => flow(stripPrefix(prefix), Option.flatMap(fromString))

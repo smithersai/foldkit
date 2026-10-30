@@ -7,8 +7,11 @@
     "build": "vite build",
     "preview": "vite preview --outDir dist/client",
     "typecheck": "tsc --noEmit",
-    "format": "oxfmt",
+    "format": "(oxfmt) && vibelang-format --write",
     "test": "vitest run",
-    "lint": "oxlint src && effect-tsgo patch --no-typescript --oxlint && oxlint --config .oxlintrc.effect.json --deny-warnings src"
+    "lint": "(oxlint src && effect-tsgo patch --no-typescript --oxlint && oxlint --config .oxlintrc.effect.json --deny-warnings src) && eslint --config ../../../../../.vibelang/eslint.config.mjs \"**/*.vibe\" --no-error-on-unmatched-pattern"
+  },
+  "devDependencies": {
+    "vibelang": "file:../../../../../.vibelang-toolchain/vibelang-0.0.11.tgz"
   }
 }

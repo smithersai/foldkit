@@ -1,3 +1,4 @@
+import vibelang from 'vibelang-vite'
 import { defineConfig } from 'vite'
 
 import { foldkit } from '@foldkit/vite-plugin'
@@ -7,6 +8,7 @@ import { foldkitAliases } from '../vite.aliases'
 
 export default defineConfig({
   plugins: [
+    vibelang(),
     tailwindcss(),
     foldkit({
       devToolsMcpPort: 9993,

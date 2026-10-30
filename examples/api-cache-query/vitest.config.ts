@@ -1,8 +1,10 @@
+import vibelang from 'vibelang-vite'
 import { defineConfig } from 'vitest/config'
 
 import { foldkitAliases } from '../vite.aliases'
 
 export default defineConfig({
+  plugins: [vibelang()],
   resolve: {
     alias: foldkitAliases(__dirname),
   },

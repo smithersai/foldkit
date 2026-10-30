@@ -1,6 +1,5 @@
-
 export service DialogRuntime {
-  static readonly key = '@foldkit/DialogRuntime'
+  static readonly key = "@foldkit/DialogRuntime"
   register: (id: string) => void
   unregister: (id: string) => void
 }

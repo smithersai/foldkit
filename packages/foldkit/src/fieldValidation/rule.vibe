@@ -1,4 +1,4 @@
-import { Array as Arr, Number as Num, String as Str, flow } from 'effect'
+import { Array as Arr, flow, Number as Num, String as Str } from "effect"
 
 // RULES + MESSAGES
 
@@ -10,7 +10,7 @@ export type Rule<A> = readonly [Predicate<A>, RuleMessage<A>]
 
 /** Resolves a `RuleMessage` to a concrete string, applying it to the value when the message is a function. */
 export const resolveMessage = <A>(message: RuleMessage<A>, value: A): string =>
-  typeof message === 'string' ? message : message(value)
+  typeof message === "string" ? message : message(value)
 
 // STRING RULES
 
@@ -35,14 +35,14 @@ export const maxLength = (
 /** Creates a `Rule` that checks if a string matches a regular expression. */
 export const pattern = (
   regex: RegExp,
-  message: RuleMessage<string> = 'Invalid format',
+  message: RuleMessage<string> = "Invalid format",
 ): Rule<string> => [flow(Str.match(regex), Option.isSome), message]
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 /** Creates a `Rule` that checks if a string is a valid email format. */
 export const email = (
-  message: RuleMessage<string> = 'Invalid email address',
+  message: RuleMessage<string> = "Invalid email address",
 ): Rule<string> => pattern(EMAIL_REGEX, message)
 
 const STRICT_URL_REGEX = /^https?:\/\/.+/
@@ -58,7 +58,7 @@ export const url = (
     requireProtocol?: boolean
   }> = {},
 ): Rule<string> => {
-  const { message = 'Invalid URL', requireProtocol = true } = options
+  const { message = "Invalid URL", requireProtocol = true } = options
   return pattern(
     requireProtocol ? STRICT_URL_REGEX : PERMISSIVE_URL_REGEX,
     message,
@@ -106,7 +106,7 @@ export const oneOf = (
   values: ReadonlyArray<string>,
   message?: RuleMessage<string>,
 ): Rule<string> => {
-  const joinedValues = Arr.join(values, ', ')
+  const joinedValues = Arr.join(values, ", ")
   return [
     value => Arr.contains(values, value),
     message ?? `Must be one of: ${joinedValues}`,

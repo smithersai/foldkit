@@ -1,3 +1,4 @@
+import vibelang from 'vibelang-vite'
 import { defineConfig } from 'vite'
 
 import { markdown } from '@foldkit/markdown/vite'
@@ -9,6 +10,7 @@ import { islandAttributes } from './src/island/islandAttributes'
 
 export default defineConfig({
   plugins: [
+    vibelang(),
     tailwindcss(),
     foldkit({ devToolsMcpPort: 9988 }),
     markdown({ islands: islandAttributes }),

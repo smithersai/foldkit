@@ -1,4 +1,4 @@
-import { Function as Fn } from 'effect'
+import { Function as Fn } from "effect"
 
 /** Effect service tag that observes Mount lifecycle events. The runtime
  *  provides an implementation that buffers events for DevTools history;
@@ -7,7 +7,7 @@ import { Function as Fn } from 'effect'
  *  Test renderers do not provide this service, since snabbdom hooks never
  *  fire in their VNode-only environment. */
 export service MountTracker {
-  static readonly key = '@foldkit/MountTracker'
+  static readonly key = "@foldkit/MountTracker"
   started: (name: string, args?: Record<string, unknown>) => void
   ended: (name: string, args?: Record<string, unknown>) => void
 }
@@ -15,19 +15,19 @@ export service MountTracker {
 /** The state of the DOM currently owned by the Foldkit renderer. `Live` means
  *  it represents the current live Model. `Paused` means time travel has
  *  installed a historical view while the live application continues running. */
-export schema ViewState = 'Live' | 'Paused'
+export schema ViewState = "Live" | "Paused"
 
 /** @internal Runtime state used by `OnMount` to supply
  *  `viewStateChanges`. */
 export service MountRuntime {
-  static readonly key = '@foldkit/MountRuntime'
+  static readonly key = "@foldkit/MountRuntime"
   captureViewStateChanges: () => Stream<ViewState>
 }
 
 /** Type-level brand for MountDefinition values. */
 /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
 export const MountDefinitionTypeId: unique symbol = Symbol.for(
-  'foldkit/MountDefinition',
+  "foldkit/MountDefinition",
 ) as unknown as MountDefinitionTypeId
 
 /** Type-level brand for MountDefinition values. */
@@ -100,13 +100,12 @@ export type MountDefinition<
 /** @internal Rejects an args field named `element`. `execute` receives the live
  *  element under that name, so an arg of the same name would shadow it. The
  *  literal is the type error a colliding declaration produces. */
-type ElementFieldIsReserved =
-  'Mount args cannot declare `element`: execute already receives the live element'
+type ElementFieldIsReserved = "Mount args cannot declare `element`: execute already receives the live element"
 
 /** @internal Rejects an args field named `viewStateChanges`. `execute`
  *  receives the runtime-owned Stream under that name. */
 type ViewStateChangesFieldIsReserved =
-  'Mount args cannot declare `viewStateChanges`: execute already receives the view-state Stream'
+  "Mount args cannot declare `viewStateChanges`: execute already receives the view-state Stream"
 
 /** @internal Fields the runtime supplies to every Mount execution. */
 type ExecuteRuntimeInput = Readonly<{
@@ -133,7 +132,7 @@ type DefineConfig = Readonly<{
  *  {@link MountDefinitionTypeId} brand, so `Scene` matchers and the runtime
  *  recognise it. Internal to the Mount module. */
 const brandAsDefinition = (definition: unknown, name: string): void => {
-  Object.defineProperty(definition, 'name', {
+  Object.defineProperty(definition, "name", {
     value: name,
     configurable: true,
   })
@@ -147,26 +146,25 @@ const brandAsDefinition = (definition: unknown, name: string): void => {
  *  low-level MountAction wrappers can pass it as the required second argument
  *  to `MountAction.f` when the rendered view is always live. */
 export const liveViewStateChanges: Stream<ViewState> = Stream.concat(
-  Stream.make(ViewState.make('Live')),
+  Stream.make(ViewState.make("Live")),
   Stream.never,
 )
 
-const wrapEffectAsStream =
-  <Message>(
-    toEffect: (
-      element: Element,
-      viewStateChanges: Stream<ViewState>,
-    ) => Message!!Scope,
-  ): infer _ =>
-  (
+const wrapEffectAsStream = <Message>(
+  toEffect: (
     element: Element,
     viewStateChanges: Stream<ViewState>,
-  ): Stream<Message> =>
-    Stream.callback<Message>(queue => {
-      const message = toEffect(element, viewStateChanges)
-      Queue.offerUnsafe(queue, message)
-      return Effect.never()
-    })
+  ) => Message!!Scope,
+): infer _ =>
+(
+  element: Element,
+  viewStateChanges: Stream<ViewState>,
+): Stream<Message> =>
+  Stream.callback<Message>(queue => {
+    const message = toEffect(element, viewStateChanges)
+    Queue.offerUnsafe(queue, message)
+    return Effect.never()
+  })
 
 /**
  * Defines a one-shot Mount. Every input is a named field: `args` declares the
@@ -349,18 +347,14 @@ export function define(name: string, config: DefineConfig): unknown {
     const definition = (args: any): infer _ => ({
       name,
       args,
-      f: wrapEffectAsStream((element, viewStateChanges) =>
-        executable.execute({ ...args, element, viewStateChanges }),
-      ),
+      f: wrapEffectAsStream((element, viewStateChanges) => executable.execute({ ...args, element, viewStateChanges })),
     })
     brandAsDefinition(definition, name)
     return definition
   } else {
     const definition = (): infer _ => ({
       name,
-      f: wrapEffectAsStream((element, viewStateChanges) =>
-        executable.execute({ element, viewStateChanges }),
-      ),
+      f: wrapEffectAsStream((element, viewStateChanges) => executable.execute({ element, viewStateChanges })),
     })
     brandAsDefinition(definition, name)
     return definition
@@ -563,7 +557,6 @@ export const mapMessage: {
     f: (message: A) => B,
   ): MountAction<B, E> => ({
     ...action,
-    f: (element: Element, viewStateChanges: Stream<ViewState>) =>
-      action.f(element, viewStateChanges).map(f),
+    f: (element: Element, viewStateChanges: Stream<ViewState>) => action.f(element, viewStateChanges).map(f),
   }),
 )

@@ -13,7 +13,7 @@
   "scripts": {
     "clean": "rimraf dist *.tsbuildinfo",
     "build": "pnpm run clean && tsc -b tsconfig.build.json && node scripts/build-templates.mjs",
-    "format": "oxfmt",
+    "format": "(oxfmt) && vibelang-format --write",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
@@ -28,7 +28,8 @@
   "devDependencies": {
     "@effect/vitest": "4.1.0",
     "@types/node": "26.4.0",
-    "vitest": "^5.0.2"
+    "vitest": "^5.0.2",
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11.tgz"
   },
   "keywords": [
     "create-foldkit-app",

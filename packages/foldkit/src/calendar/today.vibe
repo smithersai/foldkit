@@ -1,8 +1,4 @@
-
-import {
-  fromDateInZone,
-  fromDateLocal,
-} from './calendarDate.vibe'
+import { fromDateInZone, fromDateLocal } from "./calendarDate.vibe"
 
 /**
  * Effect-based accessors for the current calendar date. Uses Effect's `Clock`
@@ -52,6 +48,5 @@ export const today: {
    * The current calendar date in a specific IANA timezone
    * (e.g. `"America/New_York"`, `"Europe/London"`, `"Asia/Tokyo"`).
    */
-  inZone: (timeZone: string) =>
-    fromDateInZone(new Date(Clock.currentTimeMillis()), timeZone),
+  inZone: (timeZone: string) => fromDateInZone(new Date(Clock.currentTimeMillis()), timeZone),
 }

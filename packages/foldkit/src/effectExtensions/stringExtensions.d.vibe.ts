@@ -1,0 +1,3 @@
+import { Option } from "effect";
+export declare const stripPrefix: (prefix: string) => (b: string) => Option.Option<string>;
+export declare const stripPrefixNonEmpty: (prefix: string) => (b: string) => Option.Option<string>;
