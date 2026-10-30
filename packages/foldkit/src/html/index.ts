@@ -26,12 +26,12 @@ import {
 } from '../domReflection.js'
 import type { File } from '../file/index.js'
 import { isImeCompositionKeydown } from '../imeComposition.js'
-import type { MountAction } from '../mount/index.js'
+import type { MountAction } from '../mount/index.vibe'
 import {
   MountRuntime,
   MountTracker,
   liveViewStateChanges,
-} from '../mount/index.js'
+} from '../mount/index.vibe'
 import {
   attachOnUnmount,
   beginReplayUnmountRender,
@@ -54,7 +54,7 @@ import {
 } from '../snabbdom/index.js'
 import { tagNameFromSelector } from '../tagName.js'
 import { VNode } from '../vdom.js'
-import { type ChildAttribute, isChildAttribute } from './childAttribute.js'
+import { type ChildAttribute, isChildAttribute } from './childAttribute.vibe'
 import {
   checkScheduledLeave,
   clearDragZoneAfterDrop,
@@ -87,8 +87,8 @@ export {
   createBoundaryRegistry as __createBoundaryRegistry,
 } from './boundary.js'
 export type { BoundaryRegistry } from './boundary.js'
-export { childAttributes } from './childAttribute.js'
-export type { ChildAttribute } from './childAttribute.js'
+export { childAttributes } from './childAttribute.vibe'
+export type { ChildAttribute } from './childAttribute.vibe'
 export { defineView } from './submodel.js'
 export type {
   AnySubmodelView,

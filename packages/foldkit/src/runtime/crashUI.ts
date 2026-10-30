@@ -9,7 +9,7 @@ import {
   inertHtml as ih,
   __setRuntime as setHtmlRuntime,
 } from '../html/index.js'
-import { MountTracker } from '../mount/index.js'
+import { MountTracker } from '../mount/index.vibe'
 import { VNode, __patchVNode } from '../vdom.js'
 import { Dispatch } from './dispatch.js'
 import { applyDocumentMetadata } from './documentMetadata.js'

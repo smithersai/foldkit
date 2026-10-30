@@ -4,7 +4,10 @@ import { expect, vi } from 'vitest'
 import { describe, it } from '@effect/vitest'
 
 import { beginRender, createBoundaryRegistry } from '../html/boundary.js'
-import { type ChildAttribute, childAttributes } from '../html/childAttribute.js'
+import {
+  type ChildAttribute,
+  childAttributes,
+} from '../html/childAttribute.vibe'
 import {
   type Html,
   __htmlBuilder,
@@ -13,7 +16,7 @@ import {
 } from '../html/index.js'
 import { defineView, submodel as submodelImpl } from '../html/submodel.js'
 import { defineMessageUnion } from '../message/index.js'
-import { MountTracker } from '../mount/index.js'
+import { MountTracker } from '../mount/index.vibe'
 import { propsModule } from '../propsModule.js'
 import { Dispatch } from '../runtime/index.js'
 import {

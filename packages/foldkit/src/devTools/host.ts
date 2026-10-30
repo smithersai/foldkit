@@ -17,4 +17,4 @@ export {
   GOT_MESSAGE_PATTERN,
   extractSubmodelInfo,
   isTagged,
-} from './submodelPath.js'
+} from './submodelPath.vibe'

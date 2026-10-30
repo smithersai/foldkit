@@ -32,8 +32,8 @@ import type {
   KeyboardModifiers,
 } from '../html/index.js'
 import type { Entry as ManagedResourceEntry } from '../managedResource/index.js'
-import { MountTracker } from '../mount/index.js'
-import type { MountDefinition } from '../mount/index.js'
+import { MountTracker } from '../mount/index.vibe'
+import type { MountDefinition } from '../mount/index.vibe'
 import { Dispatch } from '../runtime/dispatch.js'
 import { tagNameFromSelector } from '../tagName.js'
 import type { VNode } from '../vdom.js'

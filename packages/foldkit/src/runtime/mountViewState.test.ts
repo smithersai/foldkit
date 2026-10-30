@@ -24,7 +24,7 @@ import {
   defineView,
 } from '../html/index.js'
 import { defineMessageUnion } from '../message/index.js'
-import * as Mount from '../mount/index.js'
+import * as Mount from '../mount/index.vibe'
 import { modifyFields } from '../struct/index.js'
 import * as Subscription from '../subscription/subscription.js'
 import type * as Update from '../update/index.js'

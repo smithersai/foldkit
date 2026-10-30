@@ -67,4 +67,4 @@ export type {
   ViewTransitionDecision,
 } from './viewTransition.js'
 
-export type { Visibility } from './visibility.js'
+export type { Visibility } from './visibility.vibe'

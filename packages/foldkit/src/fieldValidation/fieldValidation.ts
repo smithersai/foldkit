@@ -1,6 +1,6 @@
 import { Array, Function, Option, Result, Schema, String, pipe } from 'effect'
 
-import { type Rule, type RuleMessage, resolveMessage } from './rule.js'
+import { type Rule, type RuleMessage, resolveMessage } from './rule.vibe'
 
 // STATE
 

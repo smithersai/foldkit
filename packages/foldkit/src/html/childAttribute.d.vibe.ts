@@ -1,19 +1,5 @@
-import { Predicate } from 'effect'
-
-import {
-  type DispatchSync,
-  type MountDispatchResolver,
-  requireBoundaryMappers,
-  requireDispatch,
-  requireMountDispatchResolver,
-  requireUnmountResolver,
-} from './runtimeSingleton.js'
-
-const BRAND = '__childAttribute'
-
-const isOnMountAttribute = (attribute: unknown): boolean =>
-  Predicate.isTagged(attribute, 'OnMount')
-
+import { type DispatchSync, type MountDispatchResolver } from "./runtimeSingleton.js";
+declare const BRAND = "__childAttribute";
 /** An attribute carrying a handler that dispatches through a Submodel
  *  boundary's wrapping chain. Published by Submodels (typically Foldkit's
  *  `Ui.*` components) for a parent to spread into its own element
@@ -33,17 +19,14 @@ const isOnMountAttribute = (attribute: unknown): boolean =>
  *  `ChildAttribute` alongside `Attribute<Message>` in their attribute
  *  arrays. */
 export type ChildAttribute = Readonly<{
-  readonly [BRAND]: true
-  readonly attribute: unknown
-  readonly dispatch: DispatchSync
-  readonly resolveUnmount: (message: unknown) => () => void
-  readonly boundaryMappers: ReadonlyArray<(message: unknown) => unknown>
-  readonly resolveMountDispatch?: MountDispatchResolver
-}>
-
-export const isChildAttribute = (value: unknown): value is ChildAttribute =>
-  typeof value === 'object' && value !== null && BRAND in value
-
+    readonly [BRAND]: true;
+    readonly attribute: unknown;
+    readonly dispatch: DispatchSync;
+    readonly resolveUnmount: (message: unknown) => () => void;
+    readonly boundaryMappers: ReadonlyArray<(message: unknown) => unknown>;
+    readonly resolveMountDispatch?: MountDispatchResolver;
+}>;
+export declare const isChildAttribute: (value: unknown) => value is ChildAttribute;
 /** Captures the current boundary's dispatcher and wraps each attribute
  *  so handlers inside it route through that boundary's wrapping chain at
  *  event-fire time, even when the attribute is later spread into a
@@ -67,21 +50,5 @@ export const isChildAttribute = (value: unknown): value is ChildAttribute =>
  *  process `h.OnClick(Toggled())` using the parent's dispatcher (because
  *  the consumer's `toView` runs in the parent's boundary), bypassing the
  *  Submodel's `toParentMessage`. */
-export const childAttributes = <Attribute>(
-  attributes: ReadonlyArray<Attribute>,
-): ReadonlyArray<ChildAttribute> => {
-  const dispatch = requireDispatch()
-  const resolveUnmount = requireUnmountResolver()
-  const boundaryMappers = requireBoundaryMappers()
-  const resolveMountDispatch = attributes.some(isOnMountAttribute)
-    ? requireMountDispatchResolver()
-    : undefined
-  return attributes.map(attribute => ({
-    [BRAND]: true,
-    attribute,
-    dispatch,
-    resolveUnmount,
-    boundaryMappers,
-    ...(resolveMountDispatch !== undefined && { resolveMountDispatch }),
-  }))
-}
+export declare const childAttributes: <Attribute>(attributes: ReadonlyArray<Attribute>) => ReadonlyArray<ChildAttribute>;
+export {};

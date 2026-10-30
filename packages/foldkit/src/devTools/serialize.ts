@@ -14,7 +14,7 @@ import type {
   SerializedMount,
 } from './protocol.js'
 import type { CommandRecord, HistoryEntry, MountRecord } from './store.js'
-import { extractSubmodelInfo } from './submodelPath.js'
+import { extractSubmodelInfo } from './submodelPath.vibe'
 
 const inspectableCache = new WeakMap<object, unknown>()
 

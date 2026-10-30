@@ -36,7 +36,7 @@ import {
   resolveMessage,
   startsWith,
   url,
-} from './rule.js'
+} from './rule.vibe'
 
 describe('state constructors', () => {
   it('build tagged instances for each state', () => {

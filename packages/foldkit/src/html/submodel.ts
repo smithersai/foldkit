@@ -9,7 +9,7 @@ import {
   registerBoundaryWrap,
   rollbackBoundaryWrapTransaction,
 } from './boundary.js'
-import { isChildAttribute } from './childAttribute.js'
+import { isChildAttribute } from './childAttribute.vibe'
 import type { HtmlBuilder } from './index.js'
 import {
   type DispatchSync,

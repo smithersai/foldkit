@@ -13,7 +13,7 @@ import {
   type LazyResolution,
   observeLazyResolutions,
 } from '../html/lazy.js'
-import { MountTracker } from '../mount/index.js'
+import { MountTracker } from '../mount/index.vibe'
 import { Dispatch } from '../runtime/dispatch.js'
 
 type LazyMiss = Readonly<{

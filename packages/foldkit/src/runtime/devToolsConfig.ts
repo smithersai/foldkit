@@ -1,7 +1,7 @@
 import { Effect, Option, Schema, Scope, pipe } from 'effect'
 
 import type { DevToolsStore } from '../devTools/store.js'
-import { type Visibility, isVisible } from './visibility.js'
+import { type Visibility, isVisible } from './visibility.vibe'
 
 /** Position of the DevTools badge and panel on screen. */
 export type DevToolsPosition =

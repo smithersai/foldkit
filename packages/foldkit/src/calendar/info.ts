@@ -1,7 +1,7 @@
 import { Function, Schema } from 'effect'
 
-import { addDays, subtractDays } from './arithmetic.js'
-import { type CalendarDate, daysInMonth, unsafeMake } from './calendarDate.js'
+import { addDays, subtractDays } from './arithmetic.vibe'
+import { type CalendarDate, daysInMonth, unsafeMake } from './calendarDate.vibe'
 
 /**
  * Schema for days of the week, Sunday through Saturday. Tagged union preferred

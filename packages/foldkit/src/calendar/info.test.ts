@@ -1,7 +1,7 @@
 import { pipe } from 'effect'
 import { describe, expect, it } from 'vitest'
 
-import { make } from './calendarDate.js'
+import { make } from './calendarDate.vibe'
 import {
   dayOfWeek,
   endOfWeek,

@@ -12,7 +12,7 @@ import {
   pipe,
 } from 'effect'
 
-import { DialogRuntime } from '../dom/dialogRuntime.js'
+import { DialogRuntime } from '../dom/dialogRuntime.vibe'
 import { releaseDialogResources } from '../dom/dom.js'
 import {
   Document,
@@ -21,7 +21,7 @@ import {
 } from '../html/index.js'
 import type { ManagedResources } from '../managedResource/index.js'
 import type { Ports } from '../port/index.js'
-import { RenderCommit, createCommitNotifier } from '../render/commit.js'
+import { RenderCommit, createCommitNotifier } from '../render/commit.vibe'
 import type { Subscriptions } from '../subscription/subscription.js'
 import type { Return as UpdateReturn } from '../update/index.js'
 import { Url, fromString as urlFromString } from '../url/index.js'
@@ -68,7 +68,7 @@ import {
   type ViewTransitionConfig,
   __resolveStartViewTransition,
 } from './viewTransition.js'
-import { type Visibility, isVisible } from './visibility.js'
+import { type Visibility, isVisible } from './visibility.vibe'
 
 type AnyCommand<T, E = never, R = never> = {
   readonly name: string

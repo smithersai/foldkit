@@ -14,8 +14,8 @@ import {
 } from '../html/index.js'
 import { __hydrateVNode } from '../hydrate.js'
 import { FOLDKIT_APP_ATTRIBUTE } from '../hydrationMarker.js'
-import { MountRuntime, MountTracker } from '../mount/index.js'
-import type { CommitNotifier } from '../render/commit.js'
+import { MountRuntime, MountTracker } from '../mount/index.vibe'
+import type { CommitNotifier } from '../render/commit.vibe'
 import {
   VNode,
   __patchVNode,

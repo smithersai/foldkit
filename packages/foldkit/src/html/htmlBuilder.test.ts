@@ -2,7 +2,7 @@ import { Context, Number, Schema } from 'effect'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { defineMessageUnion } from '../message/index.js'
-import { MountTracker } from '../mount/index.js'
+import { MountTracker } from '../mount/index.vibe'
 import { isClientOnlyProperty } from '../propertyProvenance.js'
 import { Dispatch, embed, makeElement } from '../runtime/index.js'
 import { modifyFields } from '../struct/index.js'
