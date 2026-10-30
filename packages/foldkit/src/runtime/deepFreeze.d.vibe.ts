@@ -1,5 +1,3 @@
-import { Array, Option, Predicate, Record } from 'effect'
-
 /**
  * Recursively `Object.freeze`s a Model so accidental mutations throw a
  * `TypeError` at the write site with a clear stack trace, instead of silently
@@ -21,41 +19,4 @@ import { Array, Option, Predicate, Record } from 'effect'
  * the cycle-safety bailout and ensures amortized cost is O(diff) per update
  * when combined with `modifyFields()` which preserves unchanged branches by reference.
  */
-export const deepFreeze = <T>(value: T): T => {
-  if (value === null || typeof value !== 'object') {
-    return value
-  }
-
-  if (Object.isFrozen(value)) {
-    return value
-  }
-
-  if (Array.isArray(value)) {
-    Object.freeze(value)
-    value.forEach(deepFreeze)
-    return value
-  }
-
-  if (Option.isOption(value)) {
-    if (Option.isSome(value)) {
-      deepFreeze(value.value)
-    }
-    return value
-  }
-
-  if (!isPlainObject(value)) {
-    return value
-  }
-
-  Object.freeze(value)
-  Record.values(value).forEach(deepFreeze)
-  return value
-}
-
-const isPlainObject = (value: unknown): value is Record<string, unknown> => {
-  if (!Predicate.isObject(value)) {
-    return false
-  }
-  const prototype = Object.getPrototypeOf(value)
-  return prototype === Object.prototype || prototype === null
-}
+export declare const deepFreeze: <T>(value: T) => T;

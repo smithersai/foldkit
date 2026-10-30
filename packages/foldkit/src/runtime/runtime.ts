@@ -30,7 +30,7 @@ import {
   addNavigationEventListeners,
 } from './browserListeners.js'
 import type { CrashConfig } from './crashUI.js'
-import { deepFreeze } from './deepFreeze.js'
+import { deepFreeze } from './deepFreeze.vibe'
 import type { DevToolsConfig } from './devToolsConfig.js'
 import { makeDevToolsIntegration } from './devToolsIntegration.js'
 import { createDuplicateIdScanner } from './duplicateIdScanner.js'

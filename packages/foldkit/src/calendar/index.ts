@@ -43,7 +43,7 @@ export {
   firstOfMonth,
   lastOfMonth,
   startOfWeek,
-} from './info.js'
+} from './info.vibe'
 
 export { today } from './today.vibe'
 

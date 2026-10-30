@@ -8,7 +8,7 @@ import {
   firstOfMonth,
   lastOfMonth,
   startOfWeek,
-} from './info.js'
+} from './info.vibe'
 
 describe('dayOfWeek', () => {
   it('returns the correct day for known reference dates', () => {
