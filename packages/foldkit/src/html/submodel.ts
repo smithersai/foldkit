@@ -1,4 +1,4 @@
-import { type VNode, memoizedVNodes } from '../vdom.js'
+import { type VNode, memoizedVNodes } from '../vdom.vibe'
 import {
   type BoundaryRegistry,
   type WrapDescriptor,

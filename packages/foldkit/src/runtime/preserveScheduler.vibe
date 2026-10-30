@@ -1,0 +1,76 @@
+import { type Duration, type Scope } from "effect"
+
+/**
+ * Defers a `preserve(model)` call so that bursts of dispatches do not pay the
+ * encoding cost on the hot path. `schedule` stashes the latest model and
+ * (re)starts a debounce timer; only one `onDebounce` runs per quiet window.
+ *
+ * `flush` runs `onFlush` with the latest pending model synchronously: it
+ * clears the pending slot atomically and invokes the callback, leaving any
+ * in-flight timer fiber to wake up, observe an empty pending slot, and exit
+ * as a no-op. Synchronous semantics let the runtime call this from
+ * `vite:beforeFullReload` via `Effect.runSync`, with no race against Vite's
+ * `location.reload()`. The two-callback split lets the flush path send
+ * `isReloadFlush: true` while debounced calls send `false`.
+ *
+ * `cancel` drops the pending model and interrupts the in-flight fiber.
+ * Forked fibers are tied to the construction scope via `forkIn`, so scope
+ * closure interrupts them too. `cancel` covers manual teardown.
+ */
+export type PreserveScheduler<Model> = Readonly<{
+  schedule: (model: Model) => void!!
+  flush: void!!
+  cancel: void!!
+}>
+
+export type PreserveSchedulerCallbacks<Model> = Readonly<{
+  onDebounce: (model: Model) => void!!
+  onFlush: (model: Model) => void!!
+}>
+
+export const makePreserveScheduler = effect <Model>(
+  callbacks: PreserveSchedulerCallbacks<Model>,
+  delay: Duration.Input,
+): PreserveScheduler<Model>!never!Scope.Scope => {
+  const scope = try Effect.scope
+  const pendingRef = try Ref.make<Option<Model>>(Option.none())
+  const fiberRef = try Ref.make<Option<Fiber<void>>>(Option.none())
+
+  const interruptPending = effect {
+    const maybeFiber = try Ref.get(fiberRef)
+    if (Option.isSome(maybeFiber)) {
+      try Fiber.interrupt(maybeFiber.value)
+    }
+    try Ref.set(fiberRef, Option.none())
+  }
+
+  const runPending = effect (callback: (model: Model) => void!!) => {
+    const maybePending = try Ref.getAndSet(pendingRef, Option.none())
+    if (Option.isSome(maybePending)) {
+      try callback(maybePending.value)
+    }
+  }
+
+  const debounce = effect () => {
+    try sleep(delay)
+    try runPending(callbacks.onDebounce)
+  }
+
+  const schedule = effect (model: Model): void!! => {
+    try Ref.set(pendingRef, Option.some(model))
+    try interruptPending
+    const fiber = try forkIn(scope, () => debounce())
+    try Ref.set(fiberRef, Option.some(fiber))
+  }
+
+  const flush = effect {
+    try runPending(callbacks.onFlush)
+  }
+
+  const cancel = effect {
+    try interruptPending
+    try Ref.set(pendingRef, Option.none())
+  }
+
+  return { schedule, flush, cancel }
+}

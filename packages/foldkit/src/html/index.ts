@@ -53,7 +53,7 @@ import {
   vnodeDataMaskKey,
 } from '../snabbdom/index.js'
 import { tagNameFromSelector } from '../tagName.js'
-import { VNode } from '../vdom.js'
+import { VNode } from '../vdom.vibe'
 import { type ChildAttribute, isChildAttribute } from './childAttribute.vibe'
 import {
   checkScheduledLeave,

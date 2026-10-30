@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 import {
   type PreserveSchedulerCallbacks,
   makePreserveScheduler,
-} from './preserveScheduler.js'
+} from './preserveScheduler.vibe'
 
 const setupRecorder = <Model>() =>
   Effect.gen(function* () {

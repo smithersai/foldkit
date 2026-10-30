@@ -36,7 +36,7 @@ import { MountTracker } from '../mount/index.vibe'
 import type { MountDefinition } from '../mount/index.vibe'
 import { Dispatch } from '../runtime/dispatch.vibe'
 import { tagNameFromSelector } from '../tagName.js'
-import type { VNode } from '../vdom.js'
+import type { VNode } from '../vdom.vibe'
 import type {
   AnyCommand,
   AnyCommandInstance,

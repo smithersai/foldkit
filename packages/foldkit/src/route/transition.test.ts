@@ -21,7 +21,7 @@ import {
   match,
   matchOrElse,
   stayed,
-} from './transition.js'
+} from './transition.vibe'
 
 const AppRoute = defineRouteUnion({
   Home: {},

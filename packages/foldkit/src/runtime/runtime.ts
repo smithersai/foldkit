@@ -48,7 +48,7 @@ import {
 import { forkManagedResourceFibers } from './managedResourceFibers.js'
 import { type MessageQueue, makeMessageQueue } from './messageQueue.js'
 import { preserveModel } from './modelPreservationBridge.js'
-import { makePreserveScheduler } from './preserveScheduler.js'
+import { makePreserveScheduler } from './preserveScheduler.vibe'
 import { type ResolvedViewTransition, makeRenderer } from './renderer.js'
 import { makeResourceProvider } from './resourceProvider.js'
 import { makeRuntimeStatus } from './runtimeStatus.js'
