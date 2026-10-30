@@ -2,7 +2,7 @@ import { Option, String } from 'effect'
 
 import { OptionExt, StringExt } from '../effectExtensions/index.js'
 import { UrlRequest } from '../navigation/urlRequest.js'
-import { Url } from '../url/index.js'
+import { Url } from '../url/index.vibe'
 
 /** Configuration for URL routing with handlers for URL requests and URL changes. */
 export type RoutingConfig<Message> = Readonly<{

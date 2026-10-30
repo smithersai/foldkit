@@ -3,7 +3,7 @@ import { expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import { Url } from '../url/index.js'
+import { Url } from '../url/index.vibe'
 import { defineRouteUnion } from './index.js'
 import {
   __isSingleSegment,

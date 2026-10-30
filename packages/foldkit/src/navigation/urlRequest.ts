@@ -1,7 +1,7 @@
 import { Schema } from 'effect'
 
 import { defineTaggedUnion } from '../schema/index.js'
-import { Url } from '../url/index.js'
+import { Url } from '../url/index.vibe'
 
 /** Union of `Internal` and `External` URL request types. */
 export const UrlRequest = defineTaggedUnion({
