@@ -1,17 +1,16 @@
 import { clsx } from 'clsx'
-import { Match } from 'effect'
 import { Submodel } from 'foldkit'
 import { Html, HtmlBuilder } from 'foldkit/html'
 
-import { Session } from '../../domain/session'
-import { notFoundView } from '../../notFoundView'
-import { dashboardRouter, settingsRouter } from '../../route'
-import { Message } from './message'
-import { Model } from './model'
-import * as Dashboard from './page/dashboard'
-import * as Settings from './page/settings'
+import { Session } from '../../domain/session.vibe'
+import { notFoundView } from '../../notFoundView.ts'
+import { dashboardRouter, settingsRouter } from '../../route.vibe'
+import { Message } from './message.ts'
+import { Model } from './model.ts'
+import * as Dashboard from './page/dashboard.ts'
+import * as Settings from './page/settings.ts'
 
-const navLinkClassName = (isActive: boolean) =>
+const navLinkClassName = (isActive: boolean): string =>
   clsx('hover:bg-blue-600 font-medium px-3 py-1 rounded transition', {
     'bg-blue-700 bg-opacity-50': isActive,
   })
@@ -72,16 +71,18 @@ export const view = Submodel.defineView<Model, Message>((model, h) =>
       h.main(
         [h.Class('py-8')],
         [
-          Match.value(model.route).pipe(
-            Match.tagsExhaustive({
-              Dashboard: () => Dashboard.view(model.session, h),
-              Settings: () => Settings.view(model.session, h),
-              NotFound: ({ path }) =>
-                notFoundView(path, dashboardRouter(), 'Go to Dashboard', h),
-            }),
-          ),
+          match (model.route) {
+            when { _tag: "Dashboard" }: Dashboard.view(model.session, h);
+            when { _tag: "Settings" }: Settings.view(model.session, h);
+            when { _tag: "NotFound", let path }: notFoundView(
+              path,
+              dashboardRouter(),
+              'Go to Dashboard',
+              h,
+            );
+          },
         ],
       ),
     ],
-  ),
+  )
 )

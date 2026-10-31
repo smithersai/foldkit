@@ -1,7 +1,7 @@
 import { Effect, Exit } from 'effect'
 import { expect, test } from 'vitest'
 
-import { FLAKY_POST_ID, fetchPostDetail } from './data'
+import { FLAKY_POST_ID, fetchPostDetail } from './data.vibe'
 
 test('a regular post resolves with its detail', async () => {
   const detail = await Effect.runPromise(fetchPostDetail('model-is-the-cache'))

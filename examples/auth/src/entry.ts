@@ -1,10 +1,10 @@
 import { Runtime } from 'foldkit'
 
-import { Flags, flags, init } from './main'
-import { Message } from './message'
-import { Model } from './model'
-import { update } from './update'
-import { view } from './view'
+import { Flags, flags, init } from './main.ts'
+import { Message } from './message.vibe'
+import { Model } from './model.vibe'
+import { update } from './update.vibe'
+import { view } from './view.vibe'
 
 const application = Runtime.makeApplication({
   Model,

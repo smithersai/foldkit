@@ -1,78 +1,100 @@
-import { Effect, Match, Option, Schema } from 'effect'
 import { Command, Update } from 'foldkit'
 import { UrlRequest, load, pushUrl, replaceUrl } from 'foldkit/navigation'
 import { modifyFields } from 'foldkit/struct'
 import { toString as urlToString } from 'foldkit/url'
 
-import { ClearSession, LogError, SaveSession } from './command'
-import { Message } from './message'
-import { LoggedIn, LoggedOut, Model } from './model'
+import { ClearSession, LogError, SaveSession } from './command.vibe'
+import { Message } from './message.vibe'
+import { LoggedIn, LoggedOut, Model } from './model.vibe'
 import {
   AppRoute,
   dashboardRouter,
   homeRouter,
   loginRouter,
   urlToAppRoute,
-} from './route'
+} from './route.vibe'
 
 const NavigateInternal = Command.define('NavigateInternal', {
   args: { url: Schema.String },
   messages: [Message.CompletedNavigateInternal],
-  execute: ({ url }) =>
-    pushUrl(url).pipe(Effect.as(Message.CompletedNavigateInternal())),
+  execute: (
+    { url },
+  ): ReturnType<typeof Message.CompletedNavigateInternal>!! => {
+    const target = url
+    const completed = Message.CompletedNavigateInternal()
+    return effect {
+      try pushUrl(target)
+      return completed
+    }
+  },
 })
 
 const LoadExternal = Command.define('LoadExternal', {
   args: { href: Schema.String },
   messages: [Message.CompletedLoadExternal],
-  execute: ({ href }) =>
-    load(href).pipe(Effect.as(Message.CompletedLoadExternal())),
+  execute: ({ href }): ReturnType<typeof Message.CompletedLoadExternal>!! => {
+    const target = href
+    const completed = Message.CompletedLoadExternal()
+    return effect {
+      try load(target)
+      return completed
+    }
+  },
 })
 
 export const RedirectToLogin = Command.define('RedirectToLogin', {
   messages: [Message.CompletedNavigateInternal],
-  execute: replaceUrl(loginRouter()).pipe(
-    Effect.as(Message.CompletedNavigateInternal()),
-  ),
+  execute: do {
+    const target = loginRouter()
+    const completed = Message.CompletedNavigateInternal()
+    effect {
+      try replaceUrl(target)
+      return completed
+    }
+  },
 })
 
 export const RedirectToDashboard = Command.define('RedirectToDashboard', {
   messages: [Message.CompletedNavigateInternal],
-  execute: replaceUrl(dashboardRouter()).pipe(
-    Effect.as(Message.CompletedNavigateInternal()),
-  ),
+  execute: do {
+    const target = dashboardRouter()
+    const completed = Message.CompletedNavigateInternal()
+    effect {
+      try replaceUrl(target)
+      return completed
+    }
+  },
 })
 
 const RedirectToHome = Command.define('RedirectToHome', {
   messages: [Message.CompletedNavigateInternal],
-  execute: replaceUrl(homeRouter()).pipe(
-    Effect.as(Message.CompletedNavigateInternal()),
-  ),
+  execute: do {
+    const target = homeRouter()
+    const completed = Message.CompletedNavigateInternal()
+    effect {
+      try replaceUrl(target)
+      return completed
+    }
+  },
 })
 
 type UpdateReturn = Update.Return<Model, Message>
-const withUpdateReturn = Match.withReturnType<UpdateReturn>()
 
 const foldLoggedOutOutMessage = LoggedOut.OutMessage.match<
   Update.Step<Model, Message>
 >({
-  SucceededLogin:
-    ({ session }) =>
-    () => ({
-      model: LoggedIn.init(AppRoute.Dashboard(), session),
-      commands: [SaveSession({ session }), RedirectToDashboard()],
-    }),
+  SucceededLogin: ({ session }) => () => ({
+    model: LoggedIn.init(AppRoute.Dashboard(), session),
+    commands: [SaveSession({ session }), RedirectToDashboard()],
+  }),
 })
 
 const foldLoggedOut = Update.foldChild({
   update: LoggedOut.update,
-  read: (model: Model) =>
-    Match.value(model).pipe(
-      Match.tagsExhaustive({
-        LoggedOut: loggedOutModel => Option.some(loggedOutModel),
-        LoggedIn: () => Option.none(),
-      }),
-    ),
+  read: (model: Model) => match (model) {
+    when { _tag: 'LoggedOut' } and let child: Option.some(child);
+    when { _tag: 'LoggedIn' }: Option.none();
+  },
   write: (_model, nextLoggedOut) => nextLoggedOut,
   toParentMessage: message => Message.GotLoggedOutMessage({ message }),
   foldOutMessage: foldLoggedOutOutMessage,
@@ -89,19 +111,16 @@ const foldLoggedInOutMessage = LoggedIn.OutMessage.match<
 
 const foldLoggedIn = Update.foldChild({
   update: LoggedIn.update,
-  read: (model: Model) =>
-    Match.value(model).pipe(
-      Match.tagsExhaustive({
-        LoggedOut: () => Option.none(),
-        LoggedIn: loggedInModel => Option.some(loggedInModel),
-      }),
-    ),
+  read: (model: Model) => match (model) {
+    when { _tag: 'LoggedOut' }: Option.none();
+    when { _tag: 'LoggedIn' } and let child: Option.some(child);
+  },
   write: (_model, nextLoggedIn) => nextLoggedIn,
   toParentMessage: message => Message.GotLoggedInMessage({ message }),
   foldOutMessage: foldLoggedInOutMessage,
 })
 
-export const update = (model: Model, message: Message) =>
+export const update = (model: Model, message: Message): infer _ =>
   Message.match<UpdateReturn>(message, {
     ClickedLink: ({ request }) =>
       UrlRequest.match<UpdateReturn>(request, {
@@ -118,31 +137,26 @@ export const update = (model: Model, message: Message) =>
     ChangedUrl: ({ url }) => {
       const route = urlToAppRoute(url)
 
-      return Match.value(model).pipe(
-        withUpdateReturn,
-        Match.tagsExhaustive({
-          LoggedOut: loggedOutModel =>
-            Match.value(route).pipe(
-              withUpdateReturn,
-              Match.tag('Home', 'Login', 'NotFound', route => ({
-                model: modifyFields(loggedOutModel, { route: () => route }),
-              })),
-              Match.orElse(() => ({ model, commands: [RedirectToLogin()] })),
-            ),
-
-          LoggedIn: loggedInModel =>
-            Match.value(route).pipe(
-              withUpdateReturn,
-              Match.tag('Dashboard', 'Settings', 'NotFound', route => ({
-                model: modifyFields(loggedInModel, { route: () => route }),
-              })),
-              Match.orElse(() => ({
-                model,
-                commands: [RedirectToDashboard()],
-              })),
-            ),
-        }),
-      )
+      return match (model) {
+        when { _tag: 'LoggedOut' } and let child: match (route) {
+          when { _tag: 'Home' } and let allowed:
+            ({ model: modifyFields(child, { route: () => allowed }) });
+          when { _tag: 'Login' } and let allowed:
+            ({ model: modifyFields(child, { route: () => allowed }) });
+          when { _tag: 'NotFound' } and let allowed:
+            ({ model: modifyFields(child, { route: () => allowed }) });
+          default: ({ model, commands: [RedirectToLogin()] });
+        };
+        when { _tag: 'LoggedIn' } and let child: match (route) {
+          when { _tag: 'Dashboard' } and let allowed:
+            ({ model: modifyFields(child, { route: () => allowed }) });
+          when { _tag: 'Settings' } and let allowed:
+            ({ model: modifyFields(child, { route: () => allowed }) });
+          when { _tag: 'NotFound' } and let allowed:
+            ({ model: modifyFields(child, { route: () => allowed }) });
+          default: ({ model, commands: [RedirectToDashboard()] });
+        };
+      }
     },
 
     FailedSaveSession: ({ error }) => ({

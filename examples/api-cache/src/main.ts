@@ -24,7 +24,7 @@ import {
   fetchPostDetail,
   fetchPosts,
   fetchStats,
-} from './data'
+} from './data.vibe'
 
 const STATS_REFETCH_INTERVAL = Duration.seconds(5)
 

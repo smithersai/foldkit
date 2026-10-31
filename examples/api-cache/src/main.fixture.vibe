@@ -1,11 +1,10 @@
-import { HashMap, Option } from 'effect'
 import { modifyFields } from 'foldkit/struct'
 
 import { Tabs } from '@foldkit/ui'
 
-import type { Post, PostDetail, Stats } from './data'
-import type { Model } from './main'
-import { PostDetailData, PostsData, StatsData, TABS_ID } from './main'
+import type { Post, PostDetail, Stats } from './data.vibe'
+import type { Model } from './main.ts'
+import { PostDetailData, PostsData, StatsData, TABS_ID } from './main.ts'
 
 export const FETCHED_AT = 1_750_000_000_000
 

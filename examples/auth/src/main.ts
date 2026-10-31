@@ -6,11 +6,11 @@ import { Url } from 'foldkit/url'
 import { BrowserKeyValueStore } from '@effect/platform-browser'
 
 import { SESSION_STORAGE_KEY } from './constant'
-import { Session, SessionJsonString } from './domain/session'
-import { Message } from './message'
-import { LoggedIn, LoggedOut, Model } from './model'
-import { AppRoute, urlToAppRoute } from './route'
-import { RedirectToDashboard, RedirectToLogin } from './update'
+import { Session, SessionJsonString } from './domain/session.vibe'
+import { Message } from './message.vibe'
+import { LoggedIn, LoggedOut, Model } from './model.vibe'
+import { AppRoute, urlToAppRoute } from './route.vibe'
+import { RedirectToDashboard, RedirectToLogin } from './update.vibe'
 
 // FLAGS
 

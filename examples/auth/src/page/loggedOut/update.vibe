@@ -1,10 +1,9 @@
-import { Option } from 'effect'
 import { Update } from 'foldkit'
 import { modifyFields } from 'foldkit/struct'
 
-import { Message, OutMessage } from './message'
-import { Model } from './model'
-import * as Login from './page/login'
+import { Message, OutMessage } from './message.ts'
+import { Model } from './model.ts'
+import * as Login from './page/login.vibe'
 
 const foldLogin = Update.foldChild({
   update: Login.update,
@@ -17,7 +16,7 @@ const foldLogin = Update.foldChild({
   }),
 })
 
-export const update = (model: Model, message: Message) =>
+export const update = (model: Model, message: Message): infer _ =>
   Message.match<Update.ReturnWithOutMessage<Model, Message, OutMessage>>(
     message,
     {

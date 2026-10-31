@@ -1,0 +1,51 @@
+import { Command } from 'foldkit'
+import { BrowserKeyValueStore } from '@effect/platform-browser'
+import { SESSION_STORAGE_KEY } from './constant.ts'
+import { Session, SessionJsonString } from './domain/session.vibe'
+import { Message } from './message.vibe'
+
+export const SaveSession = Command.define('SaveSession', {
+  args: { session: Session },
+  messages: [Message.SucceededSaveSession, Message.FailedSaveSession],
+  execute: (
+    { session },
+  ): ReturnType<typeof Message.SucceededSaveSession | typeof Message.FailedSaveSession>!! =>
+    effect {
+      provide BrowserKeyValueStore.layerLocalStorage {
+        return (effect {
+          const store = KeyValueStore.KeyValueStore()
+          const encodedSession = try Schema.encodeEffect(SessionJsonString)(
+            session,
+          )
+          try store.set(SESSION_STORAGE_KEY, encodedSession)
+          return Message.SucceededSaveSession()
+        }) catch (error) => Message.FailedSaveSession({ error: String(error) })
+      }
+    },
+})
+
+export const ClearSession = Command.define('ClearSession', {
+  messages: [Message.SucceededClearSession, Message.FailedClearSession],
+  execute: effect {
+    provide BrowserKeyValueStore.layerLocalStorage {
+      return (effect {
+        const store = KeyValueStore.KeyValueStore()
+        try store.remove(SESSION_STORAGE_KEY)
+        return Message.SucceededClearSession()
+      }) catch (error) => Message.FailedClearSession({ error: String(error) })
+    }
+  },
+})
+
+export const LogError = Command.define('LogError', {
+  args: { entries: Schema.Array(Schema.Unknown) },
+  messages: [Message.CompletedLogError],
+  execute: ({ entries }): ReturnType<typeof Message.CompletedLogError>!! => {
+    const capturedEntries = [...entries]
+    const completed = Message.CompletedLogError()
+    return effect {
+      try Console.error(...capturedEntries)
+      return completed
+    }
+  },
+})

@@ -11,18 +11,18 @@ import {
 import { modifyFields } from 'foldkit/struct'
 import { describe, test } from 'vitest'
 
-import { SaveSession } from './command'
-import { Session } from './domain/session'
-import { Message } from './message'
-import { LoggedOut } from './model'
+import { SaveSession } from './command.vibe'
+import { Session } from './domain/session.vibe'
+import { Message } from './message.vibe'
+import { LoggedOut } from './model.vibe'
 import {
   Message as LoginMessage,
   SimulateAuthRequest,
   initModel as initLoginModel,
-} from './page/loggedOut/page/login'
-import { AppRoute } from './route'
-import { RedirectToDashboard, update } from './update'
-import { view } from './view'
+} from './page/loggedOut/page/login.vibe'
+import { AppRoute } from './route.vibe'
+import { RedirectToDashboard, update } from './update.vibe'
+import { view } from './view.vibe'
 
 const validModel = LoggedOut.Model({
   route: AppRoute.Login(),
