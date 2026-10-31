@@ -1,0 +1,130 @@
+import { Array as EffectArray, Effect, Option } from 'effect'
+import { Diagnostic, type ESTree, Rule, RuleContext } from 'effect-oxlint'
+
+import {
+  isArrayExpression,
+  isObjectExpression,
+  isObjectProperty,
+  staticPropertyName,
+} from '../guards.vibe'
+
+const COMMANDS_PROPERTY = 'commands'
+
+const isEmptyCommandsProperty = (property: ESTree.ObjectProperty): boolean =>
+  Option.contains(staticPropertyName(property), COMMANDS_PROPERTY)
+  && isArrayExpression(property.value)
+  && EffectArray.isReadonlyArrayEmpty(property.value.elements)
+
+const removalRange = (
+  sourceText: string,
+  object: ESTree.ObjectExpression,
+  property: ESTree.ObjectProperty,
+  index: number,
+): [number, number] => {
+  const maybePrevious = EffectArray.get(object.properties, index - 1)
+  if (Option.isSome(maybePrevious)) {
+    return [maybePrevious.value.end, property.end]
+  }
+
+  const maybeNext = EffectArray.get(object.properties, index + 1)
+  if (Option.isSome(maybeNext)) {
+    return [property.start, maybeNext.value.start]
+  }
+
+  const trailingComma = /^\s*,/.exec(sourceText.slice(property.end, object.end))
+  if (trailingComma === null) {
+    return property.range
+  }
+  const maybeMatchedText = EffectArray.head(trailingComma)
+  if (Option.isNone(maybeMatchedText)) {
+    return property.range
+  }
+
+  return [property.start, property.end + maybeMatchedText.value.length]
+}
+
+const emptyCommandsMessage =
+  'Return { model } instead of the literal { model, commands: [] }. Return a computed Commands collection directly, even when it may be empty.'
+
+/** Flags only a `commands` property whose value is a literal empty array. A
+ *  producer with statically no Commands omits the property; a producer with a
+ *  computed Commands collection returns it directly. This syntax-only rule
+ *  does not determine whether the enclosing object is an update result. */
+export const noEmptyCommandsArray = Rule.define({
+  name: 'no-empty-commands-array',
+  meta: Rule.meta({
+    type: 'suggestion',
+    description:
+      'Omit a literal empty commands property from an update result.',
+    fixable: 'code',
+  }),
+  create: effect () => {
+    const ctx = try RuleContext()
+    return {
+      ObjectExpression: effect (node: ESTree.Node) => {
+        if (!isObjectExpression(node)) {
+          return undefined
+        }
+
+        const hasSpread = EffectArray.some(
+          node.properties,
+          (property): infer _ => property.type === 'SpreadElement',
+        )
+        const hasDynamicComputedProperty = EffectArray.some(
+          node.properties,
+          (property): infer _ =>
+            isObjectProperty(property)
+            && property.computed
+            && Option.isNone(staticPropertyName(property)),
+        )
+        const commandProperties = EffectArray.filter(
+          node.properties,
+          (property): infer _ =>
+            isObjectProperty(property)
+            && Option.contains(staticPropertyName(property), COMMANDS_PROPERTY),
+        )
+        const hasComments = EffectArray.isReadonlyArrayNonEmpty(
+          ctx.sourceCode.getCommentsInside(node),
+        )
+
+        return try Effect.forEach(
+          node.properties.entries(),
+          effect ([index, property]) => {
+            if (
+              !isObjectProperty(property)
+              || !isEmptyCommandsProperty(property)
+            ) {
+              return undefined
+            }
+
+            const diagnostic = Diagnostic.make({
+              node: property,
+              message: emptyCommandsMessage,
+            })
+            if (
+              hasSpread
+              || hasDynamicComputedProperty
+              || hasComments
+              || EffectArray.isReadonlyArrayNonEmpty(
+                EffectArray.drop(commandProperties, 1),
+              )
+            ) {
+              return try ctx.report(diagnostic)
+            }
+
+            return try ctx.report(
+              Diagnostic.withFix(
+                diagnostic,
+                (fixer): infer _ =>
+                  fixer.removeRange(
+                    removalRange(ctx.sourceCode.text, node, property, index),
+                  ),
+              ),
+            )
+          },
+          { discard: true },
+        )
+      },
+    }
+  },
+})

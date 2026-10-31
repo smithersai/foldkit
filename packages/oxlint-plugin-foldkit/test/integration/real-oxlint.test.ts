@@ -12,6 +12,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { build } from 'rolldown'
 import { transform } from 'rolldown/experimental'
+import vibelang from 'vibelang-unplugin/rolldown'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 const getTypeScriptParseErrors = async (source: string) =>
@@ -35,6 +36,7 @@ const bundlePath = join(workDir, 'plugin.mjs')
 
 beforeAll(async () => {
   await build({
+    plugins: [vibelang()],
     input: join(pluginRoot, 'src', 'index.ts'),
     platform: 'node',
     output: { file: bundlePath, format: 'esm' },

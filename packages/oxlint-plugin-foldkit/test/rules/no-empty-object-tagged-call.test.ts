@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { noEmptyObjectTaggedCall } from '../../src/rules/no-empty-object-tagged-call.ts'
+import { noEmptyObjectTaggedCall } from '../../src/rules/no-empty-object-tagged-call.vibe'
 
 describe('no-empty-object-tagged-call', () => {
   it('flags empty object calls to tagged constructors', () => {

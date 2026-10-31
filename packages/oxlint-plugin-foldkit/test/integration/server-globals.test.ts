@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { build } from 'rolldown'
+import vibelang from 'vibelang-unplugin/rolldown'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import { type LintDiagnostic, runOxlint } from './run-oxlint.ts'
@@ -121,6 +122,7 @@ const codesFor = (
 
 beforeAll(async () => {
   await build({
+    plugins: [vibelang()],
     input: join(pluginRoot, 'src', 'index.ts'),
     platform: 'node',
     output: { file: bundlePath, format: 'esm' },

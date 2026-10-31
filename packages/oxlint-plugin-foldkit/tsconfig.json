@@ -13,6 +13,7 @@
   "include": ["src", "test"],
   "exclude": ["test/integration/fixtures"],
   "vibelang": {
-    "declarationSidecars": true
+    "declarationSidecars": true,
+    "trustedPackages": ["effect-oxlint", "@oxlint/plugins"]
   }
 }

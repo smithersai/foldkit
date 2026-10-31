@@ -1,0 +1,54 @@
+import { Diagnostic, type ESTree, Rule, RuleContext } from 'effect-oxlint'
+
+import { indexReferences, isCallExpression } from '../guards.vibe'
+import {
+  hasSubmodelMessagePayload,
+  messageCases,
+  recordFoldkitMessageUnionBindings,
+} from '../message.vibe'
+
+/**
+ * Requires Messages that carry a { message } payload to follow the Got*Message
+ * naming convention.
+ */
+export const gotSubmodelMessageName = Rule.define({
+  name: 'got-submodel-message-name',
+  meta: Rule.meta({
+    type: 'suggestion',
+    description:
+      'Name Foldkit Submodel wrapper Messages with the Got*Message convention.',
+  }),
+  create: effect () => {
+    const ctx = try RuleContext()
+    const scopes = ctx.sourceCode.scopeManager?.scopes
+    const references = scopes === undefined
+      ? undefined
+      : indexReferences(scopes)
+    const messageUnionBindings = new Set<string>()
+    return {
+      Program: effect (node: ESTree.Node) => {
+        recordFoldkitMessageUnionBindings(messageUnionBindings, node)
+        return undefined
+      },
+      CallExpression: effect (node: ESTree.Node) => {
+        if (!isCallExpression(node)) return undefined
+
+        return try Effect.forEach(
+          messageCases(node, messageUnionBindings, references),
+          effect messageCase =>
+            hasSubmodelMessagePayload(messageCase.fields, references)
+              && !/^Got[A-Z].*Message$/.test(messageCase.name)
+              ? try ctx.report(
+                Diagnostic.make({
+                  node: messageCase.nameNode,
+                  message:
+                    'Submodel wrapper Messages should be named Got*Message so Foldkit DevTools can filter them.',
+                }),
+              )
+              : undefined,
+          { discard: true },
+        )
+      },
+    }
+  },
+})

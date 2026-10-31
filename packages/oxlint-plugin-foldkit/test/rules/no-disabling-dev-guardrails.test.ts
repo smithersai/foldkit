@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { noDisablingDevGuardrails } from '../../src/rules/no-disabling-dev-guardrails.ts'
+import { noDisablingDevGuardrails } from '../../src/rules/no-disabling-dev-guardrails.vibe'
 
 const property = (key: string, value: unknown) => ({
   type: 'Property',

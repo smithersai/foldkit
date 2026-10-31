@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { preferCommandMapmessage } from '../../src/rules/prefer-command-mapmessage.ts'
+import { preferCommandMapmessage } from '../../src/rules/prefer-command-mapmessage.vibe'
 
 const messageConstructorCall = () =>
   Testing.callOfMember('Message', 'GotChildMessage', [

@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { noDuplicateOnmountPerElement } from '../../src/rules/no-duplicate-onmount-per-element.ts'
+import { noDuplicateOnmountPerElement } from '../../src/rules/no-duplicate-onmount-per-element.vibe'
 
 const arrayExpression = (elements: ReadonlyArray<unknown>) => ({
   type: 'ArrayExpression',

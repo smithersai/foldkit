@@ -22,7 +22,8 @@
     "typecheck": "vibelang --noEmit"
   },
   "dependencies": {
-    "effect-oxlint": "^0.3.4 || ^0.4.0"
+    "effect-oxlint": "0.3.4",
+    "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz"
   },
   "devDependencies": {
     "@types/node": "26.4.0",
@@ -33,7 +34,9 @@
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "vitest": "^4.1.11",
     "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz",
-    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz"
+    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz",
+    "vibelang-unplugin": "file:../../.vibelang-toolchain/vibelang-unplugin-0.0.11-d83e2657e595.tgz",
+    "fast-check": "^4.10.2"
   },
   "files": [
     "dist",

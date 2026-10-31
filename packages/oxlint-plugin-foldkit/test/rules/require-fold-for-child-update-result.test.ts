@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { requireFoldForChildUpdateResult } from '../../src/rules/require-fold-for-child-update-result.ts'
+import { requireFoldForChildUpdateResult } from '../../src/rules/require-fold-for-child-update-result.vibe'
 
 const property = (key: string, value: unknown) => ({
   type: 'Property',

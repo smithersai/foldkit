@@ -152,7 +152,15 @@ const overrides = (oxlint.overrides ?? [])
   )
 const correctness = levels[oxlint.categories?.correctness] !== 'off'
 export default [
-  { ignores: ['**/node_modules/**', '**/dist/**', '**/build/**'] },
+  {
+    // Preserve the original project's lint scopes for native source too.
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/build/**',
+      ...(oxlint.ignorePatterns ?? []),
+    ],
+  },
   ...(correctness && tseslint
     ? tseslint.configs.recommended.map(config => ({
         ...config,

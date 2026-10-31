@@ -1,0 +1,158 @@
+import { Diagnostic, type ESTree, Rule, RuleContext } from 'effect-oxlint'
+
+import {
+  indexReferences,
+  isUnshadowedReference,
+  staticMemberName,
+  staticPropertyName,
+} from '../guards.vibe'
+
+const restrictedGlobalNames: ReadonlySet<string> = new Set([
+  'alert',
+  'cancelAnimationFrame',
+  'cancelIdleCallback',
+  'confirm',
+  'customElements',
+  'document',
+  'getComputedStyle',
+  'history',
+  'IntersectionObserver',
+  'localStorage',
+  'location',
+  'matchMedia',
+  'MutationObserver',
+  'navigator',
+  'prompt',
+  'requestAnimationFrame',
+  'requestIdleCallback',
+  'ResizeObserver',
+  'screen',
+  'sessionStorage',
+  'window',
+])
+
+const isInsideTypeQuery = (node: ESTree.Node): boolean => {
+  const parent = node.parent
+
+  if (parent === null) {
+    return false
+  }
+  if (parent.type === 'TSTypeQuery') {
+    return true
+  }
+  if (parent.type === 'TSQualifiedName') {
+    return isInsideTypeQuery(parent)
+  }
+  return false
+}
+
+const destructuringSource = (
+  node: ESTree.ObjectPattern | ESTree.ObjectAssignmentTarget,
+): ESTree.Expression | null | undefined => {
+  const parent = node.parent
+
+  if (parent.type === 'VariableDeclarator' && parent.id === node) {
+    return parent.init
+  }
+  if (parent.type === 'AssignmentExpression' && parent.left === node) {
+    return parent.right
+  }
+  return undefined
+}
+
+const destructuredGlobalThis = (
+  node: ESTree.ObjectPattern | ESTree.ObjectAssignmentTarget,
+): ESTree.IdentifierReference | undefined => {
+  const source = destructuringSource(node)
+
+  return source?.type === 'Identifier' && source.name === 'globalThis'
+    ? source
+    : undefined
+}
+
+const restrictedGlobalDiagnostic = (node: ESTree.Node, name: string): infer _ =>
+  Diagnostic.make({
+    node,
+    message:
+      `Global \`${name}\` is not portable across Foldkit server targets. Use a server API available everywhere you deploy or pass the value into the entry.`,
+  })
+
+/**
+ * Flags selected browser-only globals in files that run on a server.
+ */
+export const noNonportableServerGlobals = Rule.define({
+  name: 'no-nonportable-server-globals',
+  meta: Rule.meta({
+    type: 'problem',
+    description:
+      'Avoid browser-only globals in files that run across Foldkit server targets.',
+  }),
+  create: effect () => {
+    const ctx = try RuleContext()
+    const references = indexReferences(ctx.sourceCode.scopeManager.scopes)
+    return {
+      Identifier: effect (node: ESTree.Node) => {
+        if (
+          node.type !== 'Identifier'
+          || !restrictedGlobalNames.has(node.name)
+          || isInsideTypeQuery(node)
+        ) {
+          return undefined
+        }
+        return isUnshadowedReference(references, node)
+          ? try ctx.report(restrictedGlobalDiagnostic(node, node.name))
+          : undefined
+      },
+      MemberExpression: effect (node: ESTree.Node) => {
+        if (
+          node.type !== 'MemberExpression'
+          || node.object.type !== 'Identifier'
+          || node.object.name !== 'globalThis'
+        ) {
+          return undefined
+        }
+        const maybeMemberName = staticMemberName(node)
+        if (
+          Option.isNone(maybeMemberName)
+          || !restrictedGlobalNames.has(maybeMemberName.value)
+        ) {
+          return undefined
+        }
+        return isUnshadowedReference(references, node.object)
+          ? try ctx.report(
+            restrictedGlobalDiagnostic(node, maybeMemberName.value),
+          )
+          : undefined
+      },
+      ObjectPattern: effect (node: ESTree.Node) => {
+        if (node.type !== 'ObjectPattern') {
+          return undefined
+        }
+        const source = destructuredGlobalThis(node)
+        if (source === undefined) {
+          return undefined
+        }
+        const restrictedProperties = node.properties.flatMap(
+          (property): infer _ => {
+            if (property.type !== 'Property') {
+              return []
+            }
+            const maybeName = staticPropertyName(property)
+            return Option.isSome(maybeName)
+                && restrictedGlobalNames.has(maybeName.value)
+              ? [{ name: maybeName.value, property }]
+              : []
+          },
+        )
+        return isUnshadowedReference(references, source)
+          ? try Effect.forEach(
+            restrictedProperties,
+            effect ({ name, property }) =>
+              try ctx.report(restrictedGlobalDiagnostic(property, name)),
+            { discard: true },
+          )
+          : undefined
+      },
+    }
+  },
+})

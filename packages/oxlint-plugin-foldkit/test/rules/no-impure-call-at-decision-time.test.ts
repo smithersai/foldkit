@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { noImpureCallAtDecisionTime } from '../../src/rules/no-impure-call-at-decision-time.ts'
+import { noImpureCallAtDecisionTime } from '../../src/rules/no-impure-call-at-decision-time.vibe'
 
 const program = { type: 'Program', parent: null }
 

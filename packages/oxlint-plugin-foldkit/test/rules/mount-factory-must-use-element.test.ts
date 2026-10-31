@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { mountFactoryMustUseElement } from '../../src/rules/mount-factory-must-use-element.ts'
+import { mountFactoryMustUseElement } from '../../src/rules/mount-factory-must-use-element.vibe'
 
 const bindingProperty = (key: string, value?: unknown) => ({
   type: 'Property',

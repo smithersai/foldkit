@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { noSpreadInModifyFields } from '../../src/rules/no-spread-in-modify-fields.ts'
+import { noSpreadInModifyFields } from '../../src/rules/no-spread-in-modify-fields.vibe'
 
 const property = (key: string, value: unknown) => ({
   type: 'Property',
