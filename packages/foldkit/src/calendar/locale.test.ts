@@ -1,7 +1,7 @@
 import { Schema, pipe } from 'effect'
 import { describe, expect, it } from 'vitest'
 
-import { make } from './calendarDate.js'
+import { make } from './calendarDate.vibe'
 import {
   DateFormat,
   DatePart,
@@ -13,7 +13,7 @@ import {
   formatLong,
   formatMonthYear,
   formatShort,
-} from './locale.js'
+} from './locale.vibe'
 
 describe('date format schemas', () => {
   it('requires at least one part', () => {

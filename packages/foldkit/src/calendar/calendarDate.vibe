@@ -1,4 +1,3 @@
-import { Effect, Schema, SchemaIssue, SchemaTransformation } from 'effect'
 
 /**
  * Determines if a year is a leap year in the Gregorian calendar.
@@ -212,26 +211,22 @@ export const CalendarDateFromIsoString = Schema.String.pipe(
   Schema.decodeTo(
     CalendarDate,
     SchemaTransformation.transformEffect({
-      decode: input => {
+      decode: effect input => {
         const match = input.match(isoPattern)
         if (match === null) {
-          return Effect.fail(
-            new SchemaIssue.InvalidValue({
-              message: `Expected ISO date (YYYY-MM-DD), got ${JSON.stringify(input)}`,
-            }),
-          )
+          throw new SchemaIssue.InvalidValue({
+            message: `Expected ISO date (YYYY-MM-DD), got ${JSON.stringify(input)}`,
+          })
         }
         const [, yearString, monthString, dayString] = match
-        return Effect.succeed({
+        return {
           year: Number(yearString),
           month: Number(monthString),
           day: Number(dayString),
-        })
+        }
       },
-      encode: ({ year, month, day }) =>
-        Effect.succeed(
-          `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
-        ),
+      encode: effect ({ year, month, day }) =>
+        `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
     }),
   ),
 )

@@ -1,5 +1,5 @@
 import { Schema } from "effect";
-import { type CalendarDate } from "./calendarDate.js";
+import { type CalendarDate } from "./calendarDate.vibe";
 /**
  * Schema for days of the week, Sunday through Saturday. Tagged union preferred
  * over 0-6 numeric indices to avoid magic numbers at call sites.

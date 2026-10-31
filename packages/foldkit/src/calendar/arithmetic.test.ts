@@ -11,7 +11,7 @@ import {
   subtractMonths,
   subtractYears,
 } from './arithmetic.vibe'
-import { make } from './calendarDate.js'
+import { make } from './calendarDate.vibe'
 
 describe('addDays', () => {
   it('returns the same date when adding zero', () => {
