@@ -3,7 +3,7 @@ import { afterEach, beforeAll, beforeEach, expect } from 'vitest'
 import { describe, it } from '@effect/vitest'
 
 import { type UrlRequest } from '../navigation/urlRequest.vibe'
-import { type Url } from '../url/index.js'
+import { type Url } from '../url/index.vibe'
 import { type RoutingConfig, addLinkClickListener } from './browserListeners.js'
 
 declare global {

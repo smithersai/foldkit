@@ -13,7 +13,7 @@ import {
 import { describe, expect, it } from 'vitest'
 
 import { defineMessageUnion } from '../message/index.js'
-import { modifyFields } from '../struct/index.js'
+import { modifyFields } from '../struct/index.vibe'
 import { EventFrame, MAX_DISPATCH_BATCH_SIZE, Request } from './protocol.js'
 import {
   type Bridge,
