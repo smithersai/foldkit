@@ -89,6 +89,7 @@
   "ignorePatterns": [
     "packages/create-foldkit-app/templates/",
     "packages/oxlint-plugin-foldkit/test/integration/fixtures/",
-    "packages/website/src/snippet/"
+    "packages/website/src/snippet/",
+    "**/dist/**"
   ]
 }

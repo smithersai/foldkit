@@ -118,10 +118,11 @@
     "vite": "^8.3.1",
     "vibelang": "file:./.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz",
     "eslint": "^9.39.5",
-    "typescript-eslint": "^8.69.0"
+    "typescript-eslint": "^8.69.0",
+    "fast-check": "^4.10.2"
   },
   "simple-git-hooks": {
-    "commit-msg": "if grep -q 'Co-Authored-By.*[Cc]laude' \"$1\"; then echo '\\n❌ Commit message contains a Claude Co-Authored-By line. Remove it and try again.' && exit 1; fi",
+    "commit-msg": "if grep -q 'Co-Authored-By.*[Cc]laude' \"$1\"; then echo '\\n\u274c Commit message contains a Claude Co-Authored-By line. Remove it and try again.' && exit 1; fi",
     "pre-push": "bash scripts/run-pre-push.sh"
   },
   "engines": {
