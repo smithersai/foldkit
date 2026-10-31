@@ -1,6 +1,5 @@
-import { Schema } from 'effect'
 
-import { taggedStruct } from '../schema/index.js'
+import { taggedStruct } from '../schema/index.ts'
 
 /** A 2D point in canvas-local coordinates. */
 export const Point = Schema.Struct({ x: Schema.Number, y: Schema.Number })
@@ -180,7 +179,7 @@ export type Shape =
  * field so the schema can describe its own children without a forward
  * declaration cycle.
  */
-const Shape: Schema.Schema<Shape> = Schema.suspend((): Schema.Schema<Shape> =>
+const Shape: Schema<Shape> = Schema.suspend((): Schema<Shape> =>
   Schema.Union([Rect, Circle, Path, Text, Group]),
 )
 

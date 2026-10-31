@@ -21,7 +21,7 @@ import {
   toVNode,
 } from '../snabbdom/index.js'
 import type { VNode } from '../vdom.vibe'
-import { Circle, Rect } from './shape.js'
+import { Circle, Rect } from './shape.vibe'
 import { view } from './view.js'
 
 const patch = init([

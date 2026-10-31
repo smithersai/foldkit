@@ -15,9 +15,9 @@ export {
   Text,
   TextAlign,
   TextBaseline,
-} from './shape.js'
+} from './shape.vibe'
 
-export type { Shape } from './shape.js'
+export type { Shape } from './shape.vibe'
 
 export { view } from './view.js'
 

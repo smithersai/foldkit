@@ -2,7 +2,7 @@ import { expect, vi } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import { paintScene } from './paint.js'
+import { paintScene } from './paint.vibe'
 import {
   Circle,
   Close,
@@ -12,7 +12,7 @@ import {
   Path,
   Rect,
   Text,
-} from './shape.js'
+} from './shape.vibe'
 
 const asCallOrder = (order: number | undefined): number => {
   if (order === undefined) {

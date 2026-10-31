@@ -7,8 +7,8 @@ import {
 } from '../html/index.js'
 import { h } from '../snabbdom/index.js'
 import type { Classes, On, VNodeData } from '../snabbdom/index.js'
-import { paintScene } from './paint.js'
-import type { Point, Shape } from './shape.js'
+import { paintScene } from './paint.vibe'
+import type { Point, Shape } from './shape.vibe'
 
 /**
  * Configuration for `Canvas.view`. Pointer handlers are optional and
