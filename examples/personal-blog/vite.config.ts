@@ -6,7 +6,7 @@ import { foldkit } from '@foldkit/vite-plugin'
 import tailwindcss from '@tailwindcss/vite'
 
 import { foldkitAliases } from '../vite.aliases.ts'
-import { islandAttributes } from './src/island/islandAttributes.vibe'
+import { islandAttributes } from './src/island/islandAttributes.ts'
 
 export default defineConfig({
   plugins: [

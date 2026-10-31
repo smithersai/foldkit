@@ -3,7 +3,7 @@ import { defineConfig } from 'vitest/config'
 
 import { markdown } from '@foldkit/markdown/vite'
 
-import { islandAttributes } from './src/island/islandAttributes.vibe'
+import { islandAttributes } from './src/island/islandAttributes.ts'
 
 export default defineConfig({
   plugins: [vibelang(), markdown({ islands: islandAttributes })],
