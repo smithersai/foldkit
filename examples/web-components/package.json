@@ -26,7 +26,7 @@
     "typescript": "^7.0.2",
     "vite": "^8.3.1",
     "vitest": "^5.0.2",
-    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-da18b087c4eb.tgz",
-    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-7e6116042b49.tgz"
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-2deb9b78f8e1.tgz",
+    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz"
   }
 }
