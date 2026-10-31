@@ -48,8 +48,8 @@ export type MountAction<Message, E = never> = Readonly<{
 }>;
 /** A Mount definition for a Mount with no declared args. Call as `Definition()` to produce a MountAction. */
 export interface MountDefinitionNoArgs<Name extends string, ResultMessage> {
-    readonly [MountDefinitionTypeId]: MountDefinitionTypeId;
-    readonly name: Name;
+    [MountDefinitionTypeId]: MountDefinitionTypeId;
+    name: Name;
     (): Readonly<{
         name: Name;
         f: (element: Element, viewStateChanges: Stream.Stream<ViewState>) => Stream.Stream<ResultMessage>;
@@ -57,8 +57,8 @@ export interface MountDefinitionNoArgs<Name extends string, ResultMessage> {
 }
 /** A Mount definition for a Mount with declared args. Call as `Definition(args)` to produce a MountAction. */
 export interface MountDefinitionWithArgs<Name extends string, Fields extends Schema.Struct.Fields, ResultMessage> {
-    readonly [MountDefinitionTypeId]: MountDefinitionTypeId;
-    readonly name: Name;
+    [MountDefinitionTypeId]: MountDefinitionTypeId;
+    name: Name;
     (args: Schema.Schema.Type<Schema.Struct<Fields>>): Readonly<{
         name: Name;
         args: Schema.Schema.Type<Schema.Struct<Fields>>;
