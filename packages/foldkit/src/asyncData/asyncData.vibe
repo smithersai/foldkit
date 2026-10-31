@@ -1,35 +1,31 @@
-import {
-  Array,
-  Schema as EffectSchema,
-  Function,
-  Match,
-  Option,
-  Predicate,
-  Result,
-} from 'effect'
+import { Array as EffectArray, Schema as EffectSchema, Function } from 'effect'
 
-import { taggedStruct } from '../schema/index.js'
+import { taggedStruct } from '../schema/index.ts'
 
 // STATE
 
 /** The `Idle` state: nothing requested yet. */
-export type Idle = Readonly<{ _tag: 'Idle' }>
+export type Idle = Readonly<{ mutable _tag: 'Idle' }>
 
 /** The `Loading` state: first request in flight, no prior data. */
-export type Loading = Readonly<{ _tag: 'Loading' }>
+export type Loading = Readonly<{ mutable _tag: 'Loading' }>
 
 /** The `Refreshing` state: reloading while holding the previous good data. */
-export type Refreshing<A> = Readonly<{ _tag: 'Refreshing'; data: A }>
+export type Refreshing<A> = Readonly<
+  { mutable _tag: 'Refreshing'; mutable data: A }
+>
 
 /** The `Failure` state: request failed, showing the failure. */
-export type Failure<E> = Readonly<{ _tag: 'Failure'; error: E }>
+export type Failure<E> = Readonly<{ mutable _tag: 'Failure'; mutable error: E }>
 
 /** The `Stale` state: the last refresh failed, still holding the previous
  *  good data. The failed-refresh mirror of `Refreshing`. */
-export type Stale<A, E> = Readonly<{ _tag: 'Stale'; error: E; data: A }>
+export type Stale<A, E> = Readonly<
+  { mutable _tag: 'Stale'; mutable error: E; mutable data: A }
+>
 
 /** The `Success` state: request succeeded, data present. */
-export type Success<A> = Readonly<{ _tag: 'Success'; data: A }>
+export type Success<A> = Readonly<{ mutable _tag: 'Success'; mutable data: A }>
 
 /** The six-state union for an asynchronously loaded value: `Idle | Loading
  *  | Refreshing(data) | Failure(error) | Stale(error, data) | Success(data)`.
@@ -72,7 +68,7 @@ export const Loading = taggedStruct('Loading')
  *  value builder, generic in `A`; use the `Schema` factory's `Refreshing`
  *  for a Schema-bound constructor. */
 export const Refreshing = <A>(
-  payload: Readonly<{ data: A }>,
+  payload: Readonly<{ mutable data: A }>,
 ): AsyncData<A, never> => ({
   _tag: 'Refreshing',
   data: payload.data,
@@ -82,7 +78,7 @@ export const Refreshing = <A>(
  *  builder, generic in `E`; use the `Schema` factory's `Failure` for a
  *  Schema-bound constructor. */
 export const Failure = <E>(
-  payload: Readonly<{ error: E }>,
+  payload: Readonly<{ mutable error: E }>,
 ): AsyncData<never, E> => ({
   _tag: 'Failure',
   error: payload.error,
@@ -92,7 +88,7 @@ export const Failure = <E>(
  *  last good data. Plain value builder, generic in `A` and `E`; use the
  *  `Schema` factory's `Stale` for a Schema-bound constructor. */
 export const Stale = <A, E>(
-  payload: Readonly<{ error: E; data: A }>,
+  payload: Readonly<{ mutable error: E; mutable data: A }>,
 ): AsyncData<A, E> => ({
   _tag: 'Stale',
   error: payload.error,
@@ -103,7 +99,7 @@ export const Stale = <A, E>(
  *  generic in `A`; use the `Schema` factory's `Success` for a Schema-bound
  *  constructor. */
 export const Success = <A>(
-  payload: Readonly<{ data: A }>,
+  payload: Readonly<{ mutable data: A }>,
 ): AsyncData<A, never> => ({
   _tag: 'Success',
   data: payload.data,
@@ -122,12 +118,12 @@ export const fail = <E, A = never>(error: E): AsyncData<A, E> =>
 /** The encoded (wire) form of a `AsyncData<A, E>` whose data encodes to
  *  `AI` and whose error encodes to `EI`. */
 export type AsyncDataEncoded<AI, EI> =
-  | Readonly<{ _tag: 'Idle' }>
-  | Readonly<{ _tag: 'Loading' }>
-  | Readonly<{ _tag: 'Refreshing'; data: AI }>
-  | Readonly<{ _tag: 'Failure'; error: EI }>
-  | Readonly<{ _tag: 'Stale'; error: EI; data: AI }>
-  | Readonly<{ _tag: 'Success'; data: AI }>
+  | Readonly<{ mutable _tag: 'Idle' }>
+  | Readonly<{ mutable _tag: 'Loading' }>
+  | Readonly<{ mutable _tag: 'Refreshing'; mutable data: AI }>
+  | Readonly<{ mutable _tag: 'Failure'; mutable error: EI }>
+  | Readonly<{ mutable _tag: 'Stale'; mutable error: EI; mutable data: AI }>
+  | Readonly<{ mutable _tag: 'Success'; mutable data: AI }>
 
 /** What the `Schema` factory returns: the six-state Union codec to embed in
  *  a Model plus the Schema-bound constructors for the four parameterized
@@ -136,13 +132,17 @@ export type AsyncDataEncoded<AI, EI> =
 export type AsyncDataSchema<A, AI, E, EI> = Readonly<{
   /** The six-state Union codec. Embed this in your Model, or in
    *  `Schema.HashMap(key, this)` for a keyed cache. */
-  schema: EffectSchema.Codec<AsyncData<A, E>, AsyncDataEncoded<AI, EI>>
-  Idle: typeof Idle
-  Loading: typeof Loading
-  Refreshing: (payload: Readonly<{ data: A }>) => AsyncData<A, E>
-  Failure: (payload: Readonly<{ error: E }>) => AsyncData<A, E>
-  Stale: (payload: Readonly<{ error: E; data: A }>) => AsyncData<A, E>
-  Success: (payload: Readonly<{ data: A }>) => AsyncData<A, E>
+  mutable schema: EffectSchema.Codec<AsyncData<A, E>, AsyncDataEncoded<AI, EI>>
+  mutable Idle: typeof Idle
+  mutable Loading: typeof Loading
+  mutable Refreshing: (
+    payload: Readonly<{ mutable data: A }>,
+  ) => AsyncData<A, E>
+  mutable Failure: (payload: Readonly<{ mutable error: E }>) => AsyncData<A, E>
+  mutable Stale: (
+    payload: Readonly<{ mutable error: E; mutable data: A }>,
+  ) => AsyncData<A, E>
+  mutable Success: (payload: Readonly<{ mutable data: A }>) => AsyncData<A, E>
 }>
 
 /** Builds the six-state `AsyncData` Schema for the given data and error
@@ -221,23 +221,27 @@ export const Schema = <A, AI, E, EI>(
 export const match: {
   <A, E, B, C = B, D = B, F = B, G = B, H = B>(
     handlers: Readonly<{
-      onIdle: Function.LazyArg<B>
-      onLoading: Function.LazyArg<C>
-      onRefreshing: (data: A) => D
-      onFailure: (error: E) => F
-      onStale: (payload: Readonly<{ error: E; data: A }>) => G
-      onSuccess: (data: A) => H
+      mutable onIdle: Function.LazyArg<B>
+      mutable onLoading: Function.LazyArg<C>
+      mutable onRefreshing: (data: A) => D
+      mutable onFailure: (error: E) => F
+      mutable onStale: (
+        payload: Readonly<{ mutable error: E; mutable data: A }>,
+      ) => G
+      mutable onSuccess: (data: A) => H
     }>,
   ): (self: AsyncData<A, E>) => B | C | D | F | G | H
   <A, E, B, C = B, D = B, F = B, G = B, H = B>(
     self: AsyncData<A, E>,
     handlers: Readonly<{
-      onIdle: Function.LazyArg<B>
-      onLoading: Function.LazyArg<C>
-      onRefreshing: (data: A) => D
-      onFailure: (error: E) => F
-      onStale: (payload: Readonly<{ error: E; data: A }>) => G
-      onSuccess: (data: A) => H
+      mutable onIdle: Function.LazyArg<B>
+      mutable onLoading: Function.LazyArg<C>
+      mutable onRefreshing: (data: A) => D
+      mutable onFailure: (error: E) => F
+      mutable onStale: (
+        payload: Readonly<{ mutable error: E; mutable data: A }>,
+      ) => G
+      mutable onSuccess: (data: A) => H
     }>,
   ): B | C | D | F | G | H
 } = Function.dual(
@@ -245,12 +249,14 @@ export const match: {
   <A, E, B>(
     self: AsyncData<A, E>,
     handlers: Readonly<{
-      onIdle: Function.LazyArg<B>
-      onLoading: Function.LazyArg<B>
-      onRefreshing: (data: A) => B
-      onFailure: (error: E) => B
-      onStale: (payload: Readonly<{ error: E; data: A }>) => B
-      onSuccess: (data: A) => B
+      mutable onIdle: Function.LazyArg<B>
+      mutable onLoading: Function.LazyArg<B>
+      mutable onRefreshing: (data: A) => B
+      mutable onFailure: (error: E) => B
+      mutable onStale: (
+        payload: Readonly<{ mutable error: E; mutable data: A }>,
+      ) => B
+      mutable onSuccess: (data: A) => B
     }>,
   ): B => {
     if (isIdle(self)) {
@@ -368,18 +374,17 @@ export const map: {
   <A, E, B>(self: AsyncData<A, E>, f: (data: A) => B): AsyncData<B, E>
 } = Function.dual(
   2,
-  <A, E, B>(self: AsyncData<A, E>, f: (data: A) => B): AsyncData<B, E> =>
-    Match.value(self).pipe(
-      Match.withReturnType<AsyncData<B, E>>(),
-      Match.tagsExhaustive({
-        Idle: idle => idle,
-        Loading: loading => loading,
-        Refreshing: ({ data }) => Refreshing({ data: f(data) }),
-        Failure: failure => failure,
-        Stale: ({ error, data }) => Stale({ error, data: f(data) }),
-        Success: ({ data }) => Success({ data: f(data) }),
-      }),
-    ),
+  <A, E, B>(self: AsyncData<A, E>, f: (data: A) => B): AsyncData<B, E> => match (self) {
+    when { _tag: "Idle" } and let idle: idle;
+    when { _tag: "Loading" } and let loading: loading;
+    when { _tag: "Refreshing", let data }: Refreshing({ data: f(data) });
+    when { _tag: "Failure" } and let failure: failure;
+    when { _tag: "Stale", let error, let data }: Stale({
+      error,
+      data: f(data),
+    });
+    when { _tag: "Success", let data }: Success({ data: f(data) });
+  },
 )
 
 /** Maps the error of the two error-bearing states: `Failure` and `Stale`
@@ -390,18 +395,17 @@ export const mapError: {
   <A, E, E2>(self: AsyncData<A, E>, f: (error: E) => E2): AsyncData<A, E2>
 } = Function.dual(
   2,
-  <A, E, E2>(self: AsyncData<A, E>, f: (error: E) => E2): AsyncData<A, E2> =>
-    Match.value(self).pipe(
-      Match.withReturnType<AsyncData<A, E2>>(),
-      Match.tagsExhaustive({
-        Idle: idle => idle,
-        Loading: loading => loading,
-        Refreshing: refreshing => refreshing,
-        Failure: ({ error }) => Failure({ error: f(error) }),
-        Stale: ({ error, data }) => Stale({ error: f(error), data }),
-        Success: success => success,
-      }),
-    ),
+  <A, E, E2>(self: AsyncData<A, E>, f: (error: E) => E2): AsyncData<A, E2> => match (self) {
+    when { _tag: "Idle" } and let idle: idle;
+    when { _tag: "Loading" } and let loading: loading;
+    when { _tag: "Refreshing" } and let refreshing: refreshing;
+    when { _tag: "Failure", let error }: Failure({ error: f(error) });
+    when { _tag: "Stale", let error, let data }: Stale({
+      error: f(error),
+      data,
+    });
+    when { _tag: "Success" } and let success: success;
+  },
 )
 
 /** Maps both channels with channel-named handlers: `onData` spans `Success`,
@@ -427,22 +431,23 @@ export const mapBoth: {
       readonly onData: (data: A) => B
       readonly onError: (error: E) => E2
     },
-  ): AsyncData<B, E2> =>
-    Match.value(self).pipe(
-      Match.withReturnType<AsyncData<B, E2>>(),
-      Match.tagsExhaustive({
-        Idle: idle => idle,
-        Loading: loading => loading,
-        Refreshing: ({ data }) => Refreshing({ data: handlers.onData(data) }),
-        Failure: ({ error }) => Failure({ error: handlers.onError(error) }),
-        Stale: ({ error, data }) =>
-          Stale({
-            error: handlers.onError(error),
-            data: handlers.onData(data),
-          }),
-        Success: ({ data }) => Success({ data: handlers.onData(data) }),
-      }),
-    ),
+  ): AsyncData<B, E2> => match (self) {
+    when { _tag: "Idle" } and let idle: idle;
+    when { _tag: "Loading" } and let loading: loading;
+    when { _tag: "Refreshing", let data }: Refreshing({
+      data: handlers.onData(data),
+    });
+    when { _tag: "Failure", let error }: Failure({
+      error: handlers.onError(error),
+    });
+    when { _tag: "Stale", let error, let data }: Stale({
+      error: handlers.onError(error),
+      data: handlers.onData(data),
+    });
+    when { _tag: "Success", let data }: Success({
+      data: handlers.onData(data),
+    });
+  },
 )
 
 /** Treats every data-bearing state (`Success`, `Refreshing`, `Stale`)
@@ -463,24 +468,20 @@ export const flatMap: {
   <A, E, B, E2>(
     self: AsyncData<A, E>,
     f: (data: A) => AsyncData<B, E2>,
-  ): AsyncData<B, E | E2> =>
-    Match.value(self).pipe(
-      Match.withReturnType<AsyncData<B, E | E2>>(),
-      Match.tagsExhaustive({
-        Idle: idle => idle,
-        Loading: loading => loading,
-        Refreshing: ({ data }) => f(data),
-        Failure: failure => failure,
-        Stale: ({ data }) => f(data),
-        Success: ({ data }) => f(data),
-      }),
-    ),
+  ): AsyncData<B, E | E2> => match (self) {
+    when { _tag: "Idle" } and let idle: idle;
+    when { _tag: "Loading" } and let loading: loading;
+    when { _tag: "Refreshing", let data }: f(data);
+    when { _tag: "Failure" } and let failure: failure;
+    when { _tag: "Stale", let data }: f(data);
+    when { _tag: "Success", let data }: f(data);
+  },
 )
 
 /** Returns the data as an `Option`, spanning all three data-bearing states:
  *  `Some` for `Success`, `Refreshing`, and `Stale`, `None` otherwise.
  *  Payload-named because it deliberately spans three tags. */
-export const getData = <A, E>(self: AsyncData<A, E>): Option.Option<A> => {
+export const getData = <A, E>(self: AsyncData<A, E>): Option<A> => {
   if (isSuccess(self) || isRefreshing(self) || isStale(self)) {
     return Option.some(self.data)
   }
@@ -490,7 +491,7 @@ export const getData = <A, E>(self: AsyncData<A, E>): Option.Option<A> => {
 /** Returns the error as an `Option`, spanning both error-bearing states:
  *  `Some` for `Failure` and `Stale`, `None` otherwise. Symmetric with
  *  `getData`. */
-export const getError = <A, E>(self: AsyncData<A, E>): Option.Option<E> => {
+export const getError = <A, E>(self: AsyncData<A, E>): Option<E> => {
   if (isFailure(self) || isStale(self)) {
     return Option.some(self.error)
   }
@@ -519,7 +520,7 @@ export const getOrElse: {
  *  const notes = AsyncData.fromOptionOrIdle(HashMap.get(model.notesByNotebook, notebookId))
  *  ``` */
 export const fromOptionOrIdle = <A, E>(
-  maybeEntry: Option.Option<AsyncData<A, E>>,
+  maybeEntry: Option<AsyncData<A, E>>,
 ): AsyncData<A, E> => Option.getOrElse(maybeEntry, () => Idle())
 
 /** Returns `true` only for the `Idle` state. Refinement. */
@@ -580,9 +581,9 @@ const stateTags: ReadonlyArray<string> = [
 export const isAsyncData = (
   input: unknown,
 ): input is AsyncData<unknown, unknown> =>
-  Predicate.hasProperty(input, '_tag') &&
-  Predicate.isString(input._tag) &&
-  Array.contains(stateTags, input._tag)
+  Predicate.hasProperty(input, '_tag')
+  && Predicate.isString(input._tag)
+  && EffectArray.contains(stateTags, input._tag)
 
 /** Returns `self` when it holds data (`Success`, `Refreshing`, or `Stale`),
  *  otherwise `that()`. The recovery and cache-fallback combinator: recover
@@ -612,18 +613,14 @@ export const orElse: {
  *  transition, and no load Command, is needed. */
 export const revalidateOrLoad = <A, E>(
   self: AsyncData<A, E>,
-): Option.Option<AsyncData<A, E>> =>
-  Match.value(self).pipe(
-    Match.withReturnType<Option.Option<AsyncData<A, E>>>(),
-    Match.tagsExhaustive({
-      Idle: () => Option.some(Loading()),
-      Loading: () => Option.none(),
-      Refreshing: () => Option.none(),
-      Failure: () => Option.some(Loading()),
-      Stale: ({ data }) => Option.some(Refreshing({ data })),
-      Success: ({ data }) => Option.some(Refreshing({ data })),
-    }),
-  )
+): Option<AsyncData<A, E>> => match (self) {
+  when { _tag: "Idle" }: Option.some(Loading());
+  when { _tag: "Loading" }: Option.none();
+  when { _tag: "Refreshing" }: Option.none();
+  when { _tag: "Failure" }: Option.some(Loading());
+  when { _tag: "Stale", let data }: Option.some(Refreshing({ data }));
+  when { _tag: "Success", let data }: Option.some(Refreshing({ data }));
+}
 
 /** The loaded-only revalidation transition: `Success` and `Stale` move to
  *  `Refreshing`, every other state yields `None`. Unlike
@@ -632,7 +629,7 @@ export const revalidateOrLoad = <A, E>(
  *  after a mutation. */
 export const revalidate = <A, E>(
   self: AsyncData<A, E>,
-): Option.Option<AsyncData<A, E>> =>
+): Option<AsyncData<A, E>> =>
   Match.value(self).pipe(
     Match.tag('Success', 'Stale', ({ data }) => Refreshing({ data })),
     Match.option,
@@ -646,7 +643,7 @@ export const revalidate = <A, E>(
  *  fetch on first visit, keep the cache afterwards. */
 export const loadIfMissing = <A, E>(
   self: AsyncData<A, E>,
-): Option.Option<AsyncData<A, E>> =>
+): Option<AsyncData<A, E>> =>
   Match.value(self).pipe(
     Match.tag('Idle', 'Failure', () => Loading()),
     Match.option,
@@ -709,22 +706,24 @@ const combineLattice = <E>(
   states: ReadonlyArray<AsyncData<any, E>>,
   combineData: (datas: ReadonlyArray<any>) => any,
 ): AsyncData<any, E> => {
-  const maybeFailure = Array.findFirst(states, isFailure)
+  const maybeFailure = EffectArray.findFirst(states, isFailure)
   if (Option.isSome(maybeFailure)) {
     return maybeFailure.value
   }
-  if (Array.some(states, isLoading)) {
+  if (EffectArray.some(states, isLoading)) {
     return Loading()
   }
-  if (Array.some(states, isIdle)) {
+  if (EffectArray.some(states, isIdle)) {
     return Idle()
   }
-  const data = combineData(Array.getSomes(Array.map(states, getData)))
-  const maybeStale = Array.findFirst(states, isStale)
+  const data = combineData(
+    EffectArray.getSomes(EffectArray.map(states, getData)),
+  )
+  const maybeStale = EffectArray.findFirst(states, isStale)
   if (Option.isSome(maybeStale)) {
     return Stale({ error: maybeStale.value.error, data })
   }
-  if (Array.some(states, isRefreshing)) {
+  if (EffectArray.some(states, isRefreshing)) {
     return Refreshing({ data })
   }
   return Success({ data })
@@ -733,16 +732,17 @@ const combineLattice = <E>(
 const allIterable = (
   inputs: Iterable<AsyncData<any, any>>,
 ): AsyncData<any, any> =>
-  combineLattice(Array.fromIterable(inputs), Function.identity)
+  combineLattice(EffectArray.fromIterable(inputs), Function.identity)
 
 const allRecord = (
   inputs: Record<string, AsyncData<any, any>>,
 ): AsyncData<any, any> => {
   const entries = Object.entries(inputs)
-  const keys = Array.map(entries, ([key]) => key)
-  const states = Array.map(entries, ([, state]) => state)
-  return combineLattice(states, datas =>
-    Object.fromEntries(Array.zip(keys, datas)),
+  const keys = EffectArray.map(entries, ([key]) => key)
+  const states = EffectArray.map(entries, ([, state]) => state)
+  return combineLattice(
+    states,
+    datas => Object.fromEntries(EffectArray.zip(keys, datas)),
   )
 }
 
@@ -763,44 +763,37 @@ export const all: <
     | Record<string, AsyncData<any, any>>,
 >(
   inputs: Inputs,
-) => [Inputs] extends [ReadonlyArray<AsyncData<any, any>>]
-  ? AsyncData<
-      {
-        -readonly [K in keyof Inputs]: [Inputs[K]] extends [
-          AsyncData<infer A, any>,
-        ]
-          ? A
-          : never
-      },
-      Inputs[number] extends never
-        ? never
-        : [Inputs[number]] extends [AsyncData<any, infer E>]
-          ? E
-          : never
-    >
+) => [Inputs] extends [ReadonlyArray<AsyncData<any, any>>] ? AsyncData<
+    {
+      -readonly [K in keyof Inputs]: [Inputs[K]] extends [
+        AsyncData<infer A, any>,
+      ] ? A
+        : never
+    },
+    Inputs[number] extends never ? never
+      : [Inputs[number]] extends [AsyncData<any, infer E>] ? E
+      : never
+  >
   : [Inputs] extends [Iterable<AsyncData<infer A, infer E>>]
     ? AsyncData<Array<A>, E>
-    : AsyncData<
-        {
-          -readonly [K in keyof Inputs]: [Inputs[K]] extends [
-            AsyncData<infer A, any>,
-          ]
-            ? A
-            : never
-        },
-        Inputs[keyof Inputs] extends never
-          ? never
-          : [Inputs[keyof Inputs]] extends [AsyncData<any, infer E>]
-            ? E
-            : never
-      > = (
-  inputs: Iterable<AsyncData<any, any>> | Record<string, AsyncData<any, any>>,
-): any => {
-  if (Symbol.iterator in inputs) {
-    return allIterable(inputs)
+  : AsyncData<
+    {
+      -readonly [K in keyof Inputs]: [Inputs[K]] extends [
+        AsyncData<infer A, any>,
+      ] ? A
+        : never
+    },
+    Inputs[keyof Inputs] extends never ? never
+      : [Inputs[keyof Inputs]] extends [AsyncData<any, infer E>] ? E
+      : never
+  > = (
+    inputs: Iterable<AsyncData<any, any>> | Record<string, AsyncData<any, any>>,
+  ): any => {
+    if (Symbol.iterator in inputs) {
+      return allIterable(inputs)
+    }
+    return allRecord(inputs)
   }
-  return allRecord(inputs)
-}
 
 /** Folds a settled `Result` into the previous state, keeping the last good
  *  data: a `Result` success becomes `Success`, and a `Result` failure
@@ -835,12 +828,12 @@ export const all: <
  */
 export const settle: {
   <A, E>(
-    result: Result.Result<A, E>,
+    result: Result<A, E>,
   ): (self: AsyncData<A, E>) => AsyncData<A, E>
-  <A, E>(self: AsyncData<A, E>, result: Result.Result<A, E>): AsyncData<A, E>
+  <A, E>(self: AsyncData<A, E>, result: Result<A, E>): AsyncData<A, E>
 } = Function.dual(
   2,
-  <A, E>(self: AsyncData<A, E>, result: Result.Result<A, E>): AsyncData<A, E> =>
+  <A, E>(self: AsyncData<A, E>, result: Result<A, E>): AsyncData<A, E> =>
     Result.match(result, {
       onSuccess: data => Success({ data }),
       onFailure: error =>
