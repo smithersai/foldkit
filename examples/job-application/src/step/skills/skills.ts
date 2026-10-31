@@ -19,7 +19,8 @@ export type Model = typeof Model.Type
 
 export const Message = defineMessageUnion({
   ClickedAddEntry: {},
-  CompletedGenerateEntryId: { entryId: Schema.String },
+  SucceededGenerateEntryId: { entryId: Schema.String },
+  FailedGenerateEntryId: {},
   RemovedEntry: { entryId: Schema.String },
   GotEntryMessage: {
     entryId: Schema.String,
@@ -38,12 +39,15 @@ export const init = (initialEntryId: string): Model => ({
 // COMMAND
 
 export const GenerateEntryId = Command.define('GenerateEntryId', {
-  messages: [Message.CompletedGenerateEntryId],
+  messages: [Message.SucceededGenerateEntryId, Message.FailedGenerateEntryId],
   execute: Effect.gen(function* () {
     const secureRandom = yield* SecureRandom.SecureRandom
     const entryId = yield* secureRandom.uuidV4()
-    return Message.CompletedGenerateEntryId({ entryId })
-  }).pipe(Effect.provide(BrowserCrypto.layerSecureRandom)),
+    return Message.SucceededGenerateEntryId({ entryId })
+  }).pipe(
+    Effect.provide(BrowserCrypto.layerSecureRandom),
+    Effect.catchDefect(() => Effect.succeed(Message.FailedGenerateEntryId())),
+  ),
 })
 
 // UPDATE
@@ -74,11 +78,13 @@ export const update = (model: Model, message: Message) =>
   Message.match<Update.Return<Model, Message>>(message, {
     ClickedAddEntry: () => ({ model, commands: [GenerateEntryId()] }),
 
-    CompletedGenerateEntryId: ({ entryId }) => ({
+    SucceededGenerateEntryId: ({ entryId }) => ({
       model: modifyFields(model, {
         entries: Array.append(Entry.init(entryId)),
       }),
     }),
+
+    FailedGenerateEntryId: () => ({ model }),
 
     RemovedEntry: ({ entryId }) => ({
       model: modifyFields(model, {

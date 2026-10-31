@@ -162,7 +162,7 @@ describe('update', () => {
         givenInitial,
         message(
           Message.GotWorkHistoryMessage({
-            message: WorkHistory.Message.CompletedGenerateEntryId({
+            message: WorkHistory.Message.SucceededGenerateEntryId({
               entryId: 'test-work-1',
             }),
           }),
@@ -179,7 +179,7 @@ describe('update', () => {
         givenInitial,
         message(
           Message.GotEducationMessage({
-            message: Education.Message.CompletedGenerateEntryId({
+            message: Education.Message.SucceededGenerateEntryId({
               entryId: 'test-edu-1',
             }),
           }),
@@ -196,7 +196,7 @@ describe('update', () => {
         givenInitial,
         message(
           Message.GotSkillsMessage({
-            message: Skills.Message.CompletedGenerateEntryId({
+            message: Skills.Message.SucceededGenerateEntryId({
               entryId: 'test-skill-1',
             }),
           }),
