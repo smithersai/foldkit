@@ -112,7 +112,7 @@ const config: { ignore?: string | string[]; [key: string]: unknown } = {
       ignoreDependencies: ['@foldkit/ui', 'foldkit'],
     },
     'internal/performance-harness': {
-      entry: ['src/main.ts'],
+      entry: ['src/main.vibe'],
       ignoreDependencies: ['tailwindcss'],
     },
   },
