@@ -79,8 +79,8 @@ importers:
         specifier: ^8.69.0
         version: 8.72.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0))
       vibelang:
-        specifier: file:./.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:./.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -149,8 +149,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/foldkit
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -171,11 +171,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -198,8 +198,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/foldkit
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -220,11 +220,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -250,8 +250,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/foldkit
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -275,11 +275,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -302,8 +302,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/foldkit
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -324,11 +324,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -376,11 +376,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -403,8 +403,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/foldkit
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -425,11 +425,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -452,8 +452,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/foldkit
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -474,11 +474,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -501,8 +501,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/foldkit
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -526,11 +526,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -553,8 +553,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/foldkit
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -575,11 +575,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -605,8 +605,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/foldkit
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -627,11 +627,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -673,11 +673,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -700,8 +700,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/foldkit
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -722,11 +722,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -771,11 +771,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -823,11 +823,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -850,8 +850,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/foldkit
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -872,11 +872,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -924,11 +924,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -957,8 +957,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/foldkit
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -979,11 +979,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1028,11 +1028,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1077,11 +1077,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1101,8 +1101,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/foldkit
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -1123,11 +1123,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1169,11 +1169,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1215,11 +1215,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1239,8 +1239,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/foldkit
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -1261,11 +1261,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1285,8 +1285,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/foldkit
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -1307,11 +1307,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1331,8 +1331,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/foldkit
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -1350,11 +1350,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1383,8 +1383,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/foldkit
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -1405,11 +1405,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1435,8 +1435,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/foldkit
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -1457,11 +1457,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1484,8 +1484,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/foldkit
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -1506,11 +1506,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1536,8 +1536,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/foldkit
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -1558,11 +1558,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1607,11 +1607,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1631,8 +1631,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/foldkit
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -1653,11 +1653,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1680,8 +1680,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/foldkit
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -1702,11 +1702,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1738,8 +1738,8 @@ importers:
         specifier: ^0.7.2
         version: 0.7.2
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -1760,11 +1760,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1806,11 +1806,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1848,8 +1848,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/foldkit
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/vite-plugin':
         specifier: workspace:*
@@ -1867,11 +1867,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1891,8 +1891,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/foldkit
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/vite-plugin':
         specifier: workspace:*
@@ -1907,11 +1907,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1937,8 +1937,8 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@effect/vitest':
         specifier: 4.1.0
@@ -1947,11 +1947,11 @@ importers:
         specifier: 26.4.0
         version: 26.4.0
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vitest:
         specifier: ^5.0.2
         version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
@@ -2027,11 +2027,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-unplugin:
-        specifier: file:../../.vibelang-toolchain/vibelang-unplugin-0.0.11-d83e2657e595.tgz
-        version: file:.vibelang-toolchain/vibelang-unplugin-0.0.11-d83e2657e595.tgz(rolldown@1.2.11)(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-unplugin-0.0.11-7e3b05c3f55f.tgz
+        version: file:.vibelang-toolchain/vibelang-unplugin-0.0.11-7e3b05c3f55f.tgz(rolldown@1.2.11)(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -2069,8 +2069,8 @@ importers:
         specifier: npm:@typescript/typescript6@^6.0.2
         version: '@typescript/typescript6@6.0.2'
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
 
   packages/foldkit:
     dependencies:
@@ -2078,8 +2078,8 @@ importers:
         specifier: ^8.0.1
         version: 8.0.1
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@effect/platform-browser':
         specifier: 4.1.0
@@ -2103,11 +2103,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vitest:
         specifier: ^5.0.2
         version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
@@ -2130,8 +2130,8 @@ importers:
         specifier: ^11.0.5
         version: 11.0.5
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@types/mdast':
         specifier: ^4.0.4
@@ -2158,11 +2158,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -2201,8 +2201,8 @@ importers:
         specifier: 0.3.4
         version: 0.3.4(patch_hash=5ae1feddd491062272373f775b503eba796f277697b34a9a65faf2f92dd72e20)(effect@4.1.0)
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@types/node':
         specifier: 26.4.0
@@ -2226,14 +2226,14 @@ importers:
         specifier: npm:@typescript/typescript6@^6.0.2
         version: '@typescript/typescript6@6.0.2'
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-unplugin:
-        specifier: file:../../.vibelang-toolchain/vibelang-unplugin-0.0.11-d83e2657e595.tgz
-        version: file:.vibelang-toolchain/vibelang-unplugin-0.0.11-d83e2657e595.tgz(rolldown@1.2.11)(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-unplugin-0.0.11-7e3b05c3f55f.tgz
+        version: file:.vibelang-toolchain/vibelang-unplugin-0.0.11-7e3b05c3f55f.tgz(rolldown@1.2.11)(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vitest:
         specifier: ^4.1.11
         version: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
@@ -2256,8 +2256,8 @@ importers:
         specifier: workspace:*
         version: link:../../foldkit
       vibelang-runtime:
-        specifier: file:../../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -2278,11 +2278,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -2309,8 +2309,8 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
 
   packages/typing-game/shared:
     dependencies:
@@ -2318,15 +2318,15 @@ importers:
         specifier: 4.1.0
         version: 4.1.0
       vibelang-runtime:
-        specifier: file:../../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
 
   packages/ui:
     dependencies:
@@ -2334,8 +2334,8 @@ importers:
         specifier: ^1.8.0
         version: 1.8.0
       vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@effect/vitest':
         specifier: 4.1.0
@@ -2362,11 +2362,11 @@ importers:
         specifier: 7.1.0-dev.20261031.1
         version: 7.1.0-dev.20261031.1
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vitest:
         specifier: ^5.0.2
         version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
@@ -2511,11 +2511,11 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       vibelang:
-        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
-        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vibelang-vite:
-        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -6803,8 +6803,8 @@ packages:
   vfile@6.0.3:
     resolution: {integrity: sha512-KzIbH/9tXat2u30jf+smMwFCsno4wHVdNmzFyL+T/L3UGqqk6JKfVqOFOZEpZSHADH1k40ab6NUIXZq422ov3Q==}
 
-  vibelang-runtime@file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz:
-    resolution: {integrity: sha512-kgz0Ob01ppm6RPpBuyApaGFG9o0RWPBf1Z0Tlvsmyd3uXKsQZUM5jc29D3LgPBWn2OXsD2LrBdj9WnEFlHS1AQ==, tarball: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz}
+  vibelang-runtime@file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz:
+    resolution: {integrity: sha512-Bm3l1+5xJ69x4bMNo12mJeke3wKVOqI9WPdTihuEOxJzSy9FLFBI4RAvPGnGXOA8N+SIjg6rPSvR+fTbJ2xbHA==, tarball: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz}
     version: 0.0.11
     engines: {bun: '>=1.4', node: ^22.22.3 || >=24.11.1}
     peerDependencies:
@@ -6820,26 +6820,28 @@ packages:
       '@effect/platform-node':
         optional: true
 
-  vibelang-unplugin@file:.vibelang-toolchain/vibelang-unplugin-0.0.11-d83e2657e595.tgz:
-    resolution: {integrity: sha512-XTOU18tKC+hx31L0yk6e3fHlb4vRms4ySuU0Milvnn7kcOUOE5cDu4tRNT2tBYo/uplmeEy6pEQdEoTP1hG1Tg==, tarball: file:.vibelang-toolchain/vibelang-unplugin-0.0.11-d83e2657e595.tgz}
+  vibelang-unplugin@file:.vibelang-toolchain/vibelang-unplugin-0.0.11-7e3b05c3f55f.tgz:
+    resolution: {integrity: sha512-bWjQ+oPZvD0sH9iymj/plebL1sKh3r/XmnZwmIzzn5JT+mgwCJOcwJCnbseF8QocsdwocU4LdP5nvBG0JYS0Rg==, tarball: file:.vibelang-toolchain/vibelang-unplugin-0.0.11-7e3b05c3f55f.tgz}
     version: 0.0.11
     engines: {node: ^22.22.3 || >=24.11.1}
     peerDependencies:
       vibelang: 0.0.11
 
-  vibelang-vite@file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz:
-    resolution: {integrity: sha512-gvFPL7T7aWR0S/9dZ9I2VkSWogooEgXAd857rNPanV2hAw+Yr/2+rHt0VxJpS1CNLnOT8CHD/dTJQYd3NrTJoA==, tarball: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz}
+  vibelang-vite@file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz:
+    resolution: {integrity: sha512-7mAUoiY0fwehcx+h0rloMCdzUE89KGEOFrKB4ktK9kcLmIZAqMBK/ppw2BBDwjSHyypCXQ7f63aLIRsmwaZHXQ==, tarball: file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz}
     version: 0.0.11
     engines: {node: ^22.22.3 || >=24.11.1}
     peerDependencies:
       vibelang: 0.0.11
       vite: '>=7 <9'
 
-  vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz:
-    resolution: {integrity: sha512-ndRYux/Jbnizi1AgXeffGZq6JVOV9LRL6RzmFDGKR5JzIaCPzjJ9jXvBqLNpTUcOqUBmaEhhL4PlR/xuhSSBJw==, tarball: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz}
+  vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz:
+    resolution: {integrity: sha512-ZHEDi4QHDEYMKEiQJDf8bE0vzFFZRnEeJwYVAd/bObMAdb5TjDFObiQJpZbPjLgYR9yAXaMsdiuCrUJU7OptSw==, tarball: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz}
     version: 0.0.11
     engines: {node: ^22.22.3 || >=24.11.1}
     hasBin: true
+    peerDependencies:
+      effect: 4.1.0
 
   vite@8.2.1:
     resolution: {integrity: sha512-EU/eS7BH3XROHh2YnBefjM6DBKA6ZeMZEYQbj7NLWg5wHYlhB8B/Mayd5XsgWq+NFYccDOTemRpdETWR6Ka/lw==}
@@ -11452,17 +11454,17 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.3
 
-  vibelang-runtime@file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0):
+  vibelang-runtime@file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0):
     dependencies:
       effect: 4.1.0
     optionalDependencies:
       '@effect/platform-browser': 4.1.0(effect@4.1.0)
       '@effect/platform-node': 4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0))
 
-  vibelang-unplugin@file:.vibelang-toolchain/vibelang-unplugin-0.0.11-d83e2657e595.tgz(rolldown@1.2.11)(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)):
+  vibelang-unplugin@file:.vibelang-toolchain/vibelang-unplugin-0.0.11-7e3b05c3f55f.tgz(rolldown@1.2.11)(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)):
     dependencies:
       unplugin: 3.4.0(rolldown@1.2.11)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
-      vibelang: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
     transitivePeerDependencies:
       - '@farmfe/core'
       - '@rsbuild/core'
@@ -11475,14 +11477,15 @@ snapshots:
       - vite
       - webpack
 
-  vibelang-vite@file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)):
+  vibelang-vite@file:.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)):
     dependencies:
-      vibelang: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)
       vite: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
 
-  vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz:
+  vibelang@file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0):
     dependencies:
       dprint: 0.64.3
+      effect: 4.1.0
 
   vite@8.2.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1):
     dependencies:
