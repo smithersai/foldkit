@@ -14,7 +14,13 @@ import {
 import { modifyFields } from 'foldkit/struct'
 import { describe, test } from 'vitest'
 
-import { Message, SimulateAuthRequest, initModel, update, view } from './login.vibe'
+import {
+  Message,
+  SimulateAuthRequest,
+  initModel,
+  update,
+  view,
+} from './login.vibe'
 
 const validModel = modifyFields(initModel(), {
   email: () => Valid({ value: 'alice@example.com' }),

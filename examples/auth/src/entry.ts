@@ -1,7 +1,7 @@
 import { Runtime } from 'foldkit'
 
-import { Flags, flags, init } from './main.ts'
-import { Message } from './message.vibe'
+import { Flags, flags, init } from './main.vibe'
+import { Message } from './message.ts'
 import { Model } from './model.vibe'
 import { update } from './update.vibe'
 import { view } from './view.vibe'

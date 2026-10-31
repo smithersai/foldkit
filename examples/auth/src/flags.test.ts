@@ -3,7 +3,7 @@ import fc from 'fast-check'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
 import { SESSION_STORAGE_KEY } from './constant'
-import { flags } from './main.ts'
+import { flags } from './main.vibe'
 
 const memoryStorage = (rejectsReads = false): Storage => {
   const values = new Map<string, string>()
