@@ -1,5 +1,16 @@
 import { clsx } from 'clsx'
-import { Array as Arr, String as Str, pipe } from 'effect'
+import {
+  Array,
+  Effect,
+  Match,
+  Option,
+  Order,
+  Schema,
+  SchemaTransformation,
+  String,
+  Types,
+  pipe,
+} from 'effect'
 import { Command, Route, Runtime, Update } from 'foldkit'
 import { Document, Html, HtmlBuilder, childAttributes } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -12,11 +23,18 @@ import { Url, toString as urlToString } from 'foldkit/url'
 import { Button, Input, Listbox } from '@foldkit/ui'
 import { AnchorConfig } from '@foldkit/ui/listbox'
 
-import { type Dinosaur, dinosaurs } from './data.ts'
+import { type Dinosaur, dinosaurs } from './data'
 
 const Diet = Schema.Literals(['Carnivore', 'Herbivore', 'Omnivore'])
 const Period = Schema.Literals(['Triassic', 'Jurassic', 'Cretaceous'])
-schema SortColumn = 'Name' | 'Period' | 'Diet' | 'Length' | 'Weight'
+const SortColumn = Schema.Literals([
+  'Name',
+  'Period',
+  'Diet',
+  'Length',
+  'Weight',
+])
+type SortColumn = typeof SortColumn.Type
 
 export const Sorting = defineTaggedUnion({
   Unsorted: {},
@@ -32,18 +50,17 @@ const periodFilterItems: ReadonlyArray<string> = ['', ...Period.literals]
 
 const SORT_PARAM_SEPARATOR = ':'
 
-const optionFromValidParam = <A extends string>(
-  schema: Schema.Codec<A, A>,
-): infer _ => {
+const optionFromValidParam = <A extends string>(schema: Schema.Codec<A, A>) => {
   const decode = Schema.decodeUnknownOption(schema)
 
   return Schema.OptionFromOptional(Schema.String).pipe(
     Schema.decodeTo(
       Schema.Option(schema),
       SchemaTransformation.transform({
-        decode: (maybeRaw: Option<string>): Option<A> =>
+        decode: (maybeRaw: Option.Option<string>): Option.Option<A> =>
           Option.flatMap(maybeRaw, decode),
-        encode: (maybeValue: Option<A>): Option<string> => maybeValue,
+        encode: (maybeValue: Option.Option<A>): Option.Option<string> =>
+          maybeValue,
       }),
     ),
   )
@@ -51,7 +68,7 @@ const optionFromValidParam = <A extends string>(
 
 const SortDirection = Schema.Literals(['Ascending', 'Descending'])
 
-const sortingFromParam = ((): infer _ => {
+const sortingFromParam = (() => {
   const decodeColumn = Schema.decodeUnknownOption(SortColumn)
   const decodeDirection = Schema.decodeUnknownOption(SortDirection)
 
@@ -59,33 +76,42 @@ const sortingFromParam = ((): infer _ => {
     Schema.decodeTo(
       Sorting,
       SchemaTransformation.transform({
-        decode: (
-          maybeRaw: Option<string>,
-        ): Sorting => match (maybeRaw) {
-          when Option.None: (Sorting.Unsorted());
-          when Option.Some(let value): do {
-            const parts = Str.split(value, SORT_PARAM_SEPARATOR)
-            Option.all({
-              column: pipe(
-                parts,
-                Arr.get(0),
-                Option.flatMap(decodeColumn),
-              ),
-              direction: pipe(
-                parts,
-                Arr.get(1),
-                Option.flatMap(decodeDirection),
-              ),
-            })
-              .map(({ column, direction }) => match (direction) {
-                when 'Ascending': Sorting.Ascending({ column });
-                when 'Descending': Sorting.Descending({ column });
-              })
-              .getOrElse(() => Sorting.Unsorted())
-          };
-        },
-        encode: (sorting): Option<string> =>
-          Sorting.match<Option<string>>(sorting, {
+        decode: (maybeRaw: Option.Option<string>): Sorting =>
+          Option.match(maybeRaw, {
+            onNone: () => Sorting.Unsorted(),
+            onSome: value => {
+              const parts = String.split(value, SORT_PARAM_SEPARATOR)
+
+              return pipe(
+                Option.all({
+                  column: pipe(
+                    parts,
+                    Array.get(0),
+                    Option.flatMap(decodeColumn),
+                  ),
+                  direction: pipe(
+                    parts,
+                    Array.get(1),
+                    Option.flatMap(decodeDirection),
+                  ),
+                }),
+                Option.map(({ column, direction }) =>
+                  Match.value(direction).pipe(
+                    Match.when('Ascending', () =>
+                      Sorting.Ascending({ column }),
+                    ),
+                    Match.when('Descending', () =>
+                      Sorting.Descending({ column }),
+                    ),
+                    Match.exhaustive,
+                  ),
+                ),
+                Option.getOrElse(() => Sorting.Unsorted()),
+              )
+            },
+          }),
+        encode: (sorting): Option.Option<string> =>
+          Sorting.match<Option.Option<string>>(sorting, {
             Unsorted: () => Option.none(),
             Ascending: ({ column }) =>
               Option.some(`${column}${SORT_PARAM_SEPARATOR}Ascending`),
@@ -127,11 +153,12 @@ const urlToAppRoute = Route.parseUrlWithFallback(routeParser, AppRoute.NotFound)
 
 // MODEL
 
-export schema Model {
-  route: AppRoute
-  dietListbox: Listbox.Model
-  periodListbox: Listbox.Model
-}
+export const Model = Schema.Struct({
+  route: AppRoute,
+  dietListbox: Listbox.Model,
+  periodListbox: Listbox.Model,
+})
+export type Model = typeof Model.Type
 
 // MESSAGE
 
@@ -160,10 +187,11 @@ const emptyBrowseFields: BrowseFields = {
   period: Option.none(),
 }
 
-const routeToBrowseFields = (route: AppRoute): BrowseFields => match (route) {
-  when { _tag: 'Browse' } and let route: route;
-  default: emptyBrowseFields;
-}
+const routeToBrowseFields = (route: AppRoute): BrowseFields =>
+  Match.value(route).pipe(
+    Match.tag('Browse', route => route),
+    Match.orElse(() => emptyBrowseFields),
+  )
 
 export const init: Runtime.RoutingApplicationInit<Model, Message> = (
   url: Url,
@@ -185,8 +213,8 @@ const columnSortDirection = (
   sorting: Sorting,
   column: SortColumn,
 ): Types.Tags<Sorting> => {
-  const isColumnSorted = sorting._tag !== 'Unsorted'
-    && sorting.column === column
+  const isColumnSorted =
+    sorting._tag !== 'Unsorted' && sorting.column === column
 
   if (isColumnSorted) {
     return sorting._tag
@@ -195,21 +223,27 @@ const columnSortDirection = (
   }
 }
 
-const nextSorting = (sorting: Sorting, column: SortColumn): Sorting => match (columnSortDirection(sorting, column)) {
-  when 'Unsorted': Sorting.Ascending({ column });
-  when 'Ascending': Sorting.Descending({ column });
-  when 'Descending': Sorting.Unsorted();
-}
+const nextSorting = (sorting: Sorting, column: SortColumn): Sorting =>
+  pipe(
+    columnSortDirection(sorting, column),
+    Match.value,
+    Match.when('Unsorted', () => Sorting.Ascending({ column })),
+    Match.when('Ascending', () => Sorting.Descending({ column })),
+    Match.when('Descending', () => Sorting.Unsorted()),
+    Match.exhaustive,
+  )
 
 const selectionToParam = <A extends string>(
-  maybeSelectedItem: Option<string>,
+  maybeSelectedItem: Option.Option<string>,
   schema: Schema.Codec<A, A>,
-): Option<A> => {
+): Option.Option<A> => {
   const decode = Schema.decodeUnknownOption(schema)
 
-  return maybeSelectedItem
-    .filter(Str.isNonEmpty)
-    .flatMap(value => decode(value))
+  return pipe(
+    maybeSelectedItem,
+    Option.filter(String.isNonEmpty),
+    Option.flatMap(value => decode(value)),
+  )
 }
 
 export const ReplaceFilters = Command.define('ReplaceFilters', {
@@ -220,40 +254,24 @@ export const ReplaceFilters = Command.define('ReplaceFilters', {
     period: Schema.Option(Period),
   },
   messages: [Message.CompletedReplaceFilters],
-  execute: (fields): ReturnType<typeof Message.CompletedReplaceFilters>!! => {
-    const target = browseRouter(fields)
-    const completed = Message.CompletedReplaceFilters()
-    return effect {
-      try replaceUrl(target)
-      return completed
-    }
-  },
+  execute: fields =>
+    replaceUrl(browseRouter(fields)).pipe(
+      Effect.as(Message.CompletedReplaceFilters()),
+    ),
 })
 
 const NavigateInternal = Command.define('NavigateInternal', {
   args: { url: Schema.String },
   messages: [Message.CompletedNavigateInternal],
-  execute: (
-    { url },
-  ): ReturnType<typeof Message.CompletedNavigateInternal>!! => {
-    const completed = Message.CompletedNavigateInternal()
-    return effect {
-      try pushUrl(url)
-      return completed
-    }
-  },
+  execute: ({ url }) =>
+    pushUrl(url).pipe(Effect.as(Message.CompletedNavigateInternal())),
 })
 
 const LoadExternal = Command.define('LoadExternal', {
   args: { href: Schema.String },
   messages: [Message.CompletedLoadExternal],
-  execute: ({ href }): ReturnType<typeof Message.CompletedLoadExternal>!! => {
-    const completed = Message.CompletedLoadExternal()
-    return effect {
-      try load(href)
-      return completed
-    }
-  },
+  execute: ({ href }) =>
+    load(href).pipe(Effect.as(Message.CompletedLoadExternal())),
 })
 
 type UpdateReturn = Update.Return<Model, Message>
@@ -264,18 +282,20 @@ const PeriodListbox = Listbox.create<string>()
 const foldDietListboxOutMessage = Listbox.OutMessage.match<
   Update.Step<Model, Message>
 >({
-  Selected: ({ value }) => model => {
-    const fields = routeToBrowseFields(model.route)
-    return {
-      model,
-      commands: [
-        ReplaceFilters({
-          ...fields,
-          diet: selectionToParam(Option.some(value), Diet),
-        }),
-      ],
-    }
-  },
+  Selected:
+    ({ value }) =>
+    model => {
+      const fields = routeToBrowseFields(model.route)
+      return {
+        model,
+        commands: [
+          ReplaceFilters({
+            ...fields,
+            diet: selectionToParam(Option.some(value), Diet),
+          }),
+        ],
+      }
+    },
 })
 
 const foldDietListbox = Update.foldChild({
@@ -290,18 +310,20 @@ const foldDietListbox = Update.foldChild({
 const foldPeriodListboxOutMessage = Listbox.OutMessage.match<
   Update.Step<Model, Message>
 >({
-  Selected: ({ value }) => model => {
-    const fields = routeToBrowseFields(model.route)
-    return {
-      model,
-      commands: [
-        ReplaceFilters({
-          ...fields,
-          period: selectionToParam(Option.some(value), Period),
-        }),
-      ],
-    }
-  },
+  Selected:
+    ({ value }) =>
+    model => {
+      const fields = routeToBrowseFields(model.route)
+      return {
+        model,
+        commands: [
+          ReplaceFilters({
+            ...fields,
+            period: selectionToParam(Option.some(value), Period),
+          }),
+        ],
+      }
+    },
 })
 
 const foldPeriodListbox = Update.foldChild({
@@ -313,7 +335,7 @@ const foldPeriodListbox = Update.foldChild({
   foldOutMessage: foldPeriodListboxOutMessage,
 })
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
     CompletedNavigateInternal: () => ({ model }),
     CompletedLoadExternal: () => ({ model }),
@@ -345,7 +367,7 @@ export const update = (model: Model, message: Message): infer _ =>
         commands: [
           ReplaceFilters({
             ...fields,
-            search: Option.liftPredicate(value, Str.isNonEmpty),
+            search: Option.liftPredicate(value, String.isNonEmpty),
           }),
         ],
       }
@@ -372,7 +394,7 @@ export const update = (model: Model, message: Message): infer _ =>
 
 // VIEW
 
-const columnOrders: Record<SortColumn, Order<Dinosaur>> = {
+const columnOrders: Record<SortColumn, Order.Order<Dinosaur>> = {
   Name: Order.mapInput(Order.String, ({ name }: Dinosaur) => name),
   Period: Order.mapInput(Order.String, ({ period }: Dinosaur) => period),
   Diet: Order.mapInput(Order.String, ({ diet }: Dinosaur) => diet),
@@ -383,50 +405,50 @@ const columnOrders: Record<SortColumn, Order<Dinosaur>> = {
   Weight: Order.mapInput(Order.Number, ({ weightKg }: Dinosaur) => weightKg),
 }
 
-const filterWhenSome = <A, B>(
-  maybeValue: Option<A>,
-  predicate: (value: A, item: B) => boolean,
-): infer _ =>
-(
-  items: ReadonlyArray<B>,
-): ReadonlyArray<B> => match (maybeValue) {
-  when Option.None: items;
-  when Option.Some(let value):
-    (Arr.filter(items, item => predicate(value, item)));
-}
+const filterWhenSome =
+  <A, B>(
+    maybeValue: Option.Option<A>,
+    predicate: (value: A, item: B) => boolean,
+  ) =>
+  (items: ReadonlyArray<B>): ReadonlyArray<B> =>
+    Option.match(maybeValue, {
+      onNone: () => items,
+      onSome: value => Array.filter(items, item => predicate(value, item)),
+    })
 
 const sortBySorting =
-  <A>(sorting: Sorting, orders: Record<SortColumn, Order<A>>): infer _ =>
+  <A>(sorting: Sorting, orders: Record<SortColumn, Order.Order<A>>) =>
   (items: ReadonlyArray<A>): ReadonlyArray<A> =>
     Sorting.match(sorting, {
       Unsorted: () => items,
-      Ascending: ({ column }) => Arr.sort(items, orders[column]),
-      Descending: ({ column }) => Arr.sort(items, Order.flip(orders[column])),
+      Ascending: ({ column }) => Array.sort(items, orders[column]),
+      Descending: ({ column }) => Array.sort(items, Order.flip(orders[column])),
     })
 
 const filterAndSort = (fields: BrowseFields): ReadonlyArray<Dinosaur> =>
   pipe(
     dinosaurs,
     filterWhenSome(fields.search, (query, dinosaur) =>
-      dinosaur.name.toLowerCase().includes(query.toLowerCase())),
+      dinosaur.name.toLowerCase().includes(query.toLowerCase()),
+    ),
     filterWhenSome(
       fields.diet,
-      (dietValue, dinosaur) =>
-        dinosaur.diet === dietValue,
+      (dietValue, dinosaur) => dinosaur.diet === dietValue,
     ),
     filterWhenSome(
       fields.period,
-      (periodValue, dinosaur) =>
-        dinosaur.period === periodValue,
+      (periodValue, dinosaur) => dinosaur.period === periodValue,
     ),
     sortBySorting(fields.sorting, columnOrders),
   )
 
-const sortIndicator = (column: SortColumn, sorting: Sorting): string => match (columnSortDirection(sorting, column)) {
-  when 'Unsorted': '';
-  when 'Ascending': '↑';
-  when 'Descending': '↓';
-}
+const sortIndicator = (column: SortColumn, sorting: Sorting): string =>
+  Match.value(columnSortDirection(sorting, column)).pipe(
+    Match.when('Unsorted', () => ''),
+    Match.when('Ascending', () => '↑'),
+    Match.when('Descending', () => '↓'),
+    Match.exhaustive,
+  )
 
 const BADGE_BASE = 'px-2 py-0.5 rounded-full text-xs font-medium'
 
@@ -484,17 +506,21 @@ const dinosaurRowView = (dinosaur: Dinosaur, h: HtmlBuilder<Message>): Html =>
     ],
   )
 
-const sortAriaLabel = (column: SortColumn, sorting: Sorting): string => match (columnSortDirection(sorting, column)) {
-  when 'Unsorted': `Sort by ${column}`;
-  when 'Ascending': `Sort by ${column}, currently ascending`;
-  when 'Descending': `Sort by ${column}, currently descending`;
-}
+const sortAriaLabel = (column: SortColumn, sorting: Sorting): string =>
+  Match.value(columnSortDirection(sorting, column)).pipe(
+    Match.when('Unsorted', () => `Sort by ${column}`),
+    Match.when('Ascending', () => `Sort by ${column}, currently ascending`),
+    Match.when('Descending', () => `Sort by ${column}, currently descending`),
+    Match.exhaustive,
+  )
 
-const ariaSortValue = (column: SortColumn, sorting: Sorting): string => match (columnSortDirection(sorting, column)) {
-  when 'Unsorted': 'none';
-  when 'Ascending': 'ascending';
-  when 'Descending': 'descending';
-}
+const ariaSortValue = (column: SortColumn, sorting: Sorting): string =>
+  Match.value(columnSortDirection(sorting, column)).pipe(
+    Match.when('Unsorted', () => 'none'),
+    Match.when('Ascending', () => 'ascending'),
+    Match.when('Descending', () => 'descending'),
+    Match.exhaustive,
+  )
 
 const sortableColumnHeader = (
   column: SortColumn,
@@ -601,18 +627,20 @@ const filterButtonContent = (label: string, h: HtmlBuilder<Message>): Html =>
   )
 
 const filterButtonLabel = (
-  maybeSelectedItem: Option<string>,
+  maybeSelectedItem: Option.Option<string>,
   fallback: string,
 ): string =>
-  maybeSelectedItem
-    .filter(Str.isNonEmpty)
-    .getOrElse(() => fallback)
+  pipe(
+    maybeSelectedItem,
+    Option.filter(String.isNonEmpty),
+    Option.getOrElse(() => fallback),
+  )
 
 const dietLabel = (item: string): string =>
-  Str.isEmpty(item) ? 'All Diets' : item
+  String.isEmpty(item) ? 'All Diets' : item
 
 const periodLabel = (item: string): string =>
-  Str.isEmpty(item) ? 'All Periods' : item
+  String.isEmpty(item) ? 'All Periods' : item
 
 const browseView = (
   model: Model,
@@ -717,13 +745,11 @@ const browseView = (
       h.p(
         [h.Class('text-sm text-gray-500 mb-3')],
         [
-          `Showing ${Arr.length(results)} of ${
-            Arr.length(dinosaurs)
-          } dinosaurs`,
+          `Showing ${Array.length(results)} of ${Array.length(dinosaurs)} dinosaurs`,
         ],
       ),
 
-      Arr.match(results, {
+      Array.match(results, {
         onEmpty: () =>
           h.div(
             [h.Class('text-center py-12 text-gray-400')],
@@ -829,10 +855,11 @@ const notFoundView = (path: string, h: HtmlBuilder<Message>): Html =>
     ],
   )
 
-const routeTitle = (route: Model['route']): string => match (route) {
-  when { _tag: 'Browse' }: 'Dinosaur Explorer';
-  default: 'Not Found | Dinosaur Explorer';
-}
+const routeTitle = (route: Model['route']): string =>
+  Match.value(route).pipe(
+    Match.tag('Browse', () => 'Dinosaur Explorer'),
+    Match.orElse(() => 'Not Found | Dinosaur Explorer'),
+  )
 
 export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
   const routeContent = AppRoute.match(model.route, {

@@ -14,7 +14,7 @@ import {
   Sorting,
   browseRouter,
   update,
-} from './main.vibe'
+} from './main'
 
 const browseModel: Model = {
   route: AppRoute.Browse({

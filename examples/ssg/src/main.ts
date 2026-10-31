@@ -1,3 +1,4 @@
+import { Effect, Schema } from 'effect'
 import { Command, Runtime, type Update } from 'foldkit'
 import { type Document, type Html, type HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -9,10 +10,11 @@ import { AppRoute, aboutRouter, homeRouter, urlToAppRoute } from './route.vibe'
 
 // MODEL
 
-export schema Model {
-  route: AppRoute
-  count: number
-}
+export const Model = Schema.Struct({
+  route: AppRoute,
+  count: Schema.Number,
+})
+export type Model = typeof Model.Type
 
 // MESSAGE
 
@@ -37,34 +39,22 @@ export const init: Runtime.RoutingApplicationInit<Model, Message> = url => ({
 const NavigateInternal = Command.define('NavigateInternal', {
   args: { url: Schema.String },
   messages: [Message.CompletedNavigateInternal],
-  execute: (
-    { url },
-  ): ReturnType<typeof Message.CompletedNavigateInternal>!! => {
-    const completed = Message.CompletedNavigateInternal()
-    return effect {
-      try pushUrl(url)
-      return completed
-    }
-  },
+  execute: ({ url }) =>
+    pushUrl(url).pipe(Effect.as(Message.CompletedNavigateInternal())),
 })
 
 const LoadExternal = Command.define('LoadExternal', {
   args: { href: Schema.String },
   messages: [Message.CompletedLoadExternal],
-  execute: ({ href }): ReturnType<typeof Message.CompletedLoadExternal>!! => {
-    const completed = Message.CompletedLoadExternal()
-    return effect {
-      try load(href)
-      return completed
-    }
-  },
+  execute: ({ href }) =>
+    load(href).pipe(Effect.as(Message.CompletedLoadExternal())),
 })
 
 // UPDATE
 
 type UpdateReturn = Update.Return<Model, Message>
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
     ClickedIncrement: () => ({
       model: modifyFields(model, { count: count => count + 1 }),
