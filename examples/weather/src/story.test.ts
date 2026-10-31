@@ -3,7 +3,7 @@ import { HttpClient, HttpClientResponse } from 'effect/http'
 import { Command, given, message, model, story } from 'foldkit/story'
 import { expect, test } from 'vitest'
 
-import { FetchWeather, Message, fetchWeatherEffect, update } from './main'
+import { FetchWeather, Message, fetchWeatherEffect, update } from './main.vibe'
 import {
   mockGeocodingResponse,
   mockWeatherResponse,

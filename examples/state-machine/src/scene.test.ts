@@ -13,8 +13,8 @@ import { describe, test } from 'vitest'
 
 import { RadioGroup } from '@foldkit/ui'
 
-import { Message, PlaceOrder, initialModel, update } from './main'
-import { view } from './view'
+import { Message, PlaceOrder, initialModel, update } from './main.ts'
+import { view } from './view.vibe'
 
 const resolveFocusOption = Command.resolve(
   RadioGroup.FocusOption,

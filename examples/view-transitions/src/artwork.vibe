@@ -1,13 +1,12 @@
-import { Array, Option, Schema } from 'effect'
+import { Array as Arr } from 'effect'
 
-export const Artwork = Schema.Struct({
-  id: Schema.Number,
-  title: Schema.String,
-  medium: Schema.String,
-  description: Schema.String,
-  gradientClassName: Schema.String,
-})
-export type Artwork = typeof Artwork.Type
+export schema Artwork {
+  id: number
+  title: string
+  medium: string
+  description: string
+  gradientClassName: string
+}
 
 export const artworks: ReadonlyArray<Artwork> = [
   {
@@ -76,5 +75,5 @@ export const artworks: ReadonlyArray<Artwork> = [
   },
 ]
 
-export const findArtwork = (artworkId: number): Option.Option<Artwork> =>
-  Array.findFirst(artworks, artwork => artwork.id === artworkId)
+export const findArtwork = (artworkId: number): Option<Artwork> =>
+  Arr.findFirst(artworks, artwork => artwork.id === artworkId)

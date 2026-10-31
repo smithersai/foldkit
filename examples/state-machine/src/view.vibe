@@ -1,10 +1,10 @@
 import { clsx } from 'clsx'
-import { Array, Match, Option, pipe } from 'effect'
+import { Array as Arr } from 'effect'
 import { Document, Html, HtmlBuilder } from 'foldkit/html'
 
 import { Button, Checkbox, Input, RadioGroup } from '@foldkit/ui'
 
-import * as Icon from './icon'
+import * as Icon from './icon.ts'
 import {
   CheckoutState,
   Discount,
@@ -17,7 +17,7 @@ import {
   editionName,
   isReviewReady,
   promoToMaybeDiscount,
-} from './main'
+} from './main.ts'
 
 // VIEW
 
@@ -79,26 +79,21 @@ const progressSteps: ReadonlyArray<string> = [
 
 const stateToMaybeProgressStep = (
   state: typeof CheckoutState.Type,
-): Option.Option<string> =>
-  Match.value(state).pipe(
-    Match.tags({
-      Cart: () => 'Bag',
-      Shipping: () => 'Delivery',
-      Payment: () => 'Payment',
-      Review: () => 'Review',
-      Cancelled: () => 'Bag',
-    }),
-    Match.option,
-  )
+): Option<string> => match (state) {
+  when { _tag: 'Cart' }: Option.some('Bag');
+  when { _tag: 'Shipping' }: Option.some('Delivery');
+  when { _tag: 'Payment' }: Option.some('Payment');
+  when { _tag: 'Review' }: Option.some('Review');
+  when { _tag: 'Cancelled' }: Option.some('Bag');
+  default: Option.none();
+}
 
 const currentProgressIndex = (state: typeof CheckoutState.Type): number =>
-  pipe(
-    stateToMaybeProgressStep(state),
-    Option.flatMap(progressStep =>
-      Array.findFirstIndex(progressSteps, step => step === progressStep),
-    ),
-    Option.getOrElse(() => progressSteps.length),
-  )
+  stateToMaybeProgressStep(state)
+    .flatMap(progressStep =>
+      Arr.findFirstIndex(progressSteps, step => step === progressStep)
+    )
+    .getOrElse(() => progressSteps.length)
 
 const editionPrice = (edition: string): number =>
   edition === 'Hardcover' ? PHYSICAL_PRICE : DIGITAL_PRICE
@@ -114,19 +109,18 @@ const roundToCents = (amount: number): number => Math.round(amount * 100) / 100
 
 const orderPricing = (
   isShippingRequired: boolean,
-  maybeDiscount: Option.Option<typeof Discount.Type>,
-) => {
+  maybeDiscount: Option<typeof Discount.Type>,
+): infer _ => {
   const subtotal = isShippingRequired ? PHYSICAL_PRICE : DIGITAL_PRICE
   const maybeAppliedDiscount = Option.map(maybeDiscount, discount => ({
     code: discount.code,
     amount: roundToCents((subtotal * discount.percentOff) / 100),
   }))
-  const discountedSubtotal =
-    subtotal -
-    Option.match(maybeAppliedDiscount, {
-      onNone: () => 0,
-      onSome: appliedDiscount => appliedDiscount.amount,
-    })
+  const discountedSubtotal = subtotal
+    - match (maybeAppliedDiscount) {
+      when Option.None: (0);
+      when Option.Some(let appliedDiscount): (appliedDiscount.amount);
+    }
   const tax = roundToCents(discountedSubtotal * SALES_TAX_RATE)
 
   return {
@@ -139,16 +133,15 @@ const orderPricing = (
 
 const stateToMaybeDiscount = (
   state: typeof CheckoutState.Type,
-): Option.Option<typeof Discount.Type> =>
-  Match.value(state).pipe(
-    Match.tags({
-      Review: reviewState => promoToMaybeDiscount(reviewState.promo),
-      Placing: placingState => placingState.maybeDiscount,
-      Confirmed: confirmedState => confirmedState.maybeDiscount,
-    }),
-    Match.option,
-    Option.flatten,
-  )
+): Option<typeof Discount.Type> => match (state) {
+  when { _tag: 'Review' } and let reviewState: promoToMaybeDiscount(
+    reviewState.promo,
+  );
+  when { _tag: 'Placing' } and let placingState: placingState.maybeDiscount;
+  when { _tag: 'Confirmed' } and let confirmedState:
+    confirmedState.maybeDiscount;
+  default: Option.none();
+}
 
 const bookCoverView = (
   className: string,
@@ -266,10 +259,10 @@ const progressIndicatorClassName = (
     'grid h-6 w-6 place-items-center rounded-full border-2 sm:h-7 sm:w-7',
     {
       'border-stone-900 bg-stone-900 text-white': isCompleteOrSkipped,
-      'border-stone-900 bg-stone-50 text-stone-900':
-        !isCompleteOrSkipped && isActive,
-      'border-stone-300 bg-stone-50 text-stone-600':
-        !isCompleteOrSkipped && !isActive,
+      'border-stone-900 bg-stone-50 text-stone-900': !isCompleteOrSkipped
+        && isActive,
+      'border-stone-300 bg-stone-50 text-stone-600': !isCompleteOrSkipped
+        && !isActive,
     },
   )
 }
@@ -285,13 +278,12 @@ const progressView = (
     [
       h.ol(
         [h.Class('grid grid-cols-4 gap-2 sm:gap-5')],
-        Array.map(progressSteps, (stepLabel, index) => {
+        Arr.map(progressSteps, (stepLabel, index) => {
           const isActive = progressIndex === index
           const isComplete = progressIndex > index
-          const isSkipped =
-            stepLabel === 'Delivery' &&
-            !state.isShippingRequired &&
-            progressIndex > index
+          const isSkipped = stepLabel === 'Delivery'
+            && !state.isShippingRequired
+            && progressIndex > index
           const indicatorClassName = progressIndicatorClassName(
             isActive,
             isComplete,
@@ -386,20 +378,20 @@ const editionOptionView = (
               ),
               option.isSelected
                 ? h.span(
-                    [
-                      h.Class(
-                        clsx(
-                          selectionBadgeClassName,
-                          'items-center gap-1 text-orange-800',
-                        ),
+                  [
+                    h.Class(
+                      clsx(
+                        selectionBadgeClassName,
+                        'items-center gap-1 text-orange-800',
                       ),
-                    ],
-                    [Icon.check('h-3 w-3'), 'Selected'],
-                  )
+                    ),
+                  ],
+                  [Icon.check('h-3 w-3'), 'Selected'],
+                )
                 : h.span(
-                    [h.Class(clsx(selectionBadgeClassName, 'text-stone-600'))],
-                    ['Choose'],
-                  ),
+                  [h.Class(clsx(selectionBadgeClassName, 'text-stone-600'))],
+                  ['Choose'],
+                ),
             ],
           ),
         ],
@@ -483,11 +475,11 @@ const cartView = (
               options: EDITIONS,
               ariaLabel: 'Choose an edition',
               orientation: 'Horizontal',
-              hasOptionDescription: () => true,
+              hasOptionDescription: (): boolean => true,
               toView: ({ group, options }) =>
                 h.div(
                   [...group, h.Class('grid gap-3 sm:grid-cols-2')],
-                  Array.map(options, option => editionOptionView(option, h)),
+                  Arr.map(options, option => editionOptionView(option, h)),
                 ),
             },
             toParentMessage: message =>
@@ -1391,9 +1383,9 @@ const orderSummaryView = (
               ),
             ],
           ),
-          ...Option.match(pricing.maybeAppliedDiscount, {
-            onNone: () => [],
-            onSome: appliedDiscount => [
+          ...match (pricing.maybeAppliedDiscount) {
+            when Option.None: [];
+            when Option.Some(let appliedDiscount): [
               h.div(
                 [h.Class(summaryRowClassName)],
                 [
@@ -1407,8 +1399,8 @@ const orderSummaryView = (
                   ),
                 ],
               ),
-            ],
-          }),
+            ];
+          },
           h.div(
             [h.Class(summaryRowClassName)],
             [
@@ -1443,34 +1435,34 @@ const orderSummaryView = (
       ),
       state.isShippingRequired
         ? h.div(
-            [h.Class(orderNoteClassName)],
-            [
-              Icon.truck('mt-0.5 h-4 w-4 shrink-0'),
-              'Free tracked shipping in the United States.',
-            ],
-          )
+          [h.Class(orderNoteClassName)],
+          [
+            Icon.truck('mt-0.5 h-4 w-4 shrink-0'),
+            'Free tracked shipping in the United States.',
+          ],
+        )
         : h.div(
-            [h.Class(orderNoteClassName)],
-            [
-              Icon.download('mt-0.5 h-4 w-4 shrink-0'),
-              'Download links arrive immediately after purchase.',
-            ],
-          ),
+          [h.Class(orderNoteClassName)],
+          [
+            Icon.download('mt-0.5 h-4 w-4 shrink-0'),
+            'Download links arrive immediately after purchase.',
+          ],
+        ),
     ],
   )
 }
 
 const formatTags = (tags: ReadonlyArray<string>): string =>
-  Array.match(tags, {
+  Arr.match(tags, {
     onEmpty: () => 'None',
-    onNonEmpty: Array.join(', '),
+    onNonEmpty: Arr.join(', '),
   })
 
 const transitionLogView = (model: Model, h: HtmlBuilder<Message>): Html => {
   const transitionLogClassName =
     'border-l-2 border-orange-700 pl-3 font-mono text-xs leading-5 text-stone-300 lg:col-span-3'
 
-  return Array.match(model.transitionLog, {
+  return Arr.match(model.transitionLog, {
     onEmpty: () =>
       h.div(
         [h.Role('status'), h.Class(transitionLogClassName)],
@@ -1482,9 +1474,8 @@ const transitionLogView = (model: Model, h: HtmlBuilder<Message>): Html => {
           h.Role('log'),
           h.Class(clsx(transitionLogClassName, 'max-h-40 overflow-y-auto')),
         ],
-        Array.map(transitionLog, entry =>
-          h.keyed('li')(String(entry.id), [], [entry.summary]),
-        ),
+        Arr.map(transitionLog, entry =>
+          h.keyed('li')(String(entry.id), [], [entry.summary])),
       ),
   })
 }
@@ -1574,7 +1565,7 @@ const analysisView = (model: Model, h: HtmlBuilder<Message>): Html =>
           ),
           h.ol(
             [h.AriaLabel('Machine states'), h.Class('flex flex-wrap gap-2')],
-            Array.map(checkoutMachine.stateTags, stateTag => {
+            Arr.map(checkoutMachine.stateTags, stateTag => {
               const isActive = model.checkout._tag === stateTag
 
               return h.keyed('li')(

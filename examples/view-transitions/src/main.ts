@@ -7,10 +7,10 @@ import { Transition } from 'foldkit/route'
 import { modifyFields } from 'foldkit/struct'
 import { Url, toString as urlToString } from 'foldkit/url'
 
-import { Artwork, artworks, findArtwork } from './artwork'
-import { AppRoute, artworkRouter, galleryRouter, urlToAppRoute } from './route'
+import { Artwork, artworks, findArtwork } from './artwork.vibe'
+import { AppRoute, artworkRouter, galleryRouter, urlToAppRoute } from './route.vibe'
 
-export { AppRoute } from './route'
+export { AppRoute } from './route.vibe'
 
 // MODEL
 

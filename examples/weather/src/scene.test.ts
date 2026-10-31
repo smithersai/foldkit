@@ -13,7 +13,7 @@ import {
 } from 'foldkit/scene'
 import { describe, test } from 'vitest'
 
-import { FetchWeather, Message, WeatherAsyncData, update, view } from './main'
+import { FetchWeather, Message, WeatherAsyncData, update, view } from './main.vibe'
 import { weatherData, weatherModel } from './main.fixture'
 
 describe('view', () => {

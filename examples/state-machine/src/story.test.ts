@@ -12,7 +12,7 @@ import {
   TRANSITION_LOG_LIMIT,
   initialModel,
   update,
-} from './main'
+} from './main.ts'
 
 const maybeLatestTransitionSummary = (model: Model): Option.Option<string> =>
   pipe(

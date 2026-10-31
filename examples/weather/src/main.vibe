@@ -1,5 +1,4 @@
-import { Array, Effect, Match, Option, Schema, String } from 'effect'
-import { HttpClient, HttpClientRequest } from 'effect/http'
+import { Array as Arr, String as Str } from 'effect'
 import { AsyncData, Command, Http, Runtime, type Update } from 'foldkit'
 import { Document, Html, HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -9,16 +8,15 @@ import { Button, Input } from '@foldkit/ui'
 
 // MODEL
 
-export const WeatherData = Schema.Struct({
-  zipCode: Schema.String,
-  temperature: Schema.Number,
-  description: Schema.String,
-  humidity: Schema.Number,
-  windSpeed: Schema.Number,
-  locationName: Schema.String,
-  region: Schema.String,
-})
-export type WeatherData = typeof WeatherData.Type
+export schema WeatherData {
+  zipCode: string
+  temperature: number
+  description: string
+  humidity: number
+  windSpeed: number
+  locationName: string
+  region: string
+}
 
 export const WeatherAsyncData = AsyncData.Schema(WeatherData, Schema.String)
 
@@ -39,7 +37,7 @@ export const Message = defineMessageUnion({
 
 export type Message = typeof Message.Type
 
-export const update = (model: Model, message: Message) =>
+export const update = (model: Model, message: Message): infer _ =>
   Message.match<Update.Return<Model, Message>>(message, {
     UpdatedZipCodeInput: ({ value }) => ({
       model: modifyFields(model, {
@@ -97,93 +95,79 @@ const GeocodingResponse = Schema.Struct({
   results: Schema.OptionFromOptional(Schema.Array(GeocodingResult)),
 })
 
-const WeatherResponse = Schema.Struct({
-  current: Schema.Struct({
-    temperature_2m: Schema.Number,
-    relative_humidity_2m: Schema.Number,
-    wind_speed_10m: Schema.Number,
-    weather_code: Schema.Number,
-  }),
-})
+schema WeatherResponse {
+  current: {
+    temperature_2m: number
+    relative_humidity_2m: number
+    wind_speed_10m: number
+    weather_code: number
+  }
+}
 
-const weatherCodeToDescription = (code: number): string =>
-  Match.value(code).pipe(
-    Match.when(0, () => 'Clear sky'),
-    Match.whenOr(1, 2, 3, () => 'Partly cloudy'),
-    Match.whenOr(45, 48, () => 'Foggy'),
-    Match.whenOr(51, 53, 55, () => 'Drizzle'),
-    Match.whenOr(61, 63, 65, () => 'Rain'),
-    Match.whenOr(66, 67, () => 'Freezing rain'),
-    Match.whenOr(71, 73, 75, 77, () => 'Snow'),
-    Match.whenOr(80, 81, 82, () => 'Rain showers'),
-    Match.whenOr(85, 86, () => 'Snow showers'),
-    Match.whenOr(95, 96, 99, () => 'Thunderstorm'),
-    Match.orElse(() => 'Unknown'),
-  )
+const weatherCodeToDescription = (code: number): string => match (code) {
+  when 0: 'Clear sky';
+  when 1 or 2 or 3: 'Partly cloudy';
+  when 45 or 48: 'Foggy';
+  when 51 or 53 or 55: 'Drizzle';
+  when 61 or 63 or 65: 'Rain';
+  when 66 or 67: 'Freezing rain';
+  when 71 or 73 or 75 or 77: 'Snow';
+  when 80 or 81 or 82: 'Rain showers';
+  when 85 or 86: 'Snow showers';
+  when 95 or 96 or 99: 'Thunderstorm';
+  default: 'Unknown';
+}
 
-export const fetchWeatherEffect = (zipCode: string) =>
-  Effect.gen(function* () {
-    if (String.isEmpty(zipCode.trim())) {
-      return yield* Effect.fail(
-        Message.FailedFetchWeather({ error: 'Zip code required' }),
-      )
+export const fetchWeatherEffect = effect (zipCode: string) => {
+  return (effect {
+    if (Str.isEmpty(zipCode.trim())) {
+      throw Message.FailedFetchWeather({ error: 'Zip code required' })
     }
-
-    const client = yield* HttpClient.HttpClient
-
-    const geocodeRequest = HttpClientRequest.get(GEOCODING_API).pipe(
-      HttpClientRequest.setUrlParams({
+    const client = HttpClient.HttpClient()
+    const geocodeRequest = HttpClientRequest.setUrlParams(
+      HttpClientRequest.get(GEOCODING_API),
+      {
         name: zipCode,
         count: '1',
         language: 'en',
         format: 'json',
-      }),
+      },
     )
-    const geocodeResponse = yield* client.execute(geocodeRequest)
-
+    const geocodeResponse = try client.execute(geocodeRequest)
     if (geocodeResponse.status !== 200) {
-      return yield* Effect.fail(
-        Message.FailedFetchWeather({ error: 'Location not found' }),
-      )
+      throw Message.FailedFetchWeather({ error: 'Location not found' })
     }
-
-    const geocodeData = yield* Schema.decodeUnknownEffect(GeocodingResponse)(
-      yield* geocodeResponse.json,
+    const geocodeJson = try geocodeResponse.json
+    const geocodeData = try Schema.decodeUnknownEffect(GeocodingResponse)(
+      geocodeJson,
     )
-
-    const geoResult = yield* geocodeData.results.pipe(
-      Option.flatMap(Array.head),
-      Option.match({
-        onNone: () =>
-          Effect.fail(
-            Message.FailedFetchWeather({ error: 'Location not found' }),
-          ),
-        onSome: Effect.succeed,
-      }),
-    )
-
-    const weatherRequest = HttpClientRequest.get(WEATHER_API).pipe(
-      HttpClientRequest.setUrlParams({
+    const geoResult = match (geocodeData.results.flatMap(Arr.head)) {
+      when Option.None: throw Message.FailedFetchWeather({
+        error: 'Location not found',
+      });
+      when Option.Some(let result): result;
+    }
+    const weatherRequest = HttpClientRequest.setUrlParams(
+      HttpClientRequest.get(WEATHER_API),
+      {
         latitude: geoResult.latitude.toString(),
         longitude: geoResult.longitude.toString(),
         current:
           'temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code',
         temperature_unit: 'fahrenheit',
         wind_speed_unit: 'mph',
-      }),
+      },
     )
-    const weatherResponse = yield* client.execute(weatherRequest)
-
+    const weatherResponse = try client.execute(weatherRequest)
     if (weatherResponse.status !== 200) {
-      return yield* Effect.fail(
-        Message.FailedFetchWeather({ error: 'Failed to fetch weather data' }),
-      )
+      throw Message.FailedFetchWeather({
+        error: 'Failed to fetch weather data',
+      })
     }
-
-    const weatherData = yield* Schema.decodeUnknownEffect(WeatherResponse)(
-      yield* weatherResponse.json,
+    const weatherJson = try weatherResponse.json
+    const weatherData = try Schema.decodeUnknownEffect(WeatherResponse)(
+      weatherJson,
     )
-
     const weather = WeatherData.make({
       zipCode,
       temperature: Math.round(weatherData.current.temperature_2m),
@@ -191,24 +175,28 @@ export const fetchWeatherEffect = (zipCode: string) =>
       humidity: weatherData.current.relative_humidity_2m,
       windSpeed: Math.round(weatherData.current.wind_speed_10m),
       locationName: geoResult.name,
-      region: Option.getOrElse(geoResult.admin1, () => ''),
+      region: geoResult.admin1.getOrElse(() => ''),
     })
-
     return Message.SucceededFetchWeather({ weather })
-  }).pipe(
-    Effect.catchTag('FailedFetchWeather', error => Effect.succeed(error)),
-    Effect.catch(() =>
-      Effect.succeed(
-        Message.FailedFetchWeather({ error: 'Failed to fetch weather data' }),
-      ),
-    ),
-  )
+  }) catch (error) => match (error) {
+    when { _tag: 'FailedFetchWeather' } and let failed: failed;
+    default: Message.FailedFetchWeather({
+      error: 'Failed to fetch weather data',
+    });
+  }
+}
 
 export const FetchWeather = Command.define('FetchWeather', {
   args: { zipCode: Schema.String },
   messages: [Message.SucceededFetchWeather, Message.FailedFetchWeather],
-  execute: ({ zipCode }) =>
-    Effect.provide(fetchWeatherEffect(zipCode), Http.layer),
+  execute: (
+    { zipCode },
+  ): ReturnType<typeof Message.SucceededFetchWeather> | ReturnType<typeof Message.FailedFetchWeather>!! =>
+    effect {
+      provide Http.layer {
+        return try fetchWeatherEffect(zipCode)
+      }
+    },
 })
 
 // VIEW
