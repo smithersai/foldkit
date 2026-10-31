@@ -1,0 +1,74 @@
+import { Array as Arr, pipe } from 'effect'
+import { Html, HtmlBuilder } from 'foldkit/html'
+
+import * as Shared from '@typing-game/shared'
+
+import type { Message } from '../message.vibe'
+import { RoomPlayerSession } from '../model.vibe'
+
+type Badge = 'Host' | 'You'
+const allBadges: ReadonlyArray<Badge> = ['Host', 'You']
+const badgeToString = (u: Badge): infer _ => match (u) {
+  when 'Host': 'host';
+  when 'You': 'you';
+}
+
+const isLocalPlayer = (
+  player: Shared.Player,
+  maybeSession: Option<RoomPlayerSession>,
+): boolean =>
+  Option.exists(
+    maybeSession,
+    (session): infer _ => session.player.id === player.id,
+  )
+
+const player = (
+  players: ReadonlyArray<Shared.Player>,
+  hostId: string,
+  maybeSession: Option<RoomPlayerSession>,
+  h: HtmlBuilder<Message>,
+): Array<Html> =>
+  Arr.map(players, (player): infer _ => {
+    const badges = pipe(
+      allBadges,
+      Arr.filter(
+        (badge): infer _ => match (badge) {
+          when 'Host': player.id === hostId;
+          when 'You': isLocalPlayer(player, maybeSession);
+        },
+      ),
+      Arr.map((badge): infer _ =>
+        h.span([h.Class('uppercase')], [` [${badgeToString(badge)}]`])
+      ),
+    )
+
+    return h.keyed('div')(
+      player.id,
+      [],
+      [h.span([], [player.username]), ...badges],
+    )
+  })
+
+export const waiting = (
+  players: ReadonlyArray<Shared.Player>,
+  hostId: string,
+  maybeSession: Option<RoomPlayerSession>,
+  h: HtmlBuilder<Message>,
+): Html => {
+  const isLocalPlayerHost = Option.exists(
+    maybeSession,
+    (session): infer _ => session.player.id === hostId,
+  )
+
+  return h.div(
+    [],
+    [
+      h.h3([h.Class('uppercase mb-2')], ['[Connected users]']),
+      h.div(
+        [h.Class('space-y-2 mb-12')],
+        player(players, hostId, maybeSession, h),
+      ),
+      ...(isLocalPlayerHost ? [h.div([], ['> Enter to start game'])] : []),
+    ],
+  )
+}

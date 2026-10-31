@@ -1,0 +1,118 @@
+import { Array as Arr, String as Str } from 'effect'
+import { AsyncData } from 'foldkit'
+import { modifyFields } from 'foldkit/struct'
+
+import * as Shared from '@typing-game/shared'
+
+import { optionWhen } from '../../../optionWhen.vibe'
+import {
+  FocusUserGameTextInput,
+  WaitForExitCountdownInterval,
+} from '../command.vibe'
+import { Model, RoomAsyncData } from '../model.vibe'
+import type { UpdateReturn } from './update.vibe'
+
+const EXIT_COUNTDOWN_SECONDS = 3
+
+export const handleRoomUpdated = (model: Model): infer _ =>
+({
+  room,
+  maybePlayerProgress,
+}: {
+  room: Shared.Room
+  maybePlayerProgress: Option<Shared.PlayerProgress>
+}): UpdateReturn => {
+  const maybePreviousRoom = AsyncData.getData(model.roomAsyncData)
+  const hadRoom = Option.isSome(maybePreviousRoom)
+  const hadStatusPlaying = Option.exists(
+    maybePreviousRoom,
+    ({ status }): infer _ => status._tag === 'Playing',
+  )
+  const isStatusPlaying = room.status._tag === 'Playing'
+
+  const gameJustStarted = hadRoom && !hadStatusPlaying && isStatusPlaying
+
+  const hadStatusFinished = Option.exists(
+    maybePreviousRoom,
+    ({ status }): infer _ => status._tag === 'Finished',
+  )
+  const isStatusFinished = room.status._tag === 'Finished'
+  const gameJustFinished = hadRoom && !hadStatusFinished && isStatusFinished
+
+  const progressAction = determinePlayerProgressAction(
+    room,
+    model.userGameText,
+    model.charsTyped,
+    maybePlayerProgress,
+  )
+
+  const nextUserGameText = gameJustStarted
+    ? Str.empty
+    : match (progressAction) {
+      when { _tag: 'Clear' }: Str.empty;
+      when { _tag: 'Maintain', let userGameText }: userGameText;
+      when { _tag: 'Restore', let progress }: progress.userText;
+    }
+
+  const nextCharsTyped = gameJustStarted
+    ? 0
+    : match (progressAction) {
+      when { _tag: 'Clear' }: 0;
+      when { _tag: 'Maintain', let charsTyped }: charsTyped;
+      when { _tag: 'Restore', let progress }: progress.charsTyped;
+    }
+
+  const maybeExitCountdown = optionWhen(
+    gameJustFinished,
+    (): infer _ => WaitForExitCountdownInterval(),
+  )
+  const maybeFocusUserGameText = optionWhen(
+    gameJustStarted,
+    (): infer _ => FocusUserGameTextInput(),
+  )
+
+  return {
+    model: modifyFields(model, {
+      roomAsyncData: (): infer _ => RoomAsyncData.Success({ data: room }),
+      userGameText: (): infer _ => nextUserGameText,
+      charsTyped: (): infer _ => nextCharsTyped,
+      exitCountdownSecondsLeft: (): infer _ =>
+        gameJustFinished
+          ? EXIT_COUNTDOWN_SECONDS
+          : model.exitCountdownSecondsLeft,
+    }),
+    commands: Arr.appendAll(
+      Arr.fromOption(maybeExitCountdown),
+      Arr.fromOption(maybeFocusUserGameText),
+    ),
+  }
+}
+
+data PlayerProgressAction {
+  Clear
+  Maintain { userGameText: string; charsTyped: number }
+  Restore { progress: Shared.PlayerProgress }
+}
+
+const determinePlayerProgressAction = (
+  room: Shared.Room,
+  currentUserGameText: string,
+  currentCharsTyped: number,
+  maybePlayerProgress: Option<Shared.PlayerProgress>,
+): PlayerProgressAction => {
+  if (room.status._tag === 'Finished') {
+    return PlayerProgressAction.Clear()
+  } else if (Str.isNonEmpty(currentUserGameText)) {
+    return PlayerProgressAction.Maintain({
+      userGameText: currentUserGameText,
+      charsTyped: currentCharsTyped,
+    })
+  } else {
+    return match (maybePlayerProgress) {
+      when Option.None: PlayerProgressAction.Clear();
+      when Option.Some(let progress): PlayerProgressAction.Restore({
+        progress,
+      });
+    }
+  }
+}

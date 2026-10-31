@@ -1,0 +1,93 @@
+import { Array as Arr, Number as Num, flow, pipe } from 'effect'
+import { type Update } from 'foldkit'
+import { modifyFields } from 'foldkit/struct'
+
+import { RoomsClient } from '../../../rpc.vibe'
+import {
+  CreateRoom,
+  FocusRoomIdInput,
+  FocusUsernameInput,
+} from '../command.vibe'
+import { Message } from '../message.vibe'
+import { HOME_ACTIONS, HomeAction, HomeStep, Model } from '../model.vibe'
+
+type UpdateReturn = Update.Return<Model, Message, RoomsClient>
+
+export const handleKeyPressed =
+  (model: Model): infer _ => ({ key }: { key: string }): UpdateReturn => {
+    const homeStep = model.homeStep
+    const selectAction = whenSelectAction(model, key)
+    return match (homeStep) {
+      when { _tag: 'SelectAction' } and let step: selectAction(step);
+      default: ({ model });
+    }
+  }
+
+const whenSelectAction =
+  (model: Model, key: string): infer _ =>
+  (selectAction: typeof HomeStep.SelectAction.Type): UpdateReturn => match (key) {
+    when 'ArrowUp': moveSelection(Num.decrement)(model, selectAction);
+    when 'ArrowDown': moveSelection(Num.increment)(model, selectAction);
+    when 'Enter': confirmSelection(model)(selectAction);
+    default: ({ model });
+  }
+
+const moveSelection = (f: (index: number) => number): infer _ =>
+(
+  model: Model,
+  { username, selectedAction }: typeof HomeStep.SelectAction.Type,
+): UpdateReturn => ({
+  model: modifyFields(model, {
+    homeStep: (): infer _ =>
+      HomeStep.SelectAction({
+        username,
+        selectedAction: cycleAction(f)(selectedAction),
+      }),
+  }),
+})
+
+const cycleAction =
+  (f: (a: number) => number): infer _ =>
+  (selectedAction: HomeAction): infer _ => {
+    const homeActionsLength = Arr.length(HOME_ACTIONS)
+
+    return pipe(
+      HOME_ACTIONS,
+      Arr.findFirstIndex((action): infer _ => action === selectedAction),
+      Option.map(
+        flow(
+          f,
+          Num.remainder(homeActionsLength),
+          (remainder): infer _ =>
+            remainder < 0 ? remainder + homeActionsLength : remainder,
+          (nextIndex): infer _ => Arr.getUnsafe(HOME_ACTIONS, nextIndex),
+        ),
+      ),
+      Option.getOrElse((): infer _ => selectedAction),
+    )
+  }
+
+const confirmSelection =
+  (model: Model): infer _ =>
+  (selectAction: typeof HomeStep.SelectAction.Type): UpdateReturn => match (selectAction.selectedAction) {
+    when 'CreateRoom': ({
+      model,
+      commands: [CreateRoom({ username: selectAction.username })],
+    });
+    when 'JoinRoom': ({
+      model: modifyFields(model, {
+        homeStep: (): infer _ =>
+          HomeStep.EnterRoomId({
+            username: selectAction.username,
+            roomId: '',
+          }),
+      }),
+      commands: [FocusRoomIdInput()],
+    });
+    when 'ChangeUsername': ({
+      model: modifyFields(model, {
+        homeStep: (): infer _ => HomeStep.EnterUsername({ username: '' }),
+      }),
+      commands: [FocusUsernameInput()],
+    });
+  }

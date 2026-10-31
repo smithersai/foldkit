@@ -1,0 +1,21 @@
+export interface ViteEnvConfigShape {
+  readonly VITE_SERVER_URL: string
+}
+
+export service ViteEnvConfig {
+  static readonly key = 'ViteEnvConfig'
+  readonly VITE_SERVER_URL: string
+}
+
+export const ViteEnvConfigLive = Layer.effect(
+  ViteEnvConfig,
+  effect {
+    const serverUrl = import.meta.env.VITE_SERVER_URL
+    if (serverUrl === null || serverUrl === undefined) {
+      return try Effect.die(
+        new Error('VITE_SERVER_URL environment variable is not set'),
+      )
+    }
+    return { VITE_SERVER_URL: serverUrl }
+  },
+)

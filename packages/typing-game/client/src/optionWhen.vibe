@@ -1,0 +1,8 @@
+import { Function } from 'effect'
+
+export const optionWhen = <T>(
+  condition: boolean,
+  value: Function.LazyArg<T>,
+): Option<T> => {
+  return condition ? Option.some(value()) : Option.none()
+}

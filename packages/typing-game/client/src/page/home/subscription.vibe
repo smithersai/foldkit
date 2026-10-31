@@ -1,0 +1,23 @@
+import { Subscription } from 'foldkit'
+
+import { capturedKeyDownStream } from '../../keyboard.vibe'
+import { Message } from './message.vibe'
+import { Model, capturesKeyboard } from './model.vibe'
+
+export const subscriptions = Subscription.make<Model, Message>()((
+  entry,
+): infer _ => ({
+  homeKeyboard: entry(
+    { shouldCaptureKeyboard: Schema.Boolean },
+    {
+      modelToDependencies: (model): infer _ => ({
+        shouldCaptureKeyboard: capturesKeyboard(model),
+      }),
+      dependenciesToStream: ({ shouldCaptureKeyboard }): infer _ =>
+        Stream.when(
+          capturedKeyDownStream((key): infer _ => Message.PressedKey({ key })),
+          Effect.sync(() => shouldCaptureKeyboard),
+        ),
+    },
+  ),
+}))

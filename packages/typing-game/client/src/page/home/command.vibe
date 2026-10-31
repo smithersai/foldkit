@@ -1,0 +1,56 @@
+import { Command, Dom } from 'foldkit'
+
+import { ROOM_ID_INPUT_ID, USERNAME_INPUT_ID } from '../../constant.ts'
+import { RoomsClient } from '../../rpc.vibe'
+import { Message } from './message.vibe'
+
+const completedFocusUsernameInput = Message.CompletedFocusUsernameInput()
+const completedFocusRoomIdInput = Message.CompletedFocusRoomIdInput()
+
+export const CreateRoom = Command.define('CreateRoom', {
+  args: { username: Schema.String },
+  messages: [Message.SucceededCreateRoom, Message.FailedCreateRoom],
+  execute: effect ({ username }) => {
+    try {
+      const client = try RoomsClient
+      const { player, room } = try client.createRoom({ username })
+      return Message.SucceededCreateRoom({ roomId: room.id, player })
+    } catch (error) {
+      return Message.FailedCreateRoom({ error: String(error) })
+    }
+  },
+})
+
+export const JoinRoom = Command.define('JoinRoom', {
+  args: { username: Schema.String, roomId: Schema.String },
+  messages: [Message.SucceededJoinRoom, Message.FailedJoinRoom],
+  execute: effect ({ username, roomId }) => {
+    try {
+      const client = try RoomsClient
+      const { player, room } = try client.joinRoom({ username, roomId })
+      return Message.SucceededJoinRoom({ roomId: room.id, player })
+    } catch (error) {
+      return Message.FailedJoinRoom({ error: String(error) })
+    }
+  },
+})
+
+export const FocusUsernameInput = Command.define('FocusUsernameInput', {
+  messages: [Message.CompletedFocusUsernameInput],
+  execute: effect {
+    try {
+      try Dom.focus(`#${USERNAME_INPUT_ID}`)
+    } catch {}
+    return completedFocusUsernameInput
+  },
+})
+
+export const FocusRoomIdInput = Command.define('FocusRoomIdInput', {
+  messages: [Message.CompletedFocusRoomIdInput],
+  execute: effect {
+    try {
+      try Dom.focus(`#${ROOM_ID_INPUT_ID}`)
+    } catch {}
+    return completedFocusRoomIdInput
+  },
+})

@@ -1,0 +1,136 @@
+import { Command, Update, Url } from 'foldkit'
+import { UrlRequest, load, pushUrl } from 'foldkit/navigation'
+import { modifyFields } from 'foldkit/struct'
+
+import * as Shared from '@typing-game/shared'
+
+import { NavigateToRoom } from './command.vibe'
+import { Message } from './message.ts'
+import { Model } from './model.vibe'
+import { Home, Room } from './page/index.ts'
+import { urlToAppRoute } from './route.vibe'
+import { RoomsClient } from './rpc.vibe'
+
+const NavigateInternal = Command.define('NavigateInternal', {
+  args: { url: Schema.String },
+  messages: [Message.CompletedNavigateInternal],
+  execute: effect ({ url }) => {
+    const completed = Message.CompletedNavigateInternal()
+    try pushUrl(url)
+    return completed
+  },
+})
+
+const LoadExternal = Command.define('LoadExternal', {
+  args: { href: Schema.String },
+  messages: [Message.CompletedLoadExternal],
+  execute: effect ({ href }) => {
+    const completed = Message.CompletedLoadExternal()
+    try load(href)
+    return completed
+  },
+})
+
+export type UpdateReturn<Model, Message> = Update.Return<
+  Model,
+  Message,
+  RoomsClient
+>
+
+type UpdateStep = Update.Step<Model, Message, RoomsClient>
+
+const readHome = (model: Model): Option<Home.Model.Model> =>
+  Option.some(model.home)
+
+const writeHome = (model: Model, nextHome: Home.Model.Model): Model =>
+  modifyFields(model, { home: (): infer _ => nextHome })
+
+const toGotHomeMessage = (message: Home.Message): Message =>
+  Message.GotHomeMessage({ message })
+
+const readRoom = (model: Model): Option<Room.Model.Model> =>
+  Option.some(model.room)
+
+const writeRoom = (model: Model, nextRoom: Room.Model.Model): Model =>
+  modifyFields(model, { room: (): infer _ => nextRoom })
+
+const toGotRoomMessage = (message: Room.Message): Message =>
+  Message.GotRoomMessage({ message })
+
+const navigateToRoom = (roomId: string): UpdateStep => (model): infer _ => ({
+  model,
+  commands: [NavigateToRoom({ roomId })],
+})
+
+const enterJoinedRoom = (roomId: string, player: Shared.Player): UpdateStep =>
+  Update.combine([
+    navigateToRoom(roomId),
+    Update.foldChild({
+      update: (
+        roomModel: Room.Model.Model,
+        joinedPlayer: Shared.Player,
+      ): infer _ => Room.informJoined(roomModel, joinedPlayer, { roomId }),
+      read: readRoom,
+      write: writeRoom,
+      toParentMessage: toGotRoomMessage,
+    })(player),
+  ])
+
+const foldHomeOutMessage = (outMessage: Home.OutMessage): UpdateStep =>
+  Home.OutMessage.match<UpdateStep>(outMessage, {
+    CreatedRoom: ({ roomId, player }): infer _ =>
+      enterJoinedRoom(roomId, player),
+    JoinedRoom: ({ roomId, player }): infer _ =>
+      enterJoinedRoom(roomId, player),
+  })
+
+const foldHomeMessage = Update.foldChild({
+  update: Home.update,
+  read: readHome,
+  write: writeHome,
+  toParentMessage: toGotHomeMessage,
+  foldOutMessage: foldHomeOutMessage,
+})
+
+const foldRoomMessage = (roomId: string): infer _ =>
+  Update.foldChild({
+    update: (roomModel: Room.Model.Model, message: Room.Message): infer _ =>
+      Room.update(roomModel, message, { roomId }),
+    read: readRoom,
+    write: writeRoom,
+    toParentMessage: toGotRoomMessage,
+  })
+
+export const update = (model: Model, message: Message): infer _ =>
+  Message.match<UpdateReturn<Model, Message>>(message, {
+    ClickedLink: ({ request }): infer _ =>
+      UrlRequest.match<UpdateReturn<Model, Message>>(request, {
+        Internal: ({ url }): infer _ => ({
+          model,
+          commands: [NavigateInternal({ url: Url.toString(url) })],
+        }),
+        External: ({ href }): infer _ => ({
+          model,
+          commands: [LoadExternal({ href })],
+        }),
+      }),
+
+    ChangedUrl: ({ url }): infer _ => ({
+      model: modifyFields(model, {
+        route: (): infer _ => urlToAppRoute(url),
+      }),
+    }),
+
+    GotHomeMessage: ({ message }): infer _ => foldHomeMessage(model, message),
+
+    GotRoomMessage: ({ message }): infer _ => match (model.route) {
+      when { _tag: 'Room', let roomId }: foldRoomMessage(roomId)(
+        model,
+        message,
+      );
+      default: ({ model });
+    },
+    CompletedNavigateInternal: (): infer _ => ({ model }),
+    CompletedLoadExternal: (): infer _ => ({ model }),
+    CompletedNavigateToRoom: (): infer _ => ({ model }),
+  })

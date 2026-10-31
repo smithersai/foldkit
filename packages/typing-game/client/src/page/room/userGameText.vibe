@@ -1,0 +1,37 @@
+import { Array as Arr, String as Str, pipe } from 'effect'
+
+import { MAX_WRONG_CHARS } from '../../constant.ts'
+
+const toNonEmptyStringOption = Option.liftPredicate(Str.isNonEmpty)
+
+export const validateUserTextInput = (
+  newUserText: string,
+  maybeGameText: Option<string>,
+): string => {
+  const maybeInput = toNonEmptyStringOption(newUserText)
+  const findWrongCharIndex = findFirstWrongCharIndex(newUserText)
+  return maybeInput
+    .flatMap((): infer _ => maybeGameText)
+    .flatMap(findWrongCharIndex)
+    .map((firstWrongIndex): infer _ => {
+      const wrongCharCount = Str.length(newUserText) - firstWrongIndex
+      return wrongCharCount > MAX_WRONG_CHARS
+        ? Str.slice(0, firstWrongIndex + MAX_WRONG_CHARS)(newUserText)
+        : newUserText
+    })
+    .getOrElse((): infer _ => newUserText)
+}
+
+export const findFirstWrongCharIndex =
+  (userGameText: string): infer _ => (gameText: string): Option<number> =>
+    pipe(
+      userGameText,
+      Str.split(''),
+      Arr.findFirstIndex((char, index): infer _ =>
+        pipe(
+          gameText,
+          Str.at(index),
+          Option.exists(Predicate.not(Equal.equals(char))),
+        )
+      ),
+    )
