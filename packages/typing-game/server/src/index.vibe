@@ -1,9 +1,6 @@
-import { Effect, Layer, pipe } from 'effect'
-import { HttpMiddleware, HttpRouter, HttpServer } from 'effect/http'
-import { RpcSerialization, RpcServer } from 'effect/rpc'
-import { createServer } from 'node:http'
+import { createServer } from './httpPlatform.ts'
 
-import { NodeHttpServer, NodeRuntime } from '@effect/platform-node'
+import { NodeCrypto, NodeHttpServer, NodeRuntime } from '@effect/platform-node'
 import * as Shared from '@typing-game/shared'
 
 import {
@@ -21,13 +18,13 @@ import {
   ProgressByGamePlayerStoreLive,
   RoomByIdStore,
   RoomByIdStoreLive,
-} from './store.ts'
+} from './store.vibe'
 
 const RoomLive = Shared.RoomRpcs.toLayer(
-  Effect.gen(function* () {
-    const roomByIdRef = yield* RoomByIdStore
-    const progressByGamePlayerRef = yield* ProgressByGamePlayerStore
-    const pendingCleanupPlayerIdsRef = yield* PendingCleanupPlayerIdsStore
+  effect {
+    const roomByIdRef = try RoomByIdStore
+    const progressByGamePlayerRef = try ProgressByGamePlayerStore
+    const pendingCleanupPlayerIdsRef = try PendingCleanupPlayerIdsStore
 
     return {
       createRoom: createRoom(roomByIdRef),
@@ -41,7 +38,7 @@ const RoomLive = Shared.RoomRpcs.toLayer(
       startGame: startGame(roomByIdRef, progressByGamePlayerRef),
       updatePlayerProgress: updatePlayerProgress(progressByGamePlayerRef),
     }
-  }),
+  },
 )
 
 const RpcAppLayer = RpcServer.layerHttp({
@@ -54,14 +51,14 @@ const RpcAppLayer = RpcServer.layerHttp({
   Layer.provide(RoomByIdStoreLive),
   Layer.provide(ProgressByGamePlayerStoreLive),
   Layer.provide(PendingCleanupPlayerIdsStoreLive),
+  Layer.provide(NodeCrypto.layerSecureRandom),
 )
 
-const HttpAppLive = Layer.unwrap(
-  pipe(
-    HttpRouter.toHttpEffect(RpcAppLayer),
-    Effect.map(HttpServer.serve(HttpMiddleware.cors())),
-  ),
-)
+const serveHttp = HttpServer.serve(HttpMiddleware.cors())
+const HttpAppLive = Layer.unwrap(effect {
+  const httpApp = try HttpRouter.toHttpEffect(RpcAppLayer)
+  return serveHttp(httpApp)
+})
 
 const Main = HttpAppLive.pipe(
   HttpServer.withLogAddress,

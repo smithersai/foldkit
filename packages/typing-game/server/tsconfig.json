@@ -10,5 +10,10 @@
     "declarationMap": true,
     "rewriteRelativeImportExtensions": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "vibe": {
+    "severities": {
+      "EK4842": "off"
+    }
+  }
 }

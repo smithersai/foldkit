@@ -1,0 +1,91 @@
+import { Array, pipe } from 'effect'
+import { SecureRandom } from 'effect/crypto/SecureRandom'
+
+import * as Shared from '@typing-game/shared'
+
+import { gameSequence } from '../game.vibe'
+import { GAME_TEXTS, generateGameText } from '../gameText.vibe'
+import * as Rooms from '../roomById.vibe'
+import { updateRoom, updateRoomStatus } from '../roomById.vibe'
+import { calculateScoreboard } from '../scoring.vibe'
+
+type ProgressByGamePlayer = HashMap<
+  Shared.GamePlayer,
+  Shared.PlayerProgress
+>
+
+export const startGame = (
+  roomByIdRef: SubscriptionRef<Shared.RoomById>,
+  progressByGamePlayerRef: SubscriptionRef<ProgressByGamePlayer>,
+): infer _ =>
+effect (payload: Rpc.Payload<typeof Shared.startGameRpc>) => {
+  const roomById = try SubscriptionRef.get(roomByIdRef)
+  const room = try Rooms.getById(roomById, payload.roomId)
+
+  if (room.hostId !== payload.playerId) {
+    throw new Shared.UnauthorizedError({
+      message: 'Only the host can start the game',
+    })
+  }
+
+  const gameId = try (try SecureRandom).uuidV4()
+  const gameText = try generateGameText(room.usedGameTexts)
+
+  const game = Shared.Game.make({
+    id: gameId,
+    text: gameText,
+  })
+
+  const nextUsedGameTexts = pipe(
+    Array.difference(GAME_TEXTS, room.usedGameTexts),
+    Array.match({
+      onEmpty: (): infer _ => Array.make(gameText),
+      onNonEmpty: (): infer _ => Array.append(room.usedGameTexts, gameText),
+    }),
+  )
+
+  try updateRoom(
+    roomByIdRef,
+    payload.roomId,
+  )((room): infer _ =>
+    Struct.evolve(room, {
+      maybeGame: (): infer _ => Option.some(game),
+      maybeScoreboard: (): infer _ => Option.none(),
+      usedGameTexts: (): infer _ => nextUsedGameTexts,
+    })
+  )
+
+  try detach(effect {
+    try gameSequence.pipe(
+      Stream.mapEffect(updateRoomStatus(roomByIdRef, payload.roomId), {
+        concurrency: 'unbounded',
+      }),
+      Stream.runDrain,
+    )
+    try finalizeGameScoreboard(
+      roomByIdRef,
+      progressByGamePlayerRef,
+      payload.roomId,
+    )
+  })
+}
+
+const finalizeGameScoreboard = effect (
+  roomByIdRef: SubscriptionRef<Shared.RoomById>,
+  progressByGamePlayerRef: SubscriptionRef<ProgressByGamePlayer>,
+  roomId: string,
+) => {
+  const roomById = try SubscriptionRef.get(roomByIdRef)
+  const room = try Rooms.getById(roomById, roomId)
+  const progressByGamePlayer = try SubscriptionRef.get(
+    progressByGamePlayerRef,
+  )
+  const maybeScoreboard = Option.some(
+    try calculateScoreboard(room, progressByGamePlayer),
+  )
+
+  try updateRoom(
+    roomByIdRef,
+    roomId,
+  )(Struct.evolve({ maybeScoreboard: (): infer _ => maybeScoreboard }))
+}

@@ -1,0 +1,35 @@
+import { Array, pipe } from 'effect'
+
+import { RoomByIdStore } from './store.vibe'
+
+const NUM_WORDS_IN_ID = 3
+const DELIMITER = '-'
+
+export effect function generateUniqueId(
+  words: ReadonlyArray<string>,
+): string!never!RoomByIdStore {
+  const roomByIdStoreRef = try RoomByIdStore
+  const roomById = try SubscriptionRef.get(roomByIdStoreRef)
+  const id = try generateRoomId(words)
+  if (HashMap.has(roomById, id)) return try generateUniqueId(words)
+  return id
+}
+
+const generateRoomId = effect (words: ReadonlyArray<string>) => {
+  const indices: number[] = []
+  for (let index = 0; index < NUM_WORDS_IN_ID; index++) {
+    indices.push(
+      try Random.nextIntBetween(0, Array.length(words), { halfOpen: true }),
+    )
+  }
+  return indicesToRoomId(words)(indices)
+}
+
+const indicesToRoomId =
+  (words: ReadonlyArray<string>): infer _ =>
+  (indices: ReadonlyArray<number>): infer _ =>
+    pipe(
+      indices,
+      Array.map((i): infer _ => Array.getUnsafe(words, i)),
+      Array.join(DELIMITER),
+    )
