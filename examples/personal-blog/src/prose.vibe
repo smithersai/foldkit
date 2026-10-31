@@ -1,4 +1,3 @@
-import { Match, Option } from 'effect'
 import { Html, inertHtml as ih } from 'foldkit/html'
 
 import * as Markdown from '@foldkit/markdown'
@@ -6,36 +5,34 @@ import * as Markdown from '@foldkit/markdown'
 const headingView = (
   heading: Markdown.Heading,
   content: Markdown.InlineContent,
-): Html =>
-  Match.value(heading.level).pipe(
-    Match.when(1, () =>
-      ih.h1([ih.Class('text-3xl font-bold text-stone-900')], content),
-    ),
-    Match.when(2, () =>
-      ih.h2([ih.Class('mt-10 text-2xl font-semibold text-stone-900')], content),
-    ),
-    Match.when(3, () =>
-      ih.h3([ih.Class('mt-8 text-xl font-semibold text-stone-900')], content),
-    ),
-    Match.when(4, () =>
-      ih.h4([ih.Class('mt-6 text-lg font-semibold text-stone-900')], content),
-    ),
-    Match.when(5, () =>
-      ih.h5([ih.Class('mt-6 font-semibold text-stone-900')], content),
-    ),
-    Match.when(6, () =>
-      ih.h6([ih.Class('mt-6 text-sm font-semibold text-stone-900')], content),
-    ),
-    Match.exhaustive,
-  )
+): Html => match (heading.level) {
+  when 1: ih.h1([ih.Class('text-3xl font-bold text-stone-900')], content);
+  when 2: ih.h2(
+    [ih.Class('mt-10 text-2xl font-semibold text-stone-900')],
+    content,
+  );
+  when 3: ih.h3(
+    [ih.Class('mt-8 text-xl font-semibold text-stone-900')],
+    content,
+  );
+  when 4: ih.h4(
+    [ih.Class('mt-6 text-lg font-semibold text-stone-900')],
+    content,
+  );
+  when 5: ih.h5([ih.Class('mt-6 font-semibold text-stone-900')], content);
+  when 6: ih.h6(
+    [ih.Class('mt-6 text-sm font-semibold text-stone-900')],
+    content,
+  );
+}
 
 const codeBlockView = (codeBlock: Markdown.CodeBlock): Html =>
   ih.div(
     [ih.Class('overflow-hidden rounded-lg bg-stone-900')],
     [
-      ...Option.match(codeBlock.maybeLanguage, {
-        onNone: () => [],
-        onSome: language => [
+      ...match (codeBlock.maybeLanguage) {
+        when Option.None: [];
+        when Option.Some(let language): [
           ih.keyed('div')(
             'Language',
             [
@@ -45,8 +42,8 @@ const codeBlockView = (codeBlock: Markdown.CodeBlock): Html =>
             ],
             [language],
           ),
-        ],
-      }),
+        ];
+      },
       ih.pre(
         [ih.Class('overflow-x-auto p-4')],
         [
@@ -60,10 +57,10 @@ const codeBlockView = (codeBlock: Markdown.CodeBlock): Html =>
   )
 
 const listView = (list: Markdown.List, items: ReadonlyArray<Html>): Html => {
-  const startAttributes = Option.match(list.maybeStartNumber, {
-    onNone: () => [],
-    onSome: startNumber => [ih.Start(startNumber)],
-  })
+  const startAttributes = match (list.maybeStartNumber) {
+    when Option.None: [];
+    when Option.Some(let startNumber): [ih.Start(startNumber)];
+  }
 
   if (list.isOrdered) {
     return ih.ol(
@@ -75,12 +72,11 @@ const listView = (list: Markdown.List, items: ReadonlyArray<Html>): Html => {
   }
 }
 
-const alignmentClass = (alignment: Markdown.Alignment): string =>
-  Match.value(alignment).pipe(
-    Match.when('Right', () => 'text-right'),
-    Match.when('Center', () => 'text-center'),
-    Match.orElse(() => 'text-left'),
-  )
+const alignmentClass = (alignment: Markdown.Alignment): string => match (alignment) {
+  when 'Right': 'text-right';
+  when 'Center': 'text-center';
+  default: 'text-left';
+}
 
 const tableCellView = (
   _tableCell: Markdown.TableCell,

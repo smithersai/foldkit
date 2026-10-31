@@ -11,10 +11,10 @@ import * as Markdown from '@foldkit/markdown'
 
 import { Post, about, findPost, posts } from './content'
 import { Counter, islandAttributes } from './island'
-import { proseView } from './prose'
-import * as Route from './route'
+import { proseView } from './prose.vibe'
+import * as Route from './route.vibe'
 
-export { AppRoute } from './route'
+export { AppRoute } from './route.vibe'
 
 // MODEL
 

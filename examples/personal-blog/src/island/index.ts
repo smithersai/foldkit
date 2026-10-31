@@ -1,2 +1,2 @@
-export * as Counter from './counter'
-export * from './islandAttributes'
+export * as Counter from './counter.vibe'
+export * from './islandAttributes.vibe'

@@ -1,4 +1,4 @@
-import { Context, Effect, Layer, Match, Number, Option, Schema } from 'effect'
+import { Context, Effect, Layer, Number as Num, Option, Schema } from 'effect'
 import { SecureRandom } from 'effect/crypto'
 import { Command, ManagedResource, Runtime, type Update } from 'foldkit'
 import { Document, Html, HtmlBuilder } from 'foldkit/html'
@@ -16,21 +16,29 @@ interface ComputeEngine {
   readonly square: (value: number) => number
 }
 
-class ComputeEngineService extends Context.Service<
-  ComputeEngineService,
-  ComputeEngine
->()('ComputeEngineService') {}
+service ComputeEngineService {
+  static readonly key = 'ComputeEngineService'
+  readonly engineId: string
+  readonly square: (value: number) => number
+}
 
 const engineLayer: Layer.Layer<ComputeEngineService> = Layer.effect(
   ComputeEngineService,
   Effect.acquireRelease(
-    Effect.gen(function* () {
-      const secureRandom = yield* SecureRandom.SecureRandom
-      const id = yield* secureRandom.uuidV4()
-      const engineId = `engine-${id.slice(0, 8)}`
-      return { engineId, square: (value: number) => value * value }
-    }).pipe(Effect.provide(BrowserCrypto.layerSecureRandom)),
-    ({ engineId }) => Effect.log(`Tore down ${engineId}`),
+    effect {
+      provide BrowserCrypto.layerSecureRandom {
+        const secureRandom = SecureRandom.SecureRandom()
+        const id = try secureRandom.uuidV4()
+        const engineId = `engine-${id.slice(0, 8)}`
+        return { engineId, square: (value: number): number => value * value }
+      }
+    },
+    ({ engineId }): void!! => {
+      const message = `Tore down ${engineId}`
+      return effect {
+        try log(message)
+      }
+    },
   ),
 )
 
@@ -74,20 +82,23 @@ export type Message = typeof Message.Type
 export const Compute = Command.define('Compute', {
   args: { value: Schema.Number },
   messages: [Message.CompletedCompute, Message.SkippedCompute],
-  execute: ({ value }) =>
-    Effect.gen(function* () {
-      const engine = yield* Engine.get
-      return Message.CompletedCompute({ result: engine.square(value) })
-    }).pipe(
-      Effect.catchTag('ResourceNotAvailable', () =>
-        Effect.succeed(Message.SkippedCompute()),
-      ),
-    ),
+  execute: (
+    { value },
+  ): ReturnType<typeof Message.CompletedCompute | typeof Message.SkippedCompute>!!EngineService =>
+    effect {
+      return (effect {
+        const engine = try Engine.get
+        return Message.CompletedCompute({ result: engine.square(value) })
+      }) catch effect (error) => match (error) {
+        when { _tag: 'ResourceNotAvailable' }: Message.SkippedCompute();
+        default: throw error;
+      }
+    },
 })
 
 // UPDATE
 
-export const update = (model: Model, message: Message) =>
+export const update = (model: Model, message: Message): infer _ =>
   Message.match<Update.Return<Model, Message, EngineService>>(message, {
     ClickedStartEngine: () => ({
       model: modifyFields(model, { engine: () => EngineState.Booting() }),
@@ -112,7 +123,7 @@ export const update = (model: Model, message: Message) =>
     }),
 
     ClickedCompute: () => {
-      const nextComputeCount = Number.increment(model.computeCount)
+      const nextComputeCount = Num.increment(model.computeCount)
       return {
         model: modifyFields(model, { computeCount: () => nextComputeCount }),
         commands: [Compute({ value: nextComputeCount })],
@@ -144,17 +155,15 @@ export const managedResources = ManagedResource.make<Model, Message>()(
   entry => ({
     engine: entry(Schema.Option(Schema.Null), {
       resource: Engine,
-      modelToMaybeRequirements: model =>
-        Match.value(model.engine).pipe(
-          Match.tag('Booting', 'Ready', () => Option.some(null)),
-          Match.tag('Off', 'Failed', () => Option.none()),
-          Match.exhaustive,
-        ),
-      acquire: () =>
-        Layer.build(engineLayer).pipe(
-          Effect.map(context => Context.get(context, ComputeEngineService)),
-        ),
-      release: () => Effect.void,
+      modelToMaybeRequirements: (model): Option.Option<null> => match (model.engine) {
+        when { _tag: 'Booting' } or { _tag: 'Ready' }: Option.some(null);
+        when { _tag: 'Off' } or { _tag: 'Failed' }: Option.none();
+      },
+      acquire: effect () => {
+        const context = try Layer.build(engineLayer)
+        return Context.get(context, ComputeEngineService)
+      },
+      release: (): infer _ => Effect.void,
       onAcquired: ({ engineId }) => Message.StartedEngine({ engineId }),
       onReleased: () => Message.StoppedEngine(),
       onAcquireError: error =>
@@ -221,19 +230,18 @@ const engineControlsView = (
   engine: EngineState,
   h: HtmlBuilder<Message>,
 ): Html => {
-  const controls = Match.value(engine).pipe(
-    Match.tag('Booting', 'Ready', () => ({
+  const controls = match (engine) {
+    when { _tag: 'Booting' } or { _tag: 'Ready' }: ({
       label: 'Stop engine',
       message: Message.ClickedStopEngine(),
       colorClassName: 'bg-red-500 hover:bg-red-600',
-    })),
-    Match.tag('Off', 'Failed', () => ({
+    });
+    when { _tag: 'Off' } or { _tag: 'Failed' }: ({
       label: 'Start engine',
       message: Message.ClickedStartEngine(),
       colorClassName: 'bg-green-500 hover:bg-green-600',
-    })),
-    Match.exhaustive,
-  )
+    });
+  }
 
   return h.div(
     [h.Class('flex gap-3')],
@@ -253,10 +261,10 @@ const squareResultView = (
   maybeSquareResult: Option.Option<number>,
   h: HtmlBuilder<Message>,
 ): Html => {
-  const text = Option.match(maybeSquareResult, {
-    onNone: () => 'No result yet.',
-    onSome: value => `Square result: ${value}`,
-  })
+  const text = match (maybeSquareResult) {
+    when Option.None: 'No result yet.';
+    when Option.Some(let value): `Square result: ${value}`;
+  }
 
   return h.div([h.Class('text-gray-800')], [text])
 }

@@ -1,25 +1,10 @@
-import { Function, Option } from 'effect'
+import { Function as Fn } from 'effect'
 import { Runtime } from 'foldkit'
 
-import { makeElement } from './main'
+import { makeElement } from './main.vibe'
+import { getElement, getInputElement } from './hostElements.ts'
 
 const INITIAL_COUNT = 10
-
-const getElement = (elementId: string): HTMLElement => {
-  const element = document.getElementById(elementId)
-  if (element === null) {
-    throw new Error(`Missing host element "${elementId}"`)
-  }
-  return element
-}
-
-const getInputElement = (elementId: string): HTMLInputElement => {
-  const element = document.getElementById(elementId)
-  if (!(element instanceof HTMLInputElement)) {
-    throw new Error(`Missing host input "${elementId}"`)
-  }
-  return element
-}
 
 export const startHost = (): void => {
   getElement('root').outerHTML = `
@@ -67,7 +52,7 @@ export const startHost = (): void => {
 
   type WidgetHandle = Runtime.EmbedHandle<typeof element.ports>
 
-  let maybeHandle: Option.Option<WidgetHandle> = Option.none()
+  let maybeHandle: Option<WidgetHandle> = Option.none()
 
   const mountWidget = (): void => {
     const handle = Runtime.embed(element)
@@ -75,7 +60,7 @@ export const startHost = (): void => {
     handle.ports.countChanged.subscribe(count => {
       hostCountDisplay.textContent = String(count)
     })
-    handle.ports.stepChanged.send(Number(stepRange.value))
+    void handle.ports.stepChanged.send(Number(stepRange.value))
 
     maybeHandle = Option.some(handle)
     mountToggleButton.textContent = 'Unmount widget'
@@ -88,7 +73,7 @@ export const startHost = (): void => {
   }
 
   mountToggleButton.addEventListener('click', () => {
-    Option.match(maybeHandle, {
+    maybeHandle.match({
       onNone: mountWidget,
       onSome: unmountWidget,
     })
@@ -96,10 +81,10 @@ export const startHost = (): void => {
 
   stepRange.addEventListener('input', () => {
     stepValueDisplay.textContent = stepRange.value
-    Option.match(maybeHandle, {
-      onNone: Function.constVoid,
+    maybeHandle.match({
+      onNone: Fn.constVoid,
       onSome: handle => {
-        handle.ports.stepChanged.send(Number(stepRange.value))
+        void handle.ports.stepChanged.send(Number(stepRange.value))
       },
     })
   })

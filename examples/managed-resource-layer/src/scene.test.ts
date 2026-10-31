@@ -19,7 +19,7 @@ import {
   managedResources,
   update,
   view,
-} from './main'
+} from './main.vibe'
 
 const offModel = Model.make({
   engine: EngineState.Off(),
