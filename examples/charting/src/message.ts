@@ -3,7 +3,7 @@ import { defineMessageUnion } from 'foldkit/message'
 
 import { RadioGroup } from '@foldkit/ui'
 
-import { Telemetry } from './domain'
+import { Telemetry } from './domain.vibe'
 
 export const Message = defineMessageUnion({
   GotChartModeRadioGroupMessage: { message: RadioGroup.Message },

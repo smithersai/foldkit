@@ -1,15 +1,15 @@
-import { Array, Option } from 'effect'
+import { Array as Arr } from 'effect'
 import { AsyncData } from 'foldkit'
 import type { Html } from 'foldkit/html'
 import { HtmlBuilder } from 'foldkit/html'
 
 import { Button } from '@foldkit/ui'
 
-import type { Telemetry } from '../domain'
-import { Message } from '../message'
-import type { Model } from '../model'
-import { chartPanelView } from './chart'
-import { sidebarView } from './sidebar'
+import type { Telemetry } from '../domain.vibe'
+import { Message } from '../message.ts'
+import type { Model } from '../model.vibe'
+import { chartPanelView } from './chart.ts'
+import { sidebarView } from './sidebar.vibe'
 
 export const headerView = (model: Model, h: HtmlBuilder<Message>): Html => {
   const isRefreshing = AsyncData.isRefreshing(model.telemetry)
@@ -66,7 +66,7 @@ export const headerView = (model: Model, h: HtmlBuilder<Message>): Html => {
 
 const dashboardBanner = (
   telemetry: Model['telemetry'],
-): Option.Option<string> =>
+): Option<string> =>
   AsyncData.match(telemetry, {
     onIdle: () => Option.none(),
     onLoading: () => Option.none(),
@@ -74,9 +74,9 @@ const dashboardBanner = (
     onFailure: () => Option.none(),
     onStale: ({ error }) => Option.some(error),
     onSuccess: ({ warnings }) =>
-      Array.match(warnings, {
+      Arr.match(warnings, {
         onEmpty: () => Option.none(),
-        onNonEmpty: warnings => Option.some(Array.join(warnings, ' ')),
+        onNonEmpty: warnings => Option.some(Arr.join(warnings, ' ')),
       }),
   })
 
@@ -159,7 +159,7 @@ export const failureView = (error: string, h: HtmlBuilder<Message>): Html =>
 export const dashboardShellView = (
   model: Model,
   telemetry: Telemetry,
-  maybeBanner: Option.Option<string>,
+  maybeBanner: Option<string>,
   h: HtmlBuilder<Message>,
 ): Html =>
   h.section(

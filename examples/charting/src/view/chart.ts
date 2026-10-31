@@ -4,12 +4,12 @@ import { Mount } from 'foldkit'
 import type { Html } from 'foldkit/html'
 import { HtmlBuilder } from 'foldkit/html'
 
-import { removeChart, setChart } from '../chartHost'
-import type { Telemetry } from '../domain'
-import { selectedDatumLabel } from '../echarts'
+import { removeChart, setChart } from '../chartHost.vibe'
+import type { Telemetry } from '../domain.vibe'
+import { selectedDatumLabel } from '../echarts.vibe'
 import { Message } from '../message'
-import type { Model } from '../model'
-import { formatInteger } from './format'
+import type { Model } from '../model.vibe'
+import { formatInteger } from './format.vibe'
 
 export const CHART_HOST_ID = 'charting-chart'
 

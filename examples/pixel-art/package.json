@@ -14,8 +14,7 @@
     "@foldkit/ui": "workspace:*",
     "clsx": "^2.1.1",
     "effect": "4.1.0",
-    "foldkit": "workspace:*",
-    "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz"
+    "foldkit": "workspace:*"
   },
   "devDependencies": {
     "@foldkit/devtools": "workspace:*",

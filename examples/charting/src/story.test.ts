@@ -4,17 +4,17 @@ import { expect, test } from 'vitest'
 
 import { RadioGroup } from '@foldkit/ui'
 
-import { FetchTelemetry, SyncChart } from './command'
+import { FetchTelemetry, SyncChart } from './command.vibe'
 import {
   type ChartMode,
   type PackageId,
   chartModes,
   packageIds,
-} from './domain'
-import { loadingModel, readyModel, sampleTelemetry } from './main.fixture'
+} from './domain.vibe'
+import { loadingModel, readyModel, sampleTelemetry } from './main.fixture.vibe'
 import { Message } from './message'
-import { TelemetryAsyncData } from './model'
-import { update } from './update'
+import { TelemetryAsyncData } from './model.vibe'
+import { update } from './update.vibe'
 
 const selectedChartMode = (chartMode: ChartMode) =>
   Message.GotChartModeRadioGroupMessage({

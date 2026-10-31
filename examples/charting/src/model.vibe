@@ -1,9 +1,8 @@
-import { Schema } from 'effect'
 import { AsyncData } from 'foldkit'
 
 import { RadioGroup } from '@foldkit/ui'
 
-import { ChartMode, PackageId, Period, Telemetry } from './domain'
+import { ChartMode, PackageId, Period, Telemetry } from './domain.vibe'
 
 export const TelemetryAsyncData = AsyncData.Schema(Telemetry, Schema.String)
 

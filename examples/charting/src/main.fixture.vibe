@@ -1,4 +1,3 @@
-import { DateTime, Option } from 'effect'
 import { modifyFields } from 'foldkit/struct'
 
 import { RadioGroup } from '@foldkit/ui'
@@ -11,13 +10,13 @@ import {
   Telemetry,
   WeeklyDownloads,
   WeeklyTelemetry,
-} from './domain'
-import { Model, TelemetryAsyncData } from './model'
+} from './domain.vibe'
+import { Model, TelemetryAsyncData } from './model.vibe'
 import {
   CHART_MODE_RADIO_GROUP_ID,
   PACKAGE_RADIO_GROUP_ID,
   PERIOD_RADIO_GROUP_ID,
-} from './radioGroups'
+} from './radioGroups.ts'
 
 export const sampleTelemetry = Telemetry.make({
   fetchedAt: DateTime.toEpochMillis(

@@ -369,6 +369,9 @@ importers:
       '@tailwindcss/vite':
         specifier: ^4.3.3
         version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+      fast-check:
+        specifier: 4.3.0
+        version: 4.3.0
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -656,9 +659,6 @@ importers:
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
-      vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -757,9 +757,6 @@ importers:
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
-      vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -812,9 +809,6 @@ importers:
       fractional-indexing:
         specifier: ^4.0.0
         version: 4.0.0
-      vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -1026,9 +1020,6 @@ importers:
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
-      vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -1078,9 +1069,6 @@ importers:
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
-      vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -1173,9 +1161,6 @@ importers:
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
-      vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -1222,9 +1207,6 @@ importers:
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
-      vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -1617,9 +1599,6 @@ importers:
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
-      vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*
@@ -1819,9 +1798,6 @@ importers:
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
-      vibelang-runtime:
-        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz
-        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@foldkit/devtools':
         specifier: workspace:*

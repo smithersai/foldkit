@@ -1,4 +1,4 @@
-import { Array, DateTime, Effect, Option, Order, Record, pipe } from 'effect'
+import { Array as Arr, pipe } from 'effect'
 
 import {
   ContributorSummary,
@@ -9,8 +9,8 @@ import {
   WeeklyDownloads,
   WeeklyTelemetry,
   packageSpecs,
-} from './domain'
-import type { PackageId, PackageSpec } from './domain'
+} from './domain.vibe'
+import type { PackageId, PackageSpec } from './domain.vibe'
 import type {
   GitHubCommitActivityResponse,
   GitHubContributorResponse,
@@ -20,14 +20,14 @@ import type {
   GitHubRepositoryResponse,
   GitHubStarHistoryResponse,
   GitHubStatResult,
-} from './githubApi'
-import { GitHubApi } from './githubApi'
+} from './githubApi.ts'
+import { GitHubApi } from './githubApi.ts'
 import type {
   NpmDownloadsResponse,
   NpmPackument,
   NpmVersionMetadata,
-} from './npmApi'
-import { NpmApi } from './npmApi'
+} from './npmApi.ts'
+import { NpmApi } from './npmApi.ts'
 import {
   LAST_YEAR_WEEKS,
   type WeeklyCount,
@@ -37,7 +37,7 @@ import {
   valueForWeek,
   weekStartForDateTime,
   weekStartsForLastYear,
-} from './weeks'
+} from './weeks.vibe'
 
 // CONSTANT
 
@@ -78,32 +78,26 @@ const weeklyDownloads = (
     ({ downloads: dayDownloads }) => dayDownloads,
   )
 
-  return Array.map(weekStarts, weekStart =>
+  return Arr.map(weekStarts, weekStart =>
     WeeklyDownloads.make({
       weekStart,
       downloads: valueForWeek(weeklySums, weekStart),
-    }),
-  )
+    }))
 }
 
 const lastWeekDownloads = (
   downloadsByWeek: ReadonlyArray<typeof WeeklyDownloads.Type>,
-): number =>
-  pipe(
-    downloadsByWeek,
-    Array.last,
-    Option.match({
-      onNone: () => 0,
-      onSome: ({ downloads }) => downloads,
-    }),
-  )
+): number => match (Arr.last(downloadsByWeek)) {
+  when Option.None: 0;
+  when Option.Some(let item): item.downloads;
+}
 
 const recordSize = (
   record: Readonly<globalThis.Record<string, string>>,
-): number => Array.length(Record.keys(record))
+): number => Arr.length(Record.keys(record))
 
 const dependenciesOrEmpty = (
-  maybeDependencies: Option.Option<Readonly<globalThis.Record<string, string>>>,
+  maybeDependencies: Option<Readonly<globalThis.Record<string, string>>>,
 ): Readonly<globalThis.Record<string, string>> =>
   Option.getOrElse(maybeDependencies, Record.empty<string, string>)
 
@@ -125,9 +119,10 @@ export const dependencyEdgesForPackage = (
   const dependencies = dependenciesOrEmpty(metadata.dependencies)
   const peerDependencies = dependenciesOrEmpty(metadata.peerDependencies)
 
-  const dependencyEdges = Array.map(
-    Array.filter(packageSpecs, spec =>
-      Array.contains(Record.keys(dependencies), spec.npmName),
+  const dependencyEdges = Arr.map(
+    Arr.filter(
+      packageSpecs,
+      spec => Arr.contains(Record.keys(dependencies), spec.npmName),
     ),
     spec =>
       DependencyEdge.make({
@@ -137,9 +132,10 @@ export const dependencyEdgesForPackage = (
       }),
   )
 
-  const peerDependencyEdges = Array.map(
-    Array.filter(packageSpecs, spec =>
-      Array.contains(Record.keys(peerDependencies), spec.npmName),
+  const peerDependencyEdges = Arr.map(
+    Arr.filter(
+      packageSpecs,
+      spec => Arr.contains(Record.keys(peerDependencies), spec.npmName),
     ),
     spec =>
       DependencyEdge.make({
@@ -149,7 +145,7 @@ export const dependencyEdgesForPackage = (
       }),
   )
 
-  return Array.appendAll(dependencyEdges, peerDependencyEdges)
+  return Arr.appendAll(dependencyEdges, peerDependencyEdges)
 }
 
 export const packageSnapshotFromResponses = (
@@ -171,13 +167,13 @@ export const packageSnapshotFromResponses = (
     Record.get(packument.time, distTags.latest),
     () => 'unknown',
   )
-  const totalDownloads = Array.reduce(
+  const totalDownloads = Arr.reduce(
     downloads.downloads,
     0,
     (total, day) => total + day.downloads,
   )
-  const dependencyCount =
-    recordSize(dependencies) + recordSize(peerDependencies)
+  const dependencyCount = recordSize(dependencies)
+    + recordSize(peerDependencies)
 
   return {
     snapshot: PackageSnapshot.make({
@@ -202,13 +198,13 @@ export const weeklyStars = (
 ): ReadonlyArray<WeeklyCount> =>
   pipe(
     sumByWeek(
-      Array.flatMap(starHistory, ({ week, days }) => {
+      Arr.flatMap(starHistory, ({ week, days }) => {
         const sunday = pipe(
           DateTime.fromEpochSeconds(week),
           DateTime.nearest('week', { weekStartsOn: 0 }),
         )
 
-        return Array.map(days, (count, dayIndex) => ({
+        return Arr.map(days, (count, dayIndex) => ({
           weekStart: weekStartForDateTime(
             DateTime.add(sunday, { days: dayIndex }),
           ),
@@ -219,7 +215,7 @@ export const weeklyStars = (
       ({ weekStart }) => weekStart,
       ({ count }) => count,
     ),
-    Array.map(({ weekStart, amount }) => ({ weekStart, count: amount })),
+    Arr.map(({ weekStart, amount }) => ({ weekStart, count: amount })),
   )
 
 export const cumulativeStarsByWeek = (
@@ -228,26 +224,26 @@ export const cumulativeStarsByWeek = (
   weekStarts: ReadonlyArray<string>,
 ): ReadonlyArray<WeeklyCount> => {
   const emptyWeeks: ReadonlyArray<WeeklyCount> = []
-  const startsWithZero = Array.map(weekStarts, weekStart => ({
+  const startsWithZero = Arr.map(weekStarts, weekStart => ({
     weekStart,
     count: 0,
   }))
   const weekly = weeklyStars(starHistory, weekStarts)
-  const fetchedStars = Array.reduce(
+  const fetchedStars = Arr.reduce(
     weekly,
     0,
     (total, week) => total + week.count,
   )
   const initialStars = Math.max(0, currentStars - fetchedStars)
 
-  return Array.reduce(
+  return Arr.reduce(
     startsWithZero,
     { running: initialStars, weeks: emptyWeeks },
     (state, week) => {
       const running = state.running + countForWeek(weekly, week.weekStart)
       return {
         running,
-        weeks: Array.append(state.weeks, {
+        weeks: Arr.append(state.weeks, {
           weekStart: week.weekStart,
           count: running,
         }),
@@ -256,34 +252,35 @@ export const cumulativeStarsByWeek = (
   ).weeks
 }
 
-const commitCountForWeek =
-  (weekStart: string) =>
-  (activity: ReadonlyArray<typeof GitHubCommitActivityResponse.Type>): number =>
-    pipe(
-      activity,
-      Array.findFirst(
-        item =>
-          weekStartForDateTime(DateTime.fromEpochSeconds(item.week)) ===
-          weekStart,
-      ),
-      Option.match({
-        onNone: () => 0,
-        onSome: ({ total }) => total,
-      }),
-    )
+const commitCountForWeek = (weekStart: string): infer _ =>
+(
+  activity: ReadonlyArray<typeof GitHubCommitActivityResponse.Type>,
+): number => match (Arr.findFirst(
+    activity,
+    item =>
+      weekStartForDateTime(DateTime.fromEpochSeconds(item.week))
+        === weekStart,
+  )) {
+  when Option.None: 0;
+  when Option.Some(let item): item.total;
+}
 
 export const weeklyCommitTotals = (
-  maybeCommitActivity: Option.Option<
+  maybeCommitActivity: Option<
     ReadonlyArray<typeof GitHubCommitActivityResponse.Type>
   >,
   weekStarts: ReadonlyArray<string>,
 ): ReadonlyArray<WeeklyCount> =>
-  Array.map(weekStarts, weekStart => ({
+  Arr.map(weekStarts, weekStart => ({
     weekStart,
-    count: Option.match(maybeCommitActivity, {
-      onNone: () => 0,
-      onSome: commitCountForWeek(weekStart),
-    }),
+    count: do {
+      const activityOption = maybeCommitActivity
+      const countActivity = commitCountForWeek(weekStart)
+      match (activityOption) {
+        when Option.None: 0;
+        when Option.Some(let activity): countActivity(activity);
+      }
+    },
   }))
 
 export const weeklyReleaseTotals = (
@@ -291,12 +288,9 @@ export const weeklyReleaseTotals = (
   weekStarts: ReadonlyArray<string>,
 ): ReadonlyArray<WeeklyCount> =>
   countByWeek(releases, weekStarts, release =>
-    pipe(
-      release.published_at,
-      Option.flatMap(DateTime.make),
-      Option.map(weekStartForDateTime),
-    ),
-  )
+    release.published_at
+      .flatMap(DateTime.make)
+      .map(weekStartForDateTime))
 
 export const makeWeeklyTelemetry = (
   weekStarts: ReadonlyArray<string>,
@@ -304,14 +298,13 @@ export const makeWeeklyTelemetry = (
   commits: ReadonlyArray<WeeklyCount>,
   releases: ReadonlyArray<WeeklyCount>,
 ): ReadonlyArray<typeof WeeklyTelemetry.Type> =>
-  Array.map(weekStarts, weekStart =>
+  Arr.map(weekStarts, weekStart =>
     WeeklyTelemetry.make({
       weekStart,
       cumulativeStars: countForWeek(cumulativeStars, weekStart),
       commits: countForWeek(commits, weekStart),
       releases: countForWeek(releases, weekStart),
-    }),
-  )
+    }))
 
 export const contributorSummary = (
   contributor: GitHubContributorResponse,
@@ -324,71 +317,58 @@ export const contributorSummary = (
 
 // FETCH
 
-export const fetchRawTelemetry: Effect.Effect<
-  RawTelemetry,
-  Error,
-  GitHubApi | NpmApi
-> = Effect.gen(function* () {
-  const github = yield* GitHubApi
-  const npm = yield* NpmApi
-  const fetchedAt = yield* DateTime.now
+export const fetchRawTelemetry: RawTelemetry!Error!GitHubApi | NpmApi = effect {
+    const github = GitHubApi()
+    const npm = NpmApi()
+    const fetchedAt = try DateTime.now
 
-  const repository = yield* github.fetchRepository
-  const yearCutoff = DateTime.subtract(fetchedAt, { weeks: LAST_YEAR_WEEKS })
-  const [contributors, issues, pullRequests, releases] = yield* Effect.all(
-    [
+    const repository = try github.fetchRepository
+    const yearCutoff = DateTime.subtract(fetchedAt, { weeks: LAST_YEAR_WEEKS })
+    const [contributors, issues, pullRequests, releases] = try.all [
       github.fetchContributors,
       github.fetchIssues,
       github.fetchPullRequests,
       github.fetchReleases(yearCutoff),
-    ],
-    { concurrency: 'unbounded' },
-  )
-  const starHistory = yield* github.fetchStarHistory(yearCutoff)
-  const commitActivity = yield* github.fetchCommitActivity
-  const packageData = yield* Effect.forEach(
-    packageSpecs,
-    spec =>
-      npm.fetchPackage(spec).pipe(
-        Effect.map(({ downloads, packument }) => ({
-          spec,
-          downloads,
-          packument,
-        })),
-      ),
-    { concurrency: 'unbounded' },
-  )
+    ]
+    const starHistory = try github.fetchStarHistory(yearCutoff)
+    const commitActivity = try github.fetchCommitActivity
+    const packagePrograms = Arr.map(packageSpecs, (spec): infer _ =>
+      effect {
+        const { downloads, packument } = try npm.fetchPackage(spec)
+        return { spec, downloads, packument }
+      })
+    const packageData = try.all packagePrograms
 
-  return {
-    fetchedAt: DateTime.toEpochMillis(fetchedAt),
-    repository,
-    contributors,
-    issues,
-    pullRequests,
-    releases,
-    starHistory,
-    commitActivity,
-    packageData,
+    return {
+      fetchedAt: DateTime.toEpochMillis(fetchedAt),
+      repository,
+      contributors,
+      issues,
+      pullRequests,
+      releases,
+      starHistory,
+      commitActivity,
+      packageData,
+    }
   }
-})
 
 export const transformTelemetry = (
   raw: RawTelemetry,
 ): typeof Telemetry.Type => {
   const weekStarts = weekStartsForLastYear(DateTime.makeUnsafe(raw.fetchedAt))
 
-  const packageResults = Array.map(
+  const packageResults = Arr.map(
     raw.packageData,
     ({ spec, downloads, packument }) =>
       packageSnapshotFromResponses(spec, downloads, packument, weekStarts),
   )
-  const packageSnapshots = Array.map(packageResults, ({ snapshot }) => snapshot)
-  const dependencyEdges = Array.flatMap(packageResults, ({ edges }) => edges)
+  const packageSnapshots = Arr.map(packageResults, ({ snapshot }) => snapshot)
+  const dependencyEdges = Arr.flatMap(packageResults, ({ edges }) => edges)
 
-  const openIssues = Array.length(
-    Array.filter(raw.issues, issue => Option.isNone(issue.pull_request)),
+  const openIssues = Arr.length(
+    Arr.filter(raw.issues, issue => Option.isNone(issue.pull_request)),
   )
-  const sortedContributors = Array.sort(
+  const sortedContributors = Arr.sort(
     raw.contributors,
     pipe(
       Order.Number,
@@ -412,8 +392,8 @@ export const transformTelemetry = (
       forks: raw.repository.forks_count,
       watchers: raw.repository.watchers_count,
       openIssues,
-      openPullRequests: Array.length(raw.pullRequests),
-      visibleContributors: Array.length(raw.contributors),
+      openPullRequests: Arr.length(raw.pullRequests),
+      visibleContributors: Arr.length(raw.contributors),
       pushedAt: raw.repository.pushed_at,
       defaultBranch: raw.repository.default_branch,
     }),
@@ -427,8 +407,8 @@ export const transformTelemetry = (
     dependencyEdges,
     topContributors: pipe(
       sortedContributors,
-      Array.take(TOP_CONTRIBUTOR_COUNT),
-      Array.map(contributorSummary),
+      Arr.take(TOP_CONTRIBUTOR_COUNT),
+      Arr.map(contributorSummary),
     ),
     warnings,
   })

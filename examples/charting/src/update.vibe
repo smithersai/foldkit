@@ -1,18 +1,18 @@
-import { Array, Option, Result, pipe } from 'effect'
+import { Array as Arr, pipe } from 'effect'
 import { AsyncData, Command, Update } from 'foldkit'
 import { modifyFields } from 'foldkit/struct'
 
 import { RadioGroup } from '@foldkit/ui'
 
-import { FetchTelemetry, SyncChart } from './command'
-import type { ChartMode, PackageId, Period } from './domain'
-import { Message } from './message'
-import { type Model, TelemetryAsyncData } from './model'
+import { FetchTelemetry, SyncChart } from './command.vibe'
+import type { ChartMode, PackageId, Period } from './domain.vibe'
+import { Message } from './message.ts'
+import { type Model, TelemetryAsyncData } from './model.vibe'
 import {
   ChartModeRadioGroup,
   PackageRadioGroup,
   PeriodRadioGroup,
-} from './radioGroups'
+} from './radioGroups.ts'
 
 type UpdateReturn = Update.Return<Model, Message>
 
@@ -35,20 +35,20 @@ const syncChart = (args: {
           selectedPackageId: args.selectedPackageId,
           period: args.period,
           maybeSelectedDatumId: args.maybeSelectedDatumId,
-        }),
-      ),
+        }))
     ),
-    Array.fromOption,
+    Arr.fromOption,
   )
 
-const refetchTelemetry = (model: Model): UpdateReturn =>
-  Option.match(AsyncData.revalidateOrLoad(model.telemetry), {
-    onNone: () => ({ model }),
-    onSome: nextTelemetry => ({
-      model: modifyFields(model, { telemetry: () => nextTelemetry }),
-      commands: [FetchTelemetry()],
-    }),
-  })
+const refetchTelemetry = (
+  model: Model,
+): UpdateReturn => match (AsyncData.revalidateOrLoad(model.telemetry)) {
+  when Option.None: ({ model });
+  when Option.Some(let nextTelemetry): ({
+    model: modifyFields(model, { telemetry: () => nextTelemetry }),
+    commands: [FetchTelemetry()],
+  });
+}
 
 const selectedControl =
   (updateModel: (model: Model) => Model): Update.Step<Model, Message> =>
@@ -122,7 +122,7 @@ const foldPackageRadioGroup = Update.foldChild({
   foldOutMessage: foldPackageRadioGroupOutMessage,
 })
 
-export const update = (model: Model, message: Message) =>
+export const update = (model: Model, message: Message): infer _ =>
   Message.match<UpdateReturn>(message, {
     GotChartModeRadioGroupMessage: ({ message }) =>
       foldChartModeRadioGroup(model, message),

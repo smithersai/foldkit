@@ -1,7 +1,7 @@
 import { Context, Effect, Layer, Schema } from 'effect'
 import { HttpClient } from 'effect/http'
 
-import type { PackageSpec } from './domain'
+import type { PackageSpec } from './domain.vibe'
 import { encodePackageName, fetchJson } from './http'
 
 // CONSTANT

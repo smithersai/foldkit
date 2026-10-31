@@ -1,4 +1,4 @@
-import { Array, DateTime, Option, pipe } from 'effect'
+import { Array as Arr, pipe } from 'effect'
 
 // CONSTANT
 
@@ -20,24 +20,23 @@ export const weekStartsForLastYear = (
 ): ReadonlyArray<string> => {
   const currentWeekStart = DateTime.startOf(now, 'week', { weekStartsOn: 1 })
 
-  return Array.makeBy(LAST_YEAR_WEEKS, weekIndex =>
+  return Arr.makeBy(LAST_YEAR_WEEKS, weekIndex =>
     pipe(
       currentWeekStart,
       DateTime.subtract({ weeks: LAST_YEAR_WEEKS - weekIndex - 1 }),
       DateTime.formatIsoDateUtc,
-    ),
-  )
+    ))
 }
 
 export const countByWeek = <A>(
   values: ReadonlyArray<A>,
   weekStarts: ReadonlyArray<string>,
-  toWeekStart: (value: A) => Option.Option<string>,
+  toWeekStart: (value: A) => Option<string>,
 ): ReadonlyArray<WeeklyCount> =>
-  Array.map(weekStarts, weekStart => ({
+  Arr.map(weekStarts, weekStart => ({
     weekStart,
-    count: Array.length(
-      Array.filter(
+    count: Arr.length(
+      Arr.filter(
         values,
         value => Option.getOrElse(toWeekStart(value), () => '') === weekStart,
       ),
@@ -50,10 +49,10 @@ export const sumByWeek = <A>(
   toWeekStart: (value: A) => string,
   toAmount: (value: A) => number,
 ): ReadonlyArray<Readonly<{ weekStart: string; amount: number }>> =>
-  Array.map(weekStarts, weekStart => ({
+  Arr.map(weekStarts, weekStart => ({
     weekStart,
-    amount: Array.reduce(
-      Array.filter(values, value => toWeekStart(value) === weekStart),
+    amount: Arr.reduce(
+      Arr.filter(values, value => toWeekStart(value) === weekStart),
       0,
       (total, value) => total + toAmount(value),
     ),
@@ -65,7 +64,7 @@ export const valueForWeek = (
 ): number =>
   Option.getOrElse(
     Option.map(
-      Array.findFirst(values, value => value.weekStart === weekStart),
+      Arr.findFirst(values, value => value.weekStart === weekStart),
       ({ amount }) => amount,
     ),
     () => 0,
@@ -77,7 +76,7 @@ export const countForWeek = (
 ): number =>
   Option.getOrElse(
     Option.map(
-      Array.findFirst(values, value => value.weekStart === weekStart),
+      Arr.findFirst(values, value => value.weekStart === weekStart),
       ({ count }) => count,
     ),
     () => 0,

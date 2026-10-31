@@ -1,16 +1,15 @@
-import { Option } from 'effect'
 import { Runtime } from 'foldkit'
 
 import { RadioGroup } from '@foldkit/ui'
 
-import { FetchTelemetry } from './command'
-import type { Message } from './message'
-import { Model, TelemetryAsyncData } from './model'
+import { FetchTelemetry } from './command.vibe'
+import type { Message } from './message.ts'
+import { Model, TelemetryAsyncData } from './model.vibe'
 import {
   CHART_MODE_RADIO_GROUP_ID,
   PACKAGE_RADIO_GROUP_ID,
   PERIOD_RADIO_GROUP_ID,
-} from './radioGroups'
+} from './radioGroups.ts'
 
 export const init: Runtime.ApplicationInit<Model, Message> = () => ({
   model: {
