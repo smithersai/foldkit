@@ -1,4 +1,3 @@
-import { Match, Option } from 'effect'
 import type { Attribute, Html, HtmlBuilder } from 'foldkit/html'
 
 // VIEW
@@ -107,13 +106,12 @@ export const view = <Message>(
 
   const nextChecked = !isChecked
 
-  const handleKeyUp = (key: string): Option.Option<Message> =>
-    Match.value(key).pipe(
-      Match.when(' ', () => Option.some(onToggle(nextChecked))),
-      Match.orElse(() => Option.none()),
-    )
+  const handleKeyUp = (key: string): Option<Message> => match (key) {
+    when ' ': Option.some(onToggle(nextChecked));
+    default: Option.none();
+  }
 
-  const resolveStateAttributes = () => {
+  const resolveStateAttributes = (): infer _ => {
     if (isIndeterminate) {
       return [h.DataAttribute('indeterminate', '')]
     } else if (isChecked) {

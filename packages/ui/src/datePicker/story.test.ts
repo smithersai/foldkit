@@ -21,7 +21,7 @@ import {
   reflectMinDate,
   selectDate,
   update,
-} from './index.js'
+} from './index.vibe'
 
 const today = Calendar.make(2026, 4, 13)
 

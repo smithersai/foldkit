@@ -1,13 +1,12 @@
-import { Predicate } from 'effect'
 import type { Attribute, Html, HtmlBuilder } from 'foldkit/html'
 
-import { accessibleNameAttributes } from '../internal/accessibleName.js'
+import { accessibleNameAttributes } from '../internal/accessibleName.ts'
 import {
   clamp,
   fractionOfValue,
   normalizeRangeMax,
   percentageFromFraction,
-} from '../internal/range.js'
+} from '../internal/range.ts'
 
 // VIEW
 

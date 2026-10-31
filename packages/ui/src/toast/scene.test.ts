@@ -5,7 +5,7 @@ import { modifyFields } from 'foldkit/struct'
 
 import { describe, it } from '@effect/vitest'
 
-import * as Animation from '../animation/index.js'
+import * as Animation from '../animation/index.vibe'
 import {
   type EntryHandlers,
   SwipeState,

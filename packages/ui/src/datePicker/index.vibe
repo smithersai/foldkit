@@ -7,10 +7,10 @@ import { modifyFields } from 'foldkit/struct'
 import { type Reflect, defineView } from 'foldkit/submodel'
 import * as Update from 'foldkit/update'
 
-import type { AnchorConfig } from '../anchor/index.js'
-import * as UiCalendar from '../calendar/index.js'
-import { idSelector } from '../internal/selectors.js'
-import * as Popover from '../popover/index.js'
+import type { AnchorConfig } from '../anchor/index.ts'
+import * as UiCalendar from '../calendar/index.ts'
+import { idSelector } from '../internal/selectors.ts'
+import * as Popover from '../popover/index.ts'
 
 // MODEL
 
@@ -19,12 +19,11 @@ import * as Popover from '../popover/index.js'
  * `ViewInputs.maybeSelectedDate`. This holds the embedded Calendar submodel
  * (the visible grid) and the embedded Popover submodel (the open/close +
  * transition layer). */
-export const Model = Schema.Struct({
-  id: Schema.String,
-  calendar: UiCalendar.Model,
-  popover: Popover.Model,
-})
-export type Model = typeof Model.Type
+export schema Model {
+  id: string
+  calendar: UiCalendar.Model
+  popover: Popover.Model
+}
 
 // MESSAGE
 
@@ -106,7 +105,7 @@ export const init = (config: InitConfig): Model => ({
 
 type UpdateReturn = Update.ReturnWithOutMessage<Model, Message, OutMessage>
 
-const dropCalendarToDays: Update.Step<Model, Message> = model => ({
+const dropCalendarToDays: Update.Step<Model, Message> = (model): infer _ => ({
   model: modifyFields(model, { calendar: UiCalendar.dropToDays }),
 })
 
@@ -114,7 +113,7 @@ const readPopover = (model: Model): Option.Option<Popover.Model> =>
   Option.some(model.popover)
 
 const writePopover = (model: Model, nextPopover: Popover.Model): Model =>
-  modifyFields(model, { popover: () => nextPopover })
+  modifyFields(model, { popover: (): infer _ => nextPopover })
 
 const toGotPopoverMessage = (message: Popover.Message): Message =>
   Message.GotPopoverMessage({ message })
@@ -122,8 +121,8 @@ const toGotPopoverMessage = (message: Popover.Message): Message =>
 const foldPopoverOutMessage = Popover.OutMessage.match<
   Update.Step<Model, Message>
 >({
-  Opened: () => dropCalendarToDays,
-  Closed: () => dropCalendarToDays,
+  Opened: (): infer _ => dropCalendarToDays,
+  Closed: (): infer _ => dropCalendarToDays,
 })
 
 const foldPopover = Update.foldChild({
@@ -153,53 +152,58 @@ const foldPopoverClose = Update.foldChildStep({
 const foldCalendarOutMessage = UiCalendar.OutMessage.match<
   Update.Step<Model, Message>
 >({
-  ChangedViewMonth: () => model => ({ model }),
-  SelectedDate: () => foldPopoverClose,
+  ChangedViewMonth: (): infer _ => (model): infer _ => ({ model }),
+  SelectedDate: (): infer _ => foldPopoverClose,
 })
 
 const toDatePickerOutMessage = UiCalendar.OutMessage.match<OutMessage>({
-  ChangedViewMonth: ({ year, month }) =>
+  ChangedViewMonth: ({ year, month }): infer _ =>
     OutMessage.ChangedViewMonth({ year, month }),
-  SelectedDate: ({ date }) => OutMessage.SelectedDate({ date }),
+  SelectedDate: ({ date }): infer _ => OutMessage.SelectedDate({ date }),
 })
 
 const foldCalendar = Update.foldChild({
   update: UiCalendar.update,
-  read: (model: Model) => Option.some(model.calendar),
-  write: (model, nextCalendar) =>
-    modifyFields(model, { calendar: () => nextCalendar }),
-  toParentMessage: message => Message.GotCalendarMessage({ message }),
+  read: (model: Model): infer _ => Option.some(model.calendar),
+  write: (model, nextCalendar): infer _ =>
+    modifyFields(model, { calendar: (): infer _ => nextCalendar }),
+  toParentMessage: (message): infer _ =>
+    Message.GotCalendarMessage({ message }),
   toParentOutMessage: toDatePickerOutMessage,
   foldOutMessage: foldCalendarOutMessage,
 })
 
 const foldCalendarSelectDate = Update.foldChild({
   update: UiCalendar.selectDate,
-  read: (model: Model) => Option.some(model.calendar),
-  write: (model, nextCalendar) =>
-    modifyFields(model, { calendar: () => nextCalendar }),
-  toParentMessage: message => Message.GotCalendarMessage({ message }),
+  read: (model: Model): infer _ => Option.some(model.calendar),
+  write: (model, nextCalendar): infer _ =>
+    modifyFields(model, { calendar: (): infer _ => nextCalendar }),
+  toParentMessage: (message): infer _ =>
+    Message.GotCalendarMessage({ message }),
   toParentOutMessage: toDatePickerOutMessage,
   foldOutMessage: foldCalendarOutMessage,
 })
 
 /** Processes a DatePicker Message and returns the next Model, optional
  *  Commands, and an optional OutMessage. */
-export const update = (model: Model, message: Message) =>
+export const update = (model: Model, message: Message): infer _ =>
   Message.match<UpdateReturn>(message, {
-    GotCalendarMessage: ({ message: calendarMessage }) =>
+    GotCalendarMessage: ({ message: calendarMessage }): infer _ =>
       foldCalendar(model, calendarMessage),
 
-    GotPopoverMessage: ({ message: popoverMessage }) =>
+    GotPopoverMessage: ({ message: popoverMessage }): infer _ =>
       foldPopover(model, popoverMessage),
 
-    Opened: () => Update.combine(model, [foldPopoverOpen, dropCalendarToDays]),
+    Opened: (): infer _ =>
+      Update.combine(model, [foldPopoverOpen, dropCalendarToDays]),
 
-    Closed: () => Update.combine(model, [foldPopoverClose, dropCalendarToDays]),
+    Closed: (): infer _ =>
+      Update.combine(model, [foldPopoverClose, dropCalendarToDays]),
 
-    RequestedSelectDate: ({ date }) => foldCalendarSelectDate(model, date),
+    RequestedSelectDate: ({ date }): infer _ =>
+      foldCalendarSelectDate(model, date),
 
-    Cleared: () => ({ model, outMessage: OutMessage.ClearedDate() }),
+    Cleared: (): infer _ => ({ model, outMessage: OutMessage.ClearedDate() }),
   })
 
 /** Programmatically opens the DatePicker, updating the Model and returning
@@ -228,7 +232,7 @@ export const focusDate: Reflect<Model, CalendarDate> = Function.dual(
   2,
   (model: Model, date: CalendarDate): Model =>
     modifyFields(model, {
-      calendar: () => UiCalendar.focusDate(model.calendar, date),
+      calendar: (): infer _ => UiCalendar.focusDate(model.calendar, date),
     }),
 )
 
@@ -247,7 +251,8 @@ export const reflectMinDate: Reflect<
   2,
   (model: Model, maybeMinDate: Option.Option<CalendarDate>): Model =>
     modifyFields(model, {
-      calendar: () => UiCalendar.reflectMinDate(model.calendar, maybeMinDate),
+      calendar: (): infer _ =>
+        UiCalendar.reflectMinDate(model.calendar, maybeMinDate),
     }),
 )
 
@@ -261,7 +266,8 @@ export const reflectMaxDate: Reflect<
   2,
   (model: Model, maybeMaxDate: Option.Option<CalendarDate>): Model =>
     modifyFields(model, {
-      calendar: () => UiCalendar.reflectMaxDate(model.calendar, maybeMaxDate),
+      calendar: (): infer _ =>
+        UiCalendar.reflectMaxDate(model.calendar, maybeMaxDate),
     }),
 )
 
@@ -275,7 +281,7 @@ export const reflectDisabledDates: Reflect<
   2,
   (model: Model, disabledDates: ReadonlyArray<CalendarDate>): Model =>
     modifyFields(model, {
-      calendar: () =>
+      calendar: (): infer _ =>
         UiCalendar.reflectDisabledDates(model.calendar, disabledDates),
     }),
 )
@@ -293,7 +299,7 @@ export const reflectDisabledDaysOfWeek: Reflect<
     disabledDaysOfWeek: ReadonlyArray<Calendar.DayOfWeek>,
   ): Model =>
     modifyFields(model, {
-      calendar: () =>
+      calendar: (): infer _ =>
         UiCalendar.reflectDisabledDaysOfWeek(
           model.calendar,
           disabledDaysOfWeek,
@@ -320,36 +326,37 @@ const encodeIsoDate = Schema.encodeSync(Calendar.CalendarDateFromIsoString)
  *  user commits a date. Handle it in the `foldOutMessage` of the
  *  DatePicker's `Update.foldChild` config to lift the date into domain
  *  state. Calendar label fields are forwarded to the embedded Calendar. */
-export type ViewInputs = Readonly<{
-  anchor: AnchorConfig
-  /** The selected date, read straight from the parent Model. The trigger
-   * content, the calendar's selected-day marker, and the hidden form input all
-   * derive from it. */
-  maybeSelectedDate: Option.Option<CalendarDate>
-  /** Renders the trigger button's content (typically the formatted selected
-   * date or a placeholder). Receives the current selection. */
-  triggerContent: (maybeDate: Option.Option<CalendarDate>) => Html
-  /** Renders the calendar grid layout inside the popover panel. The
-   * consumer lays out the attribute bundles exactly as they would for
-   * an inline calendar. */
-  toCalendarView: (attributes: UiCalendar.CalendarAttributes) => Html
-  isDisabled?: boolean
-  /** Name for the hidden form input. When provided, a hidden `<input>` is
-   * rendered alongside the trigger so native form submission captures the
-   * selected date as an ISO string (`YYYY-MM-DD`). */
-  name?: string
-  className?: string
-  attributes?: ReadonlyArray<ChildAttribute>
-  triggerClassName?: string
-  triggerAttributes?: ReadonlyArray<ChildAttribute>
-  ariaLabel?: string
-  ariaLabelledBy?: string
-  panelClassName?: string
-  panelAttributes?: ReadonlyArray<ChildAttribute>
-  backdropClassName?: string
-  backdropAttributes?: ReadonlyArray<ChildAttribute>
-}> &
-  UiCalendar.ViewLabels
+export type ViewInputs =
+  & Readonly<{
+    anchor: AnchorConfig
+    /** The selected date, read straight from the parent Model. The trigger
+     * content, the calendar's selected-day marker, and the hidden form input all
+     * derive from it. */
+    maybeSelectedDate: Option.Option<CalendarDate>
+    /** Renders the trigger button's content (typically the formatted selected
+     * date or a placeholder). Receives the current selection. */
+    triggerContent: (maybeDate: Option.Option<CalendarDate>) => Html
+    /** Renders the calendar grid layout inside the popover panel. The
+     * consumer lays out the attribute bundles exactly as they would for
+     * an inline calendar. */
+    toCalendarView: (attributes: UiCalendar.CalendarAttributes) => Html
+    isDisabled?: boolean
+    /** Name for the hidden form input. When provided, a hidden `<input>` is
+     * rendered alongside the trigger so native form submission captures the
+     * selected date as an ISO string (`YYYY-MM-DD`). */
+    name?: string
+    className?: string
+    attributes?: ReadonlyArray<ChildAttribute>
+    triggerClassName?: string
+    triggerAttributes?: ReadonlyArray<ChildAttribute>
+    ariaLabel?: string
+    ariaLabelledBy?: string
+    panelClassName?: string
+    panelAttributes?: ReadonlyArray<ChildAttribute>
+    backdropClassName?: string
+    backdropAttributes?: ReadonlyArray<ChildAttribute>
+  }>
+  & UiCalendar.ViewLabels
 
 /** Renders an accessible date picker: a trigger button that opens a popover
  * containing an accessible calendar grid. The date picker assembles the
@@ -377,7 +384,7 @@ export const view = defineView<Model, Message, ViewInputs>(
       backdropAttributes = [],
     } = viewInputs
 
-    const resolveTriggerLabel = () => {
+    const resolveTriggerLabel = (): infer _ => {
       if (Predicate.isNotUndefined(ariaLabel)) {
         return [h.AriaLabel(ariaLabel)]
       } else if (Predicate.isNotUndefined(ariaLabelledBy)) {
@@ -431,7 +438,8 @@ export const view = defineView<Model, Message, ViewInputs>(
         toView: toCalendarView,
         ...calendarViewLabels,
       },
-      toParentMessage: message => Message.GotCalendarMessage({ message }),
+      toParentMessage: (message): infer _ =>
+        Message.GotCalendarMessage({ message }),
     })
 
     const popoverVNode = h.submodel({
@@ -442,7 +450,7 @@ export const view = defineView<Model, Message, ViewInputs>(
         anchor,
         ...(isDisabled !== undefined && { isDisabled }),
         focusSelector: idSelector(`${model.calendar.id}-grid`),
-        toView: ({ button, panel, backdrop, isVisible }) =>
+        toView: ({ button, panel, backdrop, isVisible }): infer _ =>
           h.div(
             [],
             [
@@ -459,40 +467,40 @@ export const view = defineView<Model, Message, ViewInputs>(
               ),
               ...(isVisible
                 ? [
-                    h.div([
-                      ...backdrop,
-                      ...(backdropClassName !== undefined
-                        ? [h.Class(backdropClassName)]
+                  h.div([
+                    ...backdrop,
+                    ...(backdropClassName !== undefined
+                      ? [h.Class(backdropClassName)]
+                      : []),
+                    ...backdropAttributes,
+                  ]),
+                  h.div(
+                    [
+                      ...panel,
+                      ...(panelClassName !== undefined
+                        ? [h.Class(panelClassName)]
                         : []),
-                      ...backdropAttributes,
-                    ]),
-                    h.div(
-                      [
-                        ...panel,
-                        ...(panelClassName !== undefined
-                          ? [h.Class(panelClassName)]
-                          : []),
-                        ...panelAttributes,
-                      ],
-                      [calendarVNode],
-                    ),
-                  ]
+                      ...panelAttributes,
+                    ],
+                    [calendarVNode],
+                  ),
+                ]
                 : []),
             ],
           ),
       },
-      toParentMessage: message => Message.GotPopoverMessage({ message }),
+      toParentMessage: (message): infer _ =>
+        Message.GotPopoverMessage({ message }),
     })
 
     const hiddenInputValue = Option.match(maybeSelectedDate, {
-      onNone: () => '',
+      onNone: (): infer _ => '',
       onSome: encodeIsoDate,
     })
 
-    const maybeHiddenInput: ReadonlyArray<Html> =
-      name !== undefined
-        ? [h.input([h.Type('hidden'), h.Name(name), h.Value(hiddenInputValue)])]
-        : []
+    const maybeHiddenInput: ReadonlyArray<Html> = name !== undefined
+      ? [h.input([h.Type('hidden'), h.Name(name), h.Value(hiddenInputValue)])]
+      : []
 
     const wrapperAttributes = [
       ...(className !== undefined ? [h.Class(className)] : []),

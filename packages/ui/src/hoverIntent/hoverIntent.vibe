@@ -1,16 +1,15 @@
-import { Duration, Effect, Match, Number, Option, Schema } from 'effect'
+import { Duration, Effect, Number, Option, Schema } from 'effect'
 import * as Command from 'foldkit/command'
 import { type ChildAttribute, type Html, childAttributes } from 'foldkit/html'
 import { modifyFields } from 'foldkit/struct'
 import { defineView } from 'foldkit/submodel'
 import * as Update from 'foldkit/update'
 
-import { Message, OutMessage } from './message.js'
+import { Message, OutMessage } from './message.ts'
 
 // MODEL
 
-const FocusLocation = Schema.Literals(['Trigger', 'Panel'])
-type FocusLocation = typeof FocusLocation.Type
+schema FocusLocation = 'Trigger' | 'Panel'
 
 /** Schema for HoverIntent state. It tracks pointer and focus engagement over a trigger and its panel, visibility, delay timers, and Escape dismissal. */
 export const Model = Schema.Struct({
@@ -42,14 +41,12 @@ export const init = (config: InitConfig = {}): Model => ({
   isPanelHovered: false,
   maybeFocusLocation: Option.none(),
   isDismissed: false,
-  openDelay:
-    config.openDelay === undefined
-      ? DEFAULT_OPEN_DELAY
-      : Duration.fromInputUnsafe(config.openDelay),
-  closeDelay:
-    config.closeDelay === undefined
-      ? DEFAULT_CLOSE_DELAY
-      : Duration.fromInputUnsafe(config.closeDelay),
+  openDelay: config.openDelay === undefined
+    ? DEFAULT_OPEN_DELAY
+    : Duration.fromInputUnsafe(config.openDelay),
+  closeDelay: config.closeDelay === undefined
+    ? DEFAULT_CLOSE_DELAY
+    : Duration.fromInputUnsafe(config.closeDelay),
   pendingOpenVersion: 0,
   pendingCloseVersion: 0,
 })
@@ -60,20 +57,32 @@ export const init = (config: InitConfig = {}): Model => ({
 export const WaitBeforeOpening = Command.define('WaitBeforeOpening', {
   args: { delay: Schema.DurationFromMillis, version: Schema.Number },
   messages: [Message.CompletedWaitBeforeOpening],
-  execute: ({ delay, version }) =>
-    Effect.sleep(delay).pipe(
-      Effect.as(Message.CompletedWaitBeforeOpening({ version })),
-    ),
+  execute: ({ delay, version }): infer _ => {
+    const nativeCommandArg6_0 = delay
+    const nativeCommandCompletion6 = Message.CompletedWaitBeforeOpening({
+      version,
+    })
+    return effect {
+      try Effect.sleep(nativeCommandArg6_0)
+      return nativeCommandCompletion6
+    }
+  },
 })
 
 /** Waits before closing, then emits the version that scheduled the wait. */
 export const WaitBeforeClosing = Command.define('WaitBeforeClosing', {
   args: { delay: Schema.DurationFromMillis, version: Schema.Number },
   messages: [Message.CompletedWaitBeforeClosing],
-  execute: ({ delay, version }) =>
-    Effect.sleep(delay).pipe(
-      Effect.as(Message.CompletedWaitBeforeClosing({ version })),
-    ),
+  execute: ({ delay, version }): infer _ => {
+    const nativeCommandArg7_0 = delay
+    const nativeCommandCompletion7 = Message.CompletedWaitBeforeClosing({
+      version,
+    })
+    return effect {
+      try Effect.sleep(nativeCommandArg7_0)
+      return nativeCommandCompletion7
+    }
+  },
 })
 
 type UpdateReturn = Update.ReturnWithOutMessage<Model, Message, OutMessage>
@@ -90,7 +99,7 @@ const open = (model: Model): UpdateReturn => {
   }
 
   return {
-    model: modifyFields(model, { isOpen: () => true }),
+    model: modifyFields(model, { isOpen: (): infer _ => true }),
     outMessage: OutMessage.Opened(),
   }
 }
@@ -101,7 +110,7 @@ const finishClosing = (model: Model): UpdateReturn => {
   }
 
   return {
-    model: modifyFields(model, { isOpen: () => false }),
+    model: modifyFields(model, { isOpen: (): infer _ => false }),
     outMessage: OutMessage.Closed(),
   }
 }
@@ -109,7 +118,7 @@ const finishClosing = (model: Model): UpdateReturn => {
 const scheduleOpen = (model: Model): UpdateReturn => {
   const version = Number.increment(model.pendingOpenVersion)
   return {
-    model: modifyFields(model, { pendingOpenVersion: () => version }),
+    model: modifyFields(model, { pendingOpenVersion: (): infer _ => version }),
     commands: [WaitBeforeOpening({ delay: model.openDelay, version })],
   }
 }
@@ -120,7 +129,7 @@ const scheduleClose = (
 ): UpdateReturn => {
   const version = Number.increment(model.pendingCloseVersion)
   return {
-    model: modifyFields(model, { pendingCloseVersion: () => version }),
+    model: modifyFields(model, { pendingCloseVersion: (): infer _ => version }),
     commands: [WaitBeforeClosing({ delay, version })],
   }
 }
@@ -147,7 +156,9 @@ const left = (model: Model): UpdateReturn => {
   }
 
   if (leftModel.isDismissed) {
-    return { model: modifyFields(leftModel, { isDismissed: () => false }) }
+    return {
+      model: modifyFields(leftModel, { isDismissed: (): infer _ => false }),
+    }
   }
 
   if (!leftModel.isOpen) {
@@ -159,7 +170,7 @@ const left = (model: Model): UpdateReturn => {
 
 const focused = (model: Model, focusLocation: FocusLocation): UpdateReturn => {
   const focusedModel = modifyFields(model, {
-    maybeFocusLocation: () => Option.some(focusLocation),
+    maybeFocusLocation: (): infer _ => Option.some(focusLocation),
     pendingOpenVersion: Number.increment,
     pendingCloseVersion: Number.increment,
   })
@@ -173,7 +184,7 @@ const focused = (model: Model, focusLocation: FocusLocation): UpdateReturn => {
 
 const blurred = (model: Model): UpdateReturn => {
   const blurredModel = modifyFields(model, {
-    maybeFocusLocation: () => Option.none(),
+    maybeFocusLocation: (): infer _ => Option.none(),
     pendingOpenVersion: Number.increment,
   })
 
@@ -182,7 +193,9 @@ const blurred = (model: Model): UpdateReturn => {
   }
 
   if (blurredModel.isDismissed) {
-    return { model: modifyFields(blurredModel, { isDismissed: () => false }) }
+    return {
+      model: modifyFields(blurredModel, { isDismissed: (): infer _ => false }),
+    }
   }
 
   if (!blurredModel.isOpen) {
@@ -195,13 +208,13 @@ const blurred = (model: Model): UpdateReturn => {
 const dismiss = (model: Model, isTriggerFocused: boolean): UpdateReturn => {
   const maybeFocusLocation = Option.liftPredicate<FocusLocation>(
     'Trigger',
-    () => isTriggerFocused,
+    (): infer _ => isTriggerFocused,
   )
   const dismissedModel = modifyFields(model, {
-    isOpen: () => false,
-    isPanelHovered: () => false,
-    maybeFocusLocation: () => maybeFocusLocation,
-    isDismissed: () => model.isTriggerHovered || isTriggerFocused,
+    isOpen: (): infer _ => false,
+    isPanelHovered: (): infer _ => false,
+    maybeFocusLocation: (): infer _ => maybeFocusLocation,
+    isDismissed: (): infer _ => model.isTriggerHovered || isTriggerFocused,
     pendingOpenVersion: Number.increment,
     pendingCloseVersion: Number.increment,
   })
@@ -220,37 +233,39 @@ export const close = (model: Model): UpdateReturn =>
     model,
     Option.exists(
       model.maybeFocusLocation,
-      focusLocation => focusLocation === 'Trigger',
+      (focusLocation): focusLocation is 'Trigger' =>
+        focusLocation === 'Trigger',
     ),
   )
 
 /** Processes a HoverIntent Message and returns the next Model, optional Commands, and an optional OutMessage. */
 export const update = (model: Model, message: Message): UpdateReturn =>
   Message.match<UpdateReturn>(message, {
-    EnteredTrigger: () =>
-      entered(modifyFields(model, { isTriggerHovered: () => true })),
-    LeftTrigger: () =>
-      left(modifyFields(model, { isTriggerHovered: () => false })),
-    EnteredPanel: () =>
-      entered(modifyFields(model, { isPanelHovered: () => true })),
-    LeftPanel: () => left(modifyFields(model, { isPanelHovered: () => false })),
-    FocusedTrigger: () => focused(model, 'Trigger'),
-    BlurredTrigger: () => blurred(model),
-    FocusedPanel: () => focused(model, 'Panel'),
-    BlurredPanel: () => blurred(model),
+    EnteredTrigger: (): infer _ =>
+      entered(modifyFields(model, { isTriggerHovered: (): infer _ => true })),
+    LeftTrigger: (): infer _ =>
+      left(modifyFields(model, { isTriggerHovered: (): infer _ => false })),
+    EnteredPanel: (): infer _ =>
+      entered(modifyFields(model, { isPanelHovered: (): infer _ => true })),
+    LeftPanel: (): infer _ =>
+      left(modifyFields(model, { isPanelHovered: (): infer _ => false })),
+    FocusedTrigger: (): infer _ => focused(model, 'Trigger'),
+    BlurredTrigger: (): infer _ => blurred(model),
+    FocusedPanel: (): infer _ => focused(model, 'Panel'),
+    BlurredPanel: (): infer _ => blurred(model),
 
-    PressedEscape: ({ source }) => {
-      const isTriggerFocused =
-        source === 'Trigger' ||
-        Option.exists(
+    PressedEscape: ({ source }): infer _ => {
+      const isTriggerFocused = source === 'Trigger'
+        || Option.exists(
           model.maybeFocusLocation,
-          focusLocation => focusLocation === 'Trigger',
+          (focusLocation): focusLocation is 'Trigger' =>
+            focusLocation === 'Trigger',
         )
 
       return dismiss(model, isTriggerFocused)
     },
 
-    CompletedWaitBeforeOpening: ({ version }) => {
+    CompletedWaitBeforeOpening: ({ version }): infer _ => {
       if (version !== model.pendingOpenVersion) {
         return { model }
       }
@@ -262,7 +277,7 @@ export const update = (model: Model, message: Message): UpdateReturn =>
       return open(model)
     },
 
-    CompletedWaitBeforeClosing: ({ version }) => {
+    CompletedWaitBeforeClosing: ({ version }): infer _ => {
       if (version !== model.pendingCloseVersion || isEngaged(model)) {
         return { model }
       }
@@ -295,29 +310,21 @@ export type ViewInputs = Readonly<{
 export const view = defineView<Model, Message, ViewInputs>(
   (model, { focusTriggerSelector, toView }, h): Html => {
     const toPressedEscape =
-      (source: 'Trigger' | 'Panel') =>
-      (key: string): Option.Option<typeof Message.PressedEscape.Type> =>
-        Match.value(key).pipe(
-          Match.when('Escape', () =>
-            Option.some(Message.PressedEscape({ source })),
-          ),
-          Match.orElse(() => Option.none()),
-        )
+      (source: 'Trigger' | 'Panel'): infer _ =>
+      (key: string): Option.Option<typeof Message.PressedEscape.Type> => match (key) {
+        when 'Escape': Option.some(Message.PressedEscape({ source }));
+        default: Option.none();
+      }
 
-    const panelEscapeHandler =
-      focusTriggerSelector === undefined
-        ? h.OnKeyDownPreventDefault(toPressedEscape('Panel'))
-        : h.OnKeyDownFocus(key =>
-            Match.value(key).pipe(
-              Match.when('Escape', () =>
-                Option.some({
-                  focusSelector: focusTriggerSelector,
-                  message: Message.PressedEscape({ source: 'Panel' }),
-                }),
-              ),
-              Match.orElse(() => Option.none()),
-            ),
-          )
+    const panelEscapeHandler = focusTriggerSelector === undefined
+      ? h.OnKeyDownPreventDefault(toPressedEscape('Panel'))
+      : h.OnKeyDownFocus((key): infer _ => match (key) {
+        when 'Escape': Option.some({
+          focusSelector: focusTriggerSelector,
+          message: Message.PressedEscape({ source: 'Panel' }),
+        });
+        default: Option.none();
+      })
 
     return toView({
       trigger: childAttributes([

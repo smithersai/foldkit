@@ -1,7 +1,7 @@
-export { view, buttonId } from './index.js'
+export { view, buttonId } from './index.vibe'
 
 export type {
   ViewConfig,
   DisclosureAttributes,
   AnimatePanelOptions,
-} from './index.js'
+} from './index.vibe'

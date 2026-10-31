@@ -1,8 +1,7 @@
-import { Match } from 'effect'
 import type { ChildAttribute, Html, TagName } from 'foldkit/html'
 import { defineView } from 'foldkit/submodel'
 
-import { Message, Model, OutMessage, TransitionState, init } from './schema.js'
+import { Message, Model, OutMessage, TransitionState, init } from './schema.ts'
 import {
   WaitForAnimationSettled,
   WaitForPaint,
@@ -11,9 +10,9 @@ import {
   show,
   toggle,
   update,
-} from './update.js'
+} from './update.ts'
 
-export type { Hid, InitConfig, Showed } from './schema.js'
+export type { Hid, InitConfig, Showed } from './schema.ts'
 export { init, Message, Model, OutMessage, TransitionState }
 
 export {
@@ -60,39 +59,38 @@ export const view = defineView<Model, Message, ViewInputs>(
       animateSize = false,
     } = viewInputs
 
-    const isLeaving =
-      transitionState === 'LeaveStart' || transitionState === 'LeaveAnimating'
+    const isLeaving = transitionState === 'LeaveStart'
+      || transitionState === 'LeaveAnimating'
     const isVisible = isShowing || isLeaving
 
     const transitionAttributes: ReadonlyArray<
       ReturnType<typeof h.DataAttribute>
-    > = Match.value(transitionState).pipe(
-      Match.when('EnterStart', () => [
+    > = match (transitionState) {
+      when 'EnterStart': [
         h.DataAttribute('closed', ''),
         h.DataAttribute('enter', ''),
         h.DataAttribute('transition', ''),
-      ]),
-      Match.when('EnterAnimating', () => [
+      ];
+      when 'EnterAnimating': [
         h.DataAttribute('enter', ''),
         h.DataAttribute('transition', ''),
-      ]),
-      Match.when('LeaveStart', () => [
+      ];
+      when 'LeaveStart': [
         h.DataAttribute('leave', ''),
         h.DataAttribute('transition', ''),
-      ]),
-      Match.when('LeaveAnimating', () => [
+      ];
+      when 'LeaveAnimating': [
         h.DataAttribute('closed', ''),
         h.DataAttribute('leave', ''),
         h.DataAttribute('transition', ''),
-      ]),
-      Match.orElse(() => []),
-    )
+      ];
+      default: [];
+    }
 
     if (animateSize) {
-      const isClosed =
-        transitionState === 'EnterStart' ||
-        transitionState === 'LeaveAnimating' ||
-        !isVisible
+      const isClosed = transitionState === 'EnterStart'
+        || transitionState === 'LeaveAnimating'
+        || !isVisible
 
       return h.div(
         [

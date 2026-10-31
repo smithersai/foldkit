@@ -1,6 +1,6 @@
 import * as Story from 'foldkit/story'
 
-import * as Animation from '../animation/index.js'
+import * as Animation from '../animation/index.vibe'
 import { Message } from './schema.js'
 import { WaitBeforeDismissal } from './update.js'
 

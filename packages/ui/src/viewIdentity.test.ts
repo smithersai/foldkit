@@ -2,7 +2,7 @@ import type { Html, HtmlBuilder } from 'foldkit/html'
 import * as Scene from 'foldkit/scene'
 import { describe, expect, it } from 'vitest'
 
-import * as Animation from './animation/index.js'
+import * as Animation from './animation/index.vibe'
 
 describe('view identity branding', () => {
   it('stamps a rendered vnode with the owning ui module identity', () => {

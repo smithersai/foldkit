@@ -8,8 +8,8 @@ import { describe, it } from '@effect/vitest'
 
 import * as UiCalendar from '../calendar/index.js'
 import * as Popover from '../popover/public.js'
-import type { Model, ViewInputs } from './index.js'
-import { Message, init, triggerId, update, view } from './index.js'
+import type { Model, ViewInputs } from './index.vibe'
+import { Message, init, triggerId, update, view } from './index.vibe'
 
 const acknowledgeAnchorPopover = Scene.Mount.resolve(
   Popover.AnchorPopover,

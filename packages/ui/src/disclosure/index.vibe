@@ -1,4 +1,3 @@
-import { Match, Option, Predicate } from 'effect'
 import type { Attribute, Html, HtmlBuilder } from 'foldkit/html'
 
 // VIEW
@@ -109,17 +108,16 @@ export const view = <Message>(
 
   const nextOpen = !isOpen
 
-  const handleKeyDown = (key: string): Option.Option<Message> =>
-    Match.value(key).pipe(
-      Match.whenOr('Enter', ' ', () => Option.some(onToggle(nextOpen))),
-      Match.orElse(() => Option.none()),
-    )
+  const handleKeyDown = (key: string): Option<Message> => match (key) {
+    when 'Enter' or (' '): Option.some(onToggle(nextOpen));
+    default: Option.none();
+  }
 
   const disabledAttributes = isDisabled
     ? [h.AriaDisabled(true), h.DataAttribute('disabled', '')]
     : []
 
-  const resolveButtonLabel = () => {
+  const resolveButtonLabel = (): infer _ => {
     if (Predicate.isNotUndefined(ariaLabel)) {
       return [h.AriaLabel(ariaLabel)]
     } else if (Predicate.isNotUndefined(ariaLabelledBy)) {
@@ -141,9 +139,9 @@ export const view = <Message>(
     ...(isDisabled
       ? []
       : [
-          h.OnClick(onToggle(nextOpen)),
-          h.OnKeyDownPreventDefault(handleKeyDown),
-        ]),
+        h.OnClick(onToggle(nextOpen)),
+        h.OnKeyDownPreventDefault(handleKeyDown),
+      ]),
   ]
 
   const panelAttributes = [

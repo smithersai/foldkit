@@ -1,4 +1,3 @@
-import { Predicate } from 'effect'
 import type {
   Attribute,
   Html,
@@ -68,10 +67,9 @@ export const view = <Message>(
 
   const isInteractive = !isDisabled && !isReadOnly
 
-  const inputAttributes =
-    Predicate.isNotUndefined(onInput) && isInteractive
-      ? [h.OnInput(onInput)]
-      : []
+  const inputAttributes = Predicate.isNotUndefined(onInput) && isInteractive
+    ? [h.OnInput(onInput)]
+    : []
 
   const valueAttributes = Predicate.isNotUndefined(value)
     ? [h.Value(value)]

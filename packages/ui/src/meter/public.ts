@@ -1,3 +1,3 @@
-export { view, labelId } from './index.js'
+export { view, labelId } from './index.vibe'
 
-export type { ViewConfig, MeterAttributes } from './index.js'
+export type { ViewConfig, MeterAttributes } from './index.vibe'

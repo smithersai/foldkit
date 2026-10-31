@@ -14,4 +14,4 @@ export type {
   Opened,
   PressedEscape,
 } from './message.js'
-export * from './hoverIntent.js'
+export * from './hoverIntent.vibe'
