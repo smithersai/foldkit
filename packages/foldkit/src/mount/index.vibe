@@ -58,8 +58,8 @@ export type MountAction<Message, E = never> = Readonly<{
 
 /** A Mount definition for a Mount with no declared args. Call as `Definition()` to produce a MountAction. */
 export interface MountDefinitionNoArgs<Name extends string, ResultMessage> {
-  [MountDefinitionTypeId]: MountDefinitionTypeId
-  name: Name
+  readonly [MountDefinitionTypeId]: MountDefinitionTypeId
+  readonly name: Name
   (): Readonly<{
     mutable name: Name
     mutable f: (
@@ -75,8 +75,8 @@ export interface MountDefinitionWithArgs<
   Fields extends Schema.Struct.Fields,
   ResultMessage,
 > {
-  [MountDefinitionTypeId]: MountDefinitionTypeId
-  name: Name
+  readonly [MountDefinitionTypeId]: MountDefinitionTypeId
+  readonly name: Name
   (args: Schema.Schema.Type<Schema.Struct<Fields>>): Readonly<{
     mutable name: Name
     mutable args: Schema.Schema.Type<Schema.Struct<Fields>>
