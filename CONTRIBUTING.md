@@ -61,6 +61,8 @@ pnpm format
 
 If a typecheck reports something like `Cannot find module 'foldkit'`, the libraries have not been built. Foldkit's `exports` map points at `dist/`, so anything depending on it needs a build before it will typecheck. Run `pnpm build` once, or `pnpm dev:libs` to rebuild in watch mode while you work.
 
+`pnpm check:dead-code` preloads `vibelang/register` so tool configurations can import `.vibe` modules. It preserves inherited `NODE_OPTIONS`, including any existing Node preload hooks.
+
 Beyond the usual lint, typecheck, and test steps, the suite enforces a few repository-specific rules that are easy to trip over:
 
 | Check                              | Rule                                                                                                                                                               |
