@@ -31,7 +31,7 @@ import {
   liftChildFold,
   parentFieldToLens,
   runExecute,
-} from './internal.js'
+} from './internal.vibe'
 
 export type SyncFields = {
   readonly [x: PropertyKey]: Schema.Codec<unknown, unknown, never, never>

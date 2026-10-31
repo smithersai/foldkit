@@ -4,7 +4,7 @@ import {
   type SyncFields,
   defineKeyedQuery,
 } from './keyedQuery.ts'
-import { type Query, type QueryConfig, defineQuery } from './query.ts'
+import { type Query, type QueryConfig, defineQuery } from './query.vibe'
 
 type DefineConfig =
   | (QueryConfig<string, unknown, unknown, unknown, unknown, any> & {

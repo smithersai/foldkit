@@ -1,8 +1,6 @@
-import { Effect, Option, Predicate, Schema, pipe } from 'effect'
-
-import * as AsyncData from '../../asyncData/index.js'
-import * as Command from '../../command/index.js'
-import * as Update from '../../update/index.js'
+import * as AsyncData from '../../asyncData/index.ts'
+import * as Command from '../../command/index.ts'
+import * as Update from '../../update/index.ts'
 
 export type FoldLens<ParentModel, ParentMessage, ChildModel, ChildMessage> =
   Pick<
@@ -128,7 +126,7 @@ export const liftChildFold = <
 
 export type AsyncDataTransition = <A, E>(
   data: AsyncData.AsyncData<A, E>,
-) => Option.Option<AsyncData.AsyncData<A, E>>
+) => Option<AsyncData.AsyncData<A, E>>
 
 export type QueryStore<Model, Args, A, E, Message, R> = Readonly<{
   read: (model: Model, args: Args) => AsyncData.AsyncData<A, E>
@@ -145,27 +143,20 @@ export const applyTransition = <Model, Args, A, E, Message, R>(
   model: Model,
   args: Args,
   transition: AsyncDataTransition,
-): Update.Return<Model, Message, R> =>
-  Option.match(transition(store.read(model, args)), {
-    onNone: () => ({ model }),
-    onSome: nextData => {
-      const queryStart = store.start(model, args, nextData)
+): Update.Return<Model, Message, R> => match (transition(store.read(model, args))) {
+  when Option.None: ({ model });
+  when Option.Some(let nextData): store.start(model, args, nextData) |> ({
+    model: %.model,
+    commands: [store.fetch(args, %.generation)],
+  });
+}
 
-      return {
-        model: queryStart.model,
-        commands: [store.fetch(args, queryStart.generation)],
-      }
-    },
-  })
-
-export const runExecute = <A, E, R>(
-  execute: Effect.Effect<A, E, R>,
-): Effect.Effect<AsyncData.AsyncData<A, E>, never, R> =>
-  pipe(
-    execute,
-    Effect.result,
-    Effect.map(result => AsyncData.settle(AsyncData.Loading(), result)),
-  )
+export const runExecute = effect <A, E, R>(
+  execute: A!E!R,
+): AsyncData.AsyncData<A, E>!never!R => {
+  const result = try Effect.result(execute)
+  return try Effect.sync(() => AsyncData.settle(AsyncData.Loading(), result))
+}
 
 export type CompletedFetchOf<Message extends Schema.Top> = Extract<
   Message['Type'],

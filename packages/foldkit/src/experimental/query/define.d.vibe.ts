@@ -1,5 +1,5 @@
 import { type KeyedQuery, type KeyedQueryConfig, type SyncFields } from './keyedQuery.js';
-import { type Query, type QueryConfig } from './query.js';
+import { type Query, type QueryConfig } from './query.vibe';
 /**
  * Defines a Submodel that fetches data and retains it in the application
  * Model. Add `args` to define a {@link KeyedQuery}; omit them to define a

@@ -1,10 +1,10 @@
-import { Effect, Number, Schema, pipe } from 'effect'
+import { Number as EffectNumber } from 'effect'
 
-import * as AsyncData from '../../asyncData/index.js'
-import * as Command from '../../command/index.js'
-import { defineMessageUnion } from '../../message/index.js'
+import * as AsyncData from '../../asyncData/index.ts'
+import * as Command from '../../command/index.ts'
+import { defineMessageUnion } from '../../message/index.ts'
 import { modifyFields } from '../../struct/index.vibe'
-import * as Update from '../../update/index.js'
+import * as Update from '../../update/index.ts'
 import {
   type CompletedFetchOf,
   type FoldLens,
@@ -16,19 +16,19 @@ import {
   isParentFieldConfig,
   parentFieldToLens,
   runExecute,
-} from './internal.js'
+} from './internal.vibe'
 
 export type QueryConfig<Name extends string, A, AI, E, EI, R> = Readonly<{
   name: Name
   data: Schema.Codec<A, AI, never, never>
   error: Schema.Codec<E, EI, never, never>
-  execute: Effect.Effect<A, E, R>
+  execute: A!E!R
 }>
 
 const makeQueryMessage = <A, AI, E, EI>(
   data: Schema.Codec<A, AI>,
   error: Schema.Codec<E, EI>,
-) =>
+): infer _ =>
   defineMessageUnion({
     CompletedFetch: {
       generation: Schema.Number,
@@ -49,7 +49,7 @@ export type QueryMessage<A, AI, E, EI> = ReturnType<
 export const makeQueryModel = <A, AI, E, EI>(
   data: Schema.Codec<A, AI>,
   error: Schema.Codec<E, EI>,
-) =>
+): infer _ =>
   Schema.Struct({
     data: AsyncData.Schema(data, error).schema,
     generation: Schema.Number,
@@ -82,7 +82,7 @@ export interface Query<Name extends string, A, AI, E, EI, R = never> {
   readonly Fetch: Command.CommandDefinitionWithArgs<
     `Fetch${Name}`,
     { readonly generation: typeof Schema.Number },
-    Effect.Effect<CompletedFetchOf<QueryMessage<A, AI, E, EI>>, never, R>
+    CompletedFetchOf<QueryMessage<A, AI, E, EI>>!never!R
   >
   /**
    * Creates a Query Model for initial parent Model construction. Never replace
@@ -140,7 +140,7 @@ export interface Query<Name extends string, A, AI, E, EI, R = never> {
     R
   >
   /** Executes the configured fetch directly and returns settled `AsyncData`. */
-  readonly run: Effect.Effect<AsyncData.AsyncData<A, E>, never, R>
+  readonly run: AsyncData.AsyncData<A, E>!never!R
 }
 
 export function defineQuery<Name extends string, A, AI, E, EI, R>(
@@ -153,12 +153,12 @@ export function defineQuery<Name extends string, A, AI, E, EI, R>(
   const Fetch = Command.define(`Fetch${config.name}`, {
     args: { generation: Schema.Number },
     messages: [Message.CompletedFetch],
-    execute: ({ generation }) =>
-      pipe(
-        config.execute,
-        Effect.result,
-        Effect.map(result => Message.CompletedFetch({ generation, result })),
-      ),
+    execute: effect ({ generation }) => {
+      const result = try Effect.result(config.execute)
+      return try Effect.sync(() =>
+        Message.CompletedFetch({ generation, result })
+      )
+    },
   })
 
   type Model = typeof Model.Type
@@ -168,7 +168,7 @@ export function defineQuery<Name extends string, A, AI, E, EI, R>(
   const store: QueryStore<Model, undefined, A, E, Message, R> = {
     read: model => model.data,
     start: (model, _args, data) => {
-      const nextGeneration = Number.increment(model.generation)
+      const nextGeneration = EffectNumber.increment(model.generation)
 
       return {
         model: modifyFields(model, {
@@ -197,7 +197,7 @@ export function defineQuery<Name extends string, A, AI, E, EI, R>(
 
   const update = (model: Model, message: Message): PureUpdateReturn =>
     Message.match<PureUpdateReturn>(message, {
-      CompletedFetch({ generation, result }) {
+      CompletedFetch({ generation, result }): PureUpdateReturn {
         const data = read(model)
 
         if (!AsyncData.isPending(data) || generation !== model.generation) {
@@ -214,7 +214,7 @@ export function defineQuery<Name extends string, A, AI, E, EI, R>(
 
   const liftFromLens = <ParentModel, ParentMessage>(
     lens: FoldLens<ParentModel, ParentMessage, Model, Message>,
-  ) => ({
+  ): infer _ => ({
     fold: Update.foldChild({ update, ...lens }),
     reset: Update.foldChildStep({
       update: reset,
@@ -242,7 +242,7 @@ export function defineQuery<Name extends string, A, AI, E, EI, R>(
   ): ReturnType<LiftQuery<Model, Message, R>>
   function lift<ParentModel, ParentMessage>(
     config: LiftConfig<ParentModel, ParentMessage, Model, Message>,
-  ) {
+  ): infer _ {
     if (isParentFieldConfig(config)) {
       return liftFromLens(parentFieldToLens(config))
     }
@@ -250,7 +250,7 @@ export function defineQuery<Name extends string, A, AI, E, EI, R>(
     return liftFromLens(config)
   }
 
-  const run = runExecute(config.execute)
+  const run: AsyncData.AsyncData<A, E>!never!R = runExecute(config.execute)
 
   return {
     Model,
