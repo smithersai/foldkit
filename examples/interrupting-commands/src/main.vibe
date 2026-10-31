@@ -1,14 +1,5 @@
 import clsx from 'clsx'
-import {
-  Array,
-  Duration,
-  Effect,
-  Match,
-  Number,
-  Option,
-  Schema,
-  pipe,
-} from 'effect'
+import { Array, Number as Num, pipe } from 'effect'
 import { Command, Runtime, type Update } from 'foldkit'
 import { Document, Html, HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -16,22 +7,19 @@ import { modifyFields } from 'foldkit/struct'
 
 // MODEL
 
-export const UploadStatus = Schema.Literals(['Uploading', 'Done', 'Cancelled'])
-export type UploadStatus = typeof UploadStatus.Type
+export schema UploadStatus = 'Uploading' | 'Done' | 'Cancelled'
 
-export const Upload = Schema.Struct({
-  id: Schema.Number,
-  fileName: Schema.String,
-  sizeMegabytes: Schema.Number,
-  status: UploadStatus,
-})
-export type Upload = typeof Upload.Type
+export schema Upload {
+  id: number
+  fileName: string
+  sizeMegabytes: number
+  status: UploadStatus
+}
 
-export const Model = Schema.Struct({
-  uploadId: Schema.Number,
-  uploads: Schema.Array(Upload),
-})
-export type Model = typeof Model.Type
+export schema Model {
+  uploadId: number
+  uploads: ReadonlyArray<Upload>
+}
 
 // MESSAGE
 
@@ -62,11 +50,10 @@ export const init: Runtime.ApplicationInit<Model, Message> = () => ({
 
 // FAKE FILES
 
-export const FakeFile = Schema.Struct({
-  name: Schema.String,
-  sizeMegabytes: Schema.Number,
-})
-export type FakeFile = typeof FakeFile.Type
+export schema FakeFile {
+  name: string
+  sizeMegabytes: number
+}
 
 export const FAKE_FILES: Array.NonEmptyReadonlyArray<FakeFile> = [
   { name: 'vacation-photos.zip', sizeMegabytes: 48 },
@@ -87,8 +74,7 @@ const fakeFileForUpload = (uploadId: number): FakeFile =>
 
 const MILLISECONDS_PER_MEGABYTE = 100
 
-export const UploadKey = Schema.Struct({ uploadId: Schema.Number })
-export type UploadKey = typeof UploadKey.Type
+export schema UploadKey { uploadId: number }
 
 export const UploadFile = Command.define('UploadFile', {
   args: { ...UploadKey.fields, sizeMegabytes: Schema.Number },
@@ -97,32 +83,35 @@ export const UploadFile = Command.define('UploadFile', {
     keyFields: ['uploadId'],
     toKey: ({ uploadId }) => String(uploadId),
   },
-  execute: ({ uploadId, sizeMegabytes }) =>
-    Effect.gen(function* () {
-      yield* Effect.sleep(
+  execute: (
+    { uploadId, sizeMegabytes },
+  ): ReturnType<typeof Message.SucceededUploadFile>!! =>
+    effect {
+      try sleep(
         Duration.millis(sizeMegabytes * MILLISECONDS_PER_MEGABYTE),
       )
       return Message.SucceededUploadFile({ uploadId })
-    }),
+    },
 })
 
-export const CancelUploadFile = ({ uploadId }: UploadKey) =>
-  UploadFile.Interrupt({ uploadId }, outcome =>
-    Message.CompletedCancelUploadFile({ uploadId, outcome }),
+export const CancelUploadFile = ({ uploadId }: UploadKey): infer _ =>
+  UploadFile.Interrupt(
+    { uploadId },
+    outcome => Message.CompletedCancelUploadFile({ uploadId, outcome }),
   )
 
 // UPDATE
 
-const setStatusForId = (uploadId: number, status: UploadStatus) =>
+const setStatusForId = (uploadId: number, status: UploadStatus): infer _ =>
   Array.map((upload: Upload) =>
     upload.id === uploadId
       ? modifyFields(upload, { status: () => status })
-      : upload,
+      : upload
   )
 
 type UpdateReturn = Update.Return<Model, Message>
 
-export const update = (model: Model, message: Message) =>
+export const update = (model: Model, message: Message): infer _ =>
   Message.match<UpdateReturn>(message, {
     ClickedStartUpload: () => {
       const fakeFile = fakeFileForUpload(model.uploadId)
@@ -134,7 +123,7 @@ export const update = (model: Model, message: Message) =>
       })
       return {
         model: modifyFields(model, {
-          uploadId: Number.increment,
+          uploadId: Num.increment,
           uploads: Array.append(startedUpload),
         }),
         commands: [
@@ -162,24 +151,20 @@ export const update = (model: Model, message: Message) =>
       }
     },
 
-    ClickedRestartUpload: ({ uploadId }) =>
-      pipe(
+    ClickedRestartUpload: ({ uploadId }) => match (Array.findFirst(
         model.uploads,
-        Array.findFirst(
-          upload => upload.id === uploadId && upload.status === 'Cancelled',
-        ),
-        Option.match({
-          onNone: () => ({ model }),
-          onSome: upload => ({
-            model: modifyFields(model, {
-              uploads: setStatusForId(uploadId, 'Uploading'),
-            }),
-            commands: [
-              UploadFile({ uploadId, sizeMegabytes: upload.sizeMegabytes }),
-            ],
-          }),
+        upload => upload.id === uploadId && upload.status === 'Cancelled',
+      )) {
+      when Option.None: ({ model });
+      when Option.Some(let upload): ({
+        model: modifyFields(model, {
+          uploads: setStatusForId(uploadId, 'Uploading'),
         }),
-      ),
+        commands: [
+          UploadFile({ uploadId, sizeMegabytes: upload.sizeMegabytes }),
+        ],
+      });
+    },
 
     SucceededUploadFile: ({ uploadId }) => ({
       model: modifyFields(model, { uploads: setStatusForId(uploadId, 'Done') }),
@@ -198,54 +183,46 @@ export const update = (model: Model, message: Message) =>
 
 // VIEW
 
-const badgeClass = (status: UploadStatus): string =>
-  Match.value(status).pipe(
-    Match.when('Uploading', () => 'bg-blue-100 text-blue-700'),
-    Match.when('Done', () => 'bg-green-100 text-green-700'),
-    Match.when('Cancelled', () => 'bg-gray-200 text-gray-600'),
-    Match.exhaustive,
-  )
+const badgeClass = (status: UploadStatus): string => match (status) {
+  when 'Uploading': 'bg-blue-100 text-blue-700';
+  when 'Done': 'bg-green-100 text-green-700';
+  when 'Cancelled': 'bg-gray-200 text-gray-600';
+}
 
 const ACTION_BUTTON_CLASS =
   'px-3 py-1 text-sm font-medium rounded-md border transition'
 
-const uploadActionView = (upload: Upload, h: HtmlBuilder<Message>): Html =>
-  Match.value(upload.status).pipe(
-    Match.when('Uploading', () =>
-      h.keyed('button')(
-        'Uploading',
-        [
-          h.OnClick(Message.ClickedCancelUpload({ uploadId: upload.id })),
-          h.AriaLabel(`Cancel upload ${upload.id}`),
-          h.Class(
-            clsx(
-              ACTION_BUTTON_CLASS,
-              'border-red-300 text-red-600 hover:bg-red-50',
-            ),
-          ),
-        ],
-        ['Cancel'],
+const uploadActionView = (upload: Upload, h: HtmlBuilder<Message>): Html => match (upload.status) {
+  when 'Uploading': h.keyed('button')(
+    'Uploading',
+    [
+      h.OnClick(Message.ClickedCancelUpload({ uploadId: upload.id })),
+      h.AriaLabel(`Cancel upload ${upload.id}`),
+      h.Class(
+        clsx(
+          ACTION_BUTTON_CLASS,
+          'border-red-300 text-red-600 hover:bg-red-50',
+        ),
       ),
-    ),
-    Match.when('Cancelled', () =>
-      h.keyed('button')(
-        'Cancelled',
-        [
-          h.OnClick(Message.ClickedRestartUpload({ uploadId: upload.id })),
-          h.AriaLabel(`Restart upload ${upload.id}`),
-          h.Class(
-            clsx(
-              ACTION_BUTTON_CLASS,
-              'border-blue-300 text-blue-600 hover:bg-blue-50',
-            ),
-          ),
-        ],
-        ['Restart'],
+    ],
+    ['Cancel'],
+  );
+  when 'Cancelled': h.keyed('button')(
+    'Cancelled',
+    [
+      h.OnClick(Message.ClickedRestartUpload({ uploadId: upload.id })),
+      h.AriaLabel(`Restart upload ${upload.id}`),
+      h.Class(
+        clsx(
+          ACTION_BUTTON_CLASS,
+          'border-blue-300 text-blue-600 hover:bg-blue-50',
+        ),
       ),
-    ),
-    Match.when('Done', () => h.empty),
-    Match.exhaustive,
-  )
+    ],
+    ['Restart'],
+  );
+  when 'Done': h.empty;
+}
 
 const uploadView = (upload: Upload, h: HtmlBuilder<Message>): Html =>
   h.keyed('li')(
@@ -323,15 +300,15 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
               ),
               isAnyUploadRunning
                 ? h.keyed('button')(
-                    'CancelAll',
-                    [
-                      h.OnClick(Message.ClickedCancelAllUploads()),
-                      h.Class(
-                        'px-4 py-2 rounded-md border border-red-300 text-red-600 font-medium hover:bg-red-50 transition',
-                      ),
-                    ],
-                    ['Cancel all'],
-                  )
+                  'CancelAll',
+                  [
+                    h.OnClick(Message.ClickedCancelAllUploads()),
+                    h.Class(
+                      'px-4 py-2 rounded-md border border-red-300 text-red-600 font-medium hover:bg-red-50 transition',
+                    ),
+                  ],
+                  ['Cancel all'],
+                )
                 : h.empty,
             ],
           ),

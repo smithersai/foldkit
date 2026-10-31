@@ -10,7 +10,7 @@ import {
   ValidateEmail,
   initialModel,
   update,
-} from './main'
+} from './main.vibe'
 
 const validModel: Model = modifyFields(initialModel, {
   name: () => FieldValidation.Valid({ value: 'Alice' }),
