@@ -1,13 +1,18 @@
-import { Array, pipe } from "effect"
+import { Array, pipe } from 'effect'
 
-import type { MessageTagCount } from "./protocol.ts"
-import { toInspectableValue } from "./serialize.vibe"
-import { type HistoryEntry, INIT_INDEX, latestEntryIndex, type StoreState } from "./store.ts"
-import { resolvePath, summarizeValue } from "./summarize.ts"
+import type { MessageTagCount } from './protocol.vibe'
+import { toInspectableValue } from './serialize.vibe'
+import {
+  type HistoryEntry,
+  INIT_INDEX,
+  type StoreState,
+  latestEntryIndex,
+} from './store.ts'
+import { resolvePath, summarizeValue } from './summarize.vibe'
 
-const ROOT = "root"
-const PATH_SEPARATOR = "."
-const WILDCARD = "*"
+const ROOT = 'root'
+const PATH_SEPARATOR = '.'
+const WILDCARD = '*'
 
 /**
  * Test a diff path against a dot-string pattern. Segments compare pairwise
@@ -21,7 +26,8 @@ export const matchesPathPattern = (path: string, pattern: string): boolean =>
   pipe(
     Array.zip(path.split(PATH_SEPARATOR), pattern.split(PATH_SEPARATOR)),
     Array.every(
-      ([pathSegment, patternSegment]) => patternSegment === WILDCARD || patternSegment === pathSegment,
+      ([pathSegment, patternSegment]) =>
+        patternSegment === WILDCARD || patternSegment === pathSegment,
     ),
   )
 
@@ -54,7 +60,9 @@ const entryMatchesPatterns = (
 ): boolean =>
   Option.match(maybePatterns, {
     onNone: () => true,
-    onSome: patterns => HashSet.some(entry.diff.changedPaths, path => matchesAnyPathPattern(path, patterns)),
+    onSome: patterns =>
+      HashSet.some(entry.diff.changedPaths, path =>
+        matchesAnyPathPattern(path, patterns)),
   })
 
 /** A retained history entry paired with its absolute history index. */
@@ -153,7 +161,8 @@ export const countEntriesByTag = (
  * the index one before the oldest retained entry is still readable even
  * though its entry was evicted.
  */
-export const oldestReadableIndex = (state: StoreState): number => Math.max(0, state.startIndex - 1)
+export const oldestReadableIndex = (state: StoreState): number =>
+  Math.max(0, state.startIndex - 1)
 
 /**
  * Whether `getModelAtIndex` can answer for this index: `INIT_INDEX` once the
@@ -176,16 +185,17 @@ export const formatIndexNotReadable = (
   index: number,
 ): string => {
   const latest = latestEntryIndex(state)
-  const initRange = Option.isSome(state.maybeInitModel) ? ["-1 (init)"] : []
+  const initRange = Option.isSome(state.maybeInitModel) ? ['-1 (init)'] : []
   const entryRange = latest >= state.startIndex
     ? [`${oldestReadableIndex(state)} to ${latest}`]
     : []
   const ranges = [...initRange, ...entryRange]
   return Array.match(ranges, {
-    onEmpty: () => `No Model at index ${index}: the runtime has not recorded init yet.`,
+    onEmpty: () =>
+      `No Model at index ${index}: the runtime has not recorded init yet.`,
     onNonEmpty: nonEmptyRanges =>
       `No Model at index ${index}. Readable indices: ${
-        nonEmptyRanges.join(" and ")
+        nonEmptyRanges.join(' and ')
       }. Indices outside this range were either evicted from the rolling history buffer or have not been recorded yet.`,
   })
 }

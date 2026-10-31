@@ -1,5 +1,5 @@
-import { defineTaggedUnion } from "../schema/index.ts"
-import { Url } from "../url/index.vibe"
+import { defineTaggedUnion } from '../schema/index.ts'
+import { Url } from '../url/index.vibe'
 
 /** Union of `Internal` and `External` URL request types. */
 export const UrlRequest = defineTaggedUnion({

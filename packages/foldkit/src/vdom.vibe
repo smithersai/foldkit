@@ -1,4 +1,3 @@
-
 import { onUnmountModule } from './onUnmountModule.ts'
 import { propsModule } from './propsModule.ts'
 import {
@@ -79,8 +78,9 @@ const visit = (node: VNode, seen: Set<object>): VNode => {
     seen.add(node)
     return node
   }
-  const base: VNode =
-    isDuplicate || node.elm != null ? { ...node, elm: undefined } : node
+  const base: VNode = isDuplicate || node.elm != null
+    ? { ...node, elm: undefined }
+    : node
   seen.add(node)
   if (base.children === undefined) {
     return base
@@ -168,8 +168,9 @@ export const __patchVNode = (
   seen?: Set<object>,
   onRootPatched?: (vnode: VNode) => void,
 ): VNode => {
-  const dedupedVNode =
-    nextVNode !== null ? dedupeSharedVNodes(nextVNode, seen) : h('!')
+  const dedupedVNode = nextVNode !== null
+    ? dedupeSharedVNodes(nextVNode, seen)
+    : h('!')
 
   if (Option.isNone(maybeCurrentVNode)) {
     return patchFreshInto(container, dedupedVNode, onRootPatched)

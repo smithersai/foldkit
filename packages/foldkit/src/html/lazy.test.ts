@@ -17,7 +17,7 @@ import {
   createKeyedLazy,
   createLazy,
   observeLazyResolutions,
-} from './lazy.vibe'
+} from './lazy.js'
 import {
   type DispatchSync,
   clearRuntime,

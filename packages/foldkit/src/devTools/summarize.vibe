@@ -1,15 +1,7 @@
-import {
-  Array,
-  Function,
-  Match,
-  Option,
-  Predicate,
-  Record,
-  Schema,
-} from 'effect'
+import { Array as Arr } from 'effect'
 
-import { OptionExt } from '../effectExtensions/index.js'
-import { defineTaggedUnion } from '../schema/index.js'
+import { OptionExt } from '../effectExtensions/index.ts'
+import { defineTaggedUnion } from '../schema/index.ts'
 
 const ROOT = 'root'
 const PATH_SEPARATOR = '.'
@@ -38,14 +30,15 @@ export type PathResolution = typeof PathResolution.Type
 
 const isExpandable = Predicate.isObjectOrArray
 
-const keysOf = (value: unknown): ReadonlyArray<string> =>
-  Match.value(value).pipe(
-    Match.when(globalThis.Array.isArray, items =>
-      Array.makeBy(items.length, index => index.toString()),
-    ),
-    Match.when(Predicate.isObject, Record.keys),
-    Match.orElse(() => []),
-  )
+const keysOf = (value: unknown): ReadonlyArray<string> => {
+  if (Array.isArray(value)) {
+    return Arr.makeBy(value.length, index => index.toString())
+  }
+  if (Predicate.isObject(value)) {
+    return Record.keys(value)
+  }
+  return []
+}
 
 const segmentsOf = (path: string): ReadonlyArray<string> =>
   path === ROOT ? [] : path.split(PATH_SEPARATOR).slice(1)
@@ -53,16 +46,17 @@ const segmentsOf = (path: string): ReadonlyArray<string> =>
 const isRootAnchored = (path: string): boolean =>
   path === ROOT || path.startsWith(`${ROOT}${PATH_SEPARATOR}`)
 
-const descend = (parent: unknown, segment: string): Option.Option<unknown> =>
-  Match.value(parent).pipe(
-    Match.when(globalThis.Array.isArray, array =>
-      Option.liftPredicate(Number(segment), Number.isInteger).pipe(
-        Option.flatMap(index => Array.get(array, index)),
-      ),
-    ),
-    Match.when(Predicate.isObject, record => Record.get(record, segment)),
-    Match.orElse(() => Option.none()),
-  )
+const descend = (parent: unknown, segment: string): Option<unknown> => {
+  if (Array.isArray(parent)) {
+    return Option.liftPredicate(Number(segment), Number.isInteger).flatMap(
+      index => Arr.get(parent, index),
+    )
+  }
+  if (Predicate.isObject(parent)) {
+    return Record.get(parent, segment)
+  }
+  return Option.none()
+}
 
 /** Looks up a `root.foo.bar` path in a Model snapshot. On failure, returns the
  * deepest path reached and the keys available there. */
@@ -80,28 +74,26 @@ export const resolvePath = (root: unknown, path: string): PathResolution => {
     atPath: ROOT,
   })
 
-  return Array.reduce(
+  return Arr.reduce(
     segmentsOf(path),
     initial,
     (resolution, segment): PathResolution => {
       if (resolution._tag === 'NotFound') {
         return resolution
       }
-      return Option.match(descend(resolution.value, segment), {
-        onNone: () =>
-          PathResolution.NotFound({
-            failedAt: resolution.atPath,
-            reason: isExpandable(resolution.value)
-              ? `No '${segment}' at '${resolution.atPath}'.`
-              : `Cannot descend into a primitive at '${resolution.atPath}' (looking for '${segment}').`,
-            availableKeys: keysOf(resolution.value),
-          }),
-        onSome: descended =>
-          PathResolution.Found({
-            value: descended,
-            atPath: `${resolution.atPath}${PATH_SEPARATOR}${segment}`,
-          }),
-      })
+      return match (descend(resolution.value, segment)) {
+        when Option.None: PathResolution.NotFound({
+          failedAt: resolution.atPath,
+          reason: isExpandable(resolution.value)
+            ? `No '${segment}' at '${resolution.atPath}'.`
+            : `Cannot descend into a primitive at '${resolution.atPath}' (looking for '${segment}').`,
+          availableKeys: keysOf(resolution.value),
+        });
+        when Option.Some(let descended): PathResolution.Found({
+          value: descended,
+          atPath: `${resolution.atPath}${PATH_SEPARATOR}${segment}`,
+        });
+      }
     },
   )
 }
@@ -112,23 +104,22 @@ const truncateString = (value: string): unknown =>
   value.length <= STRING_TRUNCATE
     ? value
     : {
-        _summary: 'string',
-        length: value.length,
-        head: value.slice(0, STRING_TRUNCATE),
-      }
+      _summary: 'string',
+      length: value.length,
+      head: value.slice(0, STRING_TRUNCATE),
+    }
 
 const sampleArray = (
   items: ReadonlyArray<unknown>,
   depth: number,
 ): ReadonlyArray<unknown> => {
-  const sample =
-    items.length <= ARRAY_SAMPLE
-      ? items
-      : [
-          ...Array.take(items, ARRAY_SAMPLE - 1),
-          ...Option.toArray(Array.last(items)),
-        ]
-  return Array.map(sample, item => summarizeAt(item, depth + 1))
+  const sample = items.length <= ARRAY_SAMPLE
+    ? items
+    : [
+      ...Arr.take(items, ARRAY_SAMPLE - 1),
+      ...Option.toArray(Arr.last(items)),
+    ]
+  return Arr.map(sample, item => summarizeAt(item, depth + 1))
 }
 
 const summarizeArray = (
@@ -153,13 +144,18 @@ const summarizeRecord = (
   return Record.map(value, child => summarizeAt(child, depth + 1))
 }
 
-const summarizeAt = (value: unknown, depth: number): unknown =>
-  Match.value(value).pipe(
-    Match.when(Predicate.isString, truncateString),
-    Match.when(globalThis.Array.isArray, items => summarizeArray(items, depth)),
-    Match.when(Predicate.isObject, record => summarizeRecord(record, depth)),
-    Match.orElse(Function.identity),
-  )
+const summarizeAt = (value: unknown, depth: number): unknown => {
+  if (Predicate.isString(value)) {
+    return truncateString(value)
+  }
+  if (Array.isArray(value)) {
+    return summarizeArray(value, depth)
+  }
+  if (Predicate.isObject(value)) {
+    return summarizeRecord(value, depth)
+  }
+  return value
+}
 
 /**
  * Apply structural summarization rules to a value:
@@ -177,18 +173,17 @@ export const summarizeValue = (value: unknown): unknown => summarizeAt(value, 0)
 
 const formatAvailableKeys = (
   keys: ReadonlyArray<string>,
-): Option.Option<string> =>
+): Option<string> =>
   OptionExt.when(
-    Array.isReadonlyArrayNonEmpty(keys),
+    Arr.isReadonlyArrayNonEmpty(keys),
     `Available keys: ${keys.join(', ')}.`,
   )
 
 /** Formats a `NotFound` result for `ResponseError.reason`, including the keys
  * available where the lookup stopped. */
 export const formatPathNotFound = (
-  notFound: Extract<PathResolution, { _tag: 'NotFound' }>,
-): string =>
-  Option.match(formatAvailableKeys(notFound.availableKeys), {
-    onNone: () => notFound.reason,
-    onSome: hint => `${notFound.reason} ${hint}`,
-  })
+  notFound: Extract<PathResolution, { mutable _tag: 'NotFound' }>,
+): string => match (formatAvailableKeys(notFound.availableKeys)) {
+  when Option.None: notFound.reason;
+  when Option.Some(let hint): `${notFound.reason} ${hint}`;
+}

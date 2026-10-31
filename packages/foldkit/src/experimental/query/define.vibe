@@ -1,5 +1,10 @@
-import { defineKeyedQuery, type KeyedQuery, type KeyedQueryConfig, type SyncFields } from "./keyedQuery.ts"
-import { defineQuery, type Query, type QueryConfig } from "./query.ts"
+import {
+  type KeyedQuery,
+  type KeyedQueryConfig,
+  type SyncFields,
+  defineKeyedQuery,
+} from './keyedQuery.ts'
+import { type Query, type QueryConfig, defineQuery } from './query.ts'
 
 type DefineConfig =
   | (QueryConfig<string, unknown, unknown, unknown, unknown, any> & {
@@ -26,7 +31,7 @@ const isKeyedQueryConfig = (
   unknown,
   SyncFields,
   any
-> => Predicate.hasProperty(config, "args")
+> => Predicate.hasProperty(config, 'args')
 
 /**
  * Defines a Submodel that fetches data and retains it in the application

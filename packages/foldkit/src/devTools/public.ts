@@ -17,4 +17,4 @@ export {
   ResponseFrame,
   RuntimeInfo,
   SerializedEntry,
-} from './protocol.js'
+} from './protocol.vibe'

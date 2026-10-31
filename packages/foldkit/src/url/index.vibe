@@ -1,6 +1,6 @@
-import { String as Str } from "effect"
+import { String as Str } from 'effect'
 
-import { OptionExt } from "../effectExtensions/index.ts"
+import { OptionExt } from '../effectExtensions/index.ts'
 
 /** Schema representing a parsed URL with protocol, host, port, pathname, search, and hash fields. */
 export const Url = Schema.Struct({
@@ -45,7 +45,7 @@ const LocationAndHrefFromString = Schema.String.pipe(
             }),
         }),
       encode: effect ({ href, location }) => {
-        const portString = location.port ? `:${location.port}` : ""
+        const portString = location.port ? `:${location.port}` : ''
         return `${location.protocol}//${location.host}${portString}${href}`
       },
     }),
@@ -57,25 +57,25 @@ const UrlFromLocationAndHref = LocationAndHref.pipe(
     Url,
     SchemaTransformation.transform({
       decode: ({ href, location }) => {
-        const [pathAndQuery, hashPart] = Str.split(href, "#")
-        const [pathname, searchPart] = Str.split(pathAndQuery, "?")
+        const [pathAndQuery, hashPart] = Str.split(href, '#')
+        const [pathname, searchPart] = Str.split(pathAndQuery, '?')
 
         return {
           protocol: location.protocol,
           host: location.host,
           port: OptionExt.fromString(location.port),
-          pathname: pathname || "/",
-          search: OptionExt.fromString(searchPart || ""),
-          hash: OptionExt.fromString(hashPart || ""),
+          pathname: pathname || '/',
+          search: OptionExt.fromString(searchPart || ''),
+          hash: OptionExt.fromString(hashPart || ''),
         }
       },
       encode: url => {
         const search = match (url.search) {
-          when Option.None: "";
+          when Option.None: '';
           when Option.Some(let s): `?${s}`;
         }
         const hash = match (url.hash) {
-          when Option.None: "";
+          when Option.None: '';
           when Option.Some(let h): `#${h}`;
         }
         const href = `${url.pathname}${search}${hash}`
@@ -85,7 +85,7 @@ const UrlFromLocationAndHref = LocationAndHref.pipe(
           location: {
             protocol: url.protocol,
             host: url.host,
-            port: url.port.getOrElse(() => ""),
+            port: url.port.getOrElse(() => ''),
           },
         }
       },
@@ -98,6 +98,8 @@ const UrlFromString = LocationAndHrefFromString.pipe(
 )
 
 /** Parses a URL string into a `Url`, returning `Option.None` if invalid. */
-export const fromString = (str: string): infer _ => Schema.decodeOption(UrlFromString)(str)
+export const fromString = (str: string): infer _ =>
+  Schema.decodeOption(UrlFromString)(str)
 /** Serializes a `Url` back to a string. */
-export const toString = (url: Url): infer _ => Schema.encodeSync(UrlFromString)(url)
+export const toString = (url: Url): infer _ =>
+  Schema.encodeSync(UrlFromString)(url)

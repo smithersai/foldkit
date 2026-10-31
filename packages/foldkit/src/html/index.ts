@@ -81,7 +81,7 @@ import {
   submodel,
 } from './submodel.js'
 
-export { createKeyedLazy, createLazy } from './lazy.vibe'
+export { createKeyedLazy, createLazy } from './lazy.js'
 export {
   beginRender as __beginRender,
   createBoundaryRegistry as __createBoundaryRegistry,

@@ -1,4 +1,4 @@
-import { Array as Arr, Data, Predicate, Result } from 'effect'
+import { Array, Data, Predicate, Result } from 'effect'
 
 import { type VNode, dedupeMemoizedResult, memoizedVNodes } from '../vdom.vibe'
 import {
@@ -8,7 +8,7 @@ import {
   endLazyTracking,
   registerBoundaryWrapTransactionRollback,
   restoreBoundaryWrapsForLazyHit,
-} from './boundary.ts'
+} from './boundary.js'
 import {
   type DispatchSync,
   type MountRenderOwner,
@@ -16,18 +16,18 @@ import {
   requireDispatch,
   requireMountDispatch,
   requireMountRenderOwner,
-} from './runtimeSingleton.ts'
+} from './runtimeSingleton.js'
 
 /** Why a lazy call ran its view instead of reusing the cached result. */
 export type LazyMissReason = Data.TaggedEnum<{
-  mutable NoCachedEntry: {}
-  mutable FunctionChanged: {}
-  mutable FrameChanged: {}
-  mutable ArgumentCountChanged: Readonly<{
+  NoCachedEntry: {}
+  FunctionChanged: {}
+  FrameChanged: {}
+  ArgumentCountChanged: Readonly<{
     previousCount: number
     currentCount: number
   }>
-  mutable ArgumentsChanged: Readonly<{ indices: ReadonlyArray<number> }>
+  ArgumentsChanged: Readonly<{ indices: ReadonlyArray<number> }>
 }>
 
 /** @internal Constructors and matching for lazy cache miss reasons. */
@@ -119,8 +119,8 @@ const findMissReason = (
     })
   }
 
-  const indices = Arr.filterMap(
-    Arr.zip(previousEntry.args, args),
+  const indices = Array.filterMap(
+    Array.zip(previousEntry.args, args),
     ([previousArg, arg], index) =>
       previousArg === arg ? Result.failVoid : Result.succeed(index),
   )

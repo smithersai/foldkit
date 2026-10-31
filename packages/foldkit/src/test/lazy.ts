@@ -12,7 +12,7 @@ import {
   LazyMissReason,
   type LazyResolution,
   observeLazyResolutions,
-} from '../html/lazy.vibe'
+} from '../html/lazy.js'
 import { MountTracker } from '../mount/index.vibe'
 import { Dispatch } from '../runtime/dispatch.vibe'
 

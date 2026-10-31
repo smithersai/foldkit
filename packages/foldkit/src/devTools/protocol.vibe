@@ -1,6 +1,4 @@
-import { Effect, Schema } from 'effect'
-
-import { defineTaggedUnion } from '../schema/index.js'
+import { defineTaggedUnion } from '../schema/index.ts'
 
 // SHARED
 
@@ -40,20 +38,16 @@ export const SerializedEntry = Schema.Struct({
 export type SerializedEntry = typeof SerializedEntry.Type
 
 /** Metadata about a single keyframe. The index identifies the point in history where the runtime can replay back to. */
-export const KeyframeInfo = Schema.Struct({
-  index: Schema.Number,
-})
-/** Metadata about a single keyframe. */
-export type KeyframeInfo = typeof KeyframeInfo.Type
+export schema KeyframeInfo {
+  index: number
+}
 
 /** Metadata about a connected browser runtime. */
-export const RuntimeInfo = Schema.Struct({
-  connectionId: Schema.String,
-  url: Schema.String,
-  title: Schema.String,
-})
-/** Metadata about a connected browser runtime. */
-export type RuntimeInfo = typeof RuntimeInfo.Type
+export schema RuntimeInfo {
+  connectionId: string
+  url: string
+  title: string
+}
 
 // REQUEST
 
@@ -115,12 +109,10 @@ export type Request = typeof Request.Type
 // RESPONSE
 
 /** One row of a Message-tag histogram. */
-export const MessageTagCount = Schema.Struct({
-  tag: Schema.String,
-  count: Schema.Number,
-})
-/** One row of a Message-tag histogram. */
-export type MessageTagCount = typeof MessageTagCount.Type
+export schema MessageTagCount {
+  tag: string
+  count: number
+}
 
 /** The value on one side of a Model diff. `DiffValue.Present` carries the
  * value. `DiffValue.Absent` means the path does not exist on that side, which
@@ -133,29 +125,23 @@ export const DiffValue = defineTaggedUnion({
 export type DiffValue = typeof DiffValue.Type
 
 /** One changed path in a Model diff. `before` is the value at `fromIndex`, `after` the value at `toIndex`. */
-export const ModelDiffChange = Schema.Struct({
-  path: Schema.String,
-  before: DiffValue,
-  after: DiffValue,
-})
-/** One changed path in a Model diff. */
-export type ModelDiffChange = typeof ModelDiffChange.Type
+export schema ModelDiffChange {
+  path: string
+  before: DiffValue
+  after: DiffValue
+}
 
 /** One variant entry in a `MessageSchemaIndex`. `payloadFields` lists the variant's payload property names (excluding `_tag`); `unionFields` lists the subset of those properties whose schemas are themselves `_tag`-discriminated unions. A Submodel-wrapper variant always shows up with `unionFields: ['message']`, but the same flag also catches plain tagged-union value types like `UrlRequest = Internal | External`. Either way, the agent will need to pick a variant when filling these fields. */
-export const MessageSchemaIndexEntry = Schema.Struct({
-  tag: Schema.String,
-  payloadFields: Schema.Array(Schema.String),
-  unionFields: Schema.Array(Schema.String),
-})
-/** One variant entry in a `MessageSchemaIndex`. */
-export type MessageSchemaIndexEntry = typeof MessageSchemaIndexEntry.Type
+export schema MessageSchemaIndexEntry {
+  tag: string
+  payloadFields: ReadonlyArray<string>
+  unionFields: ReadonlyArray<string>
+}
 
 /** A flat directory of every top-level Message variant the runtime accepts, designed to fit in an agent context regardless of Message-union size. Use the tag names to make a follow-up `RequestGetMessageSchema` with `maybeVariantTag` set to fetch the full JSON Schema for one variant. */
-export const MessageSchemaIndex = Schema.Struct({
-  variants: Schema.Array(MessageSchemaIndexEntry),
-})
-/** A flat directory of every top-level Message variant. */
-export type MessageSchemaIndex = typeof MessageSchemaIndex.Type
+export schema MessageSchemaIndex {
+  variants: ReadonlyArray<MessageSchemaIndexEntry>
+}
 
 /** The result of requesting the app's Message Schema. It is either a compact
  * index of Message variants or the JSON Schema document for one variant. */

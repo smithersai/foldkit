@@ -15,7 +15,7 @@ import {
   resolveMountBoundaryDispatch,
 } from './boundary.js'
 import { __htmlBuilder } from './index.js'
-import { createKeyedLazy, createLazy } from './lazy.vibe'
+import { createKeyedLazy, createLazy } from './lazy.js'
 import {
   type DispatchSync,
   clearRuntime,

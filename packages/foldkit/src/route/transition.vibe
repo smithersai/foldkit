@@ -41,13 +41,15 @@ export const enteredAny = <Route extends Readonly<{ _tag: string }>>({
 }: Transition<Route>): Option<Route> =>
   Option.match(maybePreviousRoute, {
     onNone: () => Option.some(nextRoute),
-    onSome: previous => previous._tag === nextRoute._tag ? Option.none() : Option.some(nextRoute),
+    onSome: previous =>
+      previous._tag === nextRoute._tag ? Option.none() : Option.some(nextRoute),
   })
 
-const hasTag = <Tag extends string>(routeTag: Tag): infer _ =>
-<Route extends Readonly<{ _tag: string }>>(
-  route: Route,
-): route is Extract<Route, { mutable _tag: Tag }> => route._tag === routeTag
+const hasTag =
+  <Tag extends string>(routeTag: Tag): infer _ =>
+  <Route extends Readonly<{ _tag: string }>>(
+    route: Route,
+  ): route is Extract<Route, { mutable _tag: Tag }> => route._tag === routeTag
 
 /** The route a transition entered, narrowed to the given tag: `Some` of
  *  the entered route when this transition entered it, and `None`
@@ -56,11 +58,12 @@ const hasTag = <Tag extends string>(routeTag: Tag): infer _ =>
  *  form that answers for every route at once. */
 export const entered = <
   Route extends Readonly<{ _tag: string }>,
-  Tag extends Route["_tag"],
+  Tag extends Route['_tag'],
 >(
   transition: Transition<Route>,
   routeTag: Tag,
-): Option<Extract<Route, { mutable _tag: Tag }>> => Option.filter(enteredAny(transition), hasTag(routeTag))
+): Option<Extract<Route, { mutable _tag: Tag }>> =>
+  Option.filter(enteredAny(transition), hasTag(routeTag))
 
 /** The route a transition left, whichever route that was:
  *  `Some(previousRoute)` when the previous route's tag differs from the
@@ -85,11 +88,12 @@ export const exitedAny = <Route extends Readonly<{ _tag: string }>>({
  *  {@link exitedAny} is the form that answers for every route at once. */
 export const exited = <
   Route extends Readonly<{ _tag: string }>,
-  Tag extends Route["_tag"],
+  Tag extends Route['_tag'],
 >(
   transition: Transition<Route>,
   routeTag: Tag,
-): Option<Extract<Route, { mutable _tag: Tag }>> => Option.filter(exitedAny(transition), hasTag(routeTag))
+): Option<Extract<Route, { mutable _tag: Tag }>> =>
+  Option.filter(exitedAny(transition), hasTag(routeTag))
 
 /** Both sides of a within-route navigation: `Some` of the previous and
  *  next routes, narrowed to the given tag, when the transition stayed on
@@ -103,7 +107,7 @@ export const exited = <
  *  so matching on one would leave the other typed as the whole union. */
 export const stayed = <
   Route extends Readonly<{ _tag: string }>,
-  Tag extends Route["_tag"],
+  Tag extends Route['_tag'],
 >(
   transition: Transition<Route>,
   routeTag: Tag,
@@ -115,10 +119,13 @@ export const stayed = <
 > => {
   const { maybePreviousRoute, nextRoute } = transition
   const isTagged = hasTag(routeTag)
-  return Option.flatMap(maybePreviousRoute, previousRoute =>
-    isTagged(previousRoute) && isTagged(nextRoute)
-      ? Option.some({ previousRoute, nextRoute })
-      : Option.none())
+  return Option.flatMap(
+    maybePreviousRoute,
+    previousRoute =>
+      isTagged(previousRoute) && isTagged(nextRoute)
+        ? Option.some({ previousRoute, nextRoute })
+        : Option.none(),
+  )
 }
 
 /** Predicate for "this transition entered the given route": the next
@@ -131,7 +138,7 @@ export const stayed = <
  *  tags. */
 export const isEntering = <
   Route extends Readonly<{ _tag: string }>,
-  Tag extends Route["_tag"],
+  Tag extends Route['_tag'],
 >(
   transition: Transition<Route>,
   routeTag: Tag,
@@ -141,7 +148,7 @@ export const isEntering = <
  *  Use {@link exited} when its payload is needed. */
 export const isExiting = <
   Route extends Readonly<{ _tag: string }>,
-  Tag extends Route["_tag"],
+  Tag extends Route['_tag'],
 >(
   transition: Transition<Route>,
   routeTag: Tag,
@@ -151,25 +158,27 @@ export const isExiting = <
  *  {@link stayed} for both payloads. */
 export const isStaying = <
   Route extends Readonly<{ _tag: string }>,
-  Tag extends Route["_tag"],
+  Tag extends Route['_tag'],
 >(
   transition: Transition<Route>,
   routeTag: Tag,
 ): boolean => Option.isSome(stayed(transition, routeTag))
 
 /** Handlers for {@link match}, with Route narrowed to the selected tag. */
-export type MatchHandlers<Route, Entered, Exited, Stayed, Unrelated> = Readonly<{
-  Entered: (nextRoute: Route) => Entered
-  Exited: (previousRoute: Route) => Exited
-  Stayed: (
-    routes: Readonly<{ previousRoute: Route; nextRoute: Route }>,
-  ) => Stayed
-  Unrelated: () => Unrelated
-}>
+export type MatchHandlers<Route, Entered, Exited, Stayed, Unrelated> = Readonly<
+  {
+    Entered: (nextRoute: Route) => Entered
+    Exited: (previousRoute: Route) => Exited
+    Stayed: (
+      routes: Readonly<{ previousRoute: Route; nextRoute: Route }>,
+    ) => Stayed
+    Unrelated: () => Unrelated
+  }
+>
 
 const matchTransition = <
   Route extends Readonly<{ _tag: string }>,
-  Tag extends Route["_tag"],
+  Tag extends Route['_tag'],
   Entered,
   Exited,
   Stayed,
@@ -213,7 +222,7 @@ const matchTransition = <
  *  the Route and tag. */
 export function match<Output>(): <
   Route extends Readonly<{ _tag: string }>,
-  Tag extends Route["_tag"],
+  Tag extends Route['_tag'],
 >(
   transition: Transition<Route>,
   routeTag: Tag,
@@ -227,7 +236,7 @@ export function match<Output>(): <
 ) => Output
 export function match<
   Route extends Readonly<{ _tag: string }>,
-  Tag extends Route["_tag"],
+  Tag extends Route['_tag'],
   Entered,
   Exited,
   Stayed,
@@ -245,7 +254,7 @@ export function match<
 ): Entered | Exited | Stayed | Unrelated
 export function match<
   Route extends Readonly<{ _tag: string }>,
-  Tag extends Route["_tag"],
+  Tag extends Route['_tag'],
   Entered,
   Exited,
   Stayed,
@@ -274,7 +283,7 @@ export function match<
 
 const matchOrElseTransition = <
   Route extends Readonly<{ _tag: string }>,
-  Tag extends Route["_tag"],
+  Tag extends Route['_tag'],
   Entered = never,
   Exited = never,
   Stayed = never,
@@ -314,18 +323,24 @@ const matchOrElseTransition = <
  *  every callback to `Output` while inferring the Route and tag. */
 export function matchOrElse<Output>(): <
   Route extends Readonly<{ _tag: string }>,
-  Tag extends Route["_tag"],
+  Tag extends Route['_tag'],
 >(
   transition: Transition<Route>,
   routeTag: Tag,
   handlers: Partial<
-    MatchHandlers<Extract<Route, { mutable _tag: Tag }>, Output, Output, Output, Output>
+    MatchHandlers<
+      Extract<Route, { mutable _tag: Tag }>,
+      Output,
+      Output,
+      Output,
+      Output
+    >
   >,
   fallback: () => Output,
 ) => Output
 export function matchOrElse<
   Route extends Readonly<{ _tag: string }>,
-  Tag extends Route["_tag"],
+  Tag extends Route['_tag'],
   Entered = never,
   Exited = never,
   Stayed = never,
@@ -347,7 +362,7 @@ export function matchOrElse<
 ): Entered | Exited | Stayed | Unrelated | Fallback
 export function matchOrElse<
   Route extends Readonly<{ _tag: string }>,
-  Tag extends Route["_tag"],
+  Tag extends Route['_tag'],
   Entered,
   Exited,
   Stayed,

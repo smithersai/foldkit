@@ -1,6 +1,6 @@
-import { Function as Fn } from "effect"
+import { Function as Fn } from 'effect'
 
-import { type CalendarDate, daysInMonth, unsafeMake } from "./calendarDate.vibe"
+import { type CalendarDate, daysInMonth, unsafeMake } from './calendarDate.vibe'
 
 // NOTE: Rata Die conversion uses Howard Hinnant's algorithm, which correctly
 // handles all Gregorian dates including century and quadricentennial leap-year
@@ -24,7 +24,8 @@ const toRataDie = (date: CalendarDate): number => {
   const adjustedYear = month <= 2 ? year - 1 : year
   const era = Math.floor(adjustedYear / YEARS_PER_ERA)
   const yearOfEra = adjustedYear - era * YEARS_PER_ERA
-  const dayOfYear = Math.floor((153 * (month > 2 ? month - 3 : month + 9) + 2) / 5) + day - 1
+  const dayOfYear =
+    Math.floor((153 * (month > 2 ? month - 3 : month + 9) + 2) / 5) + day - 1
   const dayOfEra = yearOfEra * DAYS_PER_YEAR
     + Math.floor(yearOfEra / 4)
     - Math.floor(yearOfEra / 100)
@@ -73,7 +74,11 @@ const fromRataDie = (rataDie: number): CalendarDate => {
 export const addDays: {
   (n: number): (self: CalendarDate) => CalendarDate
   (self: CalendarDate, n: number): CalendarDate
-} = Fn.dual(2, (self: CalendarDate, n: number): CalendarDate => n === 0 ? self : fromRataDie(toRataDie(self) + n))
+} = Fn.dual(
+  2,
+  (self: CalendarDate, n: number): CalendarDate =>
+    n === 0 ? self : fromRataDie(toRataDie(self) + n),
+)
 
 /**
  * Subtracts `n` days from a calendar date. Equivalent to `addDays(self, -n)`.
@@ -93,7 +98,10 @@ export const addDays: {
 export const subtractDays: {
   (n: number): (self: CalendarDate) => CalendarDate
   (self: CalendarDate, n: number): CalendarDate
-} = Fn.dual(2, (self: CalendarDate, n: number): CalendarDate => addDays(self, -n))
+} = Fn.dual(
+  2,
+  (self: CalendarDate, n: number): CalendarDate => addDays(self, -n),
+)
 
 /**
  * Adds `n` months to a calendar date. Negative `n` subtracts months.
@@ -133,7 +141,10 @@ export const addMonths: {
 export const subtractMonths: {
   (n: number): (self: CalendarDate) => CalendarDate
   (self: CalendarDate, n: number): CalendarDate
-} = Fn.dual(2, (self: CalendarDate, n: number): CalendarDate => addMonths(self, -n))
+} = Fn.dual(
+  2,
+  (self: CalendarDate, n: number): CalendarDate => addMonths(self, -n),
+)
 
 /**
  * Adds `n` years to a calendar date. Handles leap-year edge cases by clamping
@@ -155,7 +166,11 @@ export const subtractMonths: {
 export const addYears: {
   (n: number): (self: CalendarDate) => CalendarDate
   (self: CalendarDate, n: number): CalendarDate
-} = Fn.dual(2, (self: CalendarDate, n: number): CalendarDate => addMonths(self, n * MONTHS_PER_YEAR))
+} = Fn.dual(
+  2,
+  (self: CalendarDate, n: number): CalendarDate =>
+    addMonths(self, n * MONTHS_PER_YEAR),
+)
 
 /**
  * Subtracts `n` years from a calendar date. Equivalent to `addYears(self, -n)`.
@@ -163,7 +178,10 @@ export const addYears: {
 export const subtractYears: {
   (n: number): (self: CalendarDate) => CalendarDate
   (self: CalendarDate, n: number): CalendarDate
-} = Fn.dual(2, (self: CalendarDate, n: number): CalendarDate => addYears(self, -n))
+} = Fn.dual(
+  2,
+  (self: CalendarDate, n: number): CalendarDate => addYears(self, -n),
+)
 
 /**
  * Returns the number of days from `self` until `end`, positive when `end` is
@@ -186,7 +204,8 @@ export const daysUntil: {
   (self: CalendarDate, end: CalendarDate): number
 } = Fn.dual(
   2,
-  (self: CalendarDate, end: CalendarDate): number => toRataDie(end) - toRataDie(self),
+  (self: CalendarDate, end: CalendarDate): number =>
+    toRataDie(end) - toRataDie(self),
 )
 
 /**
@@ -211,5 +230,6 @@ export const daysSince: {
   (self: CalendarDate, start: CalendarDate): number
 } = Fn.dual(
   2,
-  (self: CalendarDate, start: CalendarDate): number => toRataDie(self) - toRataDie(start),
+  (self: CalendarDate, start: CalendarDate): number =>
+    toRataDie(self) - toRataDie(start),
 )

@@ -1,8 +1,12 @@
-import { Array as Arr } from "effect"
+import { Array as Arr } from 'effect'
 
-import type { SerializedCommand, SerializedEntry, SerializedMount } from "./protocol.ts"
-import type { CommandRecord, HistoryEntry, MountRecord } from "./store.ts"
-import { extractSubmodelInfo } from "./submodelPath.vibe"
+import type {
+  SerializedCommand,
+  SerializedEntry,
+  SerializedMount,
+} from './protocol.vibe'
+import type { CommandRecord, HistoryEntry, MountRecord } from './store.ts'
+import { extractSubmodelInfo } from './submodelPath.vibe'
 
 const inspectableCache = new WeakMap<object, unknown>()
 
@@ -56,7 +60,7 @@ const computeInspectableValue = (value: unknown): unknown => {
  * row lazy actually hits.
  */
 export const toInspectableValue = (value: unknown): unknown => {
-  if (value === null || typeof value !== "object") {
+  if (value === null || typeof value !== 'object') {
     return value
   }
   if (inspectableCache.has(value)) {

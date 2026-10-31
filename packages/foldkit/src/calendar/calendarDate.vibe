@@ -1,4 +1,3 @@
-
 /**
  * Determines if a year is a leap year in the Gregorian calendar.
  *
@@ -94,8 +93,8 @@ export type CalendarDate = typeof CalendarDate.Type
  * Calendar.isCalendarDate('2026-04-13') // false
  * ```
  */
-export const isCalendarDate: (value: unknown) => value is CalendarDate =
-  Schema.is(CalendarDate)
+export const isCalendarDate: (value: unknown) => value is CalendarDate = Schema
+  .is(CalendarDate)
 
 /**
  * Constructs a `CalendarDate`, validating via Schema.
@@ -215,7 +214,9 @@ export const CalendarDateFromIsoString = Schema.String.pipe(
         const match = input.match(isoPattern)
         if (match === null) {
           throw new SchemaIssue.InvalidValue({
-            message: `Expected ISO date (YYYY-MM-DD), got ${JSON.stringify(input)}`,
+            message: `Expected ISO date (YYYY-MM-DD), got ${
+              JSON.stringify(input)
+            }`,
           })
         }
         const [, yearString, monthString, dayString] = match
@@ -226,7 +227,9 @@ export const CalendarDateFromIsoString = Schema.String.pipe(
         }
       },
       encode: effect ({ year, month, day }) =>
-        `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+        `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${
+          String(day).padStart(2, '0')
+        }`,
     }),
   ),
 )

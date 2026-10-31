@@ -1,4 +1,4 @@
-import { Array as Arr, Option, Predicate, Record } from "effect"
+import { Array as Arr, Option, Predicate, Record } from 'effect'
 
 /**
  * Recursively `Object.freeze`s a Model so accidental mutations throw a
@@ -22,7 +22,7 @@ import { Array as Arr, Option, Predicate, Record } from "effect"
  * when combined with `modifyFields()` which preserves unchanged branches by reference.
  */
 export const deepFreeze = <T>(value: T): T => {
-  if (value === null || typeof value !== "object") {
+  if (value === null || typeof value !== 'object') {
     return value
   }
 

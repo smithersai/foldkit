@@ -46,8 +46,7 @@ const textBaselineForCanvas: Readonly<
 }
 
 const paintRect =
-  (ctx: CanvasRenderingContext2D): infer _ =>
-  (rect: Rect): void => {
+  (ctx: CanvasRenderingContext2D): infer _ => (rect: Rect): void => {
     if (rect.fill !== undefined) {
       ctx.fillStyle = rect.fill
       ctx.fillRect(rect.x, rect.y, rect.width, rect.height)
@@ -62,8 +61,7 @@ const paintRect =
   }
 
 const paintCircle =
-  (ctx: CanvasRenderingContext2D): infer _ =>
-  (circle: Circle): void => {
+  (ctx: CanvasRenderingContext2D): infer _ => (circle: Circle): void => {
     ctx.beginPath()
     ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2)
     if (circle.fill !== undefined) {
@@ -81,18 +79,18 @@ const paintCircle =
 
 const applyPathInstruction =
   (ctx: CanvasRenderingContext2D): (instruction: PathInstruction) => void =>
-  (instruction: PathInstruction): void =>
-    match (instruction) {
-      when { _tag: "MoveTo", let x, let y }: ctx.moveTo(x, y);
-      when { _tag: "LineTo", let x, let y }: ctx.lineTo(x, y);
-      when { _tag: "QuadTo", let cpx, let cpy, let x, let y }: ctx.quadraticCurveTo(cpx, cpy, x, y);
-      when { _tag: "BezierTo", let cp1x, let cp1y, let cp2x, let cp2y, let x, let y }: ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
-      when { _tag: "Close" }: ctx.closePath();
-    }
+  (instruction: PathInstruction): void => match (instruction) {
+    when { _tag: "MoveTo", let x, let y }: ctx.moveTo(x, y);
+    when { _tag: "LineTo", let x, let y }: ctx.lineTo(x, y);
+    when { _tag: "QuadTo", let cpx, let cpy, let x, let y }: ctx
+      .quadraticCurveTo(cpx, cpy, x, y);
+    when { _tag: "BezierTo", let cp1x, let cp1y, let cp2x, let cp2y, let x, let y }:
+      ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
+    when { _tag: "Close" }: ctx.closePath();
+  }
 
 const paintPath =
-  (ctx: CanvasRenderingContext2D): infer _ =>
-  (path: Path): void => {
+  (ctx: CanvasRenderingContext2D): infer _ => (path: Path): void => {
     ctx.beginPath()
     Arr.forEach(path.instructions, applyPathInstruction(ctx))
     if (path.fill !== undefined) {
@@ -115,8 +113,7 @@ const paintPath =
   }
 
 const paintText =
-  (ctx: CanvasRenderingContext2D): infer _ =>
-  (text: Text): void => {
+  (ctx: CanvasRenderingContext2D): infer _ => (text: Text): void => {
     if (text.font !== undefined) {
       ctx.font = text.font
     }
@@ -140,8 +137,7 @@ const paintText =
   }
 
 const paintGroup =
-  (ctx: CanvasRenderingContext2D): infer _ =>
-  (group: Group): void => {
+  (ctx: CanvasRenderingContext2D): infer _ => (group: Group): void => {
     if (group.opacity !== undefined) {
       ctx.globalAlpha *= group.opacity
     }
@@ -164,8 +160,7 @@ const paintGroup =
  * sibling shapes. Recurses into `Group` children inside the saved scope.
  */
 export const paintShape =
-  (ctx: CanvasRenderingContext2D): infer _ =>
-  (shape: Shape): void => {
+  (ctx: CanvasRenderingContext2D): infer _ => (shape: Shape): void => {
     ctx.save()
     match (shape) {
       when { _tag: "Rect" }: paintRect(ctx)(shape);

@@ -58,4 +58,4 @@ export {
   formatShort,
   LocaleConfig,
   MonthYearFormat,
-} from './locale.vibe'
+} from './locale.js'

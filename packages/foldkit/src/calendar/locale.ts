@@ -1,6 +1,6 @@
-import { Array as Arr, Function as Fn } from 'effect'
+import { Array, Function, Option, Schema, pipe } from 'effect'
 
-import { defineTaggedUnion } from '../schema/index.ts'
+import { defineTaggedUnion } from '../schema/index.js'
 import type { CalendarDate } from './calendarDate.vibe'
 import { DayOfWeek, dayOfWeek } from './info.vibe'
 
@@ -103,18 +103,19 @@ export type MonthYearFormat = typeof MonthYearFormat.Type
  * Day names are always stored Sunday-first in the config; `firstDayOfWeek`
  * controls how the view rotates them at render time.
  */
-export schema LocaleConfig {
-  firstDayOfWeek: DayOfWeek
-  monthNames: twelveStrings
-  shortMonthNames: twelveStrings
-  dayNames: sevenStrings
-  shortDayNames: sevenStrings
-  longFormat: DateFormat
-  shortFormat: DateFormat
-  ariaLabelFormat: DateFormat
-  monthYearFormat: MonthYearFormat
-}
+export const LocaleConfig = Schema.Struct({
+  firstDayOfWeek: DayOfWeek,
+  monthNames: twelveStrings,
+  shortMonthNames: twelveStrings,
+  dayNames: sevenStrings,
+  shortDayNames: sevenStrings,
+  longFormat: DateFormat,
+  shortFormat: DateFormat,
+  ariaLabelFormat: DateFormat,
+  monthYearFormat: MonthYearFormat,
+})
 
+export type LocaleConfig = typeof LocaleConfig.Type
 
 /**
  * Default English (United States) locale. Calendar components default to this
@@ -192,7 +193,11 @@ export const defaultEnglishLocale: LocaleConfig = {
 }
 
 const pickByMonth = (names: typeof twelveStrings.Type, month: number): string =>
-  Arr.get(names, month - 1).getOrElse(() => Arr.lastNonEmpty(names))
+  pipe(
+    names,
+    Array.get(month - 1),
+    Option.getOrElse(() => Array.lastNonEmpty(names)),
+  )
 
 const DAY_OF_WEEK_INDEX: Readonly<Record<DayOfWeek, number>> = {
   Sunday: 0,
@@ -205,7 +210,11 @@ const DAY_OF_WEEK_INDEX: Readonly<Record<DayOfWeek, number>> = {
 }
 
 const pickByDay = (names: typeof sevenStrings.Type, day: DayOfWeek): string =>
-  Arr.get(names, DAY_OF_WEEK_INDEX[day]).getOrElse(() => Arr.lastNonEmpty(names))
+  pipe(
+    names,
+    Array.get(DAY_OF_WEEK_INDEX[day]),
+    Option.getOrElse(() => Array.lastNonEmpty(names)),
+  )
 
 const PAD_WIDTH = 2
 const PAD_CHARACTER = '0'
@@ -218,18 +227,18 @@ const renderPart = (
   locale: LocaleConfig,
   part: DatePart,
 ): string =>
-  match (part) {
-    when { _tag: 'MonthName' }: pickByMonth(locale.monthNames, self.month);
-    when { _tag: 'ShortMonthName' }: pickByMonth(locale.shortMonthNames, self.month);
-    when { _tag: 'MonthNumber' }: String(self.month);
-    when { _tag: 'PaddedMonthNumber' }: toPaddedNumber(self.month);
-    when { _tag: 'DayNumber' }: String(self.day);
-    when { _tag: 'PaddedDayNumber' }: toPaddedNumber(self.day);
-    when { _tag: 'DayName' }: pickByDay(locale.dayNames, dayOfWeek(self));
-    when { _tag: 'ShortDayName' }: pickByDay(locale.shortDayNames, dayOfWeek(self));
-    when { _tag: 'YearNumber' }: String(self.year);
-    when { _tag: 'LiteralText', let text }: text;
-  }
+  DatePart.match<string>(part, {
+    MonthName: () => pickByMonth(locale.monthNames, self.month),
+    ShortMonthName: () => pickByMonth(locale.shortMonthNames, self.month),
+    MonthNumber: () => String(self.month),
+    PaddedMonthNumber: () => toPaddedNumber(self.month),
+    DayNumber: () => String(self.day),
+    PaddedDayNumber: () => toPaddedNumber(self.day),
+    DayName: () => pickByDay(locale.dayNames, dayOfWeek(self)),
+    ShortDayName: () => pickByDay(locale.shortDayNames, dayOfWeek(self)),
+    YearNumber: () => String(self.year),
+    LiteralText: ({ text }) => text,
+  })
 
 /**
  * Renders a calendar date through an arbitrary `DateFormat`. The four named
@@ -254,10 +263,14 @@ const renderPart = (
 export const format: {
   (locale: LocaleConfig, dateFormat: DateFormat): (self: CalendarDate) => string
   (self: CalendarDate, locale: LocaleConfig, dateFormat: DateFormat): string
-} = Fn.dual(
+} = Function.dual(
   3,
   (self: CalendarDate, locale: LocaleConfig, dateFormat: DateFormat): string =>
-    dateFormat.map(part => renderPart(self, locale, part)).join(''),
+    pipe(
+      dateFormat,
+      Array.map(part => renderPart(self, locale, part)),
+      Array.join(''),
+    ),
 )
 
 /**
@@ -282,7 +295,7 @@ export const format: {
 export const formatLong: {
   (locale: LocaleConfig): (self: CalendarDate) => string
   (self: CalendarDate, locale: LocaleConfig): string
-} = Fn.dual(2, (self: CalendarDate, locale: LocaleConfig): string =>
+} = Function.dual(2, (self: CalendarDate, locale: LocaleConfig): string =>
   format(self, locale, locale.longFormat),
 )
 
@@ -293,7 +306,7 @@ export const formatLong: {
 export const formatShort: {
   (locale: LocaleConfig): (self: CalendarDate) => string
   (self: CalendarDate, locale: LocaleConfig): string
-} = Fn.dual(2, (self: CalendarDate, locale: LocaleConfig): string =>
+} = Function.dual(2, (self: CalendarDate, locale: LocaleConfig): string =>
   format(self, locale, locale.shortFormat),
 )
 
@@ -313,7 +326,7 @@ export const formatShort: {
 export const formatAriaLabel: {
   (locale: LocaleConfig): (self: CalendarDate) => string
   (self: CalendarDate, locale: LocaleConfig): string
-} = Fn.dual(2, (self: CalendarDate, locale: LocaleConfig): string =>
+} = Function.dual(2, (self: CalendarDate, locale: LocaleConfig): string =>
   format(self, locale, locale.ariaLabelFormat),
 )
 
@@ -336,6 +349,6 @@ export const formatAriaLabel: {
 export const formatMonthYear: {
   (locale: LocaleConfig): (self: CalendarDate) => string
   (self: CalendarDate, locale: LocaleConfig): string
-} = Fn.dual(2, (self: CalendarDate, locale: LocaleConfig): string =>
+} = Function.dual(2, (self: CalendarDate, locale: LocaleConfig): string =>
   format(self, locale, locale.monthYearFormat),
 )

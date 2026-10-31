@@ -6,7 +6,7 @@ import {
   indexMessageSchemaDocument,
   narrowToVariant,
   variantTagsAtPathPrefix,
-} from './schemaSummarize.js'
+} from './schemaSummarize.vibe'
 
 const expectSome = <A>(option: Option.Option<A>): A => {
   expect(Option.isSome(option)).toBe(true)

@@ -51,8 +51,9 @@ export const Equivalence: Equivalence_.Equivalence<CalendarDate> = (a, b) =>
 export const isEqual: {
   (that: CalendarDate): (self: CalendarDate) => boolean
   (self: CalendarDate, that: CalendarDate): boolean
-} = Fn.dual(2, (self: CalendarDate, that: CalendarDate): boolean =>
-  Equivalence(self, that),
+} = Fn.dual(
+  2,
+  (self: CalendarDate, that: CalendarDate): boolean => Equivalence(self, that),
 )
 
 /**
@@ -126,8 +127,10 @@ export const isAfterOrEqual: {
 export const min: {
   (that: CalendarDate): (self: CalendarDate) => CalendarDate
   (self: CalendarDate, that: CalendarDate): CalendarDate
-} = Fn.dual(2, (self: CalendarDate, that: CalendarDate): CalendarDate =>
-  Order(self, that) <= 0 ? self : that,
+} = Fn.dual(
+  2,
+  (self: CalendarDate, that: CalendarDate): CalendarDate =>
+    Order(self, that) <= 0 ? self : that,
 )
 
 /**
@@ -136,8 +139,10 @@ export const min: {
 export const max: {
   (that: CalendarDate): (self: CalendarDate) => CalendarDate
   (self: CalendarDate, that: CalendarDate): CalendarDate
-} = Fn.dual(2, (self: CalendarDate, that: CalendarDate): CalendarDate =>
-  Order(self, that) >= 0 ? self : that,
+} = Fn.dual(
+  2,
+  (self: CalendarDate, that: CalendarDate): CalendarDate =>
+    Order(self, that) >= 0 ? self : that,
 )
 
 /**

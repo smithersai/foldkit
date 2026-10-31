@@ -37,13 +37,13 @@ import {
   Response,
   ResponseFrame,
   RuntimeInfo,
-} from './protocol.js'
+} from './protocol.vibe'
 import {
   diagnoseVariantPath,
   indexMessageSchemaDocument,
   narrowToVariant,
   splitVariantPath,
-} from './schemaSummarize.js'
+} from './schemaSummarize.vibe'
 import {
   toInspectableValue,
   toSerializedCommand,
@@ -62,7 +62,7 @@ import {
   formatPathNotFound,
   resolvePath,
   summarizeValue,
-} from './summarize.js'
+} from './summarize.vibe'
 
 type Hot = NonNullable<ImportMeta['hot']>
 

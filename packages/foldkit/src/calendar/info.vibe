@@ -1,32 +1,32 @@
-import { Function as Fn } from "effect"
+import { Function as Fn } from 'effect'
 
-import { addDays, subtractDays } from "./arithmetic.vibe"
-import { type CalendarDate, daysInMonth, unsafeMake } from "./calendarDate.vibe"
+import { addDays, subtractDays } from './arithmetic.vibe'
+import { type CalendarDate, daysInMonth, unsafeMake } from './calendarDate.vibe'
 
 /**
  * Schema for days of the week, Sunday through Saturday. Tagged union preferred
  * over 0-6 numeric indices to avoid magic numbers at call sites.
  */
 export const DayOfWeek = Schema.Literals([
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
 ])
 
 export type DayOfWeek = typeof DayOfWeek.Type
 
 const dayOfWeekFromIndex = (index: number): DayOfWeek => match (index) {
-  when 0: "Sunday";
-  when 1: "Monday";
-  when 2: "Tuesday";
-  when 3: "Wednesday";
-  when 4: "Thursday";
-  when 5: "Friday";
-  default: "Saturday";
+  when 0: 'Sunday';
+  when 1: 'Monday';
+  when 2: 'Tuesday';
+  when 3: 'Wednesday';
+  when 4: 'Thursday';
+  when 5: 'Friday';
+  default: 'Saturday';
 }
 
 const dayOfWeekToIndex = (day: DayOfWeek): number => match (day) {
@@ -96,7 +96,8 @@ export const dayOfWeek = (self: CalendarDate): DayOfWeek => {
  * // { year: 2026, month: 4, day: 1 }
  * ```
  */
-export const firstOfMonth = (self: CalendarDate): CalendarDate => unsafeMake(self.year, self.month, 1)
+export const firstOfMonth = (self: CalendarDate): CalendarDate =>
+  unsafeMake(self.year, self.month, 1)
 
 /**
  * Returns the last day of the month containing `self`. Leap-year aware
@@ -153,5 +154,6 @@ export const endOfWeek: {
   (self: CalendarDate, firstDayOfWeek: DayOfWeek): CalendarDate
 } = Fn.dual(
   2,
-  (self: CalendarDate, firstDayOfWeek: DayOfWeek): CalendarDate => addDays(startOfWeek(self, firstDayOfWeek), 6),
+  (self: CalendarDate, firstDayOfWeek: DayOfWeek): CalendarDate =>
+    addDays(startOfWeek(self, firstDayOfWeek), 6),
 )

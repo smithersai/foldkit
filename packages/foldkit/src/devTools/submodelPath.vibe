@@ -34,16 +34,18 @@ export const extractSubmodelInfo = (
 
   const path: Array<string> = [tag]
   /* eslint-disable @typescript-eslint/consistent-type-assertions */
-  let current: unknown = (message as Record<string, unknown>)?.["message"]
+  let current: unknown = (message as Record<string, unknown>)?.['message']
 
   while (isTagged(current) && GOT_MESSAGE_PATTERN.test(current._tag)) {
     path.push(current._tag)
-    current = (current as Record<string, unknown>)?.["message"]
+    current = (current as Record<string, unknown>)?.['message']
   }
   /* eslint-enable @typescript-eslint/consistent-type-assertions */
 
   return {
     submodelPath: path,
-    maybeLeafTag: Option.liftPredicate(current, isTagged).map(({ _tag }) => _tag),
+    maybeLeafTag: Option.liftPredicate(current, isTagged).map(({ _tag }) =>
+      _tag
+    ),
   }
 }
