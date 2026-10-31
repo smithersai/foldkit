@@ -1,7 +1,7 @@
 import { Runtime } from 'foldkit'
 
-import { Model, init, update } from './main'
-import { view } from './main.optimised'
+import { view } from './main.optimised.vibe'
+import { Model, init, update } from './main.vibe'
 
 const application = Runtime.makeApplication({
   Model,

@@ -12,7 +12,7 @@
     "bench:verify": "node bench/verify.mjs",
     "dev": "vite",
     "profile": "RUN_LUSTRE_PROFILE=1 vitest run",
-    "typecheck": "vibelang --noEmit"
+    "typecheck": "vibelang --noEmit && tsc --noEmit"
   },
   "dependencies": {
     "@effect/platform-browser": "4.1.0",
