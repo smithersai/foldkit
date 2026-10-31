@@ -14,5 +14,8 @@
     "vite.config.vibe",
     "vitest.config.vibe"
   ],
-  "exclude": ["node_modules", "dist", "../../packages/foldkit/src"]
+  "exclude": ["node_modules", "dist", "../../packages/foldkit/src"],
+  "vibelang": {
+    "declarationSidecars": true
+  }
 }

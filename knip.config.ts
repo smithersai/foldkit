@@ -106,7 +106,7 @@ const config: { ignore?: string | string[]; [key: string]: unknown } = {
       ignoreDependencies: ['tailwindcss'],
     },
     'internal/lustre-benchmark': {
-      entry: ['src/main.ts', 'src/entry.optimised.ts', 'bench/*.mjs'],
+      entry: ['src/main.vibe', 'src/entry.optimised.ts', 'bench/*.mjs'],
     },
     'internal/api-reference-generator': {
       ignoreDependencies: ['@foldkit/ui', 'foldkit'],

@@ -6,10 +6,10 @@ import { describe, it } from 'vitest'
 // Internal API not on the public surface but needed by the profile harness
 // to capture the runtime's sync dispatcher.
 import { __requireDispatch } from '../../../packages/foldkit/src/html/index.js'
-import { Message, Model, update as baseUpdate, init } from './main.js'
-import type { Todo } from './main.js'
-import { view as naiveView } from './main.js'
-import { view as optimisedView } from './main.optimised.js'
+import { view as optimisedView } from './main.optimised.vibe'
+import { Message, Model, update as baseUpdate, init } from './main.vibe'
+import type { Todo } from './main.vibe'
+import { view as naiveView } from './main.vibe'
 
 /**
  * Phase-level profile of the lustre-benchmark optimised TodoMVC runbook.

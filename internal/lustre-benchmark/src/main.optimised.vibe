@@ -1,4 +1,4 @@
-import { Array, Option } from 'effect'
+import { Array as EffectArray } from 'effect'
 import {
   Document,
   Html,
@@ -15,7 +15,7 @@ import {
   Todo,
   countActiveTodos,
   filterTodos,
-} from './main.js'
+} from './main.vibe'
 
 // VIEW
 
@@ -78,9 +78,9 @@ const editingTodoView = (
         h.Name('title'),
         h.Id(`todo-${todo.id}`),
         h.Autofocus(true),
-        h.OnInput(text => Message.UpdatedEditingTodo({ text })),
+        h.OnInput((text): infer _ => Message.UpdatedEditingTodo({ text })),
         h.OnBlur(Message.SavedEdit()),
-        h.OnKeyDownPreventDefault(key => {
+        h.OnKeyDownPreventDefault((key): infer _ => {
           if (key === 'Enter') {
             return Option.some(Message.SavedEdit())
           }
@@ -96,13 +96,12 @@ const editingTodoView = (
 
 const todoItemView = (
   todo: Todo,
-  maybeEditingText: Option.Option<string>,
+  maybeEditingText: Option<string>,
   h: HtmlBuilder<Message>,
-): Html =>
-  Option.match(maybeEditingText, {
-    onNone: () => nonEditingTodoView(todo, h),
-    onSome: text => editingTodoView(todo, text, h),
-  })
+): Html => match (maybeEditingText) {
+  when Option.None: nonEditingTodoView(todo, h);
+  when Option.Some(let text): editingTodoView(todo, text, h);
+}
 
 // NOTE: hot-path helper. `Match.value(...).pipe(Match.tagsExhaustive(...))`
 // constructs a fresh matcher on every call; done per todo per frame it
@@ -110,7 +109,7 @@ const todoItemView = (
 const maybeEditingTextFor = (
   editing: EditingState,
   todoId: string,
-): Option.Option<string> => {
+): Option<string> => {
   if (editing._tag === 'Editing' && editing.id === todoId) {
     return Option.some(editing.text)
   }
@@ -128,9 +127,12 @@ const headerView = (newTodoText: string, h: HtmlBuilder<Message>): Html => {
         h.Autofocus(true),
         h.Value(newTodoText),
         h.Name('newTodo'),
-        h.OnInput(text => Message.UpdatedNewTodo({ text })),
-        h.OnKeyDownPreventDefault(key =>
-          Option.liftPredicate(Message.AddedTodo(), () => key === 'Enter'),
+        h.OnInput((text): infer _ => Message.UpdatedNewTodo({ text })),
+        h.OnKeyDownPreventDefault((key): infer _ =>
+          Option.liftPredicate(
+            Message.AddedTodo(),
+            (): infer _ => key === 'Enter',
+          )
         ),
       ]),
     ],
@@ -190,9 +192,9 @@ const footerView = (
       lazyFilters(filtersView, [filter, h]),
       completedCount > 0
         ? h.button(
-            [h.Class('clear-completed'), h.OnClick(Message.ClearedCompleted())],
-            [`Clear completed (${completedCount})`],
-          )
+          [h.Class('clear-completed'), h.OnClick(Message.ClearedCompleted())],
+          [`Clear completed (${completedCount})`],
+        )
         : h.empty,
     ],
   )
@@ -225,15 +227,15 @@ const lazyTodo = createKeyedLazy()
 export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
   const filteredTodos = filterTodos(model.todos, model.filter)
   const activeCount = countActiveTodos(model.todos)
-  const completedCount = Array.length(model.todos) - activeCount
-  const allCompleted =
-    Array.isReadonlyArrayNonEmpty(model.todos) && activeCount === 0
+  const completedCount = EffectArray.length(model.todos) - activeCount
+  const allCompleted = EffectArray.isReadonlyArrayNonEmpty(model.todos)
+    && activeCount === 0
 
   const renderedHeader = lazyHeader(headerView, [model.newTodoText, h])
 
-  const renderedMain = Array.match(model.todos, {
-    onEmpty: () => h.empty,
-    onNonEmpty: () =>
+  const renderedMain = EffectArray.match(model.todos, {
+    onEmpty: (): infer _ => h.empty,
+    onNonEmpty: (): infer _ =>
       h.section(
         [h.Class('main')],
         [
@@ -241,21 +243,20 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
           lazyToggleAllLabel(toggleAllLabelView, [h]),
           h.ul(
             [h.Class('todo-list')],
-            Array.map(filteredTodos, todo =>
+            EffectArray.map(filteredTodos, (todo): infer _ =>
               lazyTodo(todo.id, todoItemView, [
                 todo,
                 maybeEditingTextFor(model.editing, todo.id),
                 h,
-              ]),
-            ),
+              ])),
           ),
         ],
       ),
   })
 
-  const renderedFooter = Array.match(model.todos, {
-    onEmpty: () => h.empty,
-    onNonEmpty: () =>
+  const renderedFooter = EffectArray.match(model.todos, {
+    onEmpty: (): infer _ => h.empty,
+    onNonEmpty: (): infer _ =>
       lazyFooter(footerView, [activeCount, completedCount, model.filter, h]),
   })
 
