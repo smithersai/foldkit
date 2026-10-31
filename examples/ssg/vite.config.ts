@@ -8,7 +8,7 @@ import { foldkitAliases } from '../vite.aliases'
 
 export default defineConfig({
   plugins: [
-    vibelang(),
+    vibelang({ register: true }),
     tailwindcss(),
     foldkit({
       devToolsMcpPort: 9993,

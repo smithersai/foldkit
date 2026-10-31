@@ -17,7 +17,6 @@
   ],
   "exclude": ["node_modules", "dist", "../../packages/foldkit/src"],
   "vibelang": {
-    "declarationSidecars": true,
     "trustedPackages": ["foldkit", "foldkit/*"]
   }
 }
