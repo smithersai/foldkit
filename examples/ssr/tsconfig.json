@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "rewriteRelativeImportExtensions": true,
     "moduleResolution": "bundler",
     "noEmit": true
   },
@@ -8,7 +9,22 @@
     "src/**/*.ts",
     "scripts/**/*.ts",
     "vite.config.ts",
-    "vitest.config.ts"
+    "vitest.config.ts",
+    "src/**/*.vibe",
+    "scripts/**/*.vibe",
+    "vite.config.vibe",
+    "vitest.config.vibe"
   ],
-  "exclude": ["node_modules", "dist", "../../packages/foldkit/src"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "../../packages/foldkit/src"
+  ],
+  "vibelang": {
+    "declarationSidecars": true,
+    "trustedPackages": [
+      "foldkit",
+      "foldkit/*"
+    ]
+  }
 }

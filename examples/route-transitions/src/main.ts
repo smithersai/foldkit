@@ -8,7 +8,7 @@ import { defineTaggedUnion } from 'foldkit/schema'
 import { modifyFields } from 'foldkit/struct'
 import { Url, toString as urlToString } from 'foldkit/url'
 
-import { type Painting, findPaintingWithIndex, paintings } from './data'
+import { type Painting, findPaintingWithIndex, paintings } from './data.vibe'
 import {
   AppRoute,
   galleryRouter,
@@ -16,9 +16,9 @@ import {
   paintingRouter,
   studioRouter,
   urlToAppRoute,
-} from './route'
+} from './route.vibe'
 
-export { AppRoute } from './route'
+export { AppRoute } from './route.vibe'
 
 const CATALOG_LATENCY = Duration.millis(600)
 const PAINTING_LATENCY = Duration.millis(400)

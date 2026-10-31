@@ -1,41 +1,27 @@
-import {
-  Array,
-  Duration,
-  Effect,
-  Match,
-  Option,
-  Schema,
-  Stream,
-  pipe,
-} from 'effect'
+import { Array as Arr, pipe } from 'effect'
 import { Command, Dom, Runtime, Subscription, type Update } from 'foldkit'
 import { Document, Html, HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
 
-import { GAME, GAME_SPEED } from './constants'
-import { Apple, Direction, Position, Snake } from './domain'
+import { getKeyboardTarget } from './keyboardTarget.ts'
+
+import { GAME, GAME_SPEED } from './constants.ts'
+import { Apple, Direction, Position, Snake } from './domain/index.ts'
 
 // MODEL
 
-export const GameState = Schema.Literals([
-  'NotStarted',
-  'Playing',
-  'Paused',
-  'GameOver',
-])
-export type GameState = typeof GameState.Type
+export schema GameState = 'NotStarted' | 'Playing' | 'Paused' | 'GameOver'
 
-export const Model = Schema.Struct({
-  snake: Snake.Snake,
-  apple: Position.Position,
-  direction: Direction.Direction,
-  nextDirection: Direction.Direction,
-  gameState: GameState,
-  points: Schema.Number,
-  highScore: Schema.Number,
-})
-export type Model = typeof Model.Type
+export schema Model {
+  snake: Snake.Snake
+  apple: Position.Position
+  direction: Direction.Direction
+  nextDirection: Direction.Direction
+  gameState: GameState
+  points: number
+  highScore: number
+}
 
 // MESSAGE
 
@@ -72,72 +58,49 @@ export const init: Runtime.ApplicationInit<Model, Message> = () => {
 
 type UpdateReturn = Update.Return<Model, Message>
 
-export const update = (model: Model, message: Message) =>
+export const update = (model: Model, message: Message): infer _ =>
   Message.match<UpdateReturn>(message, {
-    PressedKey: ({ key }) =>
-      Match.value(key).pipe(
-        Match.withReturnType<UpdateReturn>(),
-        Match.whenOr(
-          'ArrowUp',
-          'ArrowDown',
-          'ArrowLeft',
-          'ArrowRight',
-          'w',
-          'a',
-          's',
-          'd',
-          moveKey => {
-            const nextDirection = Match.value(moveKey).pipe(
-              Match.withReturnType<Direction.Direction>(),
-              Match.whenOr('ArrowUp', 'w', () => 'Up'),
-              Match.whenOr('ArrowDown', 's', () => 'Down'),
-              Match.whenOr('ArrowLeft', 'a', () => 'Left'),
-              Match.whenOr('ArrowRight', 'd', () => 'Right'),
-              Match.exhaustive,
-            )
-
-            if (model.gameState === 'Playing') {
-              return {
-                model: modifyFields(model, {
-                  nextDirection: () => nextDirection,
-                }),
-              }
-            } else {
-              return { model }
+    PressedKey: ({ key }): UpdateReturn => match (key) {
+      when "ArrowUp" or "ArrowDown" or "ArrowLeft" or "ArrowRight" or "w" or "a" or "s" or "d":
+        do {
+          const nextDirection: Direction.Direction = match (key) {
+            when "ArrowUp" or "w": 'Up';
+            when "ArrowDown" or "s": 'Down';
+            when "ArrowLeft" or "a": 'Left';
+            when "ArrowRight" or "d": 'Right';
+          }
+          model.gameState === 'Playing'
+            ? {
+              model: modifyFields(model, {
+                nextDirection: () => nextDirection,
+              }),
             }
-          },
-        ),
-        Match.when(' ', () => {
-          const nextGameState = Match.value(model.gameState).pipe(
-            Match.withReturnType<GameState>(),
-            Match.when('NotStarted', () => 'Playing'),
-            Match.when('Playing', () => 'Paused'),
-            Match.when('Paused', () => 'Playing'),
-            Match.when('GameOver', () => 'GameOver'),
-            Match.exhaustive,
-          )
-          return {
-            model: modifyFields(model, {
-              gameState: () => nextGameState,
-            }),
-          }
-        }),
-        Match.when('r', () => {
-          const nextSnake = Snake.create(GAME.INITIAL_POSITION)
-
-          return {
-            model: modifyFields(model, {
-              snake: () => nextSnake,
-              direction: () => GAME.INITIAL_DIRECTION,
-              nextDirection: () => GAME.INITIAL_DIRECTION,
-              gameState: () => 'NotStarted',
-              points: () => 0,
-            }),
-            commands: [GenerateApplePosition({ snake: nextSnake })],
-          }
-        }),
-        Match.orElse(() => ({ model })),
-      ),
+            : { model }
+        };
+      when " ": do {
+        const nextGameState: GameState = match (model.gameState) {
+          when "NotStarted": 'Playing';
+          when "Playing": 'Paused';
+          when "Paused": 'Playing';
+          when "GameOver": 'GameOver';
+        }
+        ;({ model: modifyFields(model, { gameState: () => nextGameState }) })
+      };
+      when "r": do {
+        const nextSnake = Snake.create(GAME.INITIAL_POSITION)
+        ;({
+          model: modifyFields(model, {
+            snake: () => nextSnake,
+            direction: () => GAME.INITIAL_DIRECTION,
+            nextDirection: () => GAME.INITIAL_DIRECTION,
+            gameState: () => 'NotStarted',
+            points: () => 0,
+          }),
+          commands: [GenerateApplePosition({ snake: nextSnake })],
+        })
+      };
+      default: ({ model });
+    },
 
     TickedClock: () => {
       if (model.gameState !== 'Playing') {
@@ -145,9 +108,9 @@ export const update = (model: Model, message: Message) =>
       }
 
       const currentDirection = Direction.isOpposite(
-        model.direction,
-        model.nextDirection,
-      )
+          model.direction,
+          model.nextDirection,
+        )
         ? model.direction
         : model.nextDirection
 
@@ -184,8 +147,7 @@ export const update = (model: Model, message: Message) =>
 
     PausedGame: () => ({
       model: modifyFields(model, {
-        gameState: gameState =>
-          gameState === 'Playing' ? 'Paused' : 'Playing',
+        gameState: gameState => gameState === 'Playing' ? 'Paused' : 'Playing',
       }),
     }),
 
@@ -217,12 +179,13 @@ export const update = (model: Model, message: Message) =>
 export const GenerateApplePosition = Command.define('GenerateApplePosition', {
   args: { snake: Snake.Snake },
   messages: [Message.CompletedGenerateApplePosition],
-  execute: ({ snake }) =>
-    Apple.generatePosition(snake).pipe(
-      Effect.map(position =>
-        Message.CompletedGenerateApplePosition({ position }),
-      ),
-    ),
+  execute: (
+    { snake },
+  ): ReturnType<typeof Message.CompletedGenerateApplePosition>!! =>
+    effect {
+      const position = try Apple.generatePosition(snake)
+      return Message.CompletedGenerateApplePosition({ position })
+    },
 })
 
 // SUBSCRIPTION
@@ -243,18 +206,19 @@ export const subscriptions = Subscription.make<Model, Message>()(entry => ({
       }),
       dependenciesToStream: ({ isPlaying, interval }) =>
         Stream.when(
-          Stream.tick(Duration.millis(interval)).pipe(
-            Stream.drop(1),
-            Stream.map(Message.TickedClock),
+          Stream.tick(Duration.millis(interval)).drop(1).map(
+            Message.TickedClock,
           ),
-          Effect.sync(() => isPlaying),
+          effect {
+            return isPlaying
+          },
         ),
     },
   ),
 
   keyboard: Subscription.persistentEntry(
     Dom.streamFromEventFilterMapPreventDefault({
-      target: document,
+      target: getKeyboardTarget(),
       type: 'keydown',
       filterMapEvent: keyboardEvent =>
         Option.some(Message.PressedKey({ key: keyboardEvent.key })),
@@ -268,40 +232,38 @@ const cellClass = (x: number, y: number, model: Model): string => {
   const isSnakeHead = Position.equivalence({ x, y }, model.snake[0])
   const isSnakeTail = pipe(
     model.snake,
-    Array.tailNonEmpty,
-    Array.some(segment => Position.equivalence({ x, y }, segment)),
+    Arr.tailNonEmpty,
+    Arr.some(segment => Position.equivalence({ x, y }, segment)),
   )
   const isApple = Position.equivalence({ x, y }, model.apple)
 
-  return Match.value({ isSnakeHead, isSnakeTail, isApple }).pipe(
-    Match.when({ isSnakeHead: true }, () => 'bg-green-700'),
-    Match.when({ isSnakeTail: true }, () => 'bg-green-500'),
-    Match.when({ isApple: true }, () => 'bg-red-500'),
-    Match.orElse(() => 'bg-gray-800'),
-  )
+  return match ({ isSnakeHead, isSnakeTail, isApple }) {
+    when { isSnakeHead: true }: 'bg-green-700';
+    when { isSnakeTail: true }: 'bg-green-500';
+    when { isApple: true }: 'bg-red-500';
+    default: 'bg-gray-800';
+  }
 }
 
 const gridView = (model: Model, h: HtmlBuilder<Message>): Html =>
   h.div(
     [h.Class('inline-block border-2 border-gray-600')],
-    Array.makeBy(GAME.GRID_SIZE, y =>
+    Arr.makeBy(GAME.GRID_SIZE, y =>
       h.div(
         [h.Class('flex')],
-        Array.makeBy(GAME.GRID_SIZE, x =>
-          h.div([h.Class(`w-6 h-6 ${cellClass(x, y, model)}`)]),
+        Arr.makeBy(
+          GAME.GRID_SIZE,
+          x => h.div([h.Class(`w-6 h-6 ${cellClass(x, y, model)}`)]),
         ),
-      ),
-    ),
+      )),
   )
 
-const gameStateView = (gameState: GameState): string =>
-  Match.value(gameState).pipe(
-    Match.when('NotStarted', () => 'Press SPACE to start'),
-    Match.when('Playing', () => 'Playing - SPACE to pause'),
-    Match.when('Paused', () => 'Paused - SPACE to continue'),
-    Match.when('GameOver', () => 'Game Over - Press R to restart'),
-    Match.exhaustive,
-  )
+const gameStateView = (gameState: GameState): string => match (gameState) {
+  when 'NotStarted': 'Press SPACE to start';
+  when 'Playing': 'Playing - SPACE to pause';
+  when 'Paused': 'Paused - SPACE to continue';
+  when 'GameOver': 'Game Over - Press R to restart';
+}
 
 const instructionsView = (h: HtmlBuilder<Message>): Html =>
   h.div(

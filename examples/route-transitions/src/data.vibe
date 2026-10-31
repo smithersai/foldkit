@@ -1,12 +1,11 @@
-import { Array, Option, Schema, pipe } from 'effect'
+import { Array as Arr } from 'effect'
 
-export const Painting = Schema.Struct({
-  id: Schema.Number,
-  title: Schema.String,
-  artist: Schema.String,
-  gradient: Schema.String,
-})
-export type Painting = typeof Painting.Type
+export schema Painting {
+  id: number
+  title: string
+  artist: string
+  gradient: string
+}
 
 export const paintings: ReadonlyArray<Painting> = [
   {
@@ -49,13 +48,11 @@ export const paintings: ReadonlyArray<Painting> = [
 
 export const findPaintingWithIndex = (
   paintingId: number,
-): Option.Option<Readonly<{ painting: Painting; paintingIndex: number }>> =>
-  pipe(
-    Array.findFirstIndex(paintings, painting => painting.id === paintingId),
-    Option.flatMap(paintingIndex =>
-      Option.map(Array.get(paintings, paintingIndex), painting => ({
+): Option<Readonly<{ painting: Painting; paintingIndex: number }>> =>
+  Arr.findFirstIndex(paintings, painting => painting.id === paintingId)
+    .flatMap(paintingIndex =>
+      Option.map(Arr.get(paintings, paintingIndex), painting => ({
         painting,
         paintingIndex,
-      })),
-    ),
-  )
+      }))
+    )

@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "start": "node scripts/serve.ts",
-    "typecheck": "tsc --noEmit",
+    "start": "node --import vibelang/register scripts/serve.vibe",
+    "typecheck": "vibelang --noEmit",
     "test": "vitest run"
   },
   "dependencies": {
@@ -17,7 +17,8 @@
     "@foldkit/node": "workspace:*",
     "@foldkit/ui": "workspace:*",
     "effect": "4.1.0",
-    "foldkit": "workspace:*"
+    "foldkit": "workspace:*",
+    "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz"
   },
   "devDependencies": {
     "@foldkit/devtools": "workspace:*",

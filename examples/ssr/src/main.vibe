@@ -6,25 +6,24 @@ import { modifyFields } from 'foldkit/struct'
 
 import { Button } from '@foldkit/ui'
 
-import { COUNT_COOKIE } from './cookie'
+import { COUNT_COOKIE } from './cookie.vibe'
+import { writeCookie } from './cookiePlatform.ts'
 
 // MODEL
 
-export const Model = Schema.Struct({
-  count: Schema.Number,
-  renderedAt: Schema.String,
-  renderedOn: Schema.Literals(['Server', 'Client']),
-})
-export type Model = typeof Model.Type
+export schema Model {
+  count: number
+  renderedAt: string
+  renderedOn: 'Server' | 'Client'
+}
 
 // FLAGS
 
-export const Flags = Schema.Struct({
-  initialCount: Schema.Number,
-  renderedAt: Schema.String,
-  renderedOn: Schema.Literals(['Server', 'Client']),
-})
-export type Flags = typeof Flags.Type
+export schema Flags {
+  initialCount: number
+  renderedAt: string
+  renderedOn: 'Server' | 'Client'
+}
 
 // MESSAGE
 
@@ -38,7 +37,7 @@ export type Message = typeof Message.Type
 
 // UPDATE
 
-export const update = (model: Model, message: Message) =>
+export const update = (model: Model, message: Message): infer _ =>
   Message.match<Update.Return<Model, Message>>(message, {
     ClickedDecrement: () => {
       const nextCount = model.count - 1
@@ -64,13 +63,16 @@ const COUNT_COOKIE_MAX_AGE_SECONDS = 31536000
 export const PersistCount = Command.define('PersistCount', {
   args: { count: Schema.Number },
   messages: [Message.CompletedPersistCount],
-  execute: ({ count }) =>
-    Effect.try(() => {
-      document.cookie = `${COUNT_COOKIE}=${count}; path=/; max-age=${COUNT_COOKIE_MAX_AGE_SECONDS}`
-    }).pipe(
-      Effect.map(() => Message.CompletedPersistCount()),
-      Effect.catch(() => Effect.succeed(Message.CompletedPersistCount())),
-    ),
+  execute: ({ count }): ReturnType<typeof Message.CompletedPersistCount>!! =>
+    effect {
+      // Effect.try executes this callback as plain TypeScript.
+      Effect.try(() =>
+        writeCookie(
+          `${COUNT_COOKIE}=${count}; path=/; max-age=${COUNT_COOKIE_MAX_AGE_SECONDS}`,
+        )
+      ) catch () => undefined
+      return Message.CompletedPersistCount()
+    },
 })
 
 // INIT
@@ -130,8 +132,8 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => ({
       h.p(
         [h.Class('text-sm text-gray-500 max-w-md text-center')],
         [
-          'The count persists in a cookie. Reload the page and the server ' +
-            'renders your latest count into the HTML before any JavaScript runs.',
+          'The count persists in a cookie. Reload the page and the server '
+          + 'renders your latest count into the HTML before any JavaScript runs.',
         ],
       ),
       parseEquivalenceView(h),

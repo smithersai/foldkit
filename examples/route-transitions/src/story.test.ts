@@ -14,7 +14,7 @@ import {
   SaveDraft,
   init,
   update,
-} from './main'
+} from './main.ts'
 
 const urlOrThrow = (raw: string) =>
   Option.getOrThrowWith(
