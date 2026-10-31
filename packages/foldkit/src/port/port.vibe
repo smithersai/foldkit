@@ -1,6 +1,5 @@
-import { Context, Effect, Option, Queue, Schema, Stream } from 'effect'
-
-import { persistentEntry } from '../subscription/subscription.js'
+import { Context, Effect, Option, Schema, Stream } from 'effect'
+import { persistentEntry } from '../subscription/subscription.ts'
 
 /** Type-level brand for inbound Port values. */
 /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
@@ -134,20 +133,20 @@ export const __makeInboundChannel = (): __InboundChannel => {
 
   const deliver = (value: unknown): void => {
     if (subscribers.size > 0) {
-      subscribers.forEach(push => push(value))
+      subscribers.forEach((push): void => push(value))
     } else if (Option.isSome(maybeBacklog)) {
       maybeBacklog.value.push(value)
     }
   }
 
-  const attach = (push: (value: unknown) => void): (() => void) => {
+  const attach = (push: (value: unknown) => void): () => void => {
     subscribers.add(push)
     if (Option.isSome(maybeBacklog)) {
       const { value: backlog } = maybeBacklog
       maybeBacklog = Option.none()
       backlog.forEach(push)
     }
-    return () => {
+    return (): void => {
       subscribers.delete(push)
     }
   }
@@ -156,14 +155,14 @@ export const __makeInboundChannel = (): __InboundChannel => {
 }
 
 const notConfiguredMessage = (functionName: string): string =>
-  `[foldkit] ${functionName} was called, but this program has no ports config. ` +
-  'Declare Ports with Port.inbound and Port.outbound and pass the record to ' +
-  'makeApplication or makeElement via the ports field.'
+  `[foldkit] ${functionName} was called, but this program has no ports config. `
+  + 'Declare Ports with Port.inbound and Port.outbound and pass the record to '
+  + 'makeApplication or makeElement via the ports field.'
 
 const unknownPortMessage = (functionName: string): string =>
-  `[foldkit] ${functionName} was called with a Port that is not in this ` +
-  "program's ports config. Every Port the app uses must appear in the ports " +
-  'record passed to makeApplication or makeElement.'
+  `[foldkit] ${functionName} was called with a Port that is not in this `
+  + "program's ports config. Every Port the app uses must appear in the ports "
+  + 'record passed to makeApplication or makeElement.'
 
 /**
  * The decoded values arriving on an inbound Port, as a Stream. This is the
@@ -177,29 +176,28 @@ const unknownPortMessage = (functionName: string): string =>
 export const stream = <Value, Encoded>(
   port: Inbound<Value, Encoded>,
 ): Stream.Stream<Value> =>
-  Stream.unwrap(
-    Effect.gen(function* () {
-      const channels = yield* __CurrentPortChannels
-      if (!channels.isConfigured) {
-        return yield* Effect.die(new Error(notConfiguredMessage('Port.stream')))
-      }
-      const channel = yield* Option.match(channels.lookupInbound(port), {
-        onNone: () => Effect.die(new Error(unknownPortMessage('Port.stream'))),
-        onSome: Effect.succeed,
-      })
-      return Stream.callback<Value>(queue =>
-        Effect.acquireRelease(
-          Effect.sync(() =>
-            channel.attach(value => {
-              /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
-              Queue.offerUnsafe(queue, value as Value)
-            }),
-          ),
-          detach => Effect.sync(() => detach()),
-        ).pipe(Effect.flatMap(() => Effect.never)),
+  Stream.unwrap(effect {
+    const channels: __PortChannels = __CurrentPortChannels()
+    if (!channels.isConfigured) {
+      return try die(new Error(notConfiguredMessage('Port.stream')))
+    }
+    const channel = match (channels.lookupInbound(port)) {
+      when Option.None: die(new Error(unknownPortMessage('Port.stream')));
+      when Option.Some(let channel): channel;
+    }
+    return Stream.callback<Value>(effect (queue) => {
+      try Effect.acquireRelease(
+        Effect.sync(() =>
+          channel.attach((value): void => {
+            /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
+            Queue.offerUnsafe(queue, value as Value)
+          })
+        ),
+        detach => Effect.sync(detach),
       )
-    }),
-  )
+      return try Effect.never
+    })
+  })
 
 /**
  * Builds a Subscription entry that wraps every decoded value arriving on an
@@ -220,7 +218,7 @@ export const stream = <Value, Encoded>(
 export const subscriptionEntry = <Value, Encoded, Message>(
   port: Inbound<Value, Encoded>,
   toMessage: (value: Value) => Message,
-) => persistentEntry(Stream.map(stream(port), toMessage))
+): infer _ => persistentEntry(stream(port).map(toMessage))
 
 /**
  * Emits a value on an outbound Port. The value is encoded against the Port's
@@ -242,21 +240,24 @@ export const subscriptionEntry = <Value, Encoded, Message>(
  * When the program runs without an embed handle (started with `Runtime.run`),
  * emitting is a no-op.
  */
-export const emit = <Value, Encoded>(
+export const emit = effect <Value, Encoded>(
   port: Outbound<Value, Encoded>,
   value: Value,
-): Effect.Effect<void> =>
-  Effect.gen(function* () {
-    const channels = yield* __CurrentPortChannels
-    if (!channels.isConfigured) {
-      return yield* Effect.die(new Error(notConfiguredMessage('Port.emit')))
-    }
-    const deliver = yield* Option.match(channels.lookupOutbound(port), {
-      onNone: () => Effect.die(new Error(unknownPortMessage('Port.emit'))),
-      onSome: Effect.succeed,
-    })
-    const encodedValue = yield* Effect.orDie(
-      Schema.encodeEffect(port.schema)(value),
-    )
-    deliver(encodedValue)
-  })
+): void!! => {
+  const channels: __PortChannels = __CurrentPortChannels()
+  if (!channels.isConfigured) {
+    return try die(new Error(notConfiguredMessage('Port.emit')))
+  }
+  const deliver = match (channels.lookupOutbound(port)) {
+    when Option.None: die(new Error(unknownPortMessage('Port.emit')));
+    when Option.Some(let deliver): deliver;
+  }
+  const encodedValue = try Effect.orDie(
+    Schema.encodeEffect(port.schema)(value),
+  )
+  try sync(
+    (deliver, encodedValue) => deliver(encodedValue),
+    deliver,
+    encodedValue,
+  )
+}
