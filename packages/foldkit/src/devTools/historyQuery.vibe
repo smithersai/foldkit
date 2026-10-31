@@ -1,18 +1,13 @@
-import { Array, HashSet, Match, Option, Order, Record, pipe } from 'effect'
+import { Array, pipe } from "effect"
 
-import type { MessageTagCount } from './protocol.js'
-import { toInspectableValue } from './serialize.vibe'
-import {
-  type HistoryEntry,
-  INIT_INDEX,
-  type StoreState,
-  latestEntryIndex,
-} from './store.js'
-import { resolvePath, summarizeValue } from './summarize.js'
+import type { MessageTagCount } from "./protocol.ts"
+import { toInspectableValue } from "./serialize.vibe"
+import { type HistoryEntry, INIT_INDEX, latestEntryIndex, type StoreState } from "./store.ts"
+import { resolvePath, summarizeValue } from "./summarize.ts"
 
-const ROOT = 'root'
-const PATH_SEPARATOR = '.'
-const WILDCARD = '*'
+const ROOT = "root"
+const PATH_SEPARATOR = "."
+const WILDCARD = "*"
 
 /**
  * Test a diff path against a dot-string pattern. Segments compare pairwise
@@ -26,8 +21,7 @@ export const matchesPathPattern = (path: string, pattern: string): boolean =>
   pipe(
     Array.zip(path.split(PATH_SEPARATOR), pattern.split(PATH_SEPARATOR)),
     Array.every(
-      ([pathSegment, patternSegment]) =>
-        patternSegment === WILDCARD || patternSegment === pathSegment,
+      ([pathSegment, patternSegment]) => patternSegment === WILDCARD || patternSegment === pathSegment,
     ),
   )
 
@@ -44,7 +38,7 @@ export const matchesAnyPathPattern = (
  */
 export const findUnanchoredPattern = (
   patterns: ReadonlyArray<string>,
-): Option.Option<string> =>
+): Option<string> =>
   Array.findFirst(
     patterns,
     pattern =>
@@ -56,14 +50,11 @@ export const findUnanchoredPattern = (
 
 const entryMatchesPatterns = (
   entry: HistoryEntry,
-  maybePatterns: Option.Option<Array.NonEmptyReadonlyArray<string>>,
+  maybePatterns: Option<Array.NonEmptyReadonlyArray<string>>,
 ): boolean =>
   Option.match(maybePatterns, {
     onNone: () => true,
-    onSome: patterns =>
-      HashSet.some(entry.diff.changedPaths, path =>
-        matchesAnyPathPattern(path, patterns),
-      ),
+    onSome: patterns => HashSet.some(entry.diff.changedPaths, path => matchesAnyPathPattern(path, patterns)),
   })
 
 /** A retained history entry paired with its absolute history index. */
@@ -81,8 +72,8 @@ export type IndexedEntry = Readonly<{
  */
 export const collectMatchingEntries = (
   state: StoreState,
-  maybeSinceIndex: Option.Option<number>,
-  maybeChangedPathsMatch: Option.Option<ReadonlyArray<string>>,
+  maybeSinceIndex: Option<number>,
+  maybeChangedPathsMatch: Option<ReadonlyArray<string>>,
 ): ReadonlyArray<IndexedEntry> => {
   const maybePatterns = Option.filter(
     maybeChangedPathsMatch,
@@ -108,7 +99,7 @@ export const collectMatchingEntries = (
 /** One page of matching history entries plus the cursor for the next page. */
 export type MessagesPage = Readonly<{
   page: ReadonlyArray<IndexedEntry>
-  maybeNextIndex: Option.Option<number>
+  maybeNextIndex: Option<number>
 }>
 
 /**
@@ -125,18 +116,18 @@ export const pageMatchingEntries = (
 ): MessagesPage =>
   isFromEnd
     ? {
-        page: Array.takeRight(candidates, limit),
-        maybeNextIndex: Option.none(),
-      }
+      page: Array.takeRight(candidates, limit),
+      maybeNextIndex: Option.none(),
+    }
     : {
-        page: Array.take(candidates, limit),
-        maybeNextIndex: Option.map(
-          Array.get(candidates, limit),
-          ({ index }) => index,
-        ),
-      }
+      page: Array.take(candidates, limit),
+      maybeNextIndex: Option.map(
+        Array.get(candidates, limit),
+        ({ index }) => index,
+      ),
+    }
 
-const tagCountOrder: Order.Order<MessageTagCount> = Order.combine(
+const tagCountOrder: Order<MessageTagCount> = Order.combine(
   Order.mapInput(Order.flip(Order.Number), ({ count }) => count),
   Order.mapInput(Order.String, ({ tag }) => tag),
 )
@@ -162,8 +153,7 @@ export const countEntriesByTag = (
  * the index one before the oldest retained entry is still readable even
  * though its entry was evicted.
  */
-export const oldestReadableIndex = (state: StoreState): number =>
-  Math.max(0, state.startIndex - 1)
+export const oldestReadableIndex = (state: StoreState): number => Math.max(0, state.startIndex - 1)
 
 /**
  * Whether `getModelAtIndex` can answer for this index: `INIT_INDEX` once the
@@ -186,17 +176,17 @@ export const formatIndexNotReadable = (
   index: number,
 ): string => {
   const latest = latestEntryIndex(state)
-  const initRange = Option.isSome(state.maybeInitModel) ? ['-1 (init)'] : []
-  const entryRange =
-    latest >= state.startIndex
-      ? [`${oldestReadableIndex(state)} to ${latest}`]
-      : []
+  const initRange = Option.isSome(state.maybeInitModel) ? ["-1 (init)"] : []
+  const entryRange = latest >= state.startIndex
+    ? [`${oldestReadableIndex(state)} to ${latest}`]
+    : []
   const ranges = [...initRange, ...entryRange]
   return Array.match(ranges, {
-    onEmpty: () =>
-      `No Model at index ${index}: the runtime has not recorded init yet.`,
+    onEmpty: () => `No Model at index ${index}: the runtime has not recorded init yet.`,
     onNonEmpty: nonEmptyRanges =>
-      `No Model at index ${index}. Readable indices: ${nonEmptyRanges.join(' and ')}. Indices outside this range were either evicted from the rolling history buffer or have not been recorded yet.`,
+      `No Model at index ${index}. Readable indices: ${
+        nonEmptyRanges.join(" and ")
+      }. Indices outside this range were either evicted from the rolling history buffer or have not been recorded yet.`,
   })
 }
 
@@ -207,7 +197,7 @@ const isArrayIndexSegment = (segment: string): boolean => /^\d+$/.test(segment)
  * segments compare as numbers so `root.items.2` sorts before
  * `root.items.10`, and a path that is a prefix of another sorts first.
  */
-export const pathOrder: Order.Order<string> = Order.make((self, that) => {
+export const pathOrder: Order<string> = Order.make((self, that) => {
   const selfSegments = self.split(PATH_SEPARATOR)
   const thatSegments = that.split(PATH_SEPARATOR)
   const maybeFirstDifference = pipe(
@@ -234,8 +224,7 @@ export const pathOrder: Order.Order<string> = Order.make((self, that) => {
 export const readSummarizedValueAt = (
   model: unknown,
   path: string,
-): Option.Option<unknown> =>
-  Match.value(resolvePath(toInspectableValue(model), path)).pipe(
-    Match.tag('Found', ({ value }) => Option.some(summarizeValue(value))),
-    Match.orElse(() => Option.none()),
-  )
+): Option<unknown> => match (resolvePath(toInspectableValue(model), path)) {
+  when { _tag: 'Found', let value }: Option.some(summarizeValue(value));
+  default: Option.none();
+}

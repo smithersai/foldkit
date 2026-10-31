@@ -24,7 +24,7 @@ import {
   pageMatchingEntries,
   pathOrder,
   readSummarizedValueAt,
-} from './historyQuery.js'
+} from './historyQuery.vibe'
 import {
   DiffValue,
   Event,
