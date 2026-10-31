@@ -1,9 +1,10 @@
 import { taggedStruct } from '../schema/index.ts'
 
 /** A 2D point in canvas-local coordinates. */
-export const Point = Schema.Struct({ x: Schema.Number, y: Schema.Number })
-/** A 2D point in canvas-local coordinates. */
-export type Point = typeof Point.Type
+export schema Point {
+  x: number
+  y: number
+}
 
 /** Move the path cursor to a point without drawing. */
 export const MoveTo = taggedStruct('MoveTo', {

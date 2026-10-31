@@ -224,12 +224,10 @@ export const RequestFrame = Schema.Struct({
 export type RequestFrame = typeof RequestFrame.Type
 
 /** A wire frame carrying a Response, correlated to a Request by id. */
-export const ResponseFrame = Schema.Struct({
-  id: Schema.String,
-  response: Response,
-})
-/** A wire frame carrying a Response, correlated to a Request by id. */
-export type ResponseFrame = typeof ResponseFrame.Type
+export schema ResponseFrame {
+  id: string
+  response: Response
+}
 
 /** A wire frame carrying a runtime lifecycle event from the bridge to the Vite plugin. */
 export const EventFrame = Schema.Struct({

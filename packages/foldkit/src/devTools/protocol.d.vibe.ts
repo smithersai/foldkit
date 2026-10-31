@@ -547,7 +547,6 @@ export declare const ResponseFrame: Schema.Struct<{
         };
     }>;
 }>;
-/** A wire frame carrying a Response, correlated to a Request by id. */
 export type ResponseFrame = typeof ResponseFrame.Type;
 /** A wire frame carrying a runtime lifecycle event from the bridge to the Vite plugin. */
 export declare const EventFrame: Schema.Struct<{

@@ -4,7 +4,6 @@ export declare const Point: Schema.Struct<{
     readonly x: Schema.Number;
     readonly y: Schema.Number;
 }>;
-/** A 2D point in canvas-local coordinates. */
 export type Point = typeof Point.Type;
 /** Move the path cursor to a point without drawing. */
 export declare const MoveTo: import("../schema/index.js").CallableTaggedStruct<"MoveTo", {
