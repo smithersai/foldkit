@@ -1,27 +1,20 @@
-import { Predicate } from 'effect'
-
-import {
-  type KeyedQuery,
-  type KeyedQueryConfig,
-  type SyncFields,
-  defineKeyedQuery,
-} from './keyedQuery.js'
-import { type Query, type QueryConfig, defineQuery } from './query.js'
+import { defineKeyedQuery, type KeyedQuery, type KeyedQueryConfig, type SyncFields } from "./keyedQuery.ts"
+import { defineQuery, type Query, type QueryConfig } from "./query.ts"
 
 type DefineConfig =
   | (QueryConfig<string, unknown, unknown, unknown, unknown, any> & {
-      readonly args?: never
-      readonly toKey?: never
-    })
+    readonly args?: never
+    readonly toKey?: never
+  })
   | KeyedQueryConfig<
-      string,
-      unknown,
-      unknown,
-      unknown,
-      unknown,
-      SyncFields,
-      any
-    >
+    string,
+    unknown,
+    unknown,
+    unknown,
+    unknown,
+    SyncFields,
+    any
+  >
 
 const isKeyedQueryConfig = (
   config: DefineConfig,
@@ -33,7 +26,7 @@ const isKeyedQueryConfig = (
   unknown,
   SyncFields,
   any
-> => Predicate.hasProperty(config, 'args')
+> => Predicate.hasProperty(config, "args")
 
 /**
  * Defines a Submodel that fetches data and retains it in the application
