@@ -63,7 +63,7 @@ import {
   measureSlowPhase,
   reportSlowPhase,
 } from './slowPhase.js'
-import { forkSubscriptionFibers } from './subscriptionFibers.js'
+import { forkSubscriptionFibers } from './subscriptionFibers.vibe'
 import {
   type ViewTransitionConfig,
   __resolveStartViewTransition,

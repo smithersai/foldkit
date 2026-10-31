@@ -1,23 +1,23 @@
-import { Array, Option, Schema } from "effect";
-import { type Rule, type RuleMessage } from "./rule.vibe";
+import { Array, Option, Schema } from 'effect';
+import { type Rule, type RuleMessage } from './rule.vibe';
 /** The `NotValidated` state: user hasn't interacted yet. */
 export type NotValidated<A> = Readonly<{
-    _tag: "NotValidated";
+    _tag: 'NotValidated';
     value: A;
 }>;
 /** The `Validating` state: async validation is in flight. */
 export type Validating<A> = Readonly<{
-    _tag: "Validating";
+    _tag: 'Validating';
     value: A;
 }>;
 /** The `Valid` state: every rule passed. */
 export type Valid<A> = Readonly<{
-    _tag: "Valid";
+    _tag: 'Valid';
     value: A;
 }>;
 /** The `Invalid` state: one or more rules failed. Carries a non-empty `errors` array. */
 export type Invalid<A> = Readonly<{
-    _tag: "Invalid";
+    _tag: 'Invalid';
     value: A;
     errors: Array.NonEmptyReadonlyArray<string>;
 }>;

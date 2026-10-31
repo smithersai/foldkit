@@ -1,0 +1,138 @@
+import type { Subscriptions } from '../subscription/subscription.ts'
+import {
+  type ResolvedSlowPhaseConfig,
+  type SlowSubscriptionDependenciesContext,
+  reportSlowPhase,
+} from './slowPhase.ts'
+
+/**
+ * Forks one fiber per Subscription into the runtime scope. Each fiber
+ * derives the Subscription's dependencies from every Model, restarts its
+ * stream when they change under its equivalence, and feeds the Messages
+ * the stream emits into the queue. A defect anywhere in that pipeline
+ * crashes the runtime instead of dying silently in the fiber.
+ */
+export const forkSubscriptionFibers = effect <Model, Message, Services>({
+  subscriptions,
+  initModel,
+  modelPubSub,
+  runtimeScope,
+  maybeSlowSubscriptionDependencies,
+  enqueueMessageEffect,
+  provideAllResources,
+  crashWith,
+}: Readonly<{
+  subscriptions: Subscriptions<Model, Message, Services>
+  initModel: Model
+  modelPubSub: PubSub<Model>
+  runtimeScope: Scope
+  maybeSlowSubscriptionDependencies: Option<
+    ResolvedSlowPhaseConfig<SlowSubscriptionDependenciesContext<Model>>
+  >
+  enqueueMessageEffect: (message: Message) => void!!
+  provideAllResources: <A>(
+    effect: A!never!Services,
+  ) => A!!
+  crashWith: (
+    cause: Cause<never>,
+    maybeMessage: Option<Message>,
+  ) => void!!
+}>): void!! => {
+  for concurrent (
+    const [
+      key,
+      {
+        dependenciesSchema,
+        modelToDependencies,
+        keepAliveEquivalence,
+        dependenciesToStream,
+      },
+    ] of Record.toEntries(subscriptions)
+  ) {
+    const equivalence = keepAliveEquivalence
+      ?? Schema.toEquivalence(dependenciesSchema)
+
+    const measureDependencies = effect (
+      model: Model,
+    ): readonly [ReturnType<typeof modelToDependencies>, Option<number>]!! => {
+      const start = Option.isSome(maybeSlowSubscriptionDependencies)
+        ? try Clock.monotonicTimeNanos
+        : undefined
+      const dependencies = try Effect.sync(() => modelToDependencies(model))
+      const duration = start === undefined
+        ? Option.none()
+        : Option.some(
+          Number((try Clock.monotonicTimeNanos) - start) / 1_000_000,
+        )
+      return [dependencies, duration]
+    }
+
+    const reportDependencies = effect (
+      model: Model,
+      duration: Option<number>,
+    ): void!! => {
+      try Effect.sync(() =>
+        reportSlowPhase<SlowSubscriptionDependenciesContext<Model>>(
+          maybeSlowSubscriptionDependencies,
+          duration,
+          (durationMs, thresholdMs) => ({
+            _tag: 'SubscriptionDependencies',
+            subscriptionKey: key,
+            model,
+            durationMs,
+            thresholdMs,
+          }),
+        )
+      )
+    }
+
+    const [initDependencies, maybeInitDependenciesDuration] =
+      try measureDependencies(initModel)
+    try reportDependencies(initModel, maybeInitDependenciesDuration)
+
+    const latestDependenciesRef = try Ref.make(initDependencies)
+    const modelSubscription = try effect {
+      provide Scope.Scope = runtimeScope {
+        return try PubSub.subscribe(modelPubSub)
+      }
+    }
+
+    // NOTE: Ref.set runs upstream of changesWith so the dependency reader
+    // observes each Model even when equivalence suppresses a stream emission.
+    const modelChangesStream = Stream.fromSubscription(modelSubscription)
+      .mapEffect(effect (model) => {
+        const [dependencies, maybeDependenciesDuration] =
+          try measureDependencies(model)
+        try reportDependencies(model, maybeDependenciesDuration)
+        try Ref.set(latestDependenciesRef, dependencies)
+        return dependencies
+      })
+
+    const consume: void!never!Services = Stream.concat(
+      Stream.make(initDependencies),
+      modelChangesStream,
+    )
+      .changesWith(equivalence)
+      .switchMap(dependencies =>
+        dependenciesToStream(
+          dependencies,
+          (): ReturnType<typeof modelToDependencies> =>
+            Ref.getUnsafe(latestDependenciesRef),
+        )
+      )
+      .runForEach(effect (message) => {
+        /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
+        try enqueueMessageEffect(message as Message)
+      })
+
+    const runSubscription = effect (): void!! => {
+      try Effect.catchCause(
+        provideAllResources(consume),
+        effect (cause) => {
+          try crashWith(cause, Option.none())
+        },
+      )
+    }
+    try forkIn(runtimeScope, () => runSubscription())
+  }
+}

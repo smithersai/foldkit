@@ -1,18 +1,24 @@
-import { Array as Arr, String as Str, flow, pipe } from 'effect'
+import {
+  Array as EffectArray,
+  String as EffectString,
+  flow,
+  pipe,
+} from 'effect'
 
 import type { MessageSchemaIndexEntry } from './protocol.vibe'
 
 const PATH_SEPARATOR = '.'
 
 const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
-  Predicate.isObject(value) && !Arr.isArray(value)
+  Predicate.isObject(value) && !EffectArray.isArray(value)
 
 const isReadonlyArray = (value: unknown): value is ReadonlyArray<unknown> =>
-  Arr.isArray(value)
+  EffectArray.isArray(value)
 
 const isStringArray = (
   values: ReadonlyArray<unknown>,
-): values is ReadonlyArray<string> => Arr.every(values, Predicate.isString)
+): values is ReadonlyArray<string> =>
+  EffectArray.every(values, Predicate.isString)
 
 const stringEnumOf = (
   schema: unknown,
@@ -21,7 +27,7 @@ const stringEnumOf = (
     return Option.none()
   }
   const candidate = schema['enum']
-  if (!Arr.isArray(candidate)) {
+  if (!EffectArray.isArray(candidate)) {
     return Option.none()
   }
   return Option.liftPredicate(candidate, isStringArray)
@@ -36,7 +42,7 @@ const variantTagOf = (schema: unknown): Option<string> => {
     return Option.none()
   }
   return stringEnumOf(properties['_tag'])
-    .flatMap(tags => tags.length === 1 ? Arr.head(tags) : Option.none())
+    .flatMap(tags => tags.length === 1 ? EffectArray.head(tags) : Option.none())
 }
 
 const anyOfOf = (schema: unknown): Option<ReadonlyArray<unknown>> => {
@@ -50,8 +56,8 @@ const isDiscriminatedUnion = (schema: unknown): boolean =>
   Option.exists(
     anyOfOf(schema),
     Predicate.and(
-      Arr.isReadonlyArrayNonEmpty,
-      Arr.every(flow(variantTagOf, Option.isSome)),
+      EffectArray.isReadonlyArrayNonEmpty,
+      EffectArray.every(flow(variantTagOf, Option.isSome)),
     ),
   )
 
@@ -65,7 +71,7 @@ const payloadFieldsOf = (variant: unknown): ReadonlyArray<string> => {
   }
   return pipe(
     Record.keys(properties),
-    Arr.filter(name => name !== '_tag'),
+    EffectArray.filter(name => name !== '_tag'),
   )
 }
 
@@ -79,10 +85,10 @@ const unionFieldsOf = (variant: unknown): ReadonlyArray<string> => {
   }
   return pipe(
     Record.toEntries(properties),
-    Arr.filter(
+    EffectArray.filter(
       ([name, schema]) => name !== '_tag' && isDiscriminatedUnion(schema),
     ),
-    Arr.map(([name]) => name),
+    EffectArray.map(([name]) => name),
   )
 }
 
@@ -106,7 +112,7 @@ const topLevelVariantsOf = (
 const indexEntriesOf = (
   members: ReadonlyArray<unknown>,
 ): ReadonlyArray<MessageSchemaIndexEntry> =>
-  pipe(members, Arr.map(entryOf), Arr.getSomes)
+  pipe(members, EffectArray.map(entryOf), EffectArray.getSomes)
 
 /**
  * Build a flat directory of every top-level Message variant from a JSON Schema
@@ -126,8 +132,8 @@ export const indexMessageSchemaDocument = (
   Option.map(topLevelVariantsOf(document), indexEntriesOf)
 
 const collapseUnionsInValue = (value: unknown): unknown => {
-  if (Arr.isArray(value)) {
-    return Arr.map(value, collapseUnionsInValue)
+  if (EffectArray.isArray(value)) {
+    return EffectArray.map(value, collapseUnionsInValue)
   }
   if (!isRecord(value)) {
     return value
@@ -163,7 +169,7 @@ const findVariantByTag = (
   members: ReadonlyArray<unknown>,
   tag: string,
 ): Option<unknown> =>
-  Arr.findFirst(
+  EffectArray.findFirst(
     members,
     variant =>
       Option.exists(variantTagOf(variant), candidate => candidate === tag),
@@ -193,14 +199,14 @@ const singleUnionFieldOf = (
   }
   const unionEntries = pipe(
     Record.toEntries(properties),
-    Arr.filter(
+    EffectArray.filter(
       ([name, schema]) => name !== '_tag' && isDiscriminatedUnion(schema),
     ),
   )
   if (unionEntries.length !== 1) {
     return Option.none()
   }
-  return Arr.head(unionEntries).flatMap(([name, schema]) =>
+  return EffectArray.head(unionEntries).flatMap(([name, schema]) =>
     anyOfOf(schema).map(members => ({ name, members }))
   )
 }
@@ -238,10 +244,10 @@ const narrowAtPath = (
   members: ReadonlyArray<unknown>,
   segments: ReadonlyArray<string>,
 ): Option<unknown> =>
-  Arr.head(segments).flatMap(tag =>
+  EffectArray.head(segments).flatMap(tag =>
     findVariantByTag(members, tag).flatMap(variant => {
-      const rest = Arr.drop(segments, 1)
-      if (Arr.isReadonlyArrayEmpty(rest)) {
+      const rest = EffectArray.drop(segments, 1)
+      if (EffectArray.isReadonlyArrayEmpty(rest)) {
         return Option.some(collapseUnionsInVariantPayload(variant))
       }
       return stepIntoVariant(variant, rest)
@@ -256,8 +262,8 @@ const narrowAtPath = (
 export const splitVariantPath = (variantPath: string): ReadonlyArray<string> =>
   pipe(
     variantPath,
-    Str.split(PATH_SEPARATOR),
-    Arr.filter(Str.isNonEmpty),
+    EffectString.split(PATH_SEPARATOR),
+    EffectArray.filter(EffectString.isNonEmpty),
   )
 
 const stepToNextUnionMembers = (
@@ -273,7 +279,7 @@ const variantsAtPathPrefix = (
   segments: ReadonlyArray<string>,
 ): Option<ReadonlyArray<unknown>> =>
   Option.flatMap(topLevelVariantsOf(document), topMembers =>
-    Arr.reduce(
+    EffectArray.reduce(
       segments,
       Option.some(topMembers),
       (
@@ -301,7 +307,7 @@ export const variantTagsAtPathPrefix = (
 ): Option<ReadonlyArray<string>> =>
   Option.map(
     variantsAtPathPrefix(document, pathPrefix),
-    members => Arr.map(indexEntriesOf(members), entry => entry.tag),
+    members => EffectArray.map(indexEntriesOf(members), entry => entry.tag),
   )
 
 /**
@@ -333,13 +339,13 @@ export const diagnoseVariantPath = (
     if (length < 0) {
       return Option.none()
     }
-    const prefix = Arr.take(segments, length)
+    const prefix = EffectArray.take(segments, length)
     return Option.match(variantTagsAtPathPrefix(document, prefix), {
       onNone: () => tryLength(length - 1),
       onSome: available =>
         Option.some({
           prefix,
-          failingSegment: Arr.get(segments, length),
+          failingSegment: EffectArray.get(segments, length),
           available,
         }),
     })
@@ -386,7 +392,7 @@ export const narrowToVariant = (
     return Option.none()
   }
   const segments = splitVariantPath(variantPath)
-  if (Arr.isReadonlyArrayEmpty(segments)) {
+  if (EffectArray.isReadonlyArrayEmpty(segments)) {
     return Option.none()
   }
   return topLevelVariantsOf(document).flatMap(members =>

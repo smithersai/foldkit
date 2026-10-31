@@ -1,4 +1,4 @@
-import { Array as Arr } from 'effect'
+import { Array as EffectArray } from 'effect'
 
 import { OptionExt } from '../effectExtensions/index.ts'
 import { defineTaggedUnion } from '../schema/index.ts'
@@ -31,8 +31,8 @@ export type PathResolution = typeof PathResolution.Type
 const isExpandable = Predicate.isObjectOrArray
 
 const keysOf = (value: unknown): ReadonlyArray<string> => {
-  if (Array.isArray(value)) {
-    return Arr.makeBy(value.length, index => index.toString())
+  if (globalThis.Array.isArray(value)) {
+    return EffectArray.makeBy(value.length, index => index.toString())
   }
   if (Predicate.isObject(value)) {
     return Record.keys(value)
@@ -47,9 +47,9 @@ const isRootAnchored = (path: string): boolean =>
   path === ROOT || path.startsWith(`${ROOT}${PATH_SEPARATOR}`)
 
 const descend = (parent: unknown, segment: string): Option<unknown> => {
-  if (Array.isArray(parent)) {
+  if (globalThis.Array.isArray(parent)) {
     return Option.liftPredicate(Number(segment), Number.isInteger).flatMap(
-      index => Arr.get(parent, index),
+      index => EffectArray.get(parent, index),
     )
   }
   if (Predicate.isObject(parent)) {
@@ -74,7 +74,7 @@ export const resolvePath = (root: unknown, path: string): PathResolution => {
     atPath: ROOT,
   })
 
-  return Arr.reduce(
+  return EffectArray.reduce(
     segmentsOf(path),
     initial,
     (resolution, segment): PathResolution => {
@@ -116,10 +116,10 @@ const sampleArray = (
   const sample = items.length <= ARRAY_SAMPLE
     ? items
     : [
-      ...Arr.take(items, ARRAY_SAMPLE - 1),
-      ...Option.toArray(Arr.last(items)),
+      ...EffectArray.take(items, ARRAY_SAMPLE - 1),
+      ...Option.toArray(EffectArray.last(items)),
     ]
-  return Arr.map(sample, item => summarizeAt(item, depth + 1))
+  return EffectArray.map(sample, item => summarizeAt(item, depth + 1))
 }
 
 const summarizeArray = (
@@ -148,7 +148,7 @@ const summarizeAt = (value: unknown, depth: number): unknown => {
   if (Predicate.isString(value)) {
     return truncateString(value)
   }
-  if (Array.isArray(value)) {
+  if (globalThis.Array.isArray(value)) {
     return summarizeArray(value, depth)
   }
   if (Predicate.isObject(value)) {
@@ -175,7 +175,7 @@ const formatAvailableKeys = (
   keys: ReadonlyArray<string>,
 ): Option<string> =>
   OptionExt.when(
-    Arr.isReadonlyArrayNonEmpty(keys),
+    EffectArray.isReadonlyArrayNonEmpty(keys),
     `Available keys: ${keys.join(', ')}.`,
   )
 

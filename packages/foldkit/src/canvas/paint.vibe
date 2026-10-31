@@ -1,4 +1,4 @@
-import { Array as Arr } from 'effect'
+import { Array as EffectArray } from 'effect'
 
 import type {
   Circle,
@@ -92,7 +92,7 @@ const applyPathInstruction =
 const paintPath =
   (ctx: CanvasRenderingContext2D): infer _ => (path: Path): void => {
     ctx.beginPath()
-    Arr.forEach(path.instructions, applyPathInstruction(ctx))
+    EffectArray.forEach(path.instructions, applyPathInstruction(ctx))
     if (path.fill !== undefined) {
       ctx.fillStyle = path.fill
       ctx.fill()
@@ -150,7 +150,7 @@ const paintGroup =
     if (group.scale !== undefined) {
       ctx.scale(group.scale.x, group.scale.y)
     }
-    Arr.forEach(group.shapes, paintShape(ctx))
+    EffectArray.forEach(group.shapes, paintShape(ctx))
   }
 
 /**
@@ -183,5 +183,5 @@ export const paintScene = (
   shapes: ReadonlyArray<Shape>,
 ): void => {
   ctx.clearRect(0, 0, width, height)
-  Arr.forEach(shapes, paintShape(ctx))
+  EffectArray.forEach(shapes, paintShape(ctx))
 }

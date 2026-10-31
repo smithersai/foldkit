@@ -1,4 +1,4 @@
-import { type Duration, Effect, type Scope } from "effect";
+import { type Duration, Effect, type Scope } from 'effect';
 /**
  * Defers a `preserve(model)` call so that bursts of dispatches do not pay the
  * encoding cost on the hot path. `schedule` stashes the latest model and

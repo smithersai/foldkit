@@ -34,6 +34,6 @@ export declare const summarizeValue: (value: unknown) => unknown;
 /** Formats a `NotFound` result for `ResponseError.reason`, including the keys
  * available where the lookup stopped. */
 export declare const formatPathNotFound: (notFound: Extract<PathResolution, {
-    _tag: "NotFound";
+    _tag: 'NotFound';
 }>) => string;
 export {};

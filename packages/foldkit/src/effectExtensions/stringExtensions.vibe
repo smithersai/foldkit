@@ -1,11 +1,11 @@
-import { String as Str, flow } from 'effect'
+import { String as EffectString, flow } from 'effect'
 
 import { fromString } from './optionExtensions.vibe'
 
 export const stripPrefix = (prefix: string): infer _ =>
   flow(
-    Option.liftPredicate(Str.startsWith(prefix)),
-    Option.map(Str.slice(prefix.length)),
+    Option.liftPredicate(EffectString.startsWith(prefix)),
+    Option.map(EffectString.slice(prefix.length)),
   )
 
 export const stripPrefixNonEmpty = (prefix: string): infer _ =>

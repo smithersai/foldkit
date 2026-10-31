@@ -1,7 +1,7 @@
 import {
+  Function as EffectFunction,
   Order as EffectOrder,
   type Equivalence as Equivalence_,
-  Function as Fn,
 } from 'effect'
 
 import type { CalendarDate } from './calendarDate.vibe'
@@ -51,7 +51,7 @@ export const Equivalence: Equivalence_.Equivalence<CalendarDate> = (a, b) =>
 export const isEqual: {
   (that: CalendarDate): (self: CalendarDate) => boolean
   (self: CalendarDate, that: CalendarDate): boolean
-} = Fn.dual(
+} = EffectFunction.dual(
   2,
   (self: CalendarDate, that: CalendarDate): boolean => Equivalence(self, that),
 )
@@ -71,7 +71,7 @@ export const isEqual: {
 export const isBefore: {
   (that: CalendarDate): (self: CalendarDate) => boolean
   (self: CalendarDate, that: CalendarDate): boolean
-} = Fn.dual(
+} = EffectFunction.dual(
   2,
   (self: CalendarDate, that: CalendarDate): boolean => Order(self, that) < 0,
 )
@@ -82,7 +82,7 @@ export const isBefore: {
 export const isAfter: {
   (that: CalendarDate): (self: CalendarDate) => boolean
   (self: CalendarDate, that: CalendarDate): boolean
-} = Fn.dual(
+} = EffectFunction.dual(
   2,
   (self: CalendarDate, that: CalendarDate): boolean => Order(self, that) > 0,
 )
@@ -93,7 +93,7 @@ export const isAfter: {
 export const isBeforeOrEqual: {
   (that: CalendarDate): (self: CalendarDate) => boolean
   (self: CalendarDate, that: CalendarDate): boolean
-} = Fn.dual(
+} = EffectFunction.dual(
   2,
   (self: CalendarDate, that: CalendarDate): boolean => Order(self, that) <= 0,
 )
@@ -104,7 +104,7 @@ export const isBeforeOrEqual: {
 export const isAfterOrEqual: {
   (that: CalendarDate): (self: CalendarDate) => boolean
   (self: CalendarDate, that: CalendarDate): boolean
-} = Fn.dual(
+} = EffectFunction.dual(
   2,
   (self: CalendarDate, that: CalendarDate): boolean => Order(self, that) >= 0,
 )
@@ -127,7 +127,7 @@ export const isAfterOrEqual: {
 export const min: {
   (that: CalendarDate): (self: CalendarDate) => CalendarDate
   (self: CalendarDate, that: CalendarDate): CalendarDate
-} = Fn.dual(
+} = EffectFunction.dual(
   2,
   (self: CalendarDate, that: CalendarDate): CalendarDate =>
     Order(self, that) <= 0 ? self : that,
@@ -139,7 +139,7 @@ export const min: {
 export const max: {
   (that: CalendarDate): (self: CalendarDate) => CalendarDate
   (self: CalendarDate, that: CalendarDate): CalendarDate
-} = Fn.dual(
+} = EffectFunction.dual(
   2,
   (self: CalendarDate, that: CalendarDate): CalendarDate =>
     Order(self, that) >= 0 ? self : that,
@@ -179,7 +179,7 @@ export const between: {
       readonly maximum: CalendarDate
     },
   ): boolean
-} = Fn.dual(
+} = EffectFunction.dual(
   2,
   (
     self: CalendarDate,
@@ -219,7 +219,7 @@ export const clamp: {
       readonly maximum: CalendarDate
     },
   ): CalendarDate
-} = Fn.dual(
+} = EffectFunction.dual(
   2,
   (
     self: CalendarDate,

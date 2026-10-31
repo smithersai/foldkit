@@ -72,10 +72,10 @@ export type MountDefinition<Name extends string = string, ResultMessage = any> =
 /** @internal Rejects an args field named `element`. `execute` receives the live
  *  element under that name, so an arg of the same name would shadow it. The
  *  literal is the type error a colliding declaration produces. */
-type ElementFieldIsReserved = "Mount args cannot declare `element`: execute already receives the live element";
+type ElementFieldIsReserved = 'Mount args cannot declare `element`: execute already receives the live element';
 /** @internal Rejects an args field named `viewStateChanges`. `execute`
  *  receives the runtime-owned Stream under that name. */
-type ViewStateChangesFieldIsReserved = "Mount args cannot declare `viewStateChanges`: execute already receives the view-state Stream";
+type ViewStateChangesFieldIsReserved = 'Mount args cannot declare `viewStateChanges`: execute already receives the view-state Stream';
 /** @internal Fields the runtime supplies to every Mount execution. */
 type ExecuteRuntimeInput = Readonly<{
     element: Element;

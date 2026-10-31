@@ -1,5 +1,5 @@
 import { Option } from "effect";
-import type { MessageSchemaIndexEntry } from "./protocol.vibe";
+import type { MessageSchemaIndexEntry } from './protocol.vibe';
 /**
  * Build a flat directory of every top-level Message variant from a JSON Schema
  * document produced by `Schema.toJsonSchemaDocument`. The directory is small

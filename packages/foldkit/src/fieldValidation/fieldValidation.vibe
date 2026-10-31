@@ -1,4 +1,8 @@
-import { Array, Function as Fn, String as Str } from 'effect'
+import {
+  Array,
+  Function as EffectFunction,
+  String as EffectString,
+} from 'effect'
 
 import { type Rule, type RuleMessage, resolveMessage } from './rule.vibe'
 
@@ -102,7 +106,7 @@ export type MakeRulesOptions<A> = Readonly<{
 
 const isEmptyValue = (value: unknown): boolean => {
   if (typeof value === 'string') {
-    return Str.isEmpty(value)
+    return EffectString.isEmpty(value)
   }
   if (Array.isArray(value)) {
     return Array.isReadonlyArrayEmpty(value)
@@ -165,7 +169,7 @@ export const match: {
       ) => F
     }>,
   ): B | C | D | F
-} = Fn.dual(
+} = EffectFunction.dual(
   2,
   <A, B>(
     self: Field<A>,

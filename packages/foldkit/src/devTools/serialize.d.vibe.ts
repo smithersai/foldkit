@@ -1,5 +1,5 @@
-import type { SerializedCommand, SerializedEntry, SerializedMount } from "./protocol.vibe";
-import type { CommandRecord, HistoryEntry, MountRecord } from "./store.js";
+import type { SerializedCommand, SerializedEntry, SerializedMount } from './protocol.vibe';
+import type { CommandRecord, HistoryEntry, MountRecord } from './store.js';
 /**
  * Convert Effect `Redacted` values to their labeled placeholder strings and
  * DOM-class instances (File, Blob, Date, URL) to plain-object

@@ -1,6 +1,6 @@
 import { Option, Order } from "effect";
-import type { MessageTagCount } from "./protocol.vibe";
-import { type HistoryEntry, type StoreState } from "./store.js";
+import type { MessageTagCount } from './protocol.vibe';
+import { type HistoryEntry, type StoreState } from './store.js';
 /**
  * Test a diff path against a dot-string pattern. Segments compare pairwise
  * for the length of the shorter list; `*` in the pattern matches any single

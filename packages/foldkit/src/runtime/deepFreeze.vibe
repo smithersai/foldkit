@@ -1,4 +1,4 @@
-import { Array as Arr, Option, Predicate, Record } from 'effect'
+import { Array as EffectArray, Option, Predicate, Record } from 'effect'
 
 /**
  * Recursively `Object.freeze`s a Model so accidental mutations throw a
@@ -30,7 +30,7 @@ export const deepFreeze = <T>(value: T): T => {
     return value
   }
 
-  if (Arr.isArray(value)) {
+  if (EffectArray.isArray(value)) {
     Object.freeze(value)
     value.forEach(deepFreeze)
     return value

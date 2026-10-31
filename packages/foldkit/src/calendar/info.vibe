@@ -1,4 +1,4 @@
-import { Function as Fn } from 'effect'
+import { Function as EffectFunction } from 'effect'
 
 import { addDays, subtractDays } from './arithmetic.vibe'
 import { type CalendarDate, daysInMonth, unsafeMake } from './calendarDate.vibe'
@@ -136,7 +136,7 @@ export const lastOfMonth = (self: CalendarDate): CalendarDate =>
 export const startOfWeek: {
   (firstDayOfWeek: DayOfWeek): (self: CalendarDate) => CalendarDate
   (self: CalendarDate, firstDayOfWeek: DayOfWeek): CalendarDate
-} = Fn.dual(
+} = EffectFunction.dual(
   2,
   (self: CalendarDate, firstDayOfWeek: DayOfWeek): CalendarDate => {
     const startIndex = dayOfWeekToIndex(firstDayOfWeek)
@@ -152,7 +152,7 @@ export const startOfWeek: {
 export const endOfWeek: {
   (firstDayOfWeek: DayOfWeek): (self: CalendarDate) => CalendarDate
   (self: CalendarDate, firstDayOfWeek: DayOfWeek): CalendarDate
-} = Fn.dual(
+} = EffectFunction.dual(
   2,
   (self: CalendarDate, firstDayOfWeek: DayOfWeek): CalendarDate =>
     addDays(startOfWeek(self, firstDayOfWeek), 6),

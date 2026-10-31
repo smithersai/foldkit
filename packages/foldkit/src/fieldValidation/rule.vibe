@@ -1,4 +1,9 @@
-import { Array as Arr, Number as Num, String as Str, flow } from 'effect'
+import {
+  Array as EffectArray,
+  Number as EffectNumber,
+  String as EffectString,
+  flow,
+} from 'effect'
 
 // RULES + MESSAGES
 
@@ -19,7 +24,7 @@ export const minLength = (
   min: number,
   message?: RuleMessage<string>,
 ): Rule<string> => [
-  flow(Str.length, Num.isGreaterThanOrEqualTo(min)),
+  flow(EffectString.length, EffectNumber.isGreaterThanOrEqualTo(min)),
   message ?? `Must be at least ${min} characters`,
 ]
 
@@ -28,7 +33,7 @@ export const maxLength = (
   max: number,
   message?: RuleMessage<string>,
 ): Rule<string> => [
-  flow(Str.length, Num.isLessThanOrEqualTo(max)),
+  flow(EffectString.length, EffectNumber.isLessThanOrEqualTo(max)),
   message ?? `Must be at most ${max} characters`,
 ]
 
@@ -36,7 +41,7 @@ export const maxLength = (
 export const pattern = (
   regex: RegExp,
   message: RuleMessage<string> = 'Invalid format',
-): Rule<string> => [flow(Str.match(regex), Option.isSome), message]
+): Rule<string> => [flow(EffectString.match(regex), Option.isSome), message]
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -70,7 +75,7 @@ export const startsWith = (
   prefix: string,
   message?: RuleMessage<string>,
 ): Rule<string> => [
-  Str.startsWith(prefix),
+  EffectString.startsWith(prefix),
   message ?? `Must start with ${prefix}`,
 ]
 
@@ -79,7 +84,7 @@ export const endsWith = (
   suffix: string,
   message?: RuleMessage<string>,
 ): Rule<string> => [
-  Str.endsWith(suffix),
+  EffectString.endsWith(suffix),
   message ?? `Must end with ${suffix}`,
 ]
 
@@ -88,7 +93,7 @@ export const includes = (
   substring: string,
   message?: RuleMessage<string>,
 ): Rule<string> => [
-  Str.includes(substring),
+  EffectString.includes(substring),
   message ?? `Must contain ${substring}`,
 ]
 
@@ -106,9 +111,9 @@ export const oneOf = (
   values: ReadonlyArray<string>,
   message?: RuleMessage<string>,
 ): Rule<string> => {
-  const joinedValues = Arr.join(values, ', ')
+  const joinedValues = EffectArray.join(values, ', ')
   return [
-    value => Arr.contains(values, value),
+    value => EffectArray.contains(values, value),
     message ?? `Must be one of: ${joinedValues}`,
   ]
 }
@@ -120,7 +125,7 @@ export const minItems = (
   min: number,
   message?: RuleMessage<ReadonlyArray<unknown>>,
 ): Rule<ReadonlyArray<unknown>> => [
-  flow(Arr.length, Num.isGreaterThanOrEqualTo(min)),
+  flow(EffectArray.length, EffectNumber.isGreaterThanOrEqualTo(min)),
   message ?? `Must select at least ${min}`,
 ]
 
@@ -129,7 +134,7 @@ export const maxItems = (
   max: number,
   message?: RuleMessage<ReadonlyArray<unknown>>,
 ): Rule<ReadonlyArray<unknown>> => [
-  flow(Arr.length, Num.isLessThanOrEqualTo(max)),
+  flow(EffectArray.length, EffectNumber.isLessThanOrEqualTo(max)),
   message ?? `Must select at most ${max}`,
 ]
 

@@ -34,7 +34,7 @@ export declare const enteredAny: <Route extends Readonly<{
  *  form that answers for every route at once. */
 export declare const entered: <Route extends Readonly<{
     _tag: string;
-}>, Tag extends Route["_tag"]>(transition: Transition<Route>, routeTag: Tag) => Option.Option<Extract<Route, {
+}>, Tag extends Route['_tag']>(transition: Transition<Route>, routeTag: Tag) => Option.Option<Extract<Route, {
     _tag: Tag;
 }>>;
 /** The route a transition left, whichever route that was:
@@ -54,7 +54,7 @@ export declare const exitedAny: <Route extends Readonly<{
  *  {@link exitedAny} is the form that answers for every route at once. */
 export declare const exited: <Route extends Readonly<{
     _tag: string;
-}>, Tag extends Route["_tag"]>(transition: Transition<Route>, routeTag: Tag) => Option.Option<Extract<Route, {
+}>, Tag extends Route['_tag']>(transition: Transition<Route>, routeTag: Tag) => Option.Option<Extract<Route, {
     _tag: Tag;
 }>>;
 /** Both sides of a within-route navigation: `Some` of the previous and
@@ -69,7 +69,7 @@ export declare const exited: <Route extends Readonly<{
  *  so matching on one would leave the other typed as the whole union. */
 export declare const stayed: <Route extends Readonly<{
     _tag: string;
-}>, Tag extends Route["_tag"]>(transition: Transition<Route>, routeTag: Tag) => Option.Option<Readonly<{
+}>, Tag extends Route['_tag']>(transition: Transition<Route>, routeTag: Tag) => Option.Option<Readonly<{
     previousRoute: Extract<Route, {
         _tag: Tag;
     }>;
@@ -87,17 +87,17 @@ export declare const stayed: <Route extends Readonly<{
  *  tags. */
 export declare const isEntering: <Route extends Readonly<{
     _tag: string;
-}>, Tag extends Route["_tag"]>(transition: Transition<Route>, routeTag: Tag) => boolean;
+}>, Tag extends Route['_tag']>(transition: Transition<Route>, routeTag: Tag) => boolean;
 /** Whether the transition left the selected route. A cold load never exits.
  *  Use {@link exited} when its payload is needed. */
 export declare const isExiting: <Route extends Readonly<{
     _tag: string;
-}>, Tag extends Route["_tag"]>(transition: Transition<Route>, routeTag: Tag) => boolean;
+}>, Tag extends Route['_tag']>(transition: Transition<Route>, routeTag: Tag) => boolean;
 /** Whether both routes have the selected tag. A cold load never stays. Use
  *  {@link stayed} for both payloads. */
 export declare const isStaying: <Route extends Readonly<{
     _tag: string;
-}>, Tag extends Route["_tag"]>(transition: Transition<Route>, routeTag: Tag) => boolean;
+}>, Tag extends Route['_tag']>(transition: Transition<Route>, routeTag: Tag) => boolean;
 /** Handlers for {@link match}, with Route narrowed to the selected tag. */
 export type MatchHandlers<Route, Entered, Exited, Stayed, Unrelated> = Readonly<{
     Entered: (nextRoute: Route) => Entered;
@@ -116,12 +116,12 @@ export type MatchHandlers<Route, Entered, Exited, Stayed, Unrelated> = Readonly<
  *  the Route and tag. */
 export declare function match<Output>(): <Route extends Readonly<{
     _tag: string;
-}>, Tag extends Route["_tag"]>(transition: Transition<Route>, routeTag: Tag, handlers: MatchHandlers<Extract<Route, {
+}>, Tag extends Route['_tag']>(transition: Transition<Route>, routeTag: Tag, handlers: MatchHandlers<Extract<Route, {
     _tag: Tag;
 }>, Output, Output, Output, Output>) => Output;
 export declare function match<Route extends Readonly<{
     _tag: string;
-}>, Tag extends Route["_tag"], Entered, Exited, Stayed, Unrelated>(transition: Transition<Route>, routeTag: Tag, handlers: MatchHandlers<Extract<Route, {
+}>, Tag extends Route['_tag'], Entered, Exited, Stayed, Unrelated>(transition: Transition<Route>, routeTag: Tag, handlers: MatchHandlers<Extract<Route, {
     _tag: Tag;
 }>, Entered, Exited, Stayed, Unrelated>): Entered | Exited | Stayed | Unrelated;
 /** Runs the matching handler, or the fallback when that handler is omitted.
@@ -130,11 +130,11 @@ export declare function match<Route extends Readonly<{
  *  every callback to `Output` while inferring the Route and tag. */
 export declare function matchOrElse<Output>(): <Route extends Readonly<{
     _tag: string;
-}>, Tag extends Route["_tag"]>(transition: Transition<Route>, routeTag: Tag, handlers: Partial<MatchHandlers<Extract<Route, {
+}>, Tag extends Route['_tag']>(transition: Transition<Route>, routeTag: Tag, handlers: Partial<MatchHandlers<Extract<Route, {
     _tag: Tag;
 }>, Output, Output, Output, Output>>, fallback: () => Output) => Output;
 export declare function matchOrElse<Route extends Readonly<{
     _tag: string;
-}>, Tag extends Route["_tag"], Entered = never, Exited = never, Stayed = never, Unrelated = never, Fallback = never>(transition: Transition<Route>, routeTag: Tag, handlers: Partial<MatchHandlers<Extract<Route, {
+}>, Tag extends Route['_tag'], Entered = never, Exited = never, Stayed = never, Unrelated = never, Fallback = never>(transition: Transition<Route>, routeTag: Tag, handlers: Partial<MatchHandlers<Extract<Route, {
     _tag: Tag;
 }>, Entered, Exited, Stayed, Unrelated>>, fallback: () => Fallback): Entered | Exited | Stayed | Unrelated | Fallback;

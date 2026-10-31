@@ -1,4 +1,4 @@
-import { Array as Arr } from 'effect'
+import { Array as EffectArray } from 'effect'
 
 import type {
   SerializedCommand,
@@ -32,7 +32,7 @@ const computeInspectableValue = (value: unknown): unknown => {
     return value.href
   }
   if (globalThis.Array.isArray(value)) {
-    return Arr.map(value, toInspectableValue)
+    return EffectArray.map(value, toInspectableValue)
   }
   if (Predicate.isObject(value)) {
     return Record.map(value, toInspectableValue)
@@ -122,13 +122,13 @@ export const toSerializedEntry = (
     index,
     tag: entry.tag,
     message: toInspectableValue(entry.message),
-    commands: Arr.map(entry.commands, toSerializedCommand),
-    mountStarts: Arr.map(entry.mountStarts, toSerializedMount),
-    mountEnds: Arr.map(entry.mountEnds, toSerializedMount),
+    commands: EffectArray.map(entry.commands, toSerializedCommand),
+    mountStarts: EffectArray.map(entry.mountStarts, toSerializedMount),
+    mountEnds: EffectArray.map(entry.mountEnds, toSerializedMount),
     timestamp: entry.timestamp,
     isModelChanged: entry.isModelChanged,
-    changedPaths: Arr.fromIterable(entry.diff.changedPaths),
-    affectedPaths: Arr.fromIterable(entry.diff.affectedPaths),
+    changedPaths: EffectArray.fromIterable(entry.diff.changedPaths),
+    affectedPaths: EffectArray.fromIterable(entry.diff.affectedPaths),
     submodelPath,
     maybeLeafTag,
   }

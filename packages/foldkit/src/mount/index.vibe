@@ -1,4 +1,4 @@
-import { Function as Fn } from 'effect'
+import { Function as EffectFunction } from 'effect'
 
 /** Effect service tag that observes Mount lifecycle events. The runtime
  *  provides an implementation that buffers events for DevTools history;
@@ -562,7 +562,7 @@ export const mapMessage: {
     f: (message: A) => B,
   ): <E>(action: MountAction<A, E>) => MountAction<B, E>
   <A, B, E>(action: MountAction<A, E>, f: (message: A) => B): MountAction<B, E>
-} = Fn.dual(
+} = EffectFunction.dual(
   2,
   <A, B, E>(
     action: MountAction<A, E>,

@@ -1,10 +1,12 @@
 import { existsSync, readFileSync } from 'node:fs'
 import parser from 'vibelang/eslint'
+
+import foldkit from '../packages/oxlint-plugin-foldkit/dist/index.js'
 // The repository's Oxlint configuration, read on each run: its rules and its
 // overrides (a *.ts glob read as *.vibe) apply to .vibe files wherever ESLint
 // or typescript-eslint has the rule. typescript-eslint's recommended rules
 // stand in for Oxlint's default correctness rules unless the configuration
-// turns that category off. Rules of other Oxlint plugins are not carried.
+// turns that category off. Foldkit's own rules apply through the same plugin.
 const read = name => {
   const url = new URL('../' + name, import.meta.url)
   return existsSync(url) ? readFileSync(url, 'utf8') : null
@@ -49,6 +51,7 @@ const rules = (settings = {}) =>
         ? name.slice(0, name.lastIndexOf('/'))
         : ''
       const rule = name.slice(name.lastIndexOf('/') + 1)
+      if (plugin === 'foldkit') return [[name, value]]
       // A core rule typescript-eslint extends for TypeScript, as Oxlint's does, is typescript-eslint's.
       if (
         plugin === 'typescript' ||
@@ -90,7 +93,10 @@ export default [
   {
     files: ['**/*.vibe'],
     languageOptions: { parser },
-    ...(tseslint ? { plugins: { '@typescript-eslint': tseslint.plugin } } : {}),
+    plugins: {
+      foldkit,
+      ...(tseslint ? { '@typescript-eslint': tseslint.plugin } : {}),
+    },
     rules: { 'no-debugger': 'error', ...rules(oxlint.rules) },
   },
   ...overrides,

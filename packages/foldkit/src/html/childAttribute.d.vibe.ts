@@ -1,4 +1,4 @@
-import { type DispatchSync, type MountDispatchResolver } from "./runtimeSingleton.js";
+import { type DispatchSync, type MountDispatchResolver } from './runtimeSingleton.js';
 declare const BRAND = "__childAttribute";
 /** An attribute carrying a handler that dispatches through a Submodel
  *  boundary's wrapping chain. Published by Submodels (typically Foldkit's
