@@ -53,7 +53,7 @@ import {
   vnodeDataMaskKey,
 } from '../snabbdom/index.js'
 import { tagNameFromSelector } from '../tagName.js'
-import { VNode } from '../vdom.js'
+import { VNode } from '../vdom.vibe'
 import { type ChildAttribute, isChildAttribute } from './childAttribute.vibe'
 import {
   checkScheduledLeave,
@@ -81,7 +81,7 @@ import {
   submodel,
 } from './submodel.js'
 
-export { createKeyedLazy, createLazy } from './lazy.js'
+export { createKeyedLazy, createLazy } from './lazy.vibe'
 export {
   beginRender as __beginRender,
   createBoundaryRegistry as __createBoundaryRegistry,

@@ -1,6 +1,6 @@
-import { Array, Data, Predicate, Result } from 'effect'
+import { Array as Arr, Data, Predicate, Result } from 'effect'
 
-import { type VNode, dedupeMemoizedResult, memoizedVNodes } from '../vdom.js'
+import { type VNode, dedupeMemoizedResult, memoizedVNodes } from '../vdom.vibe'
 import {
   type BoundaryId,
   type TrackedBoundaryWrap,
@@ -8,7 +8,7 @@ import {
   endLazyTracking,
   registerBoundaryWrapTransactionRollback,
   restoreBoundaryWrapsForLazyHit,
-} from './boundary.js'
+} from './boundary.ts'
 import {
   type DispatchSync,
   type MountRenderOwner,
@@ -16,18 +16,18 @@ import {
   requireDispatch,
   requireMountDispatch,
   requireMountRenderOwner,
-} from './runtimeSingleton.js'
+} from './runtimeSingleton.ts'
 
 /** Why a lazy call ran its view instead of reusing the cached result. */
 export type LazyMissReason = Data.TaggedEnum<{
-  NoCachedEntry: {}
-  FunctionChanged: {}
-  FrameChanged: {}
-  ArgumentCountChanged: Readonly<{
+  mutable NoCachedEntry: {}
+  mutable FunctionChanged: {}
+  mutable FrameChanged: {}
+  mutable ArgumentCountChanged: Readonly<{
     previousCount: number
     currentCount: number
   }>
-  ArgumentsChanged: Readonly<{ indices: ReadonlyArray<number> }>
+  mutable ArgumentsChanged: Readonly<{ indices: ReadonlyArray<number> }>
 }>
 
 /** @internal Constructors and matching for lazy cache miss reasons. */
@@ -119,8 +119,8 @@ const findMissReason = (
     })
   }
 
-  const indices = Array.filterMap(
-    Array.zip(previousEntry.args, args),
+  const indices = Arr.filterMap(
+    Arr.zip(previousEntry.args, args),
     ([previousArg, arg], index) =>
       previousArg === arg ? Result.failVoid : Result.succeed(index),
   )

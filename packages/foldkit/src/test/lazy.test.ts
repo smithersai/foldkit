@@ -9,7 +9,7 @@ import {
   defineView,
   inertHtml as ih,
 } from '../html/index.js'
-import { observeLazyResolutions } from '../html/lazy.js'
+import { observeLazyResolutions } from '../html/lazy.vibe'
 import {
   clearRuntime,
   requireDispatch,

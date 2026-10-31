@@ -6,7 +6,7 @@ import { describe, it } from '@effect/vitest'
 import { MountTracker } from '../mount/index.vibe'
 import { Dispatch } from '../runtime/index.js'
 import { h } from '../snabbdom/index.js'
-import { type VNode, dedupeSharedVNodes, memoizedVNodes } from '../vdom.js'
+import { type VNode, dedupeSharedVNodes, memoizedVNodes } from '../vdom.vibe'
 import {
   type BoundaryRegistry,
   beginRender,
@@ -15,7 +15,7 @@ import {
   resolveMountBoundaryDispatch,
 } from './boundary.js'
 import { __htmlBuilder } from './index.js'
-import { createKeyedLazy, createLazy } from './lazy.js'
+import { createKeyedLazy, createLazy } from './lazy.vibe'
 import {
   type DispatchSync,
   clearRuntime,

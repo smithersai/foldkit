@@ -1,7 +1,6 @@
-import { Option } from 'effect'
 
-import { onUnmountModule } from './onUnmountModule.js'
-import { propsModule } from './propsModule.js'
+import { onUnmountModule } from './onUnmountModule.ts'
+import { propsModule } from './propsModule.ts'
 import {
   type VNode,
   attributesModule,
@@ -12,9 +11,9 @@ import {
   init,
   styleModule,
   toVNode,
-} from './snabbdom/index.js'
+} from './snabbdom/index.ts'
 
-export type { VNode } from './snabbdom/index.js'
+export type { VNode } from './snabbdom/index.ts'
 export { toVNode }
 
 // NOTE: module order is load-bearing for hydration. `attributesModule` must run
@@ -163,7 +162,7 @@ const patchFreshInto = (
 }
 
 export const __patchVNode = (
-  maybeCurrentVNode: Option.Option<VNode>,
+  maybeCurrentVNode: Option<VNode>,
   nextVNode: VNode | null,
   container: HTMLElement,
   seen?: Set<object>,

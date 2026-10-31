@@ -28,7 +28,7 @@ import {
   styleModule,
   toVNode,
 } from '../snabbdom/index.js'
-import type { VNode } from '../vdom.js'
+import type { VNode } from '../vdom.vibe'
 import * as CustomElement from './index.js'
 
 const patch = init([

@@ -1,7 +1,7 @@
 import { Context, Effect } from 'effect'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
-import { createLazy } from '../html/lazy.js'
+import { createLazy } from '../html/lazy.vibe'
 import {
   type DispatchSync,
   clearRuntime,

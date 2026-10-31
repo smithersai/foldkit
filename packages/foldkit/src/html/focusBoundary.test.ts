@@ -16,7 +16,7 @@ import {
   styleModule,
   toVNode,
 } from '../snabbdom/index.js'
-import type { VNode } from '../vdom.js'
+import type { VNode } from '../vdom.vibe'
 import {
   DEVTOOLS_HOST_ID,
   __htmlBuilder,

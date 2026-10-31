@@ -10,7 +10,7 @@ import {
   __setRuntime as setHtmlRuntime,
 } from '../html/index.js'
 import { MountTracker } from '../mount/index.vibe'
-import { VNode, __patchVNode } from '../vdom.js'
+import { VNode, __patchVNode } from '../vdom.vibe'
 import { Dispatch } from './dispatch.vibe'
 import { applyDocumentMetadata } from './documentMetadata.js'
 

@@ -1,7 +1,7 @@
 import { Context, Option } from 'effect'
 import { afterEach, expect, it, vi } from 'vitest'
 
-import { type VNode, __patchVNode } from '../vdom.js'
+import { type VNode, __patchVNode } from '../vdom.vibe'
 import { beginRender, createBoundaryRegistry } from './boundary.js'
 import { __htmlBuilder } from './index.js'
 import { createLazy } from './public.js'

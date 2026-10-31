@@ -20,7 +20,7 @@ import {
   VNode,
   __patchVNode,
   __recoverVNodeAfterPatchFailure,
-} from '../vdom.js'
+} from '../vdom.vibe'
 import {
   type CrashConfig,
   type VNodeSlot,
