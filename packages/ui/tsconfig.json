@@ -4,7 +4,6 @@
   },
   "extends": "./tsconfig.base.json",
   "vibelang": {
-    "declarationSidecars": true,
     "trustedPackages": ["foldkit"]
   },
   "vibe": {

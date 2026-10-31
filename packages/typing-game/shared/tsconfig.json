@@ -10,8 +10,5 @@
     "declaration": true,
     "declarationMap": true
   },
-  "include": ["src"],
-  "vibelang": {
-    "declarationSidecars": true
-  }
+  "include": ["src"]
 }

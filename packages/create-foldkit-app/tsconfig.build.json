@@ -7,7 +7,6 @@
   },
   "exclude": ["src/**/*.test.ts"],
   "vibelang": {
-    "declarationSidecars": true,
     "trustedPackages": ["chalk"]
   }
 }
