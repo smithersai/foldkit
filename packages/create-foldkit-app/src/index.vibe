@@ -1,27 +1,21 @@
 #!/usr/bin/env node
-import { Effect, Option, Schema } from 'effect'
-import { Command, Flag } from 'effect/cli'
-import { createRequire } from 'node:module'
+import packageJson from '../package.json' with { type: 'json' }
 
 import { NodeRuntime, NodeServices } from '@effect/platform-node'
 
 import { create as create_ } from './commands/create.vibe'
-import { EXAMPLE_VALUES } from './examples.js'
-import { RENDERING_VALUES } from './rendering.js'
+import { EXAMPLE_VALUES } from './examples.ts'
+import { RENDERING_VALUES } from './rendering.vibe'
 import { validateProjectName } from './validateName.vibe'
 
 /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
-const packageJson = createRequire(import.meta.url)('../package.json') as {
-  version: string
-}
-
 const nameSchema = Schema.String.pipe(
   Schema.check(
-    Schema.makeFilter<string>(value =>
+    Schema.makeFilter<string>((value): infer _ =>
       Option.match(validateProjectName(value), {
-        onNone: () => true,
-        onSome: message => message,
-      }),
+        onNone: (): infer _ => true,
+        onSome: (message): infer _ => message,
+      })
     ),
   ),
 )
@@ -62,23 +56,22 @@ const packageManager = Flag.Literals('package-manager', [
   Flag.optional,
 )
 
-const maybeDependencyManifestsDirectory = Option.fromNullishOr(
-  process.env['CREATE_FOLDKIT_APP_DEPENDENCY_MANIFESTS_DIRECTORY'],
-)
+const main = effect {
+  const environment = Config.option(
+    Config.String('CREATE_FOLDKIT_APP_DEPENDENCY_MANIFESTS_DIRECTORY'),
+  )
+  const maybeDependencyManifestsDirectory = try environment
+  const create = Command.make(
+    'create',
+    { name, rendering, example, packageManager },
+    effect (input) =>
+      try create_({ ...input, maybeDependencyManifestsDirectory }),
+  ).pipe(Command.withDescription('Create a new Foldkit application'))
+  return try Command.run(create, { version: packageJson.version })
+}
 
-const create = Command.make(
-  'create',
-  {
-    name,
-    rendering,
-    example,
-    packageManager,
-  },
-  input => create_({ ...input, maybeDependencyManifestsDirectory }),
-).pipe(Command.withDescription('Create a new Foldkit application'))
-
-const cli = Command.run(create, {
-  version: packageJson.version,
+NodeRuntime.runMain(effect {
+  provide NodeServices.layer {
+    return try main
+  }
 })
-
-cli.pipe(Effect.provide(NodeServices.layer), NodeRuntime.runMain)

@@ -3,7 +3,7 @@ import { expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import { Scaffold } from '../rendering.js'
+import { Scaffold } from '../rendering.vibe'
 import {
   buildUnresolvedDeps,
   buildUnresolvedDevDeps,

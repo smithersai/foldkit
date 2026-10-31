@@ -7,7 +7,7 @@ import { ExperimentalNodeProcess } from 'vibelang-runtime/experimental/platform-
 import { Prompt } from 'effect/cli'
 
 import { type Example, examples } from '../examples.ts'
-import { type Rendering, Scaffold, renderings } from '../rendering.ts'
+import { type Rendering, Scaffold, renderings } from '../rendering.vibe'
 import { createProject } from '../utils/files.vibe'
 import {
   type PackageManager,

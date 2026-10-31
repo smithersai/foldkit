@@ -1961,6 +1961,9 @@ importers:
       '@types/node':
         specifier: 26.4.0
         version: 26.4.0
+      fast-check:
+        specifier: ^4.10.2
+        version: 4.10.2
       vibelang:
         specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz
         version: file:.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz(effect@4.1.0)

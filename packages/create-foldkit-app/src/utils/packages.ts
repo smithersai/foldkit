@@ -14,7 +14,7 @@ import {
 import { spawn } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
-import { type Scaffold } from '../rendering.js'
+import { type Scaffold } from '../rendering.vibe'
 
 export type PackageManager = 'pnpm' | 'npm' | 'yarn' | 'bun'
 

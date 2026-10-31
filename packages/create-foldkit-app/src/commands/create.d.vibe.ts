@@ -1,7 +1,7 @@
 import { Effect, Option } from 'effect';
 import { Prompt } from 'effect/cli';
 import { type Example } from '../examples.js';
-import { type Rendering } from '../rendering.js';
+import { type Rendering } from '../rendering.vibe';
 import { type PackageManager } from '../utils/packages.js';
 type CreateInput = Readonly<{
     name: Option.Option<string>;

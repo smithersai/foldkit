@@ -8,7 +8,7 @@ import {
   Record,
   pipe,
 } from 'effect'
-import { type Scaffold } from '../rendering.ts'
+import { type Scaffold } from '../rendering.vibe'
 import {
   type PackageManager,
   devCommand,
