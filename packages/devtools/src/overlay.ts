@@ -55,7 +55,7 @@ import * as Slider from '@foldkit/ui/slider'
 import * as Switch from '@foldkit/ui/switch'
 import * as Tabs from '@foldkit/ui/tabs'
 
-import * as OptionExt from './internal/optionExtensions.js'
+import * as OptionExt from './internal/optionExtensions.vibe'
 import { overlayStyles } from './overlay-styles.js'
 
 const SubmodelFilterListbox = Listbox.create<string>()
