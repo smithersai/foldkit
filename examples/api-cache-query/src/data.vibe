@@ -1,4 +1,4 @@
-import { Array as Arr, Duration, Effect, Option, Random } from 'effect'
+import { Array as Arr, Duration, Option, Random } from 'effect'
 
 export schema Post {
   id: string

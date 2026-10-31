@@ -13,4 +13,3 @@ export const getInputElement = (elementId: string): HTMLInputElement => {
   }
   return element
 }
-

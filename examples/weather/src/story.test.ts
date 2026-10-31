@@ -3,13 +3,13 @@ import { HttpClient, HttpClientResponse } from 'effect/http'
 import { Command, given, message, model, story } from 'foldkit/story'
 import { expect, test } from 'vitest'
 
-import { FetchWeather, Message, fetchWeatherEffect, update } from './main.vibe'
 import {
   mockGeocodingResponse,
   mockWeatherResponse,
   weatherData,
   weatherModel,
 } from './main.fixture'
+import { FetchWeather, Message, fetchWeatherEffect, update } from './main.vibe'
 
 test('submitting the weather form fetches weather and shows result', () => {
   story(
