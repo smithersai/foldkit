@@ -1,0 +1,62 @@
+import { Array as Arr } from 'effect'
+import { AsyncData } from 'foldkit'
+
+import { allPages } from './docsNav.vibe'
+import { ApiReference, Blog } from './page/index.ts'
+import { type AppRoute } from './route.vibe'
+
+const SITE_NAME = 'Foldkit'
+
+const resolveApiModuleName = (
+  apiData: ApiReference.ApiDataAsyncData,
+  moduleSlug: string,
+): string => match (AsyncData.getData(apiData)) {
+  when Option.Some(let data): match (ApiReference.resolveModule(data.parsedApi, moduleSlug)) {
+    when Option.Some(let module): module.name;
+    when Option.None: ApiReference.slugToModuleName(moduleSlug);
+  };
+  when Option.None: ApiReference.slugToModuleName(moduleSlug);
+}
+
+export const routeTitle = (
+  route: AppRoute,
+  apiData: ApiReference.ApiDataAsyncData,
+): string => match (route) {
+  when { _tag: 'Home' }: SITE_NAME;
+  when { _tag: 'Newsletter' }: `Newsletter | ${SITE_NAME}`;
+  when { _tag: 'Blog' }: `Blog | ${SITE_NAME}`;
+  when { _tag: 'UiOverview' }: `Foldkit UI | ${SITE_NAME}`;
+  when { _tag: 'AiOverview' }: `AI | ${SITE_NAME}`;
+  when { _tag: 'Testing' }: `Testing | ${SITE_NAME}`;
+  when { _tag: 'Examples' }: `Examples | ${SITE_NAME}`;
+  when { _tag: 'BlogPost', postSlug: let postSlug }: match (Blog.findPostBySlug(postSlug)) {
+    when Option.None: `Not Found | ${SITE_NAME}`;
+    when Option.Some(let post):
+      `${post.frontmatter.title} | Blog | ${SITE_NAME}`;
+  };
+  when { _tag: 'NotFound' }: `Not Found | ${SITE_NAME}`;
+  when { _tag: 'ApiModule', moduleSlug: let moduleSlug }: `${
+    resolveApiModuleName(apiData, moduleSlug)
+  } | API | ${SITE_NAME}`;
+  when { _tag: 'ExampleDetail', exampleSlug: let exampleSlug }: match (Arr.findFirst(
+      allPages,
+      ({ _tag }): infer _ => _tag === `ExampleDetail:${exampleSlug}`,
+    )) {
+    when Option.None: `${exampleSlug} | Examples | ${SITE_NAME}`;
+    when Option.Some(let page): `${page.label} | Examples | ${SITE_NAME}`;
+  };
+  when { _tag: 'Playground', exampleSlug: let exampleSlug }: match (Arr.findFirst(
+      allPages,
+      ({ _tag }): infer _ => _tag === `ExampleDetail:${exampleSlug}`,
+    )) {
+    when Option.None: `Playground | ${SITE_NAME}`;
+    when Option.Some(let page): `${page.label} | Playground | ${SITE_NAME}`;
+  };
+  default: do {
+    const { _tag } = route
+    match (Arr.findFirst(allPages, (page): infer _ => page._tag === _tag)) {
+      when Option.None: SITE_NAME;
+      when Option.Some(let page): `${page.label} | ${SITE_NAME}`;
+    }
+  };
+}

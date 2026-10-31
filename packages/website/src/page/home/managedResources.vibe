@@ -1,0 +1,23 @@
+import { ManagedResource } from 'foldkit'
+
+import { Message } from './message.vibe'
+import { type Model } from './model.vibe'
+import * as NotePlayerDemo from './notePlayerDemo.vibe'
+
+// MANAGED RESOURCE
+
+const notePlayerDemoManagedResources = ManagedResource.lift(
+  NotePlayerDemo.managedResources,
+)<Model, Message>({
+  read: (model): infer _ => Option.some(model.notePlayerDemo),
+  toParentMessage: (message): infer _ =>
+    Message.GotNotePlayerDemoMessage({ message }),
+})
+
+export const managedResources = ManagedResource.aggregate<Model, Message>()(
+  notePlayerDemoManagedResources,
+)
+
+export type ManagedResourceServices = ManagedResource.ServicesOf<
+  typeof managedResources
+>

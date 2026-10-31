@@ -1,0 +1,1560 @@
+import { Array as Arr, Number as Num, pipe } from 'effect'
+import { Update } from 'foldkit'
+import { defineTaggedUnion } from 'foldkit/schema'
+import { modifyFields } from 'foldkit/struct'
+
+import {
+  Animation,
+  Calendar,
+  Combobox,
+  DatePicker,
+  Dialog,
+  DragAndDrop,
+  FileDrop,
+  HoverIntent,
+  Listbox,
+  Menu,
+  Popover,
+  RadioGroup,
+  Slider,
+  Tabs,
+  Tooltip,
+  VirtualList,
+} from '@foldkit/ui'
+
+import { CityCombobox, CityMultiCombobox } from './demo/combobox.vibe'
+import {
+  CharacterListbox,
+  ItemListbox,
+  ItemMultiListbox,
+} from './demo/listbox.vibe'
+import { DemoMenu, type MenuItem } from './demo/menu.ts'
+import { PlanRadioGroup } from './demo/radioGroup.ts'
+import { DemoTabs } from './demo/tabs.ts'
+import { Toast } from './demo/toastModule.vibe'
+import { ROW_COUNT as VIRTUAL_LIST_ROW_COUNT } from './demo/virtualList.vibe'
+import { Message } from './message.vibe'
+import { VirtualListChatStartProximity } from './model.vibe'
+import type { Model } from './model.vibe'
+import type {
+  City,
+  DemoCard,
+  DemoColumn,
+  DemoTab,
+  ListboxItem,
+  Plan,
+  VirtualListChatMessage,
+} from './model.vibe'
+
+// REORDER
+
+const reorderColumns = (
+  columns: ReadonlyArray<typeof DemoColumn.Type>,
+  itemId: string,
+  fromContainerId: string,
+  toContainerId: string,
+  toIndex: number,
+): ReadonlyArray<typeof DemoColumn.Type> => {
+  const maybeCard: Option<typeof DemoCard.Type> = pipe(
+    columns,
+    Arr.findFirst(({ id }): infer _ => id === fromContainerId),
+    Option.flatMap((column): infer _ =>
+      Arr.findFirst(column.cards, ({ id }): infer _ => id === itemId)
+    ),
+  )
+
+  return Option.match(maybeCard, {
+    onNone: (): infer _ => columns,
+    onSome: (card): infer _ =>
+      Arr.map(columns, (column): infer _ => {
+        const withRemoved = column.id === fromContainerId
+          ? Arr.filter(column.cards, ({ id }): infer _ => id !== itemId)
+          : column.cards
+
+        if (column.id !== toContainerId) {
+          return modifyFields(column, { cards: (): infer _ => withRemoved })
+        }
+
+        const inserted = pipe(withRemoved, (cards): infer _ => [
+          ...Arr.take(cards, toIndex),
+          card,
+          ...Arr.drop(cards, toIndex),
+        ])
+
+        return modifyFields(column, { cards: (): infer _ => inserted })
+      }),
+  })
+}
+
+const findDragAndDropDemoCardLabel = (
+  columns: ReadonlyArray<typeof DemoColumn.Type>,
+  itemId: string,
+): string =>
+  pipe(
+    columns,
+    Arr.flatMap((column): infer _ => column.cards),
+    Arr.findFirst((card): infer _ => card.id === itemId),
+    Option.match({
+      onNone: (): infer _ => itemId,
+      onSome: (card): infer _ => card.label,
+    }),
+  )
+
+const findDragAndDropDemoColumnLabel = (
+  columns: ReadonlyArray<typeof DemoColumn.Type>,
+  containerId: string,
+): string =>
+  pipe(
+    columns,
+    Arr.findFirst((column): infer _ => column.id === containerId),
+    Option.match({
+      onNone: (): infer _ => containerId,
+      onSome: (column): infer _ => column.label,
+    }),
+  )
+
+const DragAndDropDemoAnnouncement = defineTaggedUnion({
+  PickedUp: { label: Schema.String },
+  MovedToColumn: { columnLabel: Schema.String, position: Schema.Number },
+  MovedWithinColumn: { columnLabel: Schema.String, position: Schema.Number },
+  Dropped: {
+    label: Schema.String,
+    columnLabel: Schema.String,
+    position: Schema.Number,
+  },
+  Cancelled: {},
+})
+type DragAndDropDemoAnnouncement = typeof DragAndDropDemoAnnouncement.Type
+
+const dragAndDropDemoAnnouncementToText = DragAndDropDemoAnnouncement.match({
+  PickedUp: ({ label }): infer _ =>
+    `Picked up ${label}. Use arrow keys to move within a column, Tab to move between columns, Space to drop, Escape to cancel.`,
+  MovedToColumn: ({ columnLabel, position }): infer _ =>
+    `Moved to ${columnLabel}, position ${position}.`,
+  MovedWithinColumn: ({ columnLabel, position }): infer _ =>
+    `Position ${position} in ${columnLabel}.`,
+  Dropped: ({ label, columnLabel, position }): infer _ =>
+    `Dropped ${label} in position ${position} of ${columnLabel}.`,
+  Cancelled: (): infer _ => 'Drag cancelled.',
+})
+
+const maybeDragAndDropDemoKeyboardAnnouncement = (
+  model: Model,
+  nextDragAndDrop: DragAndDrop.Model,
+): Option<DragAndDropDemoAnnouncement> =>
+  DragAndDrop.DragState.matchOrElse<Option<DragAndDropDemoAnnouncement>>(
+    nextDragAndDrop.dragState,
+    {
+      KeyboardDragging: (nextState): infer _ =>
+        DragAndDrop.DragState.matchOrElse<
+          Option<DragAndDropDemoAnnouncement>
+        >(
+          model.dragAndDropDemo.dragState,
+          {
+            Idle: (): infer _ =>
+              Option.some(
+                DragAndDropDemoAnnouncement.PickedUp({
+                  label: findDragAndDropDemoCardLabel(
+                    model.dragAndDropDemoColumns,
+                    nextState.itemId,
+                  ),
+                }),
+              ),
+            KeyboardDragging: (previousState): infer _ => {
+              const columnLabel = findDragAndDropDemoColumnLabel(
+                model.dragAndDropDemoColumns,
+                nextState.targetContainerId,
+              )
+              const position = nextState.targetIndex + 1
+
+              if (
+                previousState.targetContainerId !== nextState.targetContainerId
+              ) {
+                return Option.some(
+                  DragAndDropDemoAnnouncement.MovedToColumn({
+                    columnLabel,
+                    position,
+                  }),
+                )
+              }
+
+              if (previousState.targetIndex !== nextState.targetIndex) {
+                return Option.some(
+                  DragAndDropDemoAnnouncement.MovedWithinColumn({
+                    columnLabel,
+                    position,
+                  }),
+                )
+              }
+
+              return Option.none()
+            },
+          },
+          (): infer _ => Option.none(),
+        ),
+    },
+    (): infer _ => Option.none(),
+  )
+
+export type UpdateReturn = Update.Return<Model, Message>
+
+// CHILD FOLDS
+
+const foldDialogOutMessage = Dialog.OutMessage.match<
+  Update.Step<Model, Message>
+>({
+  Opened: (): infer _ => (model): infer _ => ({ model }),
+  Closed: (): infer _ => (model): infer _ => ({ model }),
+})
+
+const foldMenuOutMessage = Menu.OutMessage.match<
+  Update.Step<Model, Message>,
+  Menu.OutMessage<MenuItem>
+>({
+  Selected: (): infer _ => (model): infer _ => ({ model }),
+})
+
+const foldPopoverOutMessage = Popover.OutMessage.match<
+  Update.Step<Model, Message>
+>({
+  Opened: (): infer _ => (model): infer _ => ({ model }),
+  Closed: (): infer _ => (model): infer _ => ({ model }),
+})
+
+const foldCalendarBasicDemoOutMessage = Calendar.OutMessage.match<
+  Update.Step<Model, Message>
+>({
+  SelectedDate: ({ date }): infer _ => (model): infer _ => ({
+    model: modifyFields(model, {
+      maybeCalendarBasicDemoSelectedDate: (): infer _ => Option.some(date),
+    }),
+  }),
+  ChangedViewMonth: (): infer _ => (model): infer _ => ({ model }),
+})
+
+const foldCalendarBasicDemo = Update.foldChild({
+  update: Calendar.update,
+  read: (model: Model): infer _ => Option.some(model.calendarBasicDemo),
+  write: (model, nextCalendarBasicDemo): infer _ =>
+    modifyFields(model, {
+      calendarBasicDemo: (): infer _ => nextCalendarBasicDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotCalendarBasicDemoMessage({ message }),
+  foldOutMessage: foldCalendarBasicDemoOutMessage,
+})
+
+const foldDatePickerBasicDemoOutMessage = DatePicker.OutMessage.match<
+  Update.Step<Model, Message>
+>({
+  SelectedDate: ({ date }): infer _ => (model): infer _ => ({
+    model: modifyFields(model, {
+      maybeDatePickerBasicDemoSelectedDate: (): infer _ => Option.some(date),
+    }),
+  }),
+  ClearedDate: (): infer _ => (model): infer _ => ({
+    model: modifyFields(model, {
+      maybeDatePickerBasicDemoSelectedDate: (): infer _ => Option.none(),
+    }),
+  }),
+  ChangedViewMonth: (): infer _ => (model): infer _ => ({ model }),
+})
+
+const foldDatePickerBasicDemo = Update.foldChild({
+  update: DatePicker.update,
+  read: (model: Model): infer _ => Option.some(model.datePickerBasicDemo),
+  write: (model, nextDatePickerBasicDemo): infer _ =>
+    modifyFields(model, {
+      datePickerBasicDemo: (): infer _ => nextDatePickerBasicDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotDatePickerBasicDemoMessage({ message }),
+  foldOutMessage: foldDatePickerBasicDemoOutMessage,
+})
+
+const foldComboboxDemoOutMessage = Combobox.OutMessage.match<
+  Update.Step<Model, Message>,
+  Combobox.OutMessage<City>
+>({
+  Selected: ({ value }): infer _ => (model): infer _ => ({
+    model: modifyFields(model, {
+      maybeComboboxDemoSelectedCity: (): infer _ => Option.some(value),
+    }),
+  }),
+  ClearedSelection: (): infer _ => (model): infer _ => ({ model }),
+})
+
+const foldComboboxDemo = Update.foldChild({
+  update: CityCombobox.update,
+  read: (model: Model): infer _ => Option.some(model.comboboxDemo),
+  write: (model, nextComboboxDemo): infer _ =>
+    modifyFields(model, { comboboxDemo: (): infer _ => nextComboboxDemo }),
+  toParentMessage: (message): infer _ =>
+    Message.GotComboboxDemoMessage({ message }),
+  foldOutMessage: foldComboboxDemoOutMessage,
+})
+
+const foldComboboxPlacementLockDemoOutMessage = Combobox.OutMessage.match<
+  Update.Step<Model, Message>,
+  Combobox.OutMessage<City>
+>({
+  Selected: ({ value }): infer _ => (model): infer _ => ({
+    model: modifyFields(model, {
+      maybeComboboxPlacementLockDemoSelectedCity: (): infer _ =>
+        Option.some(value),
+    }),
+  }),
+  ClearedSelection: (): infer _ => (model): infer _ => ({ model }),
+})
+
+const foldComboboxPlacementLockDemo = Update.foldChild({
+  update: CityCombobox.update,
+  read: (model: Model): infer _ => Option.some(model.comboboxPlacementLockDemo),
+  write: (model, nextComboboxPlacementLockDemo): infer _ =>
+    modifyFields(model, {
+      comboboxPlacementLockDemo: (): infer _ => nextComboboxPlacementLockDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotComboboxPlacementLockDemoMessage({ message }),
+  foldOutMessage: foldComboboxPlacementLockDemoOutMessage,
+})
+
+const foldComboboxNullableDemoOutMessage = Combobox.OutMessage.match<
+  Update.Step<Model, Message>,
+  Combobox.OutMessage<City>
+>({
+  Selected: ({ value }): infer _ => (model): infer _ => ({
+    model: modifyFields(model, {
+      maybeComboboxNullableDemoSelectedCity: (
+        maybeComboboxNullableDemoSelectedCity,
+      ): infer _ =>
+        Option.contains(maybeComboboxNullableDemoSelectedCity, value)
+          ? Option.none()
+          : Option.some(value),
+    }),
+  }),
+  ClearedSelection: (): infer _ => (model): infer _ => ({
+    model: modifyFields(model, {
+      maybeComboboxNullableDemoSelectedCity: (): infer _ => Option.none(),
+    }),
+  }),
+})
+
+const foldComboboxNullableDemo = Update.foldChild({
+  update: CityCombobox.update,
+  read: (model: Model): infer _ => Option.some(model.comboboxNullableDemo),
+  write: (model, nextComboboxNullableDemo): infer _ =>
+    modifyFields(model, {
+      comboboxNullableDemo: (): infer _ => nextComboboxNullableDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotComboboxNullableDemoMessage({ message }),
+  foldOutMessage: foldComboboxNullableDemoOutMessage,
+})
+
+const foldComboboxMultiDemoOutMessage = Combobox.OutMessage.match<
+  Update.Step<Model, Message>,
+  Combobox.OutMessage<City>
+>({
+  Selected: ({ value }): infer _ => (model): infer _ => ({
+    model: modifyFields(model, {
+      comboboxMultiDemoSelectedCities: (
+        comboboxMultiDemoSelectedCities,
+      ): infer _ =>
+        Arr.contains(comboboxMultiDemoSelectedCities, value)
+          ? Arr.filter(
+            comboboxMultiDemoSelectedCities,
+            (city): infer _ => city !== value,
+          )
+          : Arr.append(comboboxMultiDemoSelectedCities, value),
+    }),
+  }),
+  ClearedSelection: (): infer _ => (model): infer _ => ({ model }),
+})
+
+const foldComboboxMultiDemo = Update.foldChild({
+  update: CityMultiCombobox.update,
+  read: (model: Model): infer _ => Option.some(model.comboboxMultiDemo),
+  write: (model, nextComboboxMultiDemo): infer _ =>
+    modifyFields(model, {
+      comboboxMultiDemo: (): infer _ => nextComboboxMultiDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotComboboxMultiDemoMessage({ message }),
+  foldOutMessage: foldComboboxMultiDemoOutMessage,
+})
+
+const foldComboboxSelectOnFocusDemoOutMessage = Combobox.OutMessage.match<
+  Update.Step<Model, Message>,
+  Combobox.OutMessage<City>
+>({
+  Selected: ({ value }): infer _ => (model): infer _ => ({
+    model: modifyFields(model, {
+      maybeComboboxSelectOnFocusDemoSelectedCity: (): infer _ =>
+        Option.some(value),
+    }),
+  }),
+  ClearedSelection: (): infer _ => (model): infer _ => ({ model }),
+})
+
+const foldComboboxSelectOnFocusDemo = Update.foldChild({
+  update: CityCombobox.update,
+  read: (model: Model): infer _ => Option.some(model.comboboxSelectOnFocusDemo),
+  write: (model, nextComboboxSelectOnFocusDemo): infer _ =>
+    modifyFields(model, {
+      comboboxSelectOnFocusDemo: (): infer _ => nextComboboxSelectOnFocusDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotComboboxSelectOnFocusDemoMessage({ message }),
+  foldOutMessage: foldComboboxSelectOnFocusDemoOutMessage,
+})
+
+const readDialogDemo = (model: Model): Option<Dialog.Model> =>
+  Option.some(model.dialogDemo)
+
+const writeDialogDemo = (model: Model, nextDialogDemo: Dialog.Model): Model =>
+  modifyFields(model, { dialogDemo: (): infer _ => nextDialogDemo })
+
+const toGotDialogDemoMessage = (message: Dialog.Message): Message =>
+  Message.GotDialogDemoMessage({ message })
+
+const foldDialogDemo = Update.foldChild({
+  update: Dialog.update,
+  read: readDialogDemo,
+  write: writeDialogDemo,
+  toParentMessage: toGotDialogDemoMessage,
+  foldOutMessage: foldDialogOutMessage,
+})
+
+const foldDialogDemoOpen = Update.foldChildStep({
+  update: Dialog.open,
+  read: readDialogDemo,
+  write: writeDialogDemo,
+  toParentMessage: toGotDialogDemoMessage,
+  foldOutMessage: foldDialogOutMessage,
+})
+
+const readDialogAnimatedDemo = (model: Model): Option<Dialog.Model> =>
+  Option.some(model.dialogAnimatedDemo)
+
+const writeDialogAnimatedDemo = (
+  model: Model,
+  nextDialogAnimatedDemo: Dialog.Model,
+): Model =>
+  modifyFields(model, {
+    dialogAnimatedDemo: (): infer _ => nextDialogAnimatedDemo,
+  })
+
+const toGotDialogAnimatedDemoMessage = (message: Dialog.Message): Message =>
+  Message.GotDialogAnimatedDemoMessage({ message })
+
+const foldDialogAnimatedDemo = Update.foldChild({
+  update: Dialog.update,
+  read: readDialogAnimatedDemo,
+  write: writeDialogAnimatedDemo,
+  toParentMessage: toGotDialogAnimatedDemoMessage,
+  foldOutMessage: foldDialogOutMessage,
+})
+
+const foldDialogAnimatedDemoOpen = Update.foldChildStep({
+  update: Dialog.open,
+  read: readDialogAnimatedDemo,
+  write: writeDialogAnimatedDemo,
+  toParentMessage: toGotDialogAnimatedDemoMessage,
+  foldOutMessage: foldDialogOutMessage,
+})
+
+const readOverlayDialogDemo = (model: Model): Option<Dialog.Model> =>
+  Option.some(model.overlayDialogDemo)
+
+const writeOverlayDialogDemo = (
+  model: Model,
+  nextOverlayDialogDemo: Dialog.Model,
+): Model =>
+  modifyFields(model, {
+    overlayDialogDemo: (): infer _ => nextOverlayDialogDemo,
+  })
+
+const toGotOverlayDialogDemoMessage = (message: Dialog.Message): Message =>
+  Message.GotOverlayDialogDemoMessage({ message })
+
+const foldOverlayDialogDemo = Update.foldChild({
+  update: Dialog.update,
+  read: readOverlayDialogDemo,
+  write: writeOverlayDialogDemo,
+  toParentMessage: toGotOverlayDialogDemoMessage,
+  foldOutMessage: foldDialogOutMessage,
+})
+
+const foldOverlayDialogDemoOpen = Update.foldChildStep({
+  update: Dialog.open,
+  read: readOverlayDialogDemo,
+  write: writeOverlayDialogDemo,
+  toParentMessage: toGotOverlayDialogDemoMessage,
+  foldOutMessage: foldDialogOutMessage,
+})
+
+const foldOverlayComboboxDemoOutMessage = Combobox.OutMessage.match<
+  Update.Step<Model, Message>,
+  Combobox.OutMessage<City>
+>({
+  Selected: ({ value }): infer _ => (model): infer _ => ({
+    model: modifyFields(model, {
+      maybeOverlayComboboxDemoSelectedCity: (): infer _ => Option.some(value),
+    }),
+  }),
+  ClearedSelection: (): infer _ => (model): infer _ => ({ model }),
+})
+
+const foldOverlayComboboxDemo = Update.foldChild({
+  update: CityCombobox.update,
+  read: (model: Model): infer _ => Option.some(model.overlayComboboxDemo),
+  write: (model, nextOverlayComboboxDemo): infer _ =>
+    modifyFields(model, {
+      overlayComboboxDemo: (): infer _ => nextOverlayComboboxDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotOverlayComboboxDemoMessage({ message }),
+  foldOutMessage: foldOverlayComboboxDemoOutMessage,
+})
+
+const readNestedDialogParentDemo = (
+  model: Model,
+): Option<Dialog.Model> => Option.some(model.nestedDialogParentDemo)
+
+const writeNestedDialogParentDemo = (
+  model: Model,
+  nextNestedDialogParentDemo: Dialog.Model,
+): Model =>
+  modifyFields(model, {
+    nestedDialogParentDemo: (): infer _ => nextNestedDialogParentDemo,
+  })
+
+const toGotNestedDialogParentDemoMessage = (message: Dialog.Message): Message =>
+  Message.GotNestedDialogParentDemoMessage({ message })
+
+const foldNestedDialogParentDemo = Update.foldChild({
+  update: Dialog.update,
+  read: readNestedDialogParentDemo,
+  write: writeNestedDialogParentDemo,
+  toParentMessage: toGotNestedDialogParentDemoMessage,
+  foldOutMessage: foldDialogOutMessage,
+})
+
+const foldNestedDialogParentDemoOpen = Update.foldChildStep({
+  update: Dialog.open,
+  read: readNestedDialogParentDemo,
+  write: writeNestedDialogParentDemo,
+  toParentMessage: toGotNestedDialogParentDemoMessage,
+  foldOutMessage: foldDialogOutMessage,
+})
+
+const readNestedDialogChildDemo = (model: Model): Option<Dialog.Model> =>
+  Option.some(model.nestedDialogChildDemo)
+
+const writeNestedDialogChildDemo = (
+  model: Model,
+  nextNestedDialogChildDemo: Dialog.Model,
+): Model =>
+  modifyFields(model, {
+    nestedDialogChildDemo: (): infer _ => nextNestedDialogChildDemo,
+  })
+
+const toGotNestedDialogChildDemoMessage = (message: Dialog.Message): Message =>
+  Message.GotNestedDialogChildDemoMessage({ message })
+
+const foldNestedDialogChildDemo = Update.foldChild({
+  update: Dialog.update,
+  read: readNestedDialogChildDemo,
+  write: writeNestedDialogChildDemo,
+  toParentMessage: toGotNestedDialogChildDemoMessage,
+  foldOutMessage: foldDialogOutMessage,
+})
+
+const foldNestedDialogChildDemoOpen = Update.foldChildStep({
+  update: Dialog.open,
+  read: readNestedDialogChildDemo,
+  write: writeNestedDialogChildDemo,
+  toParentMessage: toGotNestedDialogChildDemoMessage,
+  foldOutMessage: foldDialogOutMessage,
+})
+
+const foldListboxDemoOutMessage = Listbox.OutMessage.match<
+  Update.Step<Model, Message>,
+  Listbox.OutMessage<ListboxItem>
+>({
+  Selected: ({ value }): infer _ => (model): infer _ => ({
+    model: modifyFields(model, {
+      maybeListboxDemoSelectedItem: (): infer _ => Option.some(value),
+    }),
+  }),
+})
+
+const foldListboxDemo = Update.foldChild({
+  update: ItemListbox.update,
+  read: (model: Model): infer _ => Option.some(model.listboxDemo),
+  write: (model, nextListboxDemo): infer _ =>
+    modifyFields(model, { listboxDemo: (): infer _ => nextListboxDemo }),
+  toParentMessage: (message): infer _ =>
+    Message.GotListboxDemoMessage({ message }),
+  foldOutMessage: foldListboxDemoOutMessage,
+})
+
+const foldListboxMultiDemoOutMessage = Listbox.OutMessage.match<
+  Update.Step<Model, Message>,
+  Listbox.OutMessage<ListboxItem>
+>({
+  Selected: ({ value }): infer _ => (model): infer _ => ({
+    model: modifyFields(model, {
+      listboxMultiDemoSelectedItems: (listboxMultiDemoSelectedItems): infer _ =>
+        Arr.contains(listboxMultiDemoSelectedItems, value)
+          ? Arr.filter(
+            listboxMultiDemoSelectedItems,
+            (item): infer _ => item !== value,
+          )
+          : Arr.append(listboxMultiDemoSelectedItems, value),
+    }),
+  }),
+})
+
+const foldListboxMultiDemo = Update.foldChild({
+  update: ItemMultiListbox.update,
+  read: (model: Model): infer _ => Option.some(model.listboxMultiDemo),
+  write: (model, nextListboxMultiDemo): infer _ =>
+    modifyFields(model, {
+      listboxMultiDemo: (): infer _ => nextListboxMultiDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotListboxMultiDemoMessage({ message }),
+  foldOutMessage: foldListboxMultiDemoOutMessage,
+})
+
+const foldListboxGroupedDemoOutMessage = Listbox.OutMessage.match<
+  Update.Step<Model, Message>
+>({
+  Selected: ({ value }): infer _ => (model): infer _ => ({
+    model: modifyFields(model, {
+      maybeListboxGroupedDemoSelectedItem: (): infer _ => Option.some(value),
+    }),
+  }),
+})
+
+const foldListboxGroupedDemo = Update.foldChild({
+  update: CharacterListbox.update,
+  read: (model: Model): infer _ => Option.some(model.listboxGroupedDemo),
+  write: (model, nextListboxGroupedDemo): infer _ =>
+    modifyFields(model, {
+      listboxGroupedDemo: (): infer _ => nextListboxGroupedDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotListboxGroupedDemoMessage({ message }),
+  foldOutMessage: foldListboxGroupedDemoOutMessage,
+})
+
+const foldMenuBasicDemo = Update.foldChild({
+  update: DemoMenu.update,
+  read: (model: Model): infer _ => Option.some(model.menuBasicDemo),
+  write: (model, nextMenuBasicDemo): infer _ =>
+    modifyFields(model, { menuBasicDemo: (): infer _ => nextMenuBasicDemo }),
+  toParentMessage: (message): infer _ =>
+    Message.GotMenuBasicDemoMessage({ message }),
+  foldOutMessage: foldMenuOutMessage,
+})
+
+const foldMenuAnimatedDemo = Update.foldChild({
+  update: DemoMenu.update,
+  read: (model: Model): infer _ => Option.some(model.menuAnimatedDemo),
+  write: (model, nextMenuAnimatedDemo): infer _ =>
+    modifyFields(model, {
+      menuAnimatedDemo: (): infer _ => nextMenuAnimatedDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotMenuAnimatedDemoMessage({ message }),
+  foldOutMessage: foldMenuOutMessage,
+})
+
+const foldPopoverBasicDemo = Update.foldChild({
+  update: Popover.update,
+  read: (model: Model): infer _ => Option.some(model.popoverBasicDemo),
+  write: (model, nextPopoverBasicDemo): infer _ =>
+    modifyFields(model, {
+      popoverBasicDemo: (): infer _ => nextPopoverBasicDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotPopoverBasicDemoMessage({ message }),
+  foldOutMessage: foldPopoverOutMessage,
+})
+
+const foldPopoverAnimatedDemo = Update.foldChild({
+  update: Popover.update,
+  read: (model: Model): infer _ => Option.some(model.popoverAnimatedDemo),
+  write: (model, nextPopoverAnimatedDemo): infer _ =>
+    modifyFields(model, {
+      popoverAnimatedDemo: (): infer _ => nextPopoverAnimatedDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotPopoverAnimatedDemoMessage({ message }),
+  foldOutMessage: foldPopoverOutMessage,
+})
+
+const foldPopoverArrowDemo = Update.foldChild({
+  update: Popover.update,
+  read: (model: Model): infer _ => Option.some(model.popoverArrowDemo),
+  write: (model, nextPopoverArrowDemo): infer _ =>
+    modifyFields(model, {
+      popoverArrowDemo: (): infer _ => nextPopoverArrowDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotPopoverArrowDemoMessage({ message }),
+  foldOutMessage: foldPopoverOutMessage,
+})
+
+const foldPopoverNestedParentDemo = Update.foldChild({
+  update: Popover.update,
+  read: (model: Model): infer _ => Option.some(model.popoverNestedParentDemo),
+  write: (model, nextPopoverNestedParentDemo): infer _ =>
+    modifyFields(model, {
+      popoverNestedParentDemo: (): infer _ => nextPopoverNestedParentDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotPopoverNestedParentDemoMessage({ message }),
+  foldOutMessage: foldPopoverOutMessage,
+})
+
+const foldPopoverNestedChildDemo = Update.foldChild({
+  update: Popover.update,
+  read: (model: Model): infer _ => Option.some(model.popoverNestedChildDemo),
+  write: (model, nextPopoverNestedChildDemo): infer _ =>
+    modifyFields(model, {
+      popoverNestedChildDemo: (): infer _ => nextPopoverNestedChildDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotPopoverNestedChildDemoMessage({ message }),
+  foldOutMessage: foldPopoverOutMessage,
+})
+
+const foldSliderRatingDemoOutMessage = Slider.OutMessage.match<
+  Update.Step<Model, Message>
+>({
+  ChangedValue: ({ value }): infer _ => (model): infer _ => ({
+    model: modifyFields(model, { sliderRatingValue: (): infer _ => value }),
+  }),
+})
+
+const foldSliderRatingDemo = Update.foldChild({
+  update: Slider.update,
+  read: (model: Model): infer _ => Option.some(model.sliderRatingDemo),
+  write: (model, nextSliderRatingDemo): infer _ =>
+    modifyFields(model, {
+      sliderRatingDemo: (): infer _ => nextSliderRatingDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotSliderRatingDemoMessage({ message }),
+  foldOutMessage: foldSliderRatingDemoOutMessage,
+})
+
+const foldSliderVolumeDemoOutMessage = Slider.OutMessage.match<
+  Update.Step<Model, Message>
+>({
+  ChangedValue: ({ value }): infer _ => (model): infer _ => ({
+    model: modifyFields(model, { sliderVolumeValue: (): infer _ => value }),
+  }),
+})
+
+const foldSliderVolumeDemo = Update.foldChild({
+  update: Slider.update,
+  read: (model: Model): infer _ => Option.some(model.sliderVolumeDemo),
+  write: (model, nextSliderVolumeDemo): infer _ =>
+    modifyFields(model, {
+      sliderVolumeDemo: (): infer _ => nextSliderVolumeDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotSliderVolumeDemoMessage({ message }),
+  foldOutMessage: foldSliderVolumeDemoOutMessage,
+})
+
+const foldHorizontalTabsDemoOutMessage = Tabs.OutMessage.match<
+  Update.Step<Model, Message>,
+  Tabs.OutMessage<DemoTab>
+>({
+  Selected: ({ value }): infer _ => (model): infer _ => ({
+    model: modifyFields(model, { horizontalTabsDemoTab: (): infer _ => value }),
+  }),
+})
+
+const foldHorizontalTabsDemo = Update.foldChild({
+  update: DemoTabs.update,
+  read: (model: Model): infer _ => Option.some(model.horizontalTabsDemo),
+  write: (model, nextHorizontalTabsDemo): infer _ =>
+    modifyFields(model, {
+      horizontalTabsDemo: (): infer _ => nextHorizontalTabsDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotHorizontalTabsDemoMessage({ message }),
+  foldOutMessage: foldHorizontalTabsDemoOutMessage,
+})
+
+const foldVerticalTabsDemoOutMessage = Tabs.OutMessage.match<
+  Update.Step<Model, Message>,
+  Tabs.OutMessage<DemoTab>
+>({
+  Selected: ({ value }): infer _ => (model): infer _ => ({
+    model: modifyFields(model, { verticalTabsDemoTab: (): infer _ => value }),
+  }),
+})
+
+const foldVerticalTabsDemo = Update.foldChild({
+  update: DemoTabs.update,
+  read: (model: Model): infer _ => Option.some(model.verticalTabsDemo),
+  write: (model, nextVerticalTabsDemo): infer _ =>
+    modifyFields(model, {
+      verticalTabsDemo: (): infer _ => nextVerticalTabsDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotVerticalTabsDemoMessage({ message }),
+  foldOutMessage: foldVerticalTabsDemoOutMessage,
+})
+
+const foldTooltipOutMessage = Tooltip.OutMessage.match<
+  Update.Step<Model, Message>
+>({
+  Shown: (): infer _ => (model): infer _ => ({ model }),
+  Hidden: (): infer _ => (model): infer _ => ({ model }),
+})
+
+const foldTooltipDemo = Update.foldChild({
+  update: Tooltip.update,
+  read: (model: Model): infer _ => Option.some(model.tooltipDemo),
+  write: (model, nextTooltipDemo): infer _ =>
+    modifyFields(model, { tooltipDemo: (): infer _ => nextTooltipDemo }),
+  toParentMessage: (message): infer _ =>
+    Message.GotTooltipDemoMessage({ message }),
+  foldOutMessage: foldTooltipOutMessage,
+})
+
+const foldHoverIntentOutMessage = HoverIntent.OutMessage.match<
+  Update.Step<Model, Message>
+>({
+  Opened: (): infer _ => (model): infer _ => ({ model }),
+  Closed: (): infer _ => (model): infer _ => ({ model }),
+})
+
+const foldHoverIntentCardDemo = Update.foldChild({
+  update: HoverIntent.update,
+  read: (model: Model): infer _ => Option.some(model.hoverIntentCardDemo),
+  write: (model, nextHoverIntentCardDemo): infer _ =>
+    modifyFields(model, {
+      hoverIntentCardDemo: (): infer _ => nextHoverIntentCardDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotHoverIntentCardDemoMessage({ message }),
+  foldOutMessage: foldHoverIntentOutMessage,
+})
+
+const readHoverIntentMenuDemo = (
+  model: Model,
+): Option<HoverIntent.Model> => Option.some(model.hoverIntentMenuDemo)
+
+const writeHoverIntentMenuDemo = (
+  model: Model,
+  nextHoverIntentMenuDemo: HoverIntent.Model,
+): Model =>
+  modifyFields(model, {
+    hoverIntentMenuDemo: (): infer _ => nextHoverIntentMenuDemo,
+  })
+
+const toGotHoverIntentMenuDemoMessage = (
+  message: HoverIntent.Message,
+): Message => Message.GotHoverIntentMenuDemoMessage({ message })
+
+const foldHoverIntentMenuDemo = Update.foldChild({
+  update: HoverIntent.update,
+  read: readHoverIntentMenuDemo,
+  write: writeHoverIntentMenuDemo,
+  toParentMessage: toGotHoverIntentMenuDemoMessage,
+  foldOutMessage: foldHoverIntentOutMessage,
+})
+
+const foldHoverIntentMenuDemoClose = Update.foldChildStep({
+  update: HoverIntent.close,
+  read: readHoverIntentMenuDemo,
+  write: writeHoverIntentMenuDemo,
+  toParentMessage: toGotHoverIntentMenuDemoMessage,
+  foldOutMessage: foldHoverIntentOutMessage,
+})
+
+const foldToastDemoOutMessage = Toast.OutMessage.match<
+  Update.Step<Model, Message>
+>({
+  DismissedToast: ({ payload }): infer _ => (model): infer _ => ({
+    model: modifyFields(model, {
+      maybeLastDismissedToastTitle: (): infer _ => Option.some(payload.title),
+    }),
+  }),
+})
+
+const readToastDemo = (model: Model): Option<typeof Toast.Model.Type> =>
+  Option.some(model.toastDemo)
+
+const writeToastDemo = (
+  model: Model,
+  nextToastDemo: typeof Toast.Model.Type,
+): Model => modifyFields(model, { toastDemo: (): infer _ => nextToastDemo })
+
+const toGotToastDemoMessage = (message: typeof Toast.Message.Type): Message =>
+  Message.GotToastDemoMessage({ message })
+
+const foldToastDemo = Update.foldChild({
+  update: Toast.update,
+  read: readToastDemo,
+  write: writeToastDemo,
+  toParentMessage: toGotToastDemoMessage,
+  foldOutMessage: foldToastDemoOutMessage,
+})
+
+const foldToastDemoShow = Update.foldChild({
+  update: Toast.show,
+  read: readToastDemo,
+  write: writeToastDemo,
+  toParentMessage: toGotToastDemoMessage,
+  foldOutMessage: foldToastDemoOutMessage,
+})
+
+const foldToastDemoDismissAll = Update.foldChildStep({
+  update: Toast.dismissAll,
+  read: readToastDemo,
+  write: writeToastDemo,
+  toParentMessage: toGotToastDemoMessage,
+  foldOutMessage: foldToastDemoOutMessage,
+})
+
+const foldAnimationDemoOutMessage = (
+  outMessage: Animation.OutMessage,
+  { liftCommand }: Update.FoldContext<Animation.Message, Message>,
+): infer _ =>
+  Animation.OutMessage.match<Update.Step<Model, Message>>(outMessage, {
+    StartedLeaveAnimating: (): infer _ => (model): infer _ => ({
+      model,
+      commands: [
+        liftCommand(Animation.defaultLeaveCommand(model.animationDemo)),
+      ],
+    }),
+    TransitionedOut: (): infer _ => (model): infer _ => ({ model }),
+  })
+
+const foldAnimationDemo = Update.foldChild({
+  update: Animation.update,
+  read: (model: Model): infer _ => Option.some(model.animationDemo),
+  write: (model, nextAnimationDemo): infer _ =>
+    modifyFields(model, { animationDemo: (): infer _ => nextAnimationDemo }),
+  toParentMessage: (message): infer _ =>
+    Message.GotAnimationDemoMessage({ message }),
+  foldOutMessage: foldAnimationDemoOutMessage,
+})
+
+const foldAnimationDemoShow = Update.foldChildStep({
+  update: Animation.show,
+  read: (model: Model): infer _ => Option.some(model.animationDemo),
+  write: (model, nextAnimationDemo): infer _ =>
+    modifyFields(model, { animationDemo: (): infer _ => nextAnimationDemo }),
+  toParentMessage: (message): infer _ =>
+    Message.GotAnimationDemoMessage({ message }),
+})
+
+const foldAnimationDemoHide = Update.foldChildStep({
+  update: Animation.hide,
+  read: (model: Model): infer _ => Option.some(model.animationDemo),
+  write: (model, nextAnimationDemo): infer _ =>
+    modifyFields(model, { animationDemo: (): infer _ => nextAnimationDemo }),
+  toParentMessage: (message): infer _ =>
+    Message.GotAnimationDemoMessage({ message }),
+})
+
+const foldFileDropBasicDemoOutMessage = FileDrop.OutMessage.match<
+  Update.Step<Model, Message>
+>({
+  ReceivedFiles: ({ files }): infer _ => (model): infer _ => ({
+    model: modifyFields(model, {
+      fileDropBasicDemoFiles: Arr.appendAll(files),
+    }),
+  }),
+  RejectedNonFiles: (): infer _ => (model): infer _ => ({ model }),
+})
+
+const foldFileDropBasicDemo = Update.foldChild({
+  update: FileDrop.update,
+  read: (model: Model): infer _ => Option.some(model.fileDropBasicDemo),
+  write: (model, nextFileDropBasicDemo): infer _ =>
+    modifyFields(model, {
+      fileDropBasicDemo: (): infer _ => nextFileDropBasicDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotFileDropBasicDemoMessage({ message }),
+  foldOutMessage: foldFileDropBasicDemoOutMessage,
+})
+
+const foldDragAndDropDemoOutMessage = DragAndDrop.OutMessage.match<
+  Update.Step<Model, Message>
+>({
+  Reordered:
+    ({ itemId, fromContainerId, toContainerId, toIndex }): infer _ =>
+    (model): infer _ => {
+      const label = findDragAndDropDemoCardLabel(
+        model.dragAndDropDemoColumns,
+        itemId,
+      )
+      const columnLabel = findDragAndDropDemoColumnLabel(
+        model.dragAndDropDemoColumns,
+        toContainerId,
+      )
+
+      return {
+        model: modifyFields(model, {
+          dragAndDropDemoColumns: (dragAndDropDemoColumns): infer _ =>
+            reorderColumns(
+              dragAndDropDemoColumns,
+              itemId,
+              fromContainerId,
+              toContainerId,
+              toIndex,
+            ),
+          dragAndDropDemoAnnouncement: (): infer _ =>
+            dragAndDropDemoAnnouncementToText(
+              DragAndDropDemoAnnouncement.Dropped({
+                label,
+                columnLabel,
+                position: toIndex + 1,
+              }),
+            ),
+        }),
+      }
+    },
+  Cancelled: (): infer _ => (model): infer _ => ({
+    model: modifyFields(model, {
+      dragAndDropDemoAnnouncement: (): infer _ =>
+        dragAndDropDemoAnnouncementToText(
+          DragAndDropDemoAnnouncement.Cancelled(),
+        ),
+    }),
+  }),
+})
+
+const foldDragAndDropDemo = Update.foldChild({
+  update: DragAndDrop.update,
+  read: (model: Model): infer _ => Option.some(model.dragAndDropDemo),
+  write: (model, nextDragAndDropDemo): infer _ =>
+    modifyFields(model, {
+      dragAndDropDemo: (): infer _ => nextDragAndDropDemo,
+      dragAndDropDemoAnnouncement: (dragAndDropDemoAnnouncement): infer _ =>
+        Option.match(
+          maybeDragAndDropDemoKeyboardAnnouncement(model, nextDragAndDropDemo),
+          {
+            onNone: (): infer _ => dragAndDropDemoAnnouncement,
+            onSome: dragAndDropDemoAnnouncementToText,
+          },
+        ),
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotDragAndDropDemoMessage({ message }),
+  foldOutMessage: foldDragAndDropDemoOutMessage,
+})
+
+const foldVirtualListDemo = Update.foldChild({
+  update: VirtualList.update,
+  read: (model: Model): infer _ => Option.some(model.virtualListDemo),
+  write: (model, nextVirtualListDemo): infer _ =>
+    modifyFields(model, {
+      virtualListDemo: (): infer _ => nextVirtualListDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotVirtualListDemoMessage({ message }),
+})
+
+const foldVirtualListDemoScrollToIndex = Update.foldChild({
+  update: VirtualList.scrollToIndex,
+  read: (model: Model): infer _ => Option.some(model.virtualListDemo),
+  write: (model, nextVirtualListDemo): infer _ =>
+    modifyFields(model, {
+      virtualListDemo: (): infer _ => nextVirtualListDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotVirtualListDemoMessage({ message }),
+})
+
+const foldVirtualListVariableDemo = Update.foldChild({
+  update: VirtualList.update,
+  read: (model: Model): infer _ => Option.some(model.virtualListVariableDemo),
+  write: (model, nextVirtualListVariableDemo): infer _ =>
+    modifyFields(model, {
+      virtualListVariableDemo: (): infer _ => nextVirtualListVariableDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotVirtualListVariableDemoMessage({ message }),
+})
+
+const foldVirtualListVariableDemoScrollToIndex = Update.foldChild({
+  update: VirtualList.scrollToIndex,
+  read: (model: Model): infer _ => Option.some(model.virtualListVariableDemo),
+  write: (model, nextVirtualListVariableDemo): infer _ =>
+    modifyFields(model, {
+      virtualListVariableDemo: (): infer _ => nextVirtualListVariableDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotVirtualListVariableDemoMessage({ message }),
+})
+
+const foldVirtualListChatDemo = Update.foldChild({
+  update: VirtualList.update,
+  read: (model: Model): infer _ => Option.some(model.virtualListChatDemo),
+  write: (model, nextVirtualListChatDemo): infer _ =>
+    modifyFields(model, {
+      virtualListChatDemo: (): infer _ => nextVirtualListChatDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotVirtualListChatDemoMessage({ message }),
+})
+
+const foldVirtualListChatItemsChanged = Update.foldChild({
+  update: VirtualList.informItemsChanged,
+  read: (model: Model): infer _ => Option.some(model.virtualListChatDemo),
+  write: (model, nextVirtualListChatDemo): infer _ =>
+    modifyFields(model, {
+      virtualListChatDemo: (): infer _ => nextVirtualListChatDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotVirtualListChatDemoMessage({ message }),
+})
+
+const foldVirtualListChatScrollToKey = Update.foldChild({
+  update: (virtualListModel: VirtualList.Model, key: string): infer _ =>
+    VirtualList.scrollToKey(virtualListModel, key, { alignment: 'Center' }),
+  read: (model: Model): infer _ => Option.some(model.virtualListChatDemo),
+  write: (model, nextVirtualListChatDemo): infer _ =>
+    modifyFields(model, {
+      virtualListChatDemo: (): infer _ => nextVirtualListChatDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotVirtualListChatDemoMessage({ message }),
+})
+
+const VIRTUAL_LIST_CHAT_START_THRESHOLD_PX = 48
+const VIRTUAL_LIST_CHAT_HISTORY_BATCH_SIZE = 8
+
+const updateVirtualListChatMessages = (
+  model: Model,
+  nextMessages: ReadonlyArray<VirtualListChatMessage>,
+  nextId: number = model.virtualListChatNextId,
+): Update.Return<Model, Message> => {
+  const nextModel = modifyFields(model, {
+    virtualListChatMessages: (): infer _ => nextMessages,
+    virtualListChatNextId: (): infer _ => nextId,
+  })
+  return foldVirtualListChatItemsChanged(
+    nextModel,
+    Arr.map(nextMessages, (message): infer _ => globalThis.String(message.id)),
+  )
+}
+
+const prependVirtualListChatMessages = (model: Model): infer _ => {
+  const firstId = pipe(
+    model.virtualListChatMessages,
+    Arr.head,
+    Option.match({
+      onNone: (): infer _ => model.virtualListChatNextId,
+      onSome: (message): infer _ => message.id,
+    }),
+  )
+  const olderMessages = Arr.makeBy(
+    VIRTUAL_LIST_CHAT_HISTORY_BATCH_SIZE,
+    (index): infer _ => {
+      const id = firstId - VIRTUAL_LIST_CHAT_HISTORY_BATCH_SIZE + index
+      return {
+        id,
+        body: `Older message ${id} loaded above the viewport.`,
+        isExpanded: id % 3 === 0,
+      }
+    },
+  )
+  const nextMessages = [...olderMessages, ...model.virtualListChatMessages]
+  return updateVirtualListChatMessages(model, nextMessages)
+}
+
+const prependVirtualListChatMessagesOnStartThresholdEntry =
+  (scrollTop: number): Update.Step<Model, Message> => (stepModel): infer _ => {
+    const isNearStart = scrollTop <= VIRTUAL_LIST_CHAT_START_THRESHOLD_PX
+    const nextVirtualListChatStartProximity = isNearStart
+      ? VirtualListChatStartProximity.Near()
+      : VirtualListChatStartProximity.Away()
+    const nextModel = modifyFields(stepModel, {
+      virtualListChatStartProximity: (): infer _ =>
+        nextVirtualListChatStartProximity,
+    })
+
+    if (
+      !isNearStart
+      || stepModel.virtualListChatStartProximity._tag === 'Near'
+    ) {
+      return { model: nextModel }
+    }
+
+    return prependVirtualListChatMessages(nextModel)
+  }
+
+// UPDATE
+
+const foldVerticalRadioGroupDemoOutMessage = RadioGroup.OutMessage.match<
+  Update.Step<Model, Message>,
+  RadioGroup.OutMessage<Plan>
+>({
+  Selected: ({ value }): infer _ => (model): infer _ => ({
+    model: modifyFields(model, {
+      verticalRadioGroupDemoValue: (): infer _ => Option.some(value),
+    }),
+  }),
+})
+
+const foldVerticalRadioGroupDemo = Update.foldChild({
+  update: PlanRadioGroup.update,
+  read: (model: Model): infer _ => Option.some(model.verticalRadioGroupDemo),
+  write: (model, nextVerticalRadioGroupDemo): infer _ =>
+    modifyFields(model, {
+      verticalRadioGroupDemo: (): infer _ => nextVerticalRadioGroupDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotVerticalRadioGroupDemoMessage({ message }),
+  foldOutMessage: foldVerticalRadioGroupDemoOutMessage,
+})
+
+const foldHorizontalRadioGroupDemoOutMessage = RadioGroup.OutMessage.match<
+  Update.Step<Model, Message>,
+  RadioGroup.OutMessage<Plan>
+>({
+  Selected: ({ value }): infer _ => (model): infer _ => ({
+    model: modifyFields(model, {
+      horizontalRadioGroupDemoValue: (): infer _ => Option.some(value),
+    }),
+  }),
+})
+
+const foldHorizontalRadioGroupDemo = Update.foldChild({
+  update: PlanRadioGroup.update,
+  read: (model: Model): infer _ => Option.some(model.horizontalRadioGroupDemo),
+  write: (model, nextHorizontalRadioGroupDemo): infer _ =>
+    modifyFields(model, {
+      horizontalRadioGroupDemo: (): infer _ => nextHorizontalRadioGroupDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotHorizontalRadioGroupDemoMessage({ message }),
+  foldOutMessage: foldHorizontalRadioGroupDemoOutMessage,
+})
+
+export const update = (model: Model, message: Message): infer _ =>
+  Message.match<UpdateReturn>(message, {
+    UpdatedInputDemoValue: ({ value }): infer _ => ({
+      model: modifyFields(model, { inputDemoValue: (): infer _ => value }),
+    }),
+
+    UpdatedTextareaDemoValue: ({ value }): infer _ => ({
+      model: modifyFields(model, { textareaDemoValue: (): infer _ => value }),
+    }),
+
+    UpdatedFieldsetInputValue: ({ value }): infer _ => ({
+      model: modifyFields(model, { fieldsetInputValue: (): infer _ => value }),
+    }),
+
+    UpdatedFieldsetTextareaValue: ({ value }): infer _ => ({
+      model: modifyFields(model, {
+        fieldsetTextareaValue: (): infer _ => value,
+      }),
+    }),
+
+    UpdatedSelectDemoValue: ({ value }): infer _ => ({
+      model: modifyFields(model, { selectDemoValue: (): infer _ => value }),
+    }),
+
+    ToggledFieldsetCheckboxDemo: ({ isChecked }): infer _ => ({
+      model: modifyFields(model, {
+        isFieldsetCheckboxDemoChecked: (): infer _ => isChecked,
+      }),
+    }),
+
+    ClickedButtonDemo: (): infer _ => ({
+      model: modifyFields(model, {
+        buttonClickCount: Num.increment,
+      }),
+    }),
+
+    GotCalendarBasicDemoMessage: ({ message }): infer _ =>
+      foldCalendarBasicDemo(model, message),
+
+    GotDatePickerBasicDemoMessage: ({ message }): infer _ =>
+      foldDatePickerBasicDemo(model, message),
+
+    ToggledCheckboxBasicDemo: ({ isChecked }): infer _ => ({
+      model: modifyFields(model, {
+        isCheckboxBasicDemoChecked: (): infer _ => isChecked,
+      }),
+    }),
+
+    ToggledCheckboxAllDemo: ({ isChecked }): infer _ => ({
+      model: modifyFields(model, {
+        isCheckboxOptionADemoChecked: (): infer _ => isChecked,
+        isCheckboxOptionBDemoChecked: (): infer _ => isChecked,
+      }),
+    }),
+
+    ToggledCheckboxOptionADemo: ({ isChecked }): infer _ => ({
+      model: modifyFields(model, {
+        isCheckboxOptionADemoChecked: (): infer _ => isChecked,
+      }),
+    }),
+
+    ToggledCheckboxOptionBDemo: ({ isChecked }): infer _ => ({
+      model: modifyFields(model, {
+        isCheckboxOptionBDemoChecked: (): infer _ => isChecked,
+      }),
+    }),
+
+    GotComboboxDemoMessage: ({ message }): infer _ =>
+      foldComboboxDemo(model, message),
+
+    GotComboboxPlacementLockDemoMessage: ({ message }): infer _ =>
+      foldComboboxPlacementLockDemo(model, message),
+
+    GotComboboxNullableDemoMessage: ({ message }): infer _ =>
+      foldComboboxNullableDemo(model, message),
+
+    GotComboboxMultiDemoMessage: ({ message }): infer _ =>
+      foldComboboxMultiDemo(model, message),
+
+    GotComboboxSelectOnFocusDemoMessage: ({ message }): infer _ =>
+      foldComboboxSelectOnFocusDemo(model, message),
+
+    GotDialogDemoMessage: ({ message }): infer _ =>
+      foldDialogDemo(model, message),
+
+    GotDialogAnimatedDemoMessage: ({ message }): infer _ =>
+      foldDialogAnimatedDemo(model, message),
+
+    GotOverlayDialogDemoMessage: ({ message }): infer _ =>
+      foldOverlayDialogDemo(model, message),
+
+    GotOverlayComboboxDemoMessage: ({ message }): infer _ =>
+      foldOverlayComboboxDemo(model, message),
+
+    GotNestedDialogParentDemoMessage: ({ message }): infer _ =>
+      foldNestedDialogParentDemo(model, message),
+
+    GotNestedDialogChildDemoMessage: ({ message }): infer _ =>
+      foldNestedDialogChildDemo(model, message),
+
+    ClickedDeleteProject: (): infer _ => foldNestedDialogChildDemoOpen(model),
+
+    ClickedOpenDialog: (): infer _ => foldDialogDemoOpen(model),
+
+    ClickedOpenAnimatedDialog: (): infer _ => foldDialogAnimatedDemoOpen(model),
+
+    ClickedEditFilters: (): infer _ => foldOverlayDialogDemoOpen(model),
+
+    ClickedOpenProjectSettings: (): infer _ =>
+      foldNestedDialogParentDemoOpen(model),
+
+    ToggledDisclosureDemo: ({ isOpen }): infer _ => ({
+      model: modifyFields(model, {
+        isDisclosureDemoOpen: (): infer _ => isOpen,
+      }),
+    }),
+
+    ToggledDisclosureCollapsedPreviewDemo: ({ isOpen }): infer _ => ({
+      model: modifyFields(model, {
+        isDisclosureCollapsedPreviewDemoOpen: (): infer _ => isOpen,
+      }),
+    }),
+
+    GotListboxDemoMessage: ({ message }): infer _ =>
+      foldListboxDemo(model, message),
+
+    GotListboxMultiDemoMessage: ({ message }): infer _ =>
+      foldListboxMultiDemo(model, message),
+
+    GotListboxGroupedDemoMessage: ({ message }): infer _ =>
+      foldListboxGroupedDemo(model, message),
+
+    GotMenuBasicDemoMessage: ({ message }): infer _ =>
+      foldMenuBasicDemo(model, message),
+
+    GotMenuAnimatedDemoMessage: ({ message }): infer _ =>
+      foldMenuAnimatedDemo(model, message),
+
+    GotPopoverBasicDemoMessage: ({ message }): infer _ =>
+      foldPopoverBasicDemo(model, message),
+
+    GotPopoverAnimatedDemoMessage: ({ message }): infer _ =>
+      foldPopoverAnimatedDemo(model, message),
+
+    GotPopoverArrowDemoMessage: ({ message }): infer _ =>
+      foldPopoverArrowDemo(model, message),
+
+    GotPopoverNestedParentDemoMessage: ({ message }): infer _ =>
+      foldPopoverNestedParentDemo(model, message),
+
+    GotPopoverNestedChildDemoMessage: ({ message }): infer _ =>
+      foldPopoverNestedChildDemo(model, message),
+
+    GotVerticalRadioGroupDemoMessage: ({ message }): infer _ =>
+      foldVerticalRadioGroupDemo(model, message),
+
+    GotHorizontalRadioGroupDemoMessage: ({ message }): infer _ =>
+      foldHorizontalRadioGroupDemo(model, message),
+
+    GotSliderRatingDemoMessage: ({ message }): infer _ =>
+      foldSliderRatingDemo(model, message),
+
+    GotSliderVolumeDemoMessage: ({ message }): infer _ =>
+      foldSliderVolumeDemo(model, message),
+
+    ToggledSwitchDemo: ({ isChecked }): infer _ => ({
+      model: modifyFields(model, {
+        isSwitchDemoChecked: (): infer _ => isChecked,
+      }),
+    }),
+
+    GotHorizontalTabsDemoMessage: ({ message }): infer _ =>
+      foldHorizontalTabsDemo(model, message),
+
+    GotVerticalTabsDemoMessage: ({ message }): infer _ =>
+      foldVerticalTabsDemo(model, message),
+
+    GotTooltipDemoMessage: ({ message }): infer _ =>
+      foldTooltipDemo(model, message),
+
+    GotHoverIntentCardDemoMessage: ({ message }): infer _ =>
+      foldHoverIntentCardDemo(model, message),
+
+    GotHoverIntentMenuDemoMessage: ({ message }): infer _ =>
+      foldHoverIntentMenuDemo(model, message),
+
+    ClickedHoverIntentMenuItem: (): infer _ =>
+      foldHoverIntentMenuDemoClose(model),
+
+    GotToastDemoMessage: ({ message }): infer _ =>
+      foldToastDemo(model, message),
+
+    ClickedShowInfoToast: (): infer _ =>
+      foldToastDemoShow(model, {
+        variant: 'Info',
+        payload: {
+          title: 'Preferences updated',
+          maybeDescription: Option.some('Your changes are saved.'),
+        },
+      }),
+
+    ClickedShowSuccessToast: (): infer _ =>
+      foldToastDemoShow(model, {
+        variant: 'Success',
+        payload: {
+          title: 'Uploaded',
+          maybeDescription: Option.some('kit-manual.pdf is now available.'),
+        },
+      }),
+
+    ClickedShowErrorToast: (): infer _ =>
+      foldToastDemoShow(model, {
+        variant: 'Error',
+        payload: {
+          title: 'Save failed',
+          maybeDescription: Option.some('Check your connection and try again.'),
+        },
+      }),
+
+    ClickedShowStickyToast: (): infer _ =>
+      foldToastDemoShow(model, {
+        variant: 'Info',
+        payload: {
+          title: 'Action required',
+          maybeDescription: Option.some('Stays visible until dismissed.'),
+        },
+        sticky: true,
+      }),
+
+    ClickedDismissAllToasts: (): infer _ => foldToastDemoDismissAll(model),
+
+    GotAnimationDemoMessage: ({ message }): infer _ =>
+      foldAnimationDemo(model, message),
+
+    ClickedToggleAnimationDemo: (): infer _ =>
+      model.animationDemo.isShowing
+        ? foldAnimationDemoHide(model)
+        : foldAnimationDemoShow(model),
+
+    GotFileDropBasicDemoMessage: ({ message }): infer _ =>
+      foldFileDropBasicDemo(model, message),
+
+    ClickedRemoveFileDropDemoFile: ({ fileIndex }): infer _ => ({
+      model: modifyFields(model, {
+        fileDropBasicDemoFiles: (): infer _ =>
+          Arr.remove(model.fileDropBasicDemoFiles, fileIndex),
+      }),
+    }),
+
+    GotDragAndDropDemoMessage: ({ message }): infer _ =>
+      foldDragAndDropDemo(model, message),
+
+    GotVirtualListDemoMessage: ({ message }): infer _ =>
+      foldVirtualListDemo(model, message),
+
+    ClickedVirtualListScrollToMiddle: (): infer _ =>
+      foldVirtualListDemoScrollToIndex(
+        model,
+        Math.floor(VIRTUAL_LIST_ROW_COUNT / 2),
+      ),
+
+    GotVirtualListVariableDemoMessage: ({ message }): infer _ =>
+      foldVirtualListVariableDemo(model, message),
+
+    ClickedVirtualListVariableScrollToMiddle: (): infer _ =>
+      foldVirtualListVariableDemoScrollToIndex(
+        model,
+        Math.floor(VIRTUAL_LIST_ROW_COUNT / 2),
+      ),
+
+    GotVirtualListChatDemoMessage: ({ message }): infer _ => match (message) {
+      when { _tag: 'ObservedContainerScroll', let scrollTop }: Update.combine(
+        model,
+        [
+          foldVirtualListChatDemo(message),
+          prependVirtualListChatMessagesOnStartThresholdEntry(scrollTop),
+        ],
+      );
+      default: foldVirtualListChatDemo(model, message);
+    },
+
+    ClickedVirtualListChatPrepend: (): infer _ =>
+      prependVirtualListChatMessages(model),
+
+    ClickedVirtualListChatScrollToMessage: (): infer _ =>
+      foldVirtualListChatScrollToKey(model, '7'),
+
+    ClickedVirtualListChatAppend: (): infer _ => {
+      const nextId = model.virtualListChatNextId
+      const nextMessages = Arr.append(model.virtualListChatMessages, {
+        id: nextId,
+        body: `New message ${nextId} arrived at the end.`,
+        isExpanded: nextId % 3 === 0,
+      })
+      return updateVirtualListChatMessages(model, nextMessages, nextId + 1)
+    },
+
+    ClickedVirtualListChatToggleMessage: ({ messageId }): infer _ => {
+      const nextMessages = Arr.map(
+        model.virtualListChatMessages,
+        (message): infer _ =>
+          message.id === messageId
+            ? modifyFields(message, {
+              isExpanded: (isExpanded): infer _ => !isExpanded,
+            })
+            : message,
+      )
+      return updateVirtualListChatMessages(model, nextMessages)
+    },
+  })

@@ -2,7 +2,12 @@ import { Array, Duration } from 'effect'
 import { Command, given, message, model, story } from 'foldkit/story'
 import { describe, expect, test } from 'vitest'
 
-import { DelayAdvancePhase, Message, init, update } from './asyncCounterDemo'
+import {
+  DelayAdvancePhase,
+  Message,
+  init,
+  update,
+} from './asyncCounterDemo.vibe'
 
 const init_ = init()
 

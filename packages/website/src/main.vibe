@@ -1,0 +1,1177 @@
+import { escapeCssIdentifier } from './browserCss.ts'
+import * as Clipboard from '@effect/platform-browser/Clipboard'
+import { browserDocument } from './browserDocument.ts'
+import { browserWindow } from './browserWindow.ts'
+import { detectPlaygroundSupport } from './browserEnvironment.ts'
+import {
+  Calendar,
+  Command,
+  Dom,
+  ManagedResource,
+  Runtime,
+  Subscription,
+  Update,
+} from 'foldkit'
+import { UrlRequest, load, pushUrl } from 'foldkit/navigation'
+import { Transition } from 'foldkit/route'
+import { modifyFields } from 'foldkit/struct'
+import { Url, toString as urlToString } from 'foldkit/url'
+import { githubStarCount } from 'virtual:landing-data'
+
+import { BrowserKeyValueStore } from '@effect/platform-browser'
+import { Dialog, Menu } from '@foldkit/ui'
+import { inject } from '@vercel/analytics'
+import * as SpeedInsights from '@vercel/speed-insights'
+
+import { DARK_COLOR_SCHEME_QUERY } from './colorScheme.vibe'
+import { Deployment, isTelemetryEnabled } from './deployment.vibe'
+import {
+  DOCS_SIDEBAR_NAV_ID,
+  MOBILE_MENU_NAV_ID,
+  findActiveSectionKey,
+} from './docsNav.vibe'
+import { Message, ResolvedTheme, ThemePreference } from './message.vibe'
+import { Model } from './model.vibe'
+import {
+  ApiReference,
+  ComingFromReact,
+  Core,
+  Example,
+  Home,
+  Playground,
+  Ui,
+} from './page/index.ts'
+import {
+  AppRoute,
+  isPlaygroundRoute,
+  playgroundRouter,
+  urlToAppRoute,
+} from './route.vibe'
+import * as Search from './search/index.ts'
+import {
+  GroupKey,
+  SIDEBAR_STORAGE_KEY,
+  SidebarGroups,
+  SidebarState,
+  SidebarStateJsonString,
+} from './sidebarStorage.vibe'
+import * as SnippetCopy from './snippetCopy/index.ts'
+import * as SnippetDisclosure from './snippetDisclosure/index.ts'
+import * as Subscriptions from './subscription/index.ts'
+import { ThemeSelector } from './view/index.ts'
+
+export type { Message } from './message.vibe'
+export { Model } from './model.vibe'
+export type { TableOfContentsEntry } from './tableOfContentsEntry.ts'
+export { view } from './view/application.vibe'
+
+export type AppResources = Search.PagefindService
+
+export type AppManagedResources = ManagedResource.ServicesOf<
+  typeof managedResources
+>
+
+// THEME
+
+const THEME_STORAGE_KEY = 'theme-preference'
+
+export { type ThemePreference, type ResolvedTheme } from './message.vibe'
+
+const resolveTheme = (
+  preference: ThemePreference,
+  systemTheme: ResolvedTheme,
+): ResolvedTheme => match (preference) {
+  when 'Dark': 'Dark';
+  when 'Light': 'Light';
+  when 'System': systemTheme;
+}
+
+// FLAGS
+
+export const Flags = Schema.Struct({
+  currentYear: Schema.Number,
+  today: Calendar.CalendarDate,
+  deployment: Deployment,
+  maybeApiData: Schema.Option(ApiReference.ApiData),
+  maybeExampleSources: Schema.Option(Example.ExampleSources),
+})
+type Flags = typeof Flags.Type
+
+// NOTE: Playground navigation loads a fresh document with COOP/COEP headers.
+// Firefox can boot this standalone WebContainer embed, but its iframe preview
+// stays blank and opening the URL needs a project connection route Foldkit lacks.
+
+const loadBrowserEnvironment = effect {
+  const themePreference: Option<ThemePreference> = try effect {
+    provide BrowserKeyValueStore.layerLocalStorage {
+      return (effect {
+        const store = try KeyValueStore.KeyValueStore
+        const json = try Effect.fromOption(
+          Option.fromNullishOr(try store.get(THEME_STORAGE_KEY)),
+        )
+        const theme = try Schema.decodeEffect(
+          Schema.fromJsonString(ThemePreference),
+        )(json)
+        return Option.some(theme)
+      }) catch () => Option.none()
+    }
+  }
+  const maybeSidebarState: Option<SidebarState> = try effect {
+    provide BrowserKeyValueStore.layerSessionStorage {
+      return (effect {
+        const store = try KeyValueStore.KeyValueStore
+        const json = try Effect.fromOption(
+          Option.fromNullishOr(try store.get(SIDEBAR_STORAGE_KEY)),
+        )
+        const state = try Schema.decodeEffect(SidebarStateJsonString)(json)
+        return Option.some(state)
+      }) catch () => Option.none()
+    }
+  }
+  const systemTheme: ResolvedTheme = try Effect.sync(() =>
+    browserWindow().matchMedia(DARK_COLOR_SCHEME_QUERY).matches
+      ? 'Dark'
+      : 'Light'
+  )
+  const isPlaygroundSupported = try Effect.sync(detectPlaygroundSupport)
+  const now = try DateTime.now
+  const currentYear = DateTime.getPartUtc(now, 'year')
+  const today = try Calendar.today.local
+  return Message.CompletedLoadBrowserEnvironment({
+    maybeThemePreference: themePreference,
+    maybeSidebarState,
+    systemTheme,
+    isPlaygroundSupported,
+    currentYear,
+    today,
+  })
+}
+
+// INIT
+
+const isGroupOpenOnBoot = (
+  maybeSidebarState: Option<SidebarState>,
+  maybeActiveSectionKey: Option<GroupKey>,
+  key: GroupKey,
+): boolean => {
+  const isActiveSection = Option.exists(
+    maybeActiveSectionKey,
+    (activeSectionKey): infer _ => activeSectionKey === key,
+  )
+  if (isActiveSection) {
+    return true
+  }
+  return match (maybeSidebarState) {
+    when Option.None: false;
+    when Option.Some(let selectedOptionPayload0): do {
+      const { open } = selectedOptionPayload0
+      open[key] ?? false
+    };
+  }
+}
+
+const initialSidebarGroups = (
+  maybeSidebarState: Option<SidebarState>,
+  maybeActiveSectionKey: Option<GroupKey>,
+): SidebarGroups => {
+  const sidebarGroups: globalThis.Record<GroupKey, boolean> = Record
+    .fromIterableWith(GroupKey.literals, (key): infer _ => [
+      key,
+      isGroupOpenOnBoot(maybeSidebarState, maybeActiveSectionKey, key),
+    ])
+  return sidebarGroups
+}
+
+export const init: Runtime.RoutingApplicationInit<
+  Model,
+  Message,
+  Flags,
+  AppResources,
+  AppManagedResources
+> = (flags: Flags, url: Url): infer _ => {
+  const maybeThemePreference = Option.none<ThemePreference>()
+  const systemTheme: ResolvedTheme = 'Light'
+  const resolvedTheme = systemTheme
+
+  const initialRoute = urlToAppRoute(url)
+  const maybeHome = Option.liftPredicate(
+    initialRoute,
+    (route): route is Extract<AppRoute, { _tag: 'Home' }> =>
+      route._tag === 'Home',
+  )
+    .map((): infer _ => Home.init().model)
+
+  const maybeInitialExampleSlug = Option.liftPredicate(
+    initialRoute,
+    (route): route is Extract<AppRoute, { _tag: 'ExampleDetail' }> =>
+      route._tag === 'ExampleDetail',
+  )
+    .map(({ exampleSlug }): infer _ => exampleSlug)
+  const searchInit = Search.init()
+  const snippetCopyInit = SnippetCopy.init()
+  const snippetDisclosureInit = SnippetDisclosure.init()
+  const coreSubmodelPageInit = Core.SubmodelPage.init()
+
+  const maybeInitialActiveSectionKey = findActiveSectionKey(
+    initialRoute._tag,
+    maybeInitialExampleSlug,
+  )
+
+  const analyticsCommands = isTelemetryEnabled(flags.deployment)
+    ? [InjectAnalytics(), InjectSpeedInsights()]
+    : []
+
+  const pageInits = Update.foldChildInits(
+    {
+      uiPages: Ui.init(flags.today),
+      comingFromReact: ComingFromReact.init(),
+      apiReference: ApiReference.boot(flags.maybeApiData),
+      exampleDetail: Example.ExampleDetail.boot(
+        maybeInitialExampleSlug,
+        flags.maybeExampleSources,
+      ),
+    },
+    {
+      toParentModel: ({
+        uiPages,
+        comingFromReact,
+        apiReference,
+        exampleDetail,
+      }): infer _ => ({
+        route: initialRoute,
+        url,
+        deployment: flags.deployment,
+        snippetCopy: snippetCopyInit.model,
+        snippetDisclosure: snippetDisclosureInit.model,
+        maybeGitHubStarCount: Option.fromNullishOr(githubStarCount),
+        currentYear: flags.currentYear,
+        newsletterEmail: '',
+        mobileMenuDialog: Dialog.init({ id: 'mobile-menu' }),
+        isMobileTableOfContentsOpen: false,
+        activeSection: Option.none(),
+        maybeHome,
+        isNarrowViewport: false,
+        maybeIsPlaygroundSupported: Option.none(),
+        playground: Option.liftPredicate(initialRoute, isPlaygroundRoute)
+          .map(({ exampleSlug }): infer _ => Playground.init(exampleSlug)),
+        sidebarGroups: initialSidebarGroups(
+          Option.none(),
+          maybeInitialActiveSectionKey,
+        ),
+        coreSubmodelPage: coreSubmodelPageInit.model,
+        themeMenu: Menu.init({ id: 'theme-menu' }),
+        maybeThemePreference,
+        systemTheme,
+        resolvedTheme,
+        uiPages,
+        comingFromReact,
+        apiReference,
+        exampleDetail,
+        search: searchInit.model,
+      }),
+      folds: {
+        uiPages: {
+          toParentMessage: (message): infer _ =>
+            Message.GotUiPageMessage({ message }),
+        },
+        comingFromReact: {
+          toParentMessage: (message): infer _ =>
+            Message.GotComingFromReactMessage({ message }),
+        },
+        apiReference: {
+          toParentMessage: (message): infer _ =>
+            Message.GotApiReferenceMessage({ message }),
+        },
+        exampleDetail: {
+          toParentMessage: (message): infer _ =>
+            Message.GotExampleDetailMessage({ message }),
+        },
+      },
+    },
+  )
+
+  return {
+    model: pageInits.model,
+    commands: [
+      LoadBrowserEnvironment(),
+      ...analyticsCommands,
+      ...(pageInits.commands ?? []),
+      ScrollSidebarActiveLinkIntoView(),
+      ...match (url.hash) {
+        when Option.None: [];
+        when Option.Some(let hash): [ScrollToAnchor({ hash })];
+      },
+    ],
+  }
+}
+
+// UPDATE
+
+type UpdateStep = Update.Step<
+  Model,
+  Message,
+  AppResources | AppManagedResources
+>
+
+const isPathnameEqual = (a: Url, b: Url): boolean => a.pathname === b.pathname
+
+const foldThemeMenuOutMessage = Menu.OutMessage.match<
+  Update.Step<Model, Message>,
+  Menu.OutMessage<ThemePreference>
+>({
+  Selected: ({ value: preference }): infer _ => (model): infer _ => {
+    const resolvedTheme = resolveTheme(preference, model.systemTheme)
+
+    return {
+      model: modifyFields(model, {
+        maybeThemePreference: (): infer _ => Option.some(preference),
+        resolvedTheme: (): infer _ => resolvedTheme,
+      }),
+      commands: [
+        ApplyTheme({ theme: resolvedTheme }),
+        SaveThemePreference({ preference }),
+      ],
+    }
+  },
+})
+
+const readThemeMenu = (model: Model): Option<Menu.Model> =>
+  Option.some(model.themeMenu)
+
+const writeThemeMenu = (model: Model, nextThemeMenu: Menu.Model): Model =>
+  modifyFields(model, { themeMenu: (): infer _ => nextThemeMenu })
+
+const toGotThemeMenuMessage = (message: Menu.Message): Message =>
+  Message.GotThemeMenuMessage({ message })
+
+const foldThemeMenu = Update.foldChild({
+  update: ThemeSelector.ThemeMenu.update,
+  read: readThemeMenu,
+  write: writeThemeMenu,
+  toParentMessage: toGotThemeMenuMessage,
+  foldOutMessage: foldThemeMenuOutMessage,
+})
+
+const foldThemeMenuClose = Update.foldChildStep({
+  update: ThemeSelector.ThemeMenu.close,
+  read: readThemeMenu,
+  write: writeThemeMenu,
+  toParentMessage: toGotThemeMenuMessage,
+  foldOutMessage: foldThemeMenuOutMessage,
+})
+
+const foldMobileMenuDialogOutMessage = Dialog.OutMessage.match<
+  Update.Step<Model, Message>
+>({
+  Opened: (): infer _ => (model): infer _ => ({ model }),
+  Closed: (): infer _ => (model): infer _ => ({ model }),
+})
+
+const readMobileMenuDialog = (model: Model): Option<Dialog.Model> =>
+  Option.some(model.mobileMenuDialog)
+
+const writeMobileMenuDialog = (
+  model: Model,
+  nextMobileMenuDialog: Dialog.Model,
+): Model =>
+  modifyFields(model, { mobileMenuDialog: (): infer _ => nextMobileMenuDialog })
+
+const toGotMobileMenuDialogMessage = (message: Dialog.Message): Message =>
+  Message.GotMobileMenuDialogMessage({ message })
+
+const foldMobileMenuDialog = Update.foldChild({
+  update: Dialog.update,
+  read: readMobileMenuDialog,
+  write: writeMobileMenuDialog,
+  toParentMessage: toGotMobileMenuDialogMessage,
+  foldOutMessage: foldMobileMenuDialogOutMessage,
+})
+
+const foldMobileMenuDialogClose = Update.foldChildStep({
+  update: Dialog.close,
+  read: readMobileMenuDialog,
+  write: writeMobileMenuDialog,
+  toParentMessage: toGotMobileMenuDialogMessage,
+  foldOutMessage: foldMobileMenuDialogOutMessage,
+})
+
+const foldMobileMenuDialogOpen = Update.foldChildStep({
+  update: Dialog.open,
+  read: readMobileMenuDialog,
+  write: writeMobileMenuDialog,
+  toParentMessage: toGotMobileMenuDialogMessage,
+  foldOutMessage: foldMobileMenuDialogOutMessage,
+})
+
+const foldSnippetCopy = Update.foldChild({
+  update: SnippetCopy.update,
+  read: (model: Model): infer _ => Option.some(model.snippetCopy),
+  write: (model, nextSnippetCopy): infer _ =>
+    modifyFields(model, { snippetCopy: (): infer _ => nextSnippetCopy }),
+  toParentMessage: (message): infer _ =>
+    Message.GotSnippetCopyMessage({ message }),
+})
+
+const foldSnippetDisclosure = Update.foldChild({
+  update: SnippetDisclosure.update,
+  read: (model: Model): infer _ => Option.some(model.snippetDisclosure),
+  write: (model, nextSnippetDisclosure): infer _ =>
+    modifyFields(model, {
+      snippetDisclosure: (): infer _ => nextSnippetDisclosure,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotSnippetDisclosureMessage({ message }),
+})
+
+const foldCoreSubmodelPage = Update.foldChild({
+  update: Core.SubmodelPage.update,
+  read: (model: Model): infer _ => Option.some(model.coreSubmodelPage),
+  write: (model, nextCoreSubmodelPage): infer _ =>
+    modifyFields(model, {
+      coreSubmodelPage: (): infer _ => nextCoreSubmodelPage,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotCoreSubmodelPageMessage({ message }),
+})
+
+const readHome = (model: Model): Option<Home.Model> => model.maybeHome
+
+const writeHome = (model: Model, nextHome: Home.Model): Model =>
+  modifyFields(model, { maybeHome: (): infer _ => Option.some(nextHome) })
+
+const toGotHomeMessage = (message: Home.Message): Message =>
+  Message.GotHomeMessage({ message })
+
+const foldHomeOutMessage = (outMessage: Home.OutMessage): infer _ =>
+  Home.OutMessage.match<Update.Step<Model, Message>>(outMessage, {
+    SelectedPlaygroundExample:
+      ({ exampleSlug }): infer _ => (model): infer _ => ({
+        model,
+        commands: [LoadPlayground({ exampleSlug })],
+      }),
+    UpdatedNewsletterEmail: ({ value }): infer _ => (model): infer _ => ({
+      model: modifyFields(model, { newsletterEmail: (): infer _ => value }),
+    }),
+  })
+
+const foldHome = Update.foldChild({
+  update: Home.update,
+  read: readHome,
+  write: writeHome,
+  toParentMessage: toGotHomeMessage,
+  foldOutMessage: foldHomeOutMessage,
+})
+
+const keepModel: UpdateStep = (model): infer _ => ({ model })
+
+const reconcileHomePresence = (
+  transition: Transition.Transition<AppRoute>,
+): UpdateStep =>
+  Transition.matchOrElse<UpdateStep>()(
+    transition,
+    'Home',
+    {
+      Entered: (): infer _ => (model): infer _ => ({
+        model: modifyFields(model, {
+          maybeHome: (): infer _ => Option.some(Home.init().model),
+        }),
+      }),
+      Exited: (): infer _ => (model): infer _ => ({
+        model: modifyFields(model, { maybeHome: (): infer _ => Option.none() }),
+      }),
+    },
+    (): infer _ => keepModel,
+  )
+
+const foldComingFromReact = Update.foldChild({
+  update: ComingFromReact.update,
+  read: (model: Model): infer _ => Option.some(model.comingFromReact),
+  write: (model, nextComingFromReact): infer _ =>
+    modifyFields(model, {
+      comingFromReact: (): infer _ => nextComingFromReact,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotComingFromReactMessage({ message }),
+})
+
+const readApiReference = (model: Model): Option<ApiReference.Model> =>
+  Option.some(model.apiReference)
+
+const writeApiReference = (
+  model: Model,
+  nextApiReference: ApiReference.Model,
+): Model =>
+  modifyFields(model, { apiReference: (): infer _ => nextApiReference })
+
+const toGotApiReferenceMessage = (message: ApiReference.Message): Message =>
+  Message.GotApiReferenceMessage({ message })
+
+const foldApiReference = Update.foldChild({
+  update: ApiReference.update,
+  read: readApiReference,
+  write: writeApiReference,
+  toParentMessage: toGotApiReferenceMessage,
+})
+
+const foldApiReferenceRouteChanged = Update.foldChildStep({
+  update: ApiReference.informRouteChanged,
+  read: readApiReference,
+  write: writeApiReference,
+  toParentMessage: toGotApiReferenceMessage,
+})
+
+const foldUiPages = Update.foldChild({
+  update: Ui.update,
+  read: (model: Model): infer _ => Option.some(model.uiPages),
+  write: (model, nextUiPages): infer _ =>
+    modifyFields(model, { uiPages: (): infer _ => nextUiPages }),
+  toParentMessage: (message): infer _ => Message.GotUiPageMessage({ message }),
+})
+
+const readExampleDetail = (
+  model: Model,
+): Option<Example.ExampleDetail.Model> => Option.some(model.exampleDetail)
+
+const writeExampleDetail = (
+  model: Model,
+  nextExampleDetail: Example.ExampleDetail.Model,
+): Model =>
+  modifyFields(model, { exampleDetail: (): infer _ => nextExampleDetail })
+
+const toGotExampleDetailMessage = (
+  message: Example.ExampleDetail.Message,
+): Message => Message.GotExampleDetailMessage({ message })
+
+const foldExampleDetail = Update.foldChild({
+  update: Example.ExampleDetail.update,
+  read: readExampleDetail,
+  write: writeExampleDetail,
+  toParentMessage: toGotExampleDetailMessage,
+})
+
+const foldExampleDetailRouteChanged = Update.foldChild({
+  update: Example.ExampleDetail.informRouteChanged,
+  read: readExampleDetail,
+  write: writeExampleDetail,
+  toParentMessage: toGotExampleDetailMessage,
+})
+
+const readSearch = (model: Model): Option<Search.Model> =>
+  Option.some(model.search)
+
+const writeSearch = (model: Model, nextSearch: Search.Model): Model =>
+  modifyFields(model, { search: (): infer _ => nextSearch })
+
+const toGotSearchMessage = (message: Search.Message): Message =>
+  Message.GotSearchMessage({ message })
+
+const foldSearch = Update.foldChild({
+  update: Search.update,
+  read: readSearch,
+  write: writeSearch,
+  toParentMessage: toGotSearchMessage,
+})
+
+const foldSearchRouteChanged = Update.foldChildStep({
+  update: Search.informRouteChanged,
+  read: readSearch,
+  write: writeSearch,
+  toParentMessage: toGotSearchMessage,
+})
+
+const foldSearchOpen = Update.foldChildStep({
+  update: Search.open,
+  read: readSearch,
+  write: writeSearch,
+  toParentMessage: toGotSearchMessage,
+})
+
+const foldPlayground = Update.foldChild({
+  update: Playground.update,
+  read: (model: Model): infer _ => model.playground,
+  write: (model, nextPlayground): infer _ =>
+    modifyFields(model, {
+      playground: (): infer _ => Option.some(nextPlayground),
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotPlaygroundMessage({ message }),
+})
+
+type UpdateReturn = Update.Return<
+  Model,
+  Message,
+  AppResources | AppManagedResources
+>
+
+export const update = (model: Model, message: Message): infer _ =>
+  Message.match<UpdateReturn>(message, {
+    ClickedLink: ({ request }): infer _ =>
+      UrlRequest.match<UpdateReturn>(request, {
+        Internal: ({ url }): infer _ => {
+          // NOTE: WebContainer requires `window.crossOriginIsolated`,
+          // which only becomes true when the document is loaded with
+          // the COEP/COOP response headers set in deploy-website.yml
+          // and vite.config.ts. SPA navigation reuses the previous
+          // page's document (no headers), so we navigate to playground
+          // URLs by loading a fresh document instead.
+          if (isPlaygroundRoute(urlToAppRoute(url))) {
+            return {
+              model,
+              commands: [LoadExternal({ href: urlToString(url) })],
+            }
+          }
+          return {
+            model,
+            commands: [NavigateInternal({ url: urlToString(url) })],
+          }
+        },
+        External: ({ href }): infer _ => ({
+          model,
+          commands: [LoadExternal({ href })],
+        }),
+      }),
+
+    ChangedUrl: ({ url }): infer _ => {
+      const nextRoute = urlToAppRoute(url)
+      const transition = Transition.make(model.route, nextRoute)
+
+      const maybeNextExampleSlug = Option.liftPredicate(
+        nextRoute,
+        (route): route is Extract<AppRoute, { _tag: 'ExampleDetail' }> =>
+          route._tag === 'ExampleDetail',
+      )
+        .map(({ exampleSlug }): infer _ => exampleSlug)
+
+      const maybeNextActiveSectionKey = findActiveSectionKey(
+        nextRoute._tag,
+        maybeNextExampleSlug,
+      )
+
+      const nextSidebarGroups = match (maybeNextActiveSectionKey) {
+        when Option.None: model.sidebarGroups;
+        when Option.Some(let activeSectionKey):
+          model.sidebarGroups[activeSectionKey]
+            ? model.sidebarGroups
+            : Record.set(model.sidebarGroups, activeSectionKey, true);
+      }
+
+      const routeSteps: ReadonlyArray<UpdateStep> = match (nextRoute) {
+        when { _tag: 'ApiModule' }: [foldApiReferenceRouteChanged];
+        when { _tag: 'ExampleDetail', let exampleSlug }: [
+          foldExampleDetailRouteChanged(exampleSlug),
+        ];
+        default: [];
+      }
+
+      const maybeScrollSidebar = Option.liftPredicate(
+        ScrollSidebarActiveLinkIntoView(),
+        (): infer _ => !isPathnameEqual(model.url, url),
+      )
+
+      const maybeScrollToTop = Option.liftPredicate(
+        ScrollToTop(),
+        (): infer _ => !isPathnameEqual(model.url, url),
+      )
+
+      const nextPlaygroundRoute = Option.liftPredicate(
+        nextRoute,
+        isPlaygroundRoute,
+      )
+        .map(({ exampleSlug }): infer _ => Playground.init(exampleSlug))
+
+      const writeRouteFields: UpdateStep = (model): infer _ => ({
+        model: modifyFields(model, {
+          route: (): infer _ => nextRoute,
+          url: (): infer _ => url,
+          playground: (): infer _ => nextPlaygroundRoute,
+          sidebarGroups: (): infer _ => nextSidebarGroups,
+        }),
+      })
+
+      const scrollToRoute: UpdateStep = (model): infer _ => ({
+        model,
+        commands: [
+          ...match (url.hash) {
+            when Option.None: Option.toArray(maybeScrollToTop);
+            when Option.Some(let hash): [ScrollToAnchor({ hash })];
+          },
+          ...Option.toArray(maybeScrollSidebar),
+        ],
+      })
+
+      return Update.combine(model, [
+        writeRouteFields,
+        reconcileHomePresence(transition),
+        foldMobileMenuDialogClose,
+        foldThemeMenuClose,
+        foldSearchRouteChanged,
+        ...routeSteps,
+        scrollToRoute,
+      ])
+    },
+
+    ClickedCopyLink: ({ hash }): infer _ => ({
+      model,
+      commands: [
+        CopyLink({
+          url: urlToString(
+            modifyFields(model.url, { hash: (): infer _ => Option.some(hash) }),
+          ),
+        }),
+      ],
+    }),
+
+    ClickedOpenMobileMenu: (): infer _ =>
+      Update.combine(model, [
+        foldMobileMenuDialogOpen,
+        (stepModel): infer _ => ({
+          model: stepModel,
+          commands: [ScrollMobileMenuActiveLinkIntoView()],
+        }),
+      ]),
+
+    ClickedOpenSearch: (): infer _ => foldSearchOpen(model),
+
+    PressedSearchShortcut: (): infer _ => foldSearchOpen(model),
+
+    GotMobileMenuDialogMessage: ({ message }): infer _ =>
+      foldMobileMenuDialog(model, message),
+
+    GotSnippetCopyMessage: ({ message }): infer _ =>
+      foldSnippetCopy(model, message),
+
+    GotSnippetDisclosureMessage: ({ message }): infer _ =>
+      foldSnippetDisclosure(model, message),
+
+    GotCoreSubmodelPageMessage: ({ message }): infer _ =>
+      foldCoreSubmodelPage(model, message),
+
+    ToggledMobileTableOfContents: ({ isOpen }): infer _ => ({
+      model: modifyFields(model, {
+        isMobileTableOfContentsOpen: (): infer _ => isOpen,
+      }),
+    }),
+
+    ClickedMobileTableOfContentsLink: ({ sectionId }): infer _ => ({
+      model: modifyFields(model, {
+        isMobileTableOfContentsOpen: (): infer _ => false,
+        activeSection: (): infer _ => Option.some(sectionId),
+      }),
+    }),
+
+    ChangedActiveSection: ({ sectionId }): infer _ => ({
+      model: modifyFields(model, {
+        activeSection: (): infer _ => Option.some(sectionId),
+      }),
+    }),
+
+    UpdatedNewsletterEmail: ({ value }): infer _ => ({
+      model: modifyFields(model, { newsletterEmail: (): infer _ => value }),
+    }),
+
+    ChangedViewportWidth: ({ isNarrow }): infer _ => ({
+      model: modifyFields(model, { isNarrowViewport: (): infer _ => isNarrow }),
+    }),
+
+    CompletedLoadBrowserEnvironment: ({
+      maybeThemePreference,
+      maybeSidebarState,
+      systemTheme,
+      isPlaygroundSupported,
+      currentYear,
+      today,
+    }): infer _ => {
+      const themePreference: ThemePreference = Option.getOrElse(
+        maybeThemePreference,
+        (): infer _ => 'System',
+      )
+      const resolvedTheme = resolveTheme(themePreference, systemTheme)
+      const maybeExampleSlug = Option.liftPredicate(
+        model.route,
+        (route): route is Extract<AppRoute, { _tag: 'ExampleDetail' }> =>
+          route._tag === 'ExampleDetail',
+      )
+        .map(({ exampleSlug }): infer _ => exampleSlug)
+      const maybeActiveSectionKey = findActiveSectionKey(
+        model.route._tag,
+        maybeExampleSlug,
+      )
+      const applyBrowserEnvironment: UpdateStep = (stepModel): infer _ => ({
+        model: modifyFields(stepModel, {
+          currentYear: (): infer _ => currentYear,
+          maybeIsPlaygroundSupported: (): infer _ =>
+            Option.some(isPlaygroundSupported),
+          sidebarGroups: (): infer _ =>
+            initialSidebarGroups(maybeSidebarState, maybeActiveSectionKey),
+          maybeThemePreference: (): infer _ => Option.some(themePreference),
+          systemTheme: (): infer _ => systemTheme,
+          resolvedTheme: (): infer _ => resolvedTheme,
+        }),
+        commands: [ApplyTheme({ theme: resolvedTheme })],
+      })
+
+      return Update.combine(model, [
+        applyBrowserEnvironment,
+        (stepModel): infer _ =>
+          Update.foldChildInit(Ui.init(today), {
+            toParentModel: (uiPages): infer _ =>
+              modifyFields(stepModel, { uiPages: (): infer _ => uiPages }),
+            toParentMessage: (message): infer _ =>
+              Message.GotUiPageMessage({ message }),
+          }),
+      ])
+    },
+
+    GotThemeMenuMessage: ({ message }): infer _ =>
+      foldThemeMenu(model, message),
+
+    GotHomeMessage: ({ message }): infer _ => foldHome(model, message),
+
+    ChangedSystemTheme: ({ theme }): infer _ => {
+      const resolvedTheme = resolveTheme(
+        Option.getOrElse(model.maybeThemePreference, (): infer _ => 'System'),
+        theme,
+      )
+
+      return {
+        model: modifyFields(model, {
+          systemTheme: (): infer _ => theme,
+          resolvedTheme: (): infer _ => resolvedTheme,
+        }),
+        commands: [ApplyTheme({ theme: resolvedTheme })],
+      }
+    },
+
+    GotComingFromReactMessage: ({ message }): infer _ =>
+      foldComingFromReact(model, message),
+
+    GotApiReferenceMessage: ({ message }): infer _ =>
+      foldApiReference(model, message),
+
+    GotUiPageMessage: ({ message }): infer _ => foldUiPages(model, message),
+
+    ToggledSidebarGroup: ({ key, isOpen }): infer _ => {
+      const nextModel = modifyFields(model, {
+        sidebarGroups: Record.set(key, isOpen),
+      })
+      return { model: nextModel, commands: [saveSidebarState(nextModel)] }
+    },
+
+    GotExampleDetailMessage: ({ message }): infer _ =>
+      foldExampleDetail(model, message),
+
+    GotSearchMessage: ({ message }): infer _ => foldSearch(model, message),
+
+    GotPlaygroundMessage: ({ message }): infer _ =>
+      foldPlayground(model, message),
+    CompletedNavigateInternal: (): infer _ => ({ model }),
+    CompletedLoadExternal: (): infer _ => ({ model }),
+    CompletedLoadPlayground: (): infer _ => ({ model }),
+    CompletedInjectAnalytics: (): infer _ => ({ model }),
+    CompletedInjectSpeedInsights: (): infer _ => ({ model }),
+    CompletedScrollToTop: (): infer _ => ({ model }),
+    CompletedScrollToAnchor: (): infer _ => ({ model }),
+    CompletedScrollSidebarActiveLinkIntoView: (): infer _ => ({ model }),
+    CompletedScrollMobileMenuActiveLinkIntoView: (): infer _ => ({ model }),
+    CompletedApplyTheme: (): infer _ => ({ model }),
+    CompletedSaveThemePreference: (): infer _ => ({ model }),
+    CompletedSaveSidebarState: (): infer _ => ({ model }),
+    SucceededCopyLink: (): infer _ => ({ model }),
+    FailedCopyLink: (): infer _ => ({ model }),
+  })
+
+// COMMAND
+
+const InjectAnalytics = Command.define('InjectAnalytics', {
+  messages: [Message.CompletedInjectAnalytics],
+  execute: do {
+    const program: void!never!never = Effect.sync(() => inject())
+    const completed = Message.CompletedInjectAnalytics()
+    effect {
+      try program
+      return completed
+    }
+  },
+})
+
+const LoadBrowserEnvironment = Command.define('LoadBrowserEnvironment', {
+  messages: [Message.CompletedLoadBrowserEnvironment],
+  execute: loadBrowserEnvironment,
+})
+
+const InjectSpeedInsights = Command.define('InjectSpeedInsights', {
+  messages: [Message.CompletedInjectSpeedInsights],
+  execute: do {
+    const program: void!never!never = Effect.sync(() =>
+      SpeedInsights.injectSpeedInsights()
+    )
+    const completed = Message.CompletedInjectSpeedInsights()
+    effect {
+      try program
+      return completed
+    }
+  },
+})
+
+const CopyLink = Command.define('CopyLink', {
+  args: { url: Schema.String },
+  messages: [Message.SucceededCopyLink, Message.FailedCopyLink],
+  execute: (
+    { url },
+  ): (typeof Message.SucceededCopyLink.Type | typeof Message.FailedCopyLink.Type)!never!never => {
+    const copied = Message.SucceededCopyLink()
+    return effect {
+      provide Clipboard.layer {
+        return (effect {
+          try Clipboard.writeString(url)
+          return copied
+        }) catch () => Message.FailedCopyLink()
+      }
+    }
+  },
+})
+
+export const ScrollToTop = Command.define('ScrollToTop', {
+  messages: [Message.CompletedScrollToTop],
+  execute: effect {
+    try Effect.sync(() =>
+      browserWindow().scrollTo({ top: 0, behavior: 'instant' })
+    )
+    return Message.CompletedScrollToTop()
+  },
+})
+
+const ScrollToAnchor = Command.define('ScrollToAnchor', {
+  args: { hash: Schema.String },
+  messages: [Message.CompletedScrollToAnchor],
+  execute: (
+    { hash },
+  ): (typeof Message.CompletedScrollToAnchor.Type)!never!never => {
+    const completed = Message.CompletedScrollToAnchor()
+    return effect {
+      const scrolling: void!Dom.ElementNotFound!never = effect {
+        const target = try Effect.sync(() => '#' + escapeCssIdentifier(hash))
+        try Dom.scrollIntoViewAfterPaint(target, { block: 'start' })
+        try Dom.focus(target, { preventScroll: true, makeFocusable: true })
+      }
+      try scrolling catch () => undefined
+      return completed
+    }
+  },
+})
+
+export const ScrollSidebarActiveLinkIntoView = Command.define(
+  'ScrollSidebarActiveLinkIntoView',
+  {
+    messages: [Message.CompletedScrollSidebarActiveLinkIntoView],
+    execute: do {
+      const scrolling: void!Dom.ElementNotFound!never = Dom
+        .scrollIntoViewIfNotVisible(
+          `#${DOCS_SIDEBAR_NAV_ID} [aria-current="page"]`,
+        )
+      const completed = Message.CompletedScrollSidebarActiveLinkIntoView()
+      effect {
+        try scrolling catch () => undefined
+        return completed
+      }
+    },
+  },
+)
+
+const MOBILE_MENU_ACTIVE_LINK = `#${MOBILE_MENU_NAV_ID} [aria-current="page"]`
+
+const ScrollMobileMenuActiveLinkIntoView = Command.define(
+  'ScrollMobileMenuActiveLinkIntoView',
+  {
+    messages: [Message.CompletedScrollMobileMenuActiveLinkIntoView],
+    execute: do {
+      const scrolling: void!Dom.ElementNotFound!never = Dom
+        .scrollIntoViewIfNotVisible(
+          MOBILE_MENU_ACTIVE_LINK,
+          { when: 'Commit' },
+        )
+      const completed = Message.CompletedScrollMobileMenuActiveLinkIntoView()
+      effect {
+        try scrolling catch () => undefined
+        return completed
+      }
+    },
+  },
+)
+
+// NOTE: mirrors --color-cream and --color-gray-900 in styles.css.
+// src/themeColor.test.ts fails when these drift.
+const LIGHT_THEME_COLOR = '#f8f7fb'
+const DARK_THEME_COLOR = '#17151b'
+
+const setThemeColorMeta = (color: string): void => {
+  const themeColorMeta = browserDocument().querySelector(
+    'meta[name="theme-color"]',
+  )
+  if (themeColorMeta !== null) {
+    themeColorMeta.setAttribute('content', color)
+  }
+}
+
+const ApplyTheme = Command.define('ApplyTheme', {
+  args: { theme: ResolvedTheme },
+  messages: [Message.CompletedApplyTheme],
+  execute: ({ theme }): (typeof Message.CompletedApplyTheme.Type)!never!never =>
+    effect {
+      try Effect.sync(() => {
+        match (theme) {
+          when 'Dark': do {
+            browserDocument().documentElement.classList.add('dark')
+            setThemeColorMeta(DARK_THEME_COLOR)
+          };
+          when 'Light': do {
+            browserDocument().documentElement.classList.remove('dark')
+            setThemeColorMeta(LIGHT_THEME_COLOR)
+          };
+        }
+      })
+      return Message.CompletedApplyTheme()
+    },
+})
+
+const SaveThemePreference = Command.define('SaveThemePreference', {
+  args: { preference: ThemePreference },
+  messages: [Message.CompletedSaveThemePreference],
+  execute: (
+    { preference },
+  ): (typeof Message.CompletedSaveThemePreference.Type)!never!never =>
+    effect {
+      provide BrowserKeyValueStore.layerLocalStorage {
+        return (effect {
+          const store = try KeyValueStore.KeyValueStore
+          try store.set(THEME_STORAGE_KEY, JSON.stringify(preference))
+          return Message.CompletedSaveThemePreference()
+        }) catch () => Message.CompletedSaveThemePreference()
+      }
+    },
+})
+
+const SaveSidebarState = Command.define('SaveSidebarState', {
+  args: { state: SidebarState },
+  messages: [Message.CompletedSaveSidebarState],
+  execute: (
+    { state },
+  ): (typeof Message.CompletedSaveSidebarState.Type)!never!never =>
+    effect {
+      provide BrowserKeyValueStore.layerSessionStorage {
+        return (effect {
+          const store = try KeyValueStore.KeyValueStore
+          const json = try Schema.encodeEffect(SidebarStateJsonString)(state)
+          try store.set(SIDEBAR_STORAGE_KEY, json)
+          return Message.CompletedSaveSidebarState()
+        }) catch () => Message.CompletedSaveSidebarState()
+      }
+    },
+})
+
+const modelToSidebarState = (model: Model): SidebarState => ({
+  open: model.sidebarGroups,
+})
+
+const saveSidebarState = (model: Model): infer _ =>
+  SaveSidebarState({ state: modelToSidebarState(model) })
+
+const NavigateInternal = Command.define('NavigateInternal', {
+  args: { url: Schema.String },
+  messages: [Message.CompletedNavigateInternal],
+  execute: (
+    { url },
+  ): (typeof Message.CompletedNavigateInternal.Type)!never!never => {
+    const program: void!never!never = pushUrl(url)
+    const completed = Message.CompletedNavigateInternal()
+    return effect {
+      try program
+      return completed
+    }
+  },
+})
+
+const LoadExternal = Command.define('LoadExternal', {
+  args: { href: Schema.String },
+  messages: [Message.CompletedLoadExternal],
+  execute: (
+    { href },
+  ): (typeof Message.CompletedLoadExternal.Type)!never!never => {
+    const program: void!never!never = load(href)
+    const completed = Message.CompletedLoadExternal()
+    return effect {
+      try program
+      return completed
+    }
+  },
+})
+
+export const LoadPlayground = Command.define('LoadPlayground', {
+  args: { exampleSlug: Example.ExampleSlug },
+  messages: [Message.CompletedLoadPlayground],
+  execute: (
+    { exampleSlug },
+  ): (typeof Message.CompletedLoadPlayground.Type)!never!never => {
+    const program: void!never!never = load(playgroundRouter({ exampleSlug }))
+    const completed = Message.CompletedLoadPlayground()
+    return effect {
+      try program
+      return completed
+    }
+  },
+})
+
+// SUBSCRIPTION
+
+const uiPagesSubscriptions = Subscription.lift(Ui.subscriptions)<
+  Model,
+  Message
+>({
+  read: (model): infer _ => Option.some(model.uiPages),
+  toParentMessage: (message): infer _ => Message.GotUiPageMessage({ message }),
+})
+
+export const subscriptions: Subscription.Subscriptions<
+  Model,
+  Message,
+  AppResources
+> = Subscription.aggregate(
+  Subscriptions.ActiveSection.subscriptions,
+  uiPagesSubscriptions,
+  Subscriptions.SearchShortcut.subscriptions,
+  Subscriptions.SystemTheme.subscriptions,
+  Subscriptions.ViewportWidth.subscriptions,
+)
+
+// MANAGED RESOURCE
+
+const playgroundManagedResources = ManagedResource.lift(
+  Playground.managedResources,
+)<Model, Message>({
+  read: (model): infer _ =>
+    Option.filter(
+      model.playground,
+      (): infer _ => Option.contains(model.maybeIsPlaygroundSupported, true),
+    ),
+  toParentMessage: (message): infer _ =>
+    Message.GotPlaygroundMessage({ message }),
+})
+
+const homeManagedResources = ManagedResource.lift(Home.managedResources)<
+  Model,
+  Message
+>({
+  read: (model): infer _ => model.maybeHome,
+  toParentMessage: toGotHomeMessage,
+})
+
+export const managedResources = ManagedResource.aggregate(
+  homeManagedResources,
+  playgroundManagedResources,
+)
+
+// TRACER
+// NOTE: Custom dev tracer disabled pending Effect v4 beta Tracer/Layer API rewrite.
+// v4 beta removed Layer.setTracer and changed Tracer.make's signature; restore
+// once we adopt the new Tracer construction pattern.
+export const devTracerLayer: Layer<never> = Layer.empty

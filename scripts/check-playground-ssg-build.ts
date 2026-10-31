@@ -12,7 +12,7 @@ import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import {
   loadPlaygroundFiles,
   loadPlaygroundWorkspacePackageVersions,
-} from '../packages/website/scripts/playgroundFilesPlugin.ts'
+} from '../packages/website/scripts/playgroundFilesPlugin.vibe'
 
 class PlaygroundSsgBuildError extends Error {}
 

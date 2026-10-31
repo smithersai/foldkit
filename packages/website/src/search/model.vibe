@@ -1,0 +1,29 @@
+import { defineTaggedUnion } from 'foldkit/schema'
+
+import { Dialog } from '@foldkit/ui'
+
+import { SearchResult } from './message.vibe'
+
+const Results = Schema.Array(SearchResult)
+
+export const SearchState = defineTaggedUnion({
+  Idle: {},
+  Loading: { results: Results },
+  Ok: { results: Results },
+})
+export type SearchState = typeof SearchState.Type
+
+export const resultsFromState = (
+  state: SearchState,
+): ReadonlyArray<typeof SearchResult.Type> => match (state) {
+  when { _tag: 'Ok', let results }: results;
+  when { _tag: 'Loading', let results }: results;
+  default: [];
+}
+
+export schema Model {
+  dialog: Dialog.Model
+  query: string
+  searchState: SearchState
+  activeResultIndex: number
+}

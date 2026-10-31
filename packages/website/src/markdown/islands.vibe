@@ -1,0 +1,86 @@
+import { Html, inertHtml as ih } from 'foldkit/html'
+
+import * as Markdown from '@foldkit/markdown'
+
+import { CodeBlock } from '../component/index.ts'
+import {
+  ctaLinks,
+  infoCalloutBlocks,
+  warningCalloutBlocks,
+} from '../prose.vibe'
+import type { DemoLabels } from './demoLabel.vibe'
+import { islandAttributes } from './islandAttributes.vibe'
+import { type Slots, renderFaqSection, resolveDemo } from './slots.vibe'
+import { lookupSnippet } from './snippets.vibe'
+
+// ISLANDS
+
+/**
+ * Renders a demo as a region labelled by the heading it sits under, so a page of
+ * near-identical demos is navigable: a screen reader user landing on one of the
+ * five comboboxes on the Combobox page hears which example they are in. A demo
+ * the document leaves unlabelled renders bare rather than as an unnamed region.
+ */
+const demoRegion = (demoLabels: DemoLabels, name: string, demo: Html): Html =>
+  Option.match(Option.fromNullishOr(demoLabels.get(name)), {
+    onNone: (): infer _ => demo,
+    onSome: (headingId): infer _ =>
+      ih.section([ih.AriaLabelledBy(headingId)], [demo]),
+  })
+
+/**
+ * The site's island views, paired with {@link islandAttributes} so attributes
+ * arrive already decoded. `Snippet` renders a build-time highlighted source file
+ * with the standard copy affordance; `Info` and `Warning` wrap nested markdown
+ * in the prose callouts; `Cta` lays its nested links out as an action row;
+ * `Demo` drops in a live, interactive demo the page has pre-built and keyed by
+ * name; `Faq` hands its rendered children to the page's collapsible shell. The
+ * page's slots live in the app Model, so the views close over `slots`; the copy
+ * state rides inside the slots' renderers.
+ *
+ * A `::Snippet` name with no matching file under `src/snippet` renders nothing,
+ * which the snippet registration test is there to catch. The views stay pure, so
+ * a missing snippet reports at test time rather than warning from a render.
+ */
+export const docIslands = (
+  slots: Slots<string>,
+  demoLabels: DemoLabels,
+  pageId: string,
+): Markdown.Islands =>
+  Markdown.islandsFor(islandAttributes, {
+    Snippet: (
+      { name, label, class: className },
+      _content,
+      occurrenceIndex,
+    ): infer _ =>
+      Option.match(lookupSnippet(name), {
+        onNone: (): infer _ => ih.empty,
+        onSome: (snippet): infer _ =>
+          CodeBlock.highlightedView(
+            `${pageId}-snippet-${name}-${occurrenceIndex}`,
+            ih.div([
+              ih.Class('text-sm'),
+              ih.DataAttribute('language', snippet.language),
+              ih.InnerHTML(snippet.highlighted),
+            ]),
+            snippet.raw,
+            `Copy ${label} to clipboard`,
+            slots.renderSnippet,
+            className ?? 'mb-6',
+            label,
+          ),
+      }),
+
+    Info: ({ label }, content): infer _ => infoCalloutBlocks(label, content),
+
+    Warning: ({ label }, content): infer _ =>
+      warningCalloutBlocks(label, content),
+
+    Cta: (_attributes, content): infer _ => ctaLinks(content),
+
+    Demo: ({ name }): infer _ =>
+      demoRegion(demoLabels, name, resolveDemo(slots, name)),
+
+    Faq: ({ id, question }, content): infer _ =>
+      renderFaqSection(slots, id, question, content),
+  })

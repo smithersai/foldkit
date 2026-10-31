@@ -1,0 +1,71 @@
+import { Array as Arr, Option, Record } from 'effect'
+
+import type { Island, MarkdownDocument } from '@foldkit/markdown'
+
+import type { HeadingIds } from './tableOfContents.vibe'
+
+// DEMO LABEL
+
+/** The id of the heading each `::Demo` island sits under, by the demo's name. */
+export type DemoLabels = ReadonlyMap<string, string>
+
+type DemoLabelEntry = readonly [demoName: string, headingId: string]
+
+type DemoLabelWalk = Readonly<{
+  maybeHeadingId: Option.Option<string>
+  entries: ReadonlyArray<DemoLabelEntry>
+}>
+
+const DEMO_ISLAND_NAME = 'Demo'
+
+const demoLabelEntry = (
+  island: Island,
+  maybeHeadingId: Option.Option<string>,
+): Option.Option<DemoLabelEntry> => {
+  if (island.name === DEMO_ISLAND_NAME) {
+    return Option.map(
+      Option.all([Record.get(island.attributes, 'name'), maybeHeadingId]),
+      ([demoName, headingId]): infer _ => [demoName, headingId],
+    )
+  } else {
+    return Option.none()
+  }
+}
+
+/**
+ * Pairs every `::Demo` island with the heading it sits under, so the island view
+ * can render the demo as a region labelled by that heading. Ids come from the map
+ * {@link collectHeadings} already assigned rather than a second slug pass, so a
+ * demo's label cannot drift from the heading it points at. A demo with no heading
+ * above it is absent from the map and renders unlabelled.
+ */
+export const collectDemoLabels = (
+  document: MarkdownDocument,
+  idByHeading: HeadingIds,
+): DemoLabels =>
+  new Map(
+    Arr.reduce(
+      document.blocks,
+      {
+        maybeHeadingId: Option.none<string>(),
+        entries: Arr.empty<DemoLabelEntry>(),
+      },
+      (walk: DemoLabelWalk, block): infer _ => match (block) {
+        when { _tag: 'Heading' } and let heading: ({
+          maybeHeadingId: Option.fromNullishOr(idByHeading.get(heading)),
+          entries: walk.entries,
+        });
+        when { _tag: 'Island' } and let island: Option.match(
+          demoLabelEntry(island, walk.maybeHeadingId),
+          {
+            onNone: (): infer _ => walk,
+            onSome: (entry): infer _ => ({
+              maybeHeadingId: walk.maybeHeadingId,
+              entries: Arr.append(walk.entries, entry),
+            }),
+          },
+        );
+        default: walk;
+      },
+    ).entries,
+  )

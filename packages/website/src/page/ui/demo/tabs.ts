@@ -3,8 +3,8 @@ import type { HtmlBuilder } from 'foldkit/html'
 
 import { Tabs } from '@foldkit/ui'
 
-import { Message } from '../message'
-import type { DemoTab } from '../model'
+import { Message } from '../message.vibe'
+import type { DemoTab } from '../model.vibe'
 
 // DEMO CONTENT
 

@@ -62,8 +62,9 @@ const config: { ignore?: string | string[]; [key: string]: unknown } = {
     },
     'packages/website': {
       entry: [
-        'src/main.ts',
-        'src/entry.server.ts',
+        'src/main.vibe',
+        'src/entry.server.vibe',
+        'vite.scripts.config.ts',
         'src/**/*.test.ts',
         'scripts/**/*.test.ts',
         'e2e/livePlaygrounds.ts',

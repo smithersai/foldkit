@@ -1,0 +1,73 @@
+export schema ExampleSourceFile {
+  path: string
+  highlightedHtml: string
+  rawCode: string
+}
+
+export const ExampleSources = Schema.Struct({
+  files: Schema.Array(ExampleSourceFile),
+})
+export type ExampleSources = typeof ExampleSources.Type
+
+type SourceLoader = () => Promise<Readonly<{ default: ExampleSources }>>
+
+const loadersBySlug: Readonly<Record<string, SourceLoader | undefined>> = {
+  counter: (): infer _ => import('virtual:example-sources/counter'),
+  counters: (): infer _ => import('virtual:example-sources/counters'),
+  todo: (): infer _ => import('virtual:example-sources/todo'),
+  stopwatch: (): infer _ => import('virtual:example-sources/stopwatch'),
+  form: (): infer _ => import('virtual:example-sources/form'),
+  'job-application': (): infer _ =>
+    import('virtual:example-sources/job-application'),
+  kanban: (): infer _ => import('virtual:example-sources/kanban'),
+  weather: (): infer _ => import('virtual:example-sources/weather'),
+  'api-cache': (): infer _ => import('virtual:example-sources/api-cache'),
+  'api-cache-query': (): infer _ =>
+    import('virtual:example-sources/api-cache-query'),
+  charting: (): infer _ => import('virtual:example-sources/charting'),
+  routing: (): infer _ => import('virtual:example-sources/routing'),
+  'route-transitions': (): infer _ =>
+    import('virtual:example-sources/route-transitions'),
+  'interrupting-commands': (): infer _ =>
+    import('virtual:example-sources/interrupting-commands'),
+  'view-transitions': (): infer _ =>
+    import('virtual:example-sources/view-transitions'),
+  'query-sync': (): infer _ => import('virtual:example-sources/query-sync'),
+  'shopping-cart': (): infer _ =>
+    import('virtual:example-sources/shopping-cart'),
+  'state-machine': (): infer _ =>
+    import('virtual:example-sources/state-machine'),
+  auth: (): infer _ => import('virtual:example-sources/auth'),
+  'pixel-art': (): infer _ => import('virtual:example-sources/pixel-art'),
+  snake: (): infer _ => import('virtual:example-sources/snake'),
+  'crash-view': (): infer _ => import('virtual:example-sources/crash-view'),
+  'slow-warnings': (): infer _ =>
+    import('virtual:example-sources/slow-warnings'),
+  'websocket-chat': (): infer _ =>
+    import('virtual:example-sources/websocket-chat'),
+  'managed-resource-layer': (): infer _ =>
+    import('virtual:example-sources/managed-resource-layer'),
+  map: (): infer _ => import('virtual:example-sources/map'),
+  'canvas-art': (): infer _ => import('virtual:example-sources/canvas-art'),
+  'generative-art': (): infer _ =>
+    import('virtual:example-sources/generative-art'),
+  'web-components': (): infer _ =>
+    import('virtual:example-sources/web-components'),
+  embedding: (): infer _ => import('virtual:example-sources/embedding'),
+  ssg: (): infer _ => import('virtual:example-sources/ssg'),
+  ssr: (): infer _ => import('virtual:example-sources/ssr'),
+  'ui-showcase': (): infer _ => import('virtual:example-sources/ui-showcase'),
+  'personal-blog': (): infer _ =>
+    import('virtual:example-sources/personal-blog'),
+}
+
+export const loadSourcesForSlug = async (
+  slug: string,
+): Promise<ExampleSources> => {
+  const loader = loadersBySlug[slug]
+  if (!loader) {
+    throw new Error(`Unknown example: ${slug}`)
+  }
+  const { default: sources } = await loader()
+  return sources
+}

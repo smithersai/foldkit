@@ -1,0 +1,27 @@
+import { defineMessageUnion } from 'foldkit/message'
+
+import { Dialog } from '@foldkit/ui'
+
+export schema SearchResult {
+  url: string
+  title: string
+  excerpt: string
+  section: string
+  kind: string
+}
+
+export const Message = defineMessageUnion({
+  UpdatedSearchQuery: { query: Schema.String },
+  CompletedFetchSearchResults: {
+    results: Schema.Array(SearchResult),
+    query: Schema.String,
+  },
+  SelectedSearchResult: { url: Schema.String },
+  GotSearchDialogMessage: { message: Dialog.Message },
+  ClearedSearchQuery: {},
+  CompletedNavigateToResult: {},
+  CompletedScrollToResult: {},
+  CompletedFocusSearchInput: {},
+  PressedArrowKey: { direction: Schema.Literals(['Up', 'Down']) },
+})
+export type Message = typeof Message.Type

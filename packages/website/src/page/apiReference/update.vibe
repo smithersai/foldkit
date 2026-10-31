@@ -1,0 +1,94 @@
+import { Array as Arr, Effect, Option, Record, Schema } from 'effect'
+import { AsyncData, Command, type Update } from 'foldkit'
+import { modifyFields } from 'foldkit/struct'
+
+import {
+  ParsedApiReference,
+  SIGNATURE_COLLAPSE_THRESHOLD,
+  scopedId,
+  signaturesLength,
+} from './domain.vibe'
+import { Message } from './message.vibe'
+import {
+  type ApiData,
+  ApiDataAsyncData,
+  type Disclosures,
+  type Model,
+} from './model.vibe'
+
+const LoadApiData = Command.define('LoadApiData', {
+  messages: [Message.SucceededLoadApiData, Message.FailedLoadApiData],
+  execute: effect {
+    return (effect {
+      const [parsedApiModule, highlightsModule] = try Effect.tryPromise({
+        try: () =>
+          Promise.all([
+            import('virtual:parsed-api'),
+            import('virtual:api-highlights'),
+          ]),
+        catch: error =>
+          error instanceof Error ? error.message : 'Unknown error',
+      })
+      const parsedApi = try Schema.decodeUnknownEffect(ParsedApiReference)(
+        parsedApiModule.default,
+      )
+      return Message.SucceededLoadApiData({
+        apiData: {
+          parsedApi,
+          highlights: highlightsModule.default,
+        },
+      })
+    }) catch (error) =>
+      Message.FailedLoadApiData({
+        error: typeof error === 'string' ? error : 'Failed to load API data',
+      })
+  },
+})
+
+export type UpdateReturn = Update.Return<Model, Message>
+
+const disclosuresForApiData = (apiData: ApiData): Disclosures =>
+  apiData.parsedApi.modules
+  |> Arr.flatMap(%, (module): infer _ =>
+    module.functions
+    |> Arr.filter(%, (apiFunction): infer _ =>
+      signaturesLength(apiFunction) > SIGNATURE_COLLAPSE_THRESHOLD)
+    |> Arr.map(%, (apiFunction): infer _ => {
+      const id = scopedId('function', module.name, apiFunction.name)
+      return [id, false] as const
+    }))
+  |> Record.fromEntries(%)
+
+export const update = (model: Model, message: Message): infer _ =>
+  Message.match<UpdateReturn>(message, {
+    RequestedApiData: (): infer _ => match (AsyncData.loadIfMissing(model.apiData)) {
+      when Option.None: ({ model });
+      when Option.Some(let apiData): ({
+        model: modifyFields(model, { apiData: (): infer _ => apiData }),
+        commands: [LoadApiData()],
+      });
+    },
+
+    SucceededLoadApiData: ({ apiData }): infer _ => ({
+      model: modifyFields(model, {
+        apiData: (): infer _ => ApiDataAsyncData.Success({ data: apiData }),
+        disclosures: (): infer _ => disclosuresForApiData(apiData),
+      }),
+    }),
+
+    FailedLoadApiData: ({ error }): infer _ => ({
+      model: modifyFields(model, {
+        apiData: (): infer _ => ApiDataAsyncData.Failure({ error }),
+      }),
+    }),
+
+    ToggledSignature: ({ id, isOpen }): infer _ => ({
+      model: modifyFields(model, {
+        disclosures: (disclosures): infer _ =>
+          Record.set(disclosures, id, isOpen),
+      }),
+    }),
+  })
+
+export const informRouteChanged = (model: Model): infer _ =>
+  update(model, Message.RequestedApiData())

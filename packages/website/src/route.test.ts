@@ -2,7 +2,7 @@ import { Option } from 'effect'
 import { fromString as urlFromString } from 'foldkit/url'
 import { describe, expect, test } from 'vitest'
 
-import * as Route from './route'
+import * as Route from './route.vibe'
 
 const SITE = Route.SITE_URL
 

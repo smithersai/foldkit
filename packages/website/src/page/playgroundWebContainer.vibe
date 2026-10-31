@@ -1,0 +1,360 @@
+import { String as Str, pipe } from 'effect'
+import type { WebContainer, WebContainerProcess } from '@webcontainer/api'
+import { fileSystemTreeFromFiles } from './playgroundFileTree.ts'
+
+error WebContainerError { message: string; cause?: unknown }
+
+const LOAD_API_TIMEOUT = '90 seconds'
+const BOOT_TIMEOUT = '90 seconds'
+const MOUNT_TIMEOUT = '90 seconds'
+const SPAWN_TIMEOUT = '90 seconds'
+const INSTALL_TIMEOUT = '5 minutes'
+const DEV_SERVER_TIMEOUT = '3 minutes'
+const PROCESS_OUTPUT_DRAIN_TIMEOUT = '1 second'
+export const PROCESS_OUTPUT_TAIL_CHARACTERS = 32_768
+
+type PlaygroundProcess = Pick<WebContainerProcess, 'exit' | 'kill' | 'output'>
+type ProcessHost = Readonly<{
+  spawn: (command: string, args: Array<string>) => Promise<WebContainerProcess>
+}>
+type ServerHost =
+  & ProcessHost
+  & Readonly<{
+    on: (
+      event: 'server-ready',
+      listener: (port: number, url: string) => void,
+    ) => () => void
+  }>
+type CapturedProcessOutput = Readonly<
+  { tail: Ref<string>; fiber: Fiber<void, Error> }
+>
+export type PlaygroundWebContainer = Readonly<{
+  container: WebContainer
+  previewUrl: string
+  pendingWrites: FiberMap<string, void, never>
+  serverFailure: Deferred<never, Error>
+}>
+
+export const reasonFromError = (error: unknown): string => {
+  if (error instanceof Error) {
+    if (error.cause instanceof Error) {
+      const separator = error.message.endsWith('.') ? ' ' : ': '
+      return `${error.message}${separator}${error.cause.message}`
+    }
+    return error.message
+  }
+  return globalThis.String(error)
+}
+export const appendProcessOutputTail = (
+  current: string,
+  chunk: string,
+): string =>
+  pipe(
+    current,
+    Str.concat(chunk),
+    Str.takeRight(PROCESS_OUTPUT_TAIL_CHARACTERS),
+  )
+const errorWithOutput = (message: string, output: string): WebContainerError =>
+  Str.isEmpty(output)
+    ? new WebContainerError({ message })
+    : new WebContainerError({ message: `${message}\n${output}` })
+
+effect function failWithOutput(
+  tail: Ref<string>,
+  message: string,
+): never!WebContainerError! {
+  throw errorWithOutput(message, try Ref.get(tail))
+}
+effect function timeout<A, E, R>(
+  program: A!E!R,
+  duration: Duration.Input,
+  message: string,
+): A!E | WebContainerError!R {
+  return try Effect.timeoutOrElse(program, {
+    duration,
+    orElse: effect () => {
+      throw new WebContainerError({ message })
+    },
+  })
+}
+const releaseLatePromiseResult = <A>(
+  signal: AbortSignal,
+  pending: PromiseLike<A>,
+  release: (value: A) => void,
+): void => {
+  signal.addEventListener('abort', async (): Promise<void> => {
+    await Effect.runPromise(Effect.ignoreCause(effect {
+      const value = try Effect.tryPromise(() => pending)
+      release(value)
+    }))
+  }, { once: true })
+}
+effect function loadWebContainerApi() {
+  return try timeout(
+    Effect.tryPromise({
+      try: () => import('@webcontainer/api'),
+      catch: cause =>
+        new WebContainerError({
+          message: 'WebContainer API failed to load.',
+          cause,
+        }),
+    }),
+    LOAD_API_TIMEOUT,
+    `WebContainer API did not load within ${LOAD_API_TIMEOUT}.`,
+  )
+}
+effect function bootWebContainer(
+  WebContainer: typeof import('@webcontainer/api').WebContainer,
+) {
+  return try Effect.acquireRelease(
+    timeout(
+      Effect.tryPromise({
+        try: signal => {
+          const pending = WebContainer.boot({
+            coep: 'credentialless',
+            workdirName: 'foldkit',
+          })
+          releaseLatePromiseResult(
+            signal,
+            pending,
+            container => container.teardown(),
+          )
+          return pending
+        },
+        catch: cause =>
+          new WebContainerError({
+            message: 'WebContainer failed to boot.',
+            cause,
+          }),
+      }),
+      BOOT_TIMEOUT,
+      `WebContainer did not boot within ${BOOT_TIMEOUT}. This browser may not support the service worker WebContainer registers on its own origin.`,
+    ),
+    effect container => {
+      try Effect.sync(() => container.teardown())
+    },
+    { interruptible: true },
+  )
+}
+effect function mountFiles(
+  container: Pick<WebContainer, 'mount'>,
+  files: Readonly<Record<string, string>>,
+) {
+  return try timeout(
+    Effect.tryPromise({
+      try: () => container.mount(fileSystemTreeFromFiles(files)),
+      catch: cause =>
+        new WebContainerError({
+          message: 'Playground files failed to mount.',
+          cause,
+        }),
+    }),
+    MOUNT_TIMEOUT,
+    `Playground files did not mount within ${MOUNT_TIMEOUT}.`,
+  )
+}
+effect function spawnProcess(
+  container: ProcessHost,
+  command: string,
+  args: Array<string>,
+  label: string,
+) {
+  return try Effect.acquireRelease(
+    timeout(
+      Effect.tryPromise({
+        try: signal => {
+          const pending = container.spawn(command, args)
+          releaseLatePromiseResult(signal, pending, process => process.kill())
+          return pending
+        },
+        catch: cause =>
+          new WebContainerError({
+            message: `${label} failed to start.`,
+            cause,
+          }),
+      }),
+      SPAWN_TIMEOUT,
+      `${label} did not start within ${SPAWN_TIMEOUT}.`,
+    ),
+    effect process => {
+      try Effect.sync(() => process.kill())
+    },
+    { interruptible: true },
+  )
+}
+export effect function captureProcessOutput(
+  output: ReadableStream<string>,
+  label: string,
+) {
+  const tail = try Ref.make('')
+  const fiber = try Effect.forkScoped(
+    Stream.runForEach(
+      Stream.fromReadableStream({
+        evaluate: (): infer _ => output,
+        onError: (cause): infer _ =>
+          new WebContainerError({
+            message: `Failed to read ${label} output.`,
+            cause,
+          }),
+      }),
+      effect chunk => {
+        try Ref.update(
+          tail,
+          current => appendProcessOutputTail(current, chunk),
+        )
+      },
+    ),
+    { startImmediately: true },
+  )
+  return { tail, fiber }
+}
+effect function awaitProcessExit(process: PlaygroundProcess, label: string) {
+  return try Effect.tryPromise({
+    try: () => process.exit,
+    catch: cause =>
+      new WebContainerError({
+        message: `${label} exit status could not be read.`,
+        cause,
+      }),
+  })
+}
+effect function awaitProcessCompletion(
+  process: PlaygroundProcess,
+  output: CapturedProcessOutput,
+  label: string,
+) {
+  return (effect {
+    const [exitCode] = try.all [
+      awaitProcessExit(process, label),
+      Fiber.join(output.fiber),
+    ]
+    return exitCode
+  }) catch effect error => {
+    return try failWithOutput(output.tail, reasonFromError(error))
+  }
+}
+export effect function installDependencies(container: ProcessHost) {
+  try Effect.scoped(effect {
+    const install = try spawnProcess(
+      container,
+      'npm',
+      ['install'],
+      'npm install',
+    )
+    const output = try captureProcessOutput(install.output, 'npm install')
+    const exitCode = try Effect.timeoutOrElse(
+      awaitProcessCompletion(install, output, 'npm install'),
+      {
+        duration: INSTALL_TIMEOUT,
+        orElse: effect () => {
+          return try failWithOutput(
+            output.tail,
+            `npm install did not finish within ${INSTALL_TIMEOUT}.`,
+          )
+        },
+      },
+    )
+    if (exitCode !== 0) {
+      return try failWithOutput(
+        output.tail,
+        `npm install exited with code ${exitCode}.`,
+      )
+    }
+  })
+}
+effect function superviseDevServer(
+  process: PlaygroundProcess,
+  output: CapturedProcessOutput,
+): never!WebContainerError! {
+  const processExit = effect {
+    const exitResult = try Effect.result(
+      awaitProcessExit(process, 'npm run dev'),
+    )
+    ;(effect {
+      try Effect.timeoutOrElse(Fiber.join(output.fiber), {
+        duration: PROCESS_OUTPUT_DRAIN_TIMEOUT,
+        orElse: effect () => {},
+      })
+    }) catch effect error => {
+      return try failWithOutput(output.tail, reasonFromError(error))
+    }
+    return match (exitResult) {
+      when { _tag: 'Failure', let failure }: try failWithOutput(
+        output.tail,
+        reasonFromError(failure),
+      );
+      when { _tag: 'Success', let success }: try failWithOutput(
+        output.tail,
+        `npm run dev exited with code ${success}.`,
+      );
+    }
+  }
+  const outputFailure = effect {
+    return (effect {
+      try Fiber.join(output.fiber)
+      return try Effect.never
+    }) catch effect error => {
+      return try failWithOutput(output.tail, reasonFromError(error))
+    }
+  }
+  return try Effect.raceFirst(processExit, outputFailure)
+}
+export effect function startDevServer(container: ServerHost) {
+  const serverFailure = try Deferred.make<never, Error>()
+  const previewUrl = try Effect.acquireUseRelease(
+    effect {
+      const ready = Deferred.makeUnsafe<string>()
+      const unsubscribe = container.on('server-ready', (_port, url): void => {
+        Deferred.doneUnsafe(
+          ready,
+          effect {
+            return url
+          },
+        )
+      })
+      return { ready, unsubscribe }
+    },
+    effect ({ ready }) => {
+      const dev = try spawnProcess(
+        container,
+        'npm',
+        ['run', 'dev'],
+        'npm run dev',
+      )
+      const output = try captureProcessOutput(dev.output, 'npm run dev')
+      try Effect.forkScoped(
+        Deferred.into(superviseDevServer(dev, output), serverFailure),
+        { startImmediately: true },
+      )
+      return try Effect.timeoutOrElse(
+        Effect.raceFirst(Deferred.await(ready), Deferred.await(serverFailure)),
+        {
+          duration: DEV_SERVER_TIMEOUT,
+          orElse: effect () => {
+            return try failWithOutput(
+              output.tail,
+              `The dev server was not ready within ${DEV_SERVER_TIMEOUT}.`,
+            )
+          },
+        },
+      )
+    },
+    effect ({ unsubscribe }) => {
+      unsubscribe()
+    },
+  )
+  return { previewUrl, serverFailure }
+}
+export effect function acquirePlaygroundWebContainer(
+  files: Readonly<Record<string, string>>,
+) {
+  return try Effect.interruptible(effect {
+    const { WebContainer } = try loadWebContainerApi()
+    const container = try bootWebContainer(WebContainer)
+    try mountFiles(container, files)
+    try installDependencies(container)
+    const { previewUrl, serverFailure } = try startDevServer(container)
+    const pendingWrites = try FiberMap.make<string, void, never>()
+    return { container, previewUrl, pendingWrites, serverFailure }
+  })
+}

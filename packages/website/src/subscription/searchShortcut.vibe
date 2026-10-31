@@ -1,0 +1,33 @@
+import { browserDocument } from '../browserDocument.ts'
+import { Dom, Subscription } from 'foldkit'
+
+import { Message } from '../message.vibe'
+import type { Model } from '../model.vibe'
+import { isSearchRoute } from '../route.vibe'
+
+export const subscriptions = Subscription.make<Model, Message>()((
+  entry,
+): infer _ => ({
+  searchShortcut: entry(
+    { isSearchAvailable: Schema.Boolean },
+    {
+      modelToDependencies: (model): infer _ => ({
+        isSearchAvailable: isSearchRoute(model.route),
+      }),
+      dependenciesToStream: ({ isSearchAvailable }): infer _ =>
+        Stream.when(
+          Dom.streamFromEventFilterMapPreventDefault({
+            target: browserDocument(),
+            type: 'keydown',
+            filterMapEvent: (event): infer _ => {
+              if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+                return Option.some(Message.PressedSearchShortcut())
+              }
+              return Option.none()
+            },
+          }),
+          Effect.sync(() => isSearchAvailable),
+        ),
+    },
+  ),
+}))

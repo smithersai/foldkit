@@ -1,0 +1,4 @@
+import { type Update } from 'foldkit';
+import { type Message } from './message.vibe';
+import { type Model } from './model.vibe';
+export declare const init: () => Update.Return<Model, Message>;

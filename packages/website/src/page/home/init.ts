@@ -2,11 +2,11 @@ import { type Update } from 'foldkit'
 
 import { Menu, Tabs } from '@foldkit/ui'
 
-import * as AsyncCounterDemo from './asyncCounterDemo'
+import * as AsyncCounterDemo from './asyncCounterDemo.vibe'
 import * as DemoTab from './demoTab'
-import { type Message } from './message'
-import { type Model } from './model'
-import * as NotePlayerDemo from './notePlayerDemo'
+import { type Message } from './message.vibe'
+import { type Model } from './model.vibe'
+import * as NotePlayerDemo from './notePlayerDemo.vibe'
 
 // INIT
 

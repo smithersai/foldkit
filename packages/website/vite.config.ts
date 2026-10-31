@@ -2,7 +2,6 @@ import { Array, Match, Option, Schema, pipe } from 'effect'
 import { existsSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
 import { basename, extname, join, relative, resolve } from 'node:path'
-import { codeToHtml } from 'shiki'
 import vibelang from 'vibelang-vite'
 import { type Plugin, defineConfig } from 'vite'
 
@@ -15,15 +14,16 @@ import {
   notePlayerDemoCodePlugin,
 } from './scripts/demoCodePlugin.ts'
 import { monacoWorkersPlugin } from './scripts/monacoWorkersPlugin.ts'
-import { playgroundFilesPlugin } from './scripts/playgroundFilesPlugin.ts'
-import { playgroundTypesPlugin } from './scripts/playgroundTypesPlugin.ts'
-import { islandAttributes } from './src/markdown/islandAttributes.ts'
+import { codeToHtml } from './scripts/nativeHighlight.ts'
+import { playgroundFilesPlugin } from './scripts/playgroundFilesPlugin.vibe'
+import { playgroundTypesPlugin } from './scripts/playgroundTypesPlugin.vibe'
+import { islandAttributes } from './src/markdown/islandAttributes.vibe'
 import {
   ParsedApiReference,
   collectNamedSchemas,
   moduleNameToSlug,
   parseTypedocJson,
-} from './src/page/apiReference/domain.ts'
+} from './src/page/apiReference/domain.vibe'
 import {
   type NamedSchemas,
   typeDefFromChildren,
@@ -37,9 +37,12 @@ import {
   type TypeDocParam,
   type TypeDocSignature,
   type TypeDocTypeParam,
-} from './src/page/apiReference/typedoc.ts'
-import { PostFrontmatter } from './src/page/blog/frontmatter.ts'
-import { exampleSlugs, runnableExampleSlugs } from './src/page/example/meta.ts'
+} from './src/page/apiReference/typedoc.vibe'
+import { PostFrontmatter } from './src/page/blog/frontmatter.vibe'
+import {
+  exampleSlugs,
+  runnableExampleSlugs,
+} from './src/page/example/meta.vibe'
 import { shikiDarkTheme, shikiLightTheme } from './src/shikiTheme.ts'
 
 const shikiThemes = {
@@ -48,6 +51,9 @@ const shikiThemes = {
 }
 
 const highlightLanguage = (filePath: string): string => {
+  if (filePath.endsWith('.vibe')) {
+    return 'vibe'
+  }
   if (filePath.endsWith('.tsx')) {
     return 'tsx'
   }
@@ -654,6 +660,7 @@ const RESOLVED_EXAMPLE_SOURCES_PREFIX = '\0' + EXAMPLE_SOURCES_PREFIX
 const EXAMPLE_SLUG_SET: Set<string> = new Set(exampleSlugs)
 
 export const EXAMPLE_FILE_EXTENSIONS: ReadonlySet<string> = new Set([
+  '.vibe',
   '.ts',
   '.tsx',
   '.css',
@@ -663,6 +670,9 @@ export const EXAMPLE_FILE_EXTENSIONS: ReadonlySet<string> = new Set([
 
 const langFromExtension = (filePath: string): string => {
   const extension = extname(filePath)
+  if (extension === '.vibe') {
+    return 'vibe'
+  }
   if (extension === '.tsx') {
     return 'tsx'
   }
@@ -686,7 +696,10 @@ export const EXAMPLE_SOURCE_ROOTS: ReadonlyArray<string> = [
 
 // The build command reads the config, which is where a generated project
 // computes its build id, so a reader of an example's source has to be shown it.
-export const EXAMPLE_ROOT_FILES: ReadonlyArray<string> = ['vite.config.ts']
+export const EXAMPLE_ROOT_FILES: ReadonlyArray<string> = [
+  'vite.config.ts',
+  'vite.config.vibe',
+]
 
 const collectSourceFiles = async (
   directory: string,
@@ -705,6 +718,7 @@ const collectSourceFiles = async (
       entry =>
         entry.isFile() &&
         EXAMPLE_FILE_EXTENSIONS.has(extname(entry.name)) &&
+        !entry.name.endsWith('.d.vibe.ts') &&
         !entry.parentPath.includes('node_modules') &&
         !entry.name.startsWith('vitest-setup'),
     )
@@ -718,8 +732,8 @@ const sortExampleFiles = (
   [...files].sort((fileA, fileB) => {
     const relativeA = relative(baseDirectory, fileA)
     const relativeB = relative(baseDirectory, fileB)
-    const isMainA = basename(fileA) === 'main.ts'
-    const isMainB = basename(fileB) === 'main.ts'
+    const isMainA = /^main\.(?:ts|vibe)$/.test(basename(fileA))
+    const isMainB = /^main\.(?:ts|vibe)$/.test(basename(fileB))
     if (isMainA && !isMainB) {
       return -1
     }
@@ -907,7 +921,7 @@ export default defineConfig({
     tailwindcss(),
     foldkit({
       devToolsMcpPort: 9988,
-      ssr: { serverEntry: '/src/entry.server.ts' },
+      ssr: { serverEntry: '/src/entry.server.vibe' },
     }),
     markdown({ islands: islandAttributes, frontmatter: PostFrontmatter }),
     embeddedExampleRedirectPlugin(),

@@ -1,0 +1,24 @@
+export const SIDEBAR_STORAGE_KEY = 'foldkit-sidebar-state'
+
+export schema SidebarState {
+  open: Readonly<Record<string, boolean>>
+}
+
+export const SidebarStateJsonString = Schema.fromJsonString(SidebarState)
+
+export schema GroupKey =
+  | 'blog'
+  | 'introduction'
+  | 'coreConcepts'
+  | 'comparisons'
+  | 'faq'
+  | 'testing'
+  | 'bestPractices'
+  | 'patterns'
+  | 'tooling'
+  | 'foldkitUi'
+  | 'ai'
+  | 'examples'
+  | 'apiReference'
+
+export schema SidebarGroups = Readonly<Record<GroupKey, boolean>>

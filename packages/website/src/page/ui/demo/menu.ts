@@ -10,7 +10,7 @@ import { Menu } from '@foldkit/ui'
 import type { AnchorConfig } from '@foldkit/ui/menu'
 
 import { Icon } from '../../../icon'
-import { Message } from '../message'
+import { Message } from '../message.vibe'
 
 // DEMO CONTENT
 

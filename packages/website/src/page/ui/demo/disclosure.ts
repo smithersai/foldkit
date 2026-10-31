@@ -4,7 +4,7 @@ import type { HtmlBuilder } from 'foldkit/html'
 import { Disclosure } from '@foldkit/ui'
 
 import { Icon } from '../../../icon'
-import { Message } from '../message'
+import { Message } from '../message.vibe'
 
 export const DISCLOSURE_DEMO_ID = 'disclosure-demo'
 export const DISCLOSURE_COLLAPSED_PREVIEW_DEMO_ID =

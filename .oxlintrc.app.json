@@ -18,11 +18,16 @@
     "typescript/no-explicit-any": "error",
     "typescript/consistent-type-assertions": [
       "error",
-      { "assertionStyle": "never" }
+      {
+        "assertionStyle": "never"
+      }
     ],
     "sort-imports": [
       "error",
-      { "ignoreDeclarationSort": true, "ignoreCase": false }
+      {
+        "ignoreDeclarationSort": true,
+        "ignoreCase": false
+      }
     ]
   },
   "overrides": [
@@ -31,10 +36,17 @@
       "rules": {
         "foldkit/no-impure-call-at-decision-time": "off"
       }
+    },
+    {
+      "files": ["packages/website/src/subscription/viewportWidth.ts"],
+      "rules": {
+        "foldkit/no-child-message-construction-in-root": "off"
+      }
     }
   ],
   "ignorePatterns": [
     "**/*.d.ts",
+    "**/*.d.vibe.ts",
     "**/vite.config.ts",
     "**/*.config.js",
     "**/*.config.mjs",

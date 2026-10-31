@@ -9,7 +9,7 @@ import {
 import { Menu } from '@foldkit/ui'
 
 import { Icon } from '../icon'
-import { Message, type ThemePreference } from '../message'
+import { Message, type ThemePreference } from '../message.vibe'
 
 const THEME_PREFERENCES: ReadonlyArray<ThemePreference> = [
   'Dark',

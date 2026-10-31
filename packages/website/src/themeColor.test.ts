@@ -22,7 +22,7 @@ const hexFor = (source: string, pattern: RegExp): string =>
 describe('theme-color', () => {
   const styles = readWebsiteFile('src/styles.css')
   const themeInit = readWebsiteFile('public/theme-init.js')
-  const main = readWebsiteFile('src/main.ts')
+  const main = readWebsiteFile('src/main.vibe')
   const indexHtml = readWebsiteFile('index.html')
 
   const creamHex = hexFor(styles, /--color-cream:\s*(#[0-9a-fA-F]{6})/)

@@ -1,0 +1,128 @@
+import * as NodeFileSystem from '@effect/platform-node/NodeFileSystem'
+import * as NodePath from '@effect/platform-node/NodePath'
+import { Array as Arr, String as Str, pipe } from 'effect'
+
+import { parseMarkdownWithFrontmatter } from '@foldkit/markdown/vite'
+
+import { islandAttributes } from '../src/markdown/islandAttributes.vibe'
+import {
+  type PostCover,
+  PostFrontmatter,
+  maybePostCover,
+} from '../src/page/blog/frontmatter.vibe'
+import { byDateThenSlugDescending } from '../src/page/blog/meta.vibe'
+
+error BlogPostError { message: string }
+
+// COVER ASSETS
+
+const paths = Effect.runSync(effect {
+  provide NodePath.layer {
+    return try Path.Path
+  }
+})
+const SCRIPT_DIR = import.meta.dirname
+
+export const PUBLIC_DIR = paths.resolve(SCRIPT_DIR, '../public')
+
+const COVER_MIME_TYPE_BY_EXTENSION: Readonly<
+  globalThis.Record<string, string>
+> = {
+  avif: 'image/avif',
+  gif: 'image/gif',
+  jpeg: 'image/jpeg',
+  jpg: 'image/jpeg',
+  png: 'image/png',
+  svg: 'image/svg+xml',
+  webp: 'image/webp',
+}
+
+export const maybeCoverMimeType = (src: string): Option<string> =>
+  pipe(
+    Str.split(src, '.'),
+    Arr.lastNonEmpty,
+    (extension): infer _ =>
+      Record.get(COVER_MIME_TYPE_BY_EXTENSION, extension.toLowerCase()),
+  )
+
+/**
+ * A cover image as the file it serves from: its root-relative path, its MIME
+ * type, and its size in bytes. The RSS feed reports all three on each item's
+ * `enclosure`.
+ */
+export type CoverAsset = Readonly<{
+  src: string
+  mimeType: string
+  byteLength: number
+}>
+
+effect function coverAsset(cover: PostCover) {
+  const mimeType = match (maybeCoverMimeType(cover.src)) {
+    when { _tag: 'Some', let value }: value;
+    when { _tag: 'None' }: throw new BlogPostError({
+      message: `Cover image ${cover.src} has no recognized image extension.`,
+    });
+  }
+  const fs = try FileSystem.FileSystem
+  const info = try fs.stat(paths.join(PUBLIC_DIR, cover.src))
+  return { src: cover.src, mimeType, byteLength: Number(info.size) }
+}
+
+// BLOG POSTS
+
+const POST_DIR = paths.resolve(SCRIPT_DIR, '../src/page/blog/post')
+
+export type BlogPostEntry = Readonly<{
+  slug: string
+  frontmatter: PostFrontmatter
+  maybeCoverAsset: Option<CoverAsset>
+}>
+
+const decodePostFrontmatter = Schema.decodeUnknownSync(PostFrontmatter)
+
+effect function readPostEntry(fileName: string) {
+  const fs = try FileSystem.FileSystem
+  const source = try fs.readFileString(paths.join(POST_DIR, fileName), 'utf8')
+  const { maybeFrontmatter } = parseMarkdownWithFrontmatter(source, {
+    islands: islandAttributes,
+    frontmatter: PostFrontmatter,
+  })
+  const input = match (maybeFrontmatter) {
+    when { _tag: 'Some', let value }: value;
+    when { _tag: 'None' }: throw new BlogPostError({
+      message: `Blog post ${fileName} has no frontmatter block.`,
+    });
+  }
+  const frontmatter = try Effect.sync(() => decodePostFrontmatter(input))
+  const maybeCover = maybePostCover(frontmatter)
+  const maybeCoverAsset = match (maybeCover) {
+    when { _tag: 'None' }: Option.none<CoverAsset>();
+    when { _tag: 'Some', let value }: Option.some(try coverAsset(value));
+  }
+  return { slug: paths.basename(fileName, '.md'), frontmatter, maybeCoverAsset }
+}
+
+/**
+ * Every blog post's slug and frontmatter, newest first, read from the post
+ * markdown sources. This is the node-side mirror of the app's post registry:
+ * prerender and metadata read the markdown files directly rather than the
+ * app's `posts.ts` registry, which keeps the build scripts off the
+ * application's Vite module graph.
+ */
+export const blogPosts: ReadonlyArray<BlogPostEntry> = await Effect.runPromise(
+  effect {
+    provide NodeFileSystem.layer {
+      const fs = try FileSystem.FileSystem
+      const fileNames = (try fs.readDirectory(POST_DIR)).filter(fileName =>
+        fileName.endsWith('.md')
+      )
+      const posts = try Effect.forEach(fileNames, readPostEntry)
+      return Arr.sort(posts, byDateThenSlugDescending)
+    }
+  },
+)
+
+export const blogPostSlugs: ReadonlyArray<string> = Arr.map(
+  blogPosts,
+  ({ slug }): infer _ => slug,
+)

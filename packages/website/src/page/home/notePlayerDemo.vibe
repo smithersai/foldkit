@@ -1,0 +1,953 @@
+import { createAudioContext } from '../../browserAudio.ts'
+import { clsx } from 'clsx'
+import { Array as Arr, Number as Num, String as Str, pipe } from 'effect'
+import {
+  Command,
+  FieldValidation,
+  ManagedResource,
+  Submodel,
+  Update,
+} from 'foldkit'
+import { Html, type HtmlBuilder, inertHtml as ih } from 'foldkit/html'
+import { defineMessageUnion } from 'foldkit/message'
+import { defineTaggedUnion } from 'foldkit/schema'
+import { modifyFields } from 'foldkit/struct'
+import notePlayerDemoCodeHtml from 'virtual:note-player-demo-code'
+
+import { Button, Input, RadioGroup } from '@foldkit/ui'
+
+import { Icon } from '../../icon/index.ts'
+import * as DemoView from '../demoView.ts'
+
+error AudioContextUnavailable { message: string }
+
+// CONSTANTS
+
+const NOTE_FREQUENCIES: Record<Note, number> = {
+  C: 261.63,
+  D: 293.66,
+  E: 329.63,
+  F: 349.23,
+  G: 392.0,
+  A: 440.0,
+  B: 493.88,
+}
+
+const DURATION_MILLISECONDS: Record<NoteDuration, number> = {
+  Short: 200,
+  Medium: 400,
+  Long: 800,
+}
+
+const GAIN_ATTACK_TIME = 0.01
+const GAIN_RELEASE_TIME = 0.02
+const GAIN_NEAR_SILENT = 0.001
+const PHASE_DURATION: Duration.Input = '150 millis'
+const MAX_LOG_ENTRIES = 50
+const MIN_NOTES = 2
+const MAX_NOTES = 8
+const NOTE_DURATION_RADIO_GROUP_ID = 'note-duration'
+
+// MODEL
+
+schema Note = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G'
+
+schema NoteDuration = 'Short' | 'Medium' | 'Long'
+
+const NoteDurationRadioGroup = RadioGroup.create<NoteDuration>()
+
+const noteInputRules = FieldValidation.makeRules({
+  required: 'Enter some notes',
+  rules: [
+    FieldValidation.Rule.pattern(/^[A-G]+$/, 'Use notes A through G'),
+    FieldValidation.Rule.minLength(
+      MIN_NOTES,
+      `Enter at least ${MIN_NOTES} notes`,
+    ),
+    FieldValidation.Rule.maxLength(
+      MAX_NOTES,
+      `Enter at most ${MAX_NOTES} notes`,
+    ),
+  ],
+})
+
+const PlaybackState = defineTaggedUnion({
+  Idle: {},
+  Playing: {
+    noteSequence: Schema.Array(Note),
+    currentNoteIndex: Schema.Number,
+  },
+  Paused: { noteSequence: Schema.Array(Note), currentNoteIndex: Schema.Number },
+})
+
+schema NoteHighlightPhase =
+  | 'Idle'
+  | 'PlayMessage'
+  | 'PlayUpdate'
+  | 'PlayModel'
+  | 'PauseMessage'
+  | 'NoteMessage'
+  | 'NoteUpdate'
+  | 'NoteModel'
+  | 'NoteCommand'
+
+const AudioState = defineTaggedUnion({
+  Acquiring: {},
+  Ready: {},
+  Unavailable: {},
+})
+type AudioState = typeof AudioState.Type
+
+export const Model = Schema.Struct({
+  noteInput: FieldValidation.Field(Schema.String),
+  noteDurationRadioGroup: RadioGroup.Model,
+  noteDuration: NoteDuration,
+  playbackState: PlaybackState,
+  highlightPhase: NoteHighlightPhase,
+  generation: Schema.Number,
+  messageLog: Schema.Array(Schema.String),
+  audio: AudioState,
+})
+export type Model = typeof Model.Type
+
+// MESSAGE
+
+export const Message = defineMessageUnion({
+  ChangedNoteInput: { value: Schema.String },
+  GotNoteDurationMessage: { message: RadioGroup.Message },
+  ClickedPlay: {},
+  ClickedPause: {},
+  ClickedStop: {},
+  CompletedPlayNote: { noteIndex: Schema.Number },
+  CompletedDelayAdvancePhase: { generation: Schema.Number },
+  SucceededAcquireAudioContext: {},
+  FailedAcquireAudioContext: {},
+  ReleasedAudioContext: {},
+})
+export type Message = typeof Message.Type
+
+// FIELD VALIDATION
+
+const validateNoteInput = FieldValidation.validate(noteInputRules)
+
+const parseNotes = (value: string): infer _ =>
+  pipe(
+    value,
+    Arr.fromIterable,
+    Arr.filterMap((character): infer _ => {
+      const decoded = Schema.decodeUnknownOption(Note)(character)
+      return match (decoded) {
+        when Option.None: Result.failVoid;
+        when Option.Some(let note): Result.succeed(note);
+      }
+    }),
+  )
+// INIT
+
+const INITIAL_NOTE_SEQUENCE = 'CDEFGABC'
+
+type UpdateReturn = Update.Return<Model, Message, AudioContextService>
+
+export const init = (): UpdateReturn => ({
+  model: {
+    noteInput: validateNoteInput(INITIAL_NOTE_SEQUENCE),
+    noteDurationRadioGroup: RadioGroup.init({
+      id: NOTE_DURATION_RADIO_GROUP_ID,
+    }),
+    noteDuration: 'Medium',
+    playbackState: PlaybackState.Idle(),
+    highlightPhase: 'Idle',
+    generation: 0,
+    messageLog: [],
+    audio: AudioState.Acquiring(),
+  },
+})
+
+// UPDATE
+
+const prependToLog =
+  (entry: string): infer _ =>
+  (messageLog: ReadonlyArray<string>): ReadonlyArray<string> =>
+    Arr.take([entry, ...messageLog], MAX_LOG_ENTRIES)
+
+const DelayAdvancePhase = Command.define('DelayAdvancePhase', {
+  args: { generation: Schema.Number },
+  messages: [Message.CompletedDelayAdvancePhase],
+  execute: (
+    { generation },
+  ): (typeof Message.CompletedDelayAdvancePhase.Type)!never!never => {
+    const delayed: void!never!never = Effect.sleep(PHASE_DURATION)
+    const completed = Message.CompletedDelayAdvancePhase({ generation })
+    return effect {
+      try delayed
+      return completed
+    }
+  },
+})
+
+const enterNoteCommandPhase = (
+  model: Model,
+  noteSequence: ReadonlyArray<Note>,
+  noteIndex: number,
+): UpdateReturn => ({
+  model: modifyFields(model, {
+    playbackState: (): infer _ =>
+      PlaybackState.Playing({
+        noteSequence,
+        currentNoteIndex: noteIndex,
+      }),
+    highlightPhase: (): infer _ => 'NoteCommand',
+  }),
+  commands: [
+    PlayNote({
+      note: Arr.getUnsafe(noteSequence, noteIndex),
+      duration: model.noteDuration,
+      noteIndex,
+    }),
+  ],
+})
+
+const foldNoteDurationRadioGroupOutMessage = RadioGroup.OutMessage.match<
+  Update.Step<Model, Message>,
+  RadioGroup.OutMessage<NoteDuration>
+>({
+  Selected: ({ value }): infer _ => (model): infer _ => ({
+    model: modifyFields(model, {
+      noteDuration: (): infer _ => value,
+      messageLog: prependToLog(`Selected(${value})`),
+    }),
+  }),
+})
+
+const foldNoteDurationRadioGroup = Update.foldChild({
+  update: NoteDurationRadioGroup.update,
+  read: (model: Model): infer _ => Option.some(model.noteDurationRadioGroup),
+  write: (model, nextNoteDurationRadioGroup): infer _ =>
+    modifyFields(model, {
+      noteDurationRadioGroup: (): infer _ => nextNoteDurationRadioGroup,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotNoteDurationMessage({ message }),
+  foldOutMessage: foldNoteDurationRadioGroupOutMessage,
+})
+
+export const update = (model: Model, message: Message): infer _ =>
+  Message.match<UpdateReturn>(message, {
+    ChangedNoteInput: ({ value }): infer _ => {
+      const uppercased = Str.toUpperCase(value)
+      const fieldState = Str.isEmpty(uppercased)
+        ? FieldValidation.NotValidated({ value: uppercased })
+        : validateNoteInput(uppercased)
+
+      return {
+        model: modifyFields(model, {
+          noteInput: (): infer _ => fieldState,
+          playbackState: (): infer _ => PlaybackState.Idle(),
+          highlightPhase: (): infer _ => 'Idle',
+        }),
+      }
+    },
+
+    GotNoteDurationMessage: ({ message }): infer _ =>
+      foldNoteDurationRadioGroup(model, message),
+
+    ClickedPlay: (): infer _ =>
+      PlaybackState.match<UpdateReturn>(model.playbackState, {
+        Playing: (): infer _ => ({ model }),
+        Paused: ({ noteSequence, currentNoteIndex }): infer _ => {
+          const resumeIndex = currentNoteIndex + 1
+
+          if (resumeIndex >= noteSequence.length) {
+            return {
+              model: modifyFields(model, {
+                playbackState: (): infer _ => PlaybackState.Idle(),
+                highlightPhase: (): infer _ => 'Idle',
+                messageLog: prependToLog('ClickedPlay'),
+              }),
+            }
+          }
+
+          const nextGeneration = model.generation + 1
+
+          return {
+            model: modifyFields(model, {
+              playbackState: (): infer _ =>
+                PlaybackState.Playing({
+                  noteSequence,
+                  currentNoteIndex: resumeIndex,
+                }),
+              highlightPhase: (): infer _ => 'PlayMessage',
+              generation: (): infer _ => nextGeneration,
+              messageLog: prependToLog('ClickedPlay'),
+            }),
+            commands: [DelayAdvancePhase({ generation: nextGeneration })],
+          }
+        },
+        Idle: (): infer _ => {
+          const noteSequence = model.noteInput._tag === 'Valid'
+            ? parseNotes(model.noteInput.value)
+            : []
+
+          if (Arr.isReadonlyArrayEmpty(noteSequence)) {
+            return { model }
+          }
+
+          const nextGeneration = model.generation + 1
+
+          return {
+            model: modifyFields(model, {
+              playbackState: (): infer _ =>
+                PlaybackState.Playing({
+                  noteSequence,
+                  currentNoteIndex: 0,
+                }),
+              highlightPhase: (): infer _ => 'PlayMessage',
+              generation: (): infer _ => nextGeneration,
+              messageLog: prependToLog('ClickedPlay'),
+            }),
+            commands: [DelayAdvancePhase({ generation: nextGeneration })],
+          }
+        },
+      }),
+
+    ClickedPause: (): infer _ => match (model.playbackState) {
+      when { _tag: 'Playing' }: do {
+        const { noteSequence, currentNoteIndex } = model.playbackState
+        const nextGeneration = model.generation + 1
+        ;({
+          model: modifyFields(model, {
+            playbackState: (): infer _ =>
+              PlaybackState.Paused({
+                noteSequence,
+                currentNoteIndex,
+              }),
+            highlightPhase: (): infer _ => 'PauseMessage',
+            generation: (): infer _ => nextGeneration,
+            messageLog: prependToLog('ClickedPause'),
+          }),
+          commands: [DelayAdvancePhase({ generation: nextGeneration })],
+        })
+      };
+      default: ({ model });
+    },
+
+    ClickedStop: (): infer _ => ({
+      model: modifyFields(model, {
+        playbackState: (): infer _ => PlaybackState.Idle(),
+        highlightPhase: (): infer _ => 'Idle',
+        messageLog: prependToLog('ClickedStop'),
+      }),
+    }),
+
+    CompletedPlayNote: ({ noteIndex }): infer _ => {
+      if (
+        model.playbackState._tag !== 'Playing'
+        || noteIndex !== model.playbackState.currentNoteIndex
+      ) {
+        return { model }
+      }
+
+      const nextGeneration = model.generation + 1
+
+      return {
+        model: modifyFields(model, {
+          highlightPhase: (): infer _ => 'NoteMessage',
+          generation: (): infer _ => nextGeneration,
+          messageLog: prependToLog(`CompletedPlayNote(${noteIndex})`),
+        }),
+        commands: [DelayAdvancePhase({ generation: nextGeneration })],
+      }
+    },
+
+    CompletedDelayAdvancePhase: ({ generation }): infer _ => {
+      if (generation !== model.generation) {
+        return { model }
+      }
+
+      return match (model.highlightPhase) {
+        when 'PlayMessage': ({
+          model: modifyFields(model, {
+            highlightPhase: (): infer _ => 'PlayUpdate',
+          }),
+          commands: [DelayAdvancePhase({ generation: generation })],
+        });
+        when 'PauseMessage': ({
+          model: modifyFields(model, { highlightPhase: (): infer _ => 'Idle' }),
+        });
+        when 'PlayUpdate': ({
+          model: modifyFields(model, {
+            highlightPhase: (): infer _ => 'PlayModel',
+          }),
+          commands: [DelayAdvancePhase({ generation: generation })],
+        });
+        when 'PlayModel': match (model.playbackState) {
+          when { _tag: 'Playing' }: do {
+            const { noteSequence, currentNoteIndex } = model.playbackState
+            enterNoteCommandPhase(model, noteSequence, currentNoteIndex)
+          };
+          default: ({
+            model: modifyFields(model, {
+              highlightPhase: (): infer _ => 'Idle',
+            }),
+          });
+        };
+        when 'NoteMessage': ({
+          model: modifyFields(model, {
+            highlightPhase: (): infer _ => 'NoteUpdate',
+          }),
+          commands: [DelayAdvancePhase({ generation: generation })],
+        });
+        when 'NoteUpdate': ({
+          model: modifyFields(model, {
+            highlightPhase: (): infer _ => 'NoteModel',
+          }),
+          commands: [DelayAdvancePhase({ generation: generation })],
+        });
+        when 'NoteModel': match (model.playbackState) {
+          when { _tag: 'Playing' }: do {
+            const { noteSequence, currentNoteIndex } = model.playbackState
+            const nextIndex = Num.increment(currentNoteIndex)
+            match (nextIndex >= noteSequence.length) {
+              when true: ({
+                model: modifyFields(model, {
+                  playbackState: (): infer _ => PlaybackState.Idle(),
+                  highlightPhase: (): infer _ => 'Idle',
+                }),
+              });
+              when false: enterNoteCommandPhase(model, noteSequence, nextIndex);
+            }
+          };
+          default: ({
+            model: modifyFields(model, {
+              highlightPhase: (): infer _ => 'Idle',
+            }),
+          });
+        };
+        when 'Idle' or 'NoteCommand': ({ model });
+      }
+    },
+
+    SucceededAcquireAudioContext: (): infer _ => ({
+      model: modifyFields(model, { audio: (): infer _ => AudioState.Ready() }),
+    }),
+
+    FailedAcquireAudioContext: (): infer _ => ({
+      model: modifyFields(model, {
+        audio: (): infer _ => AudioState.Unavailable(),
+      }),
+    }),
+
+    ReleasedAudioContext: (): infer _ => ({ model }),
+  })
+
+// MANAGED RESOURCE
+
+const AudioContextResource = ManagedResource.tag<AudioContext>()('AudioContext')
+type AudioContextService = ManagedResource.ServiceOf<
+  typeof AudioContextResource
+>
+
+export const managedResources = ManagedResource.make<Model, Message>()(
+  (entry): infer _ => ({
+    audioContext: entry(Schema.Option(Schema.Null), {
+      resource: AudioContextResource,
+      modelToMaybeRequirements: (): infer _ => Option.some(null),
+      acquire: (): AudioContext!AudioContextUnavailable!never =>
+        effect {
+          return try Effect.try({
+            try: () => createAudioContext(),
+            catch: () =>
+              new AudioContextUnavailable({
+                message: 'The Web Audio API is unavailable in this browser.',
+              }),
+          })
+        },
+      release: (audioContext): void!never!never =>
+        effect {
+          try Effect.promise(() => audioContext.close().catch(() => undefined))
+        },
+      onAcquired: (): infer _ => Message.SucceededAcquireAudioContext(),
+      onReleased: (): infer _ => Message.ReleasedAudioContext(),
+      onAcquireError: (): infer _ => Message.FailedAcquireAudioContext(),
+    }),
+  }),
+)
+
+// COMMAND
+
+const PlayNote = Command.define('PlayNote', {
+  args: { note: Note, duration: NoteDuration, noteIndex: Schema.Number },
+  messages: [Message.CompletedPlayNote],
+  execute: (
+    { note, duration, noteIndex },
+  ): (typeof Message.CompletedPlayNote.Type)!never!AudioContextService =>
+    effect {
+      return (effect {
+        const audioContext = try AudioContextResource.get
+        try Effect.promise(() => audioContext.resume().catch(() => undefined))
+        return try Effect.callback<typeof Message.CompletedPlayNote.Type>(
+          resume => {
+            if (audioContext.state === 'closed') {
+              const completed = Message.CompletedPlayNote({ noteIndex })
+              resume(effect {
+                return completed
+              })
+              return
+            }
+
+            const oscillator = audioContext.createOscillator()
+            const gainNode = audioContext.createGain()
+            const durationSeconds = DURATION_MILLISECONDS[duration] / 1000
+
+            oscillator.type = 'triangle'
+            oscillator.frequency.setValueAtTime(
+              NOTE_FREQUENCIES[note],
+              audioContext.currentTime,
+            )
+
+            const releaseEnd = audioContext.currentTime + durationSeconds
+              - GAIN_RELEASE_TIME
+
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime)
+            gainNode.gain.linearRampToValueAtTime(
+              0.1,
+              audioContext.currentTime + GAIN_ATTACK_TIME,
+            )
+            gainNode.gain.exponentialRampToValueAtTime(
+              GAIN_NEAR_SILENT,
+              releaseEnd,
+            )
+
+            oscillator.connect(gainNode)
+            gainNode.connect(audioContext.destination)
+
+            oscillator.start()
+            oscillator.stop(audioContext.currentTime + durationSeconds)
+
+            oscillator.onended = () => {
+              gainNode.disconnect()
+              const completed = Message.CompletedPlayNote({ noteIndex })
+              resume(effect {
+                return completed
+              })
+            }
+          },
+        )
+      }) catch effect (error) => match (error) {
+        when { _tag: 'ResourceNotAvailable' }: do {
+          try Effect.sleep(Duration.millis(DURATION_MILLISECONDS[duration]))
+          Message.CompletedPlayNote({ noteIndex })
+        };
+        default: throw error;
+      }
+    },
+})
+
+// VIEW
+
+const inputBorderClass = (field: FieldValidation.Field<string>): string =>
+  FieldValidation.match(field, {
+    onNotValidated: (): infer _ => 'border-gray-300 dark:border-gray-600',
+    onValidating: (): infer _ => 'border-accent-300 dark:border-accent-600',
+    onValid: (): infer _ => 'border-gray-300 dark:border-gray-600',
+    onInvalid: (): infer _ => 'border-red-500 dark:border-red-400',
+  })
+
+const durationButtonClass = (
+  isSelected: boolean,
+  isDisabled: boolean,
+): string =>
+  clsx('flex-1 px-3 py-1.5 text-sm font-normal transition text-center', {
+    'bg-gray-700 dark:bg-gray-200 text-white dark:text-gray-900': isSelected,
+    'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 cursor-pointer':
+      !isSelected && !isDisabled,
+    'text-gray-300 dark:text-gray-600 cursor-not-allowed': !isSelected
+      && isDisabled,
+  })
+
+export const view = Submodel.defineView<Model, Message>((model, h): Html =>
+  DemoView.shell(
+    DemoView.codePanel(
+      'note-demo-code-panel',
+      'note-demo-phase',
+      model.highlightPhase,
+      notePlayerDemoCodeHtml,
+    ),
+    appPanel(model, h),
+  )
+)
+
+const appPanel = (model: Model, h: HtmlBuilder<Message>): Html => {
+  const isPlaying = model.playbackState._tag === 'Playing'
+  const isPaused = model.playbackState._tag === 'Paused'
+  const isInputLocked = isPlaying || isPaused
+  const isValid = model.noteInput._tag === 'Valid'
+  const canPlay = isValid && !isPlaying
+
+  return h.div(
+    [h.Class('relative')],
+    [
+      h.div(
+        [h.Class('lg:absolute lg:inset-0 flex flex-col gap-4 overflow-hidden')],
+        [
+          h.div(
+            [h.Class('flex flex-col gap-3')],
+            [
+              noteSequenceView(model),
+              noteInputView(model, isInputLocked, h),
+              durationSelectorView(model, isInputLocked, h),
+              playbackControlView(model, canPlay, h),
+            ],
+          ),
+          DemoView.modelState([
+            DemoView.modelStateField(
+              'playbackState',
+              playbackStateLabel(model),
+            ),
+            DemoView.modelStateField('noteDuration', model.noteDuration),
+            DemoView.modelStateField('noteInput', noteInputLabel(model)),
+          ]),
+          phaseIndicatorView(model),
+          DemoView.eventLog(model.messageLog),
+        ],
+      ),
+    ],
+  )
+}
+
+const noteInputView = (
+  model: Model,
+  isInputLocked: boolean,
+  h: HtmlBuilder<Message>,
+): Html =>
+  Input.view(
+    {
+      id: 'note-input',
+      value: model.noteInput.value,
+      onInput: (value): infer _ => Message.ChangedNoteInput({ value }),
+      isDisabled: isInputLocked,
+      isInvalid: model.noteInput._tag === 'Invalid',
+      placeholder: 'CDEFGAB',
+      toView: (attributes): infer _ =>
+        h.div(
+          [
+            h.Class(
+              clsx('flex flex-col gap-1.5 transition-opacity', {
+                'opacity-50': isInputLocked,
+              }),
+            ),
+          ],
+          [
+            h.label(
+              [
+                ...attributes.label,
+                h.For('note-input'),
+                h.Class('text-xs text-gray-600 dark:text-gray-400'),
+              ],
+              ['Note Sequence'],
+            ),
+            h.input([
+              ...attributes.input,
+              h.Class(
+                clsx(
+                  'w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-800 border text-sm text-gray-800 dark:text-gray-200 font-mono tracking-widest uppercase transition',
+                  inputBorderClass(model.noteInput),
+                ),
+              ),
+              h.Maxlength(MAX_NOTES),
+              h.Autocomplete('off'),
+            ]),
+            FieldValidation.match(model.noteInput, {
+              onNotValidated: (): infer _ =>
+                h.p(
+                  [h.Class('text-xs text-gray-500 dark:text-gray-500')],
+                  [`${MIN_NOTES}–${MAX_NOTES} notes, A through G`],
+                ),
+              onValidating: (): infer _ =>
+                h.p(
+                  [h.Class('text-xs text-gray-500 dark:text-gray-500')],
+                  [''],
+                ),
+              onValid: (value): infer _ =>
+                h.p(
+                  [h.Class('text-xs text-gray-600 dark:text-gray-400')],
+                  [`${parseNotes(value).length} notes`],
+                ),
+              onInvalid: ({ errors }): infer _ =>
+                h.p(
+                  [h.Class('text-xs text-red-600 dark:text-red-400')],
+                  [Arr.headNonEmpty(errors)],
+                ),
+            }),
+          ],
+        ),
+    },
+    h,
+  )
+
+const noteDurations: ReadonlyArray<NoteDuration> = ['Short', 'Medium', 'Long']
+
+const durationSelectorView = (
+  model: Model,
+  isInputLocked: boolean,
+  h: HtmlBuilder<Message>,
+): Html =>
+  h.div(
+    [h.Class('flex flex-col gap-1.5')],
+    [
+      h.label(
+        [h.Class('text-xs text-gray-600 dark:text-gray-400')],
+        ['Note Length'],
+      ),
+      h.submodel({
+        slotId: model.noteDurationRadioGroup.id,
+        model: model.noteDurationRadioGroup,
+        view: NoteDurationRadioGroup.view,
+        viewInputs: {
+          selectedValue: Option.some(model.noteDuration),
+          options: noteDurations,
+          ariaLabel: 'Note length',
+          orientation: 'Horizontal',
+          isDisabled: isInputLocked,
+          toView: ({ group, options }): infer _ =>
+            h.div(
+              [
+                ...group,
+                h.Class(
+                  'flex rounded-lg bg-gray-200 dark:bg-gray-800 overflow-hidden',
+                ),
+              ],
+              options.map((option): infer _ =>
+                h.div(
+                  [
+                    ...option.option,
+                    h.Class(
+                      durationButtonClass(option.isSelected, option.isDisabled),
+                    ),
+                  ],
+                  [option.value],
+                )
+              ),
+            ),
+        },
+        toParentMessage: (message): infer _ =>
+          Message.GotNoteDurationMessage({ message }),
+      }),
+    ],
+  )
+
+const playbackControlView = (
+  model: Model,
+  canPlay: boolean,
+  h: HtmlBuilder<Message>,
+): Html => {
+  const isPlaying = model.playbackState._tag === 'Playing'
+  const isActive = isPlaying || model.playbackState._tag === 'Paused'
+
+  return h.div(
+    [h.Class('flex flex-col gap-2')],
+    [
+      h.div(
+        [h.Class('flex gap-2')],
+        [
+          isPlaying
+            ? Button.view(
+              {
+                onClick: Message.ClickedPause(),
+                toView: (attributes): infer _ =>
+                  h.button(
+                    [
+                      ...attributes.button,
+                      h.Class(
+                        'button-accent flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-sm cursor-pointer',
+                      ),
+                      h.AriaLabel('Pause'),
+                    ],
+                    [Icon.pause('w-4 h-4'), 'Pause'],
+                  ),
+              },
+              h,
+            )
+            : Button.view(
+              {
+                onClick: Message.ClickedPlay(),
+                isDisabled: !canPlay,
+                toView: (attributes): infer _ =>
+                  h.button(
+                    [
+                      ...attributes.button,
+                      h.Class(
+                        clsx(
+                          'flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-sm font-normal transition',
+                          {
+                            'button-accent cursor-pointer': canPlay,
+                            'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-500 cursor-not-allowed':
+                              !canPlay,
+                          },
+                        ),
+                      ),
+                      h.AriaLabel('Play'),
+                    ],
+                    [Icon.play('w-4 h-4'), 'Play'],
+                  ),
+              },
+              h,
+            ),
+          Button.view(
+            {
+              onClick: Message.ClickedStop(),
+              isDisabled: !isActive,
+              toView: (attributes): infer _ =>
+                h.button(
+                  [
+                    ...attributes.button,
+                    h.Class(
+                      clsx(
+                        'flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-sm font-normal transition',
+                        {
+                          'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 cursor-pointer':
+                            isActive,
+                          'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-500 cursor-not-allowed':
+                            !isActive,
+                        },
+                      ),
+                    ),
+                    h.AriaLabel('Stop'),
+                  ],
+                  [Icon.stop('w-4 h-4'), 'Stop'],
+                ),
+            },
+            h,
+          ),
+        ],
+      ),
+      ...audioUnavailableNoticeView(model.audio),
+    ],
+  )
+}
+
+const audioUnavailableNoticeView = (
+  audio: AudioState,
+): ReadonlyArray<Html> => match (audio) {
+  when { _tag: 'Unavailable' }: [
+    ih.p(
+      [ih.Class('text-xs text-amber-600 dark:text-amber-500')],
+      ['No audio output in this browser, so playback stays silent.'],
+    ),
+  ];
+  default: [];
+}
+
+const placeholderVisualizerView = (): Html =>
+  ih.div(
+    [ih.Class('flex gap-2')],
+    Arr.makeBy(MIN_NOTES, (index): infer _ =>
+      ih.keyed('div')(
+        `placeholder-${index}`,
+        [
+          ih.Class(
+            'flex-1 h-10 rounded-lg flex items-center justify-center text-sm font-bold bg-gray-200 dark:bg-gray-800 text-gray-300 dark:text-gray-600',
+          ),
+        ],
+        [ih.span([], ['–'])],
+      )),
+  )
+
+const noteSequenceView = (model: Model): Html => {
+  const notes = parseNotes(model.noteInput.value)
+
+  return ih.div(
+    [
+      ih.Class(
+        'flex flex-col gap-2 pb-3 border-b border-gray-300 dark:border-gray-800',
+      ),
+    ],
+    [
+      Arr.match(notes, {
+        onEmpty: (): infer _ => placeholderVisualizerView(),
+        onNonEmpty: (validNotes): infer _ =>
+          noteVisualizerView(model, validNotes),
+      }),
+    ],
+  )
+}
+
+const noteVisualizerView = (model: Model, notes: ReadonlyArray<Note>): Html => {
+  const maybeCurrentIndex = match (model.playbackState) {
+    when { _tag: 'Playing' } or { _tag: 'Paused' }: Option.some(
+      model.playbackState.currentNoteIndex,
+    );
+    when { _tag: 'Idle' }: Option.none();
+  }
+
+  return ih.div(
+    [ih.Class('flex gap-2')],
+    Arr.map(notes, (note, index): infer _ => {
+      const isCurrentNote = Option.exists(
+        maybeCurrentIndex,
+        (currentIndex): infer _ => currentIndex === index,
+      )
+      const key = `${note}-${index}`
+
+      return ih.keyed('div')(
+        key,
+        [
+          ih.Class(
+            clsx(
+              'flex-1 h-10 rounded-lg flex items-center justify-center text-sm font-bold transition-colors duration-150',
+              {
+                'bg-accent-600 dark:bg-accent-500 text-white dark:text-accent-900':
+                  isCurrentNote,
+                'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300':
+                  !isCurrentNote,
+              },
+            ),
+          ),
+        ],
+        [ih.span([], [note])],
+      )
+    }),
+  )
+}
+
+const noteInputLabel = (model: Model): string =>
+  FieldValidation.match(model.noteInput, {
+    onNotValidated: (value): infer _ => `NotValidated("${value}")`,
+    onValidating: (value): infer _ => `Validating("${value}")`,
+    onValid: (value): infer _ => `Valid("${value}")`,
+    onInvalid: ({ errors }): infer _ =>
+      `Invalid("${Arr.headNonEmpty(errors)}")`,
+  })
+
+const playbackStateLabel = (model: Model): string =>
+  PlaybackState.match(model.playbackState, {
+    Idle: (): infer _ => 'Idle',
+    Playing: ({ currentNoteIndex, noteSequence }): infer _ =>
+      `PlaybackState.Playing(${currentNoteIndex + 1}/${noteSequence.length})`,
+    Paused: ({ currentNoteIndex, noteSequence }): infer _ =>
+      `PlaybackState.Paused(${currentNoteIndex + 1}/${noteSequence.length})`,
+  })
+
+const phaseLabel = (phase: NoteHighlightPhase): string => match (phase) {
+  when 'Idle': 'Idle';
+  when 'PlayMessage' or 'PauseMessage' or 'NoteMessage': 'Message';
+  when 'PlayUpdate' or 'NoteUpdate': 'Update';
+  when 'PlayModel' or 'NoteModel': 'Model';
+  when 'NoteCommand': 'Command';
+}
+
+const phaseColorClass = (phase: NoteHighlightPhase): string => match (phase) {
+  when 'Idle': 'text-gray-600 dark:text-gray-400';
+  when 'PlayMessage' or 'PauseMessage' or 'NoteMessage':
+    'text-emerald-600 dark:text-emerald-400';
+  when 'PlayUpdate' or 'NoteUpdate': 'text-amber-600 dark:text-amber-400';
+  when 'PlayModel' or 'NoteModel': 'text-accent-700 dark:text-accent-400';
+  when 'NoteCommand': 'text-violet-600 dark:text-violet-400';
+}
+
+const phaseIndicatorView = (model: Model): Html =>
+  DemoView.phaseIndicator(
+    phaseLabel(model.highlightPhase),
+    phaseColorClass(model.highlightPhase),
+    [],
+  )

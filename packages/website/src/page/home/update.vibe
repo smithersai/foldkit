@@ -1,0 +1,111 @@
+import { Update } from 'foldkit'
+import { modifyFields } from 'foldkit/struct'
+
+import { Menu, Tabs } from '@foldkit/ui'
+
+import { ExampleSlug } from '../example/meta.vibe'
+import * as AsyncCounterDemo from './asyncCounterDemo.vibe'
+import * as DemoTab from './demoTab.ts'
+import { type ManagedResourceServices } from './managedResources.vibe'
+import { Message, OutMessage } from './message.vibe'
+import { type Model } from './model.vibe'
+import * as NotePlayerDemo from './notePlayerDemo.vibe'
+
+// UPDATE
+
+const PlaygroundMenu = Menu.create<ExampleSlug>()
+
+const selectDemoTab = (
+  model: Model,
+  tab: DemoTab.Tab,
+): Update.Return<Model, Message> => ({
+  model: modifyFields(model, { activeDemoTab: (): infer _ => tab }),
+})
+
+const selectPlaygroundExample = (
+  model: Model,
+  exampleSlug: ExampleSlug,
+): Update.ReturnWithOutMessage<Model, Message, OutMessage> => ({
+  model,
+  outMessage: OutMessage.SelectedPlaygroundExample({ exampleSlug }),
+})
+
+const foldDemoTabsOutMessage = Tabs.OutMessage.match<
+  Update.Step<Model, Message>,
+  Tabs.OutMessage<DemoTab.Tab>
+>({
+  Selected: ({ value }): infer _ => (model): infer _ =>
+    selectDemoTab(model, value),
+})
+
+const foldDemoTabs = Update.foldChild({
+  update: DemoTab.DemoTabs.update,
+  read: (model: Model): infer _ => Option.some(model.demoTabs),
+  write: (model, nextDemoTabs): infer _ =>
+    modifyFields(model, { demoTabs: (): infer _ => nextDemoTabs }),
+  toParentMessage: (message): infer _ =>
+    Message.GotDemoTabsMessage({ message }),
+  foldOutMessage: foldDemoTabsOutMessage,
+})
+
+const foldPlaygroundMenuOutMessage = Menu.OutMessage.match<
+  Update.StepWithOutMessage<Model, Message, OutMessage>,
+  Menu.OutMessage<ExampleSlug>
+>({
+  // NOTE: A fresh document load preserves the COEP/COOP headers required by
+  // WebContainer. SPA navigation would reuse the current document.
+  Selected: ({ value }): infer _ => (model): infer _ =>
+    selectPlaygroundExample(model, value),
+})
+
+const foldPlaygroundMenu = Update.foldChild({
+  update: PlaygroundMenu.update,
+  read: (model: Model): infer _ => Option.some(model.playgroundMenu),
+  write: (model, nextPlaygroundMenu): infer _ =>
+    modifyFields(model, { playgroundMenu: (): infer _ => nextPlaygroundMenu }),
+  toParentMessage: (message): infer _ =>
+    Message.GotPlaygroundMenuMessage({ message }),
+  foldOutMessage: foldPlaygroundMenuOutMessage,
+})
+
+const foldAsyncCounterDemo = Update.foldChild({
+  update: AsyncCounterDemo.update,
+  read: (model: Model): infer _ => Option.some(model.asyncCounterDemo),
+  write: (model, nextAsyncCounterDemo): infer _ =>
+    modifyFields(model, {
+      asyncCounterDemo: (): infer _ => nextAsyncCounterDemo,
+    }),
+  toParentMessage: (message): infer _ =>
+    Message.GotAsyncCounterDemoMessage({ message }),
+})
+
+const foldNotePlayerDemo = Update.foldChild({
+  update: NotePlayerDemo.update,
+  read: (model: Model): infer _ => Option.some(model.notePlayerDemo),
+  write: (model, nextNotePlayerDemo): infer _ =>
+    modifyFields(model, { notePlayerDemo: (): infer _ => nextNotePlayerDemo }),
+  toParentMessage: (message): infer _ =>
+    Message.GotNotePlayerDemoMessage({ message }),
+})
+
+type UpdateReturn = Update.ReturnWithOutMessage<
+  Model,
+  Message,
+  OutMessage,
+  ManagedResourceServices
+>
+
+export const update = (model: Model, message: Message): infer _ =>
+  Message.match<UpdateReturn>(message, {
+    GotDemoTabsMessage: ({ message }): infer _ => foldDemoTabs(model, message),
+    GotPlaygroundMenuMessage: ({ message }): infer _ =>
+      foldPlaygroundMenu(model, message),
+    GotAsyncCounterDemoMessage: ({ message }): infer _ =>
+      foldAsyncCounterDemo(model, message),
+    GotNotePlayerDemoMessage: ({ message }): infer _ =>
+      foldNotePlayerDemo(model, message),
+    UpdatedNewsletterEmail: ({ value }): infer _ => ({
+      model,
+      outMessage: OutMessage.UpdatedNewsletterEmail({ value }),
+    }),
+  })

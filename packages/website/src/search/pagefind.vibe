@@ -1,0 +1,44 @@
+error PagefindUnavailable { message: string }
+
+type PagefindResult = Readonly<{
+  data: () => Promise<
+    Readonly<{
+      url: string
+      excerpt: string
+      meta?: Readonly<{ title?: string; section?: string; kind?: string }>
+    }>
+  >
+}>
+
+type PagefindResponse = Readonly<{
+  results: ReadonlyArray<PagefindResult>
+}>
+
+type PagefindModule = Readonly<{
+  search: (query: string) => Promise<PagefindResponse>
+}>
+
+const PAGEFIND_PATH = '/pagefind/pagefind.js'
+
+const NOOP_PAGEFIND: PagefindModule = {
+  search: (): infer _ => Promise.resolve({ results: [] }),
+}
+
+export service PagefindService {
+  static readonly key = 'PagefindService'
+  readonly search: (query: string) => Promise<PagefindResponse>
+}
+
+export const pagefindLive = Layer.effect(
+  PagefindService,
+  effect {
+    return (effect {
+      return try Effect.tryPromise({
+        try: (): Promise<PagefindModule> =>
+          new Function('path', 'return import(path)')(PAGEFIND_PATH),
+        catch: () =>
+          new PagefindUnavailable({ message: 'Pagefind not available' }),
+      })
+    }) catch () => NOOP_PAGEFIND
+  },
+)

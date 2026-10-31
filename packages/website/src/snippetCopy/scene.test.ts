@@ -10,10 +10,14 @@ import {
 } from 'foldkit/scene'
 import { describe, test } from 'vitest'
 
-import { init } from './init'
-import { Message } from './message'
-import { CopySnippet, WaitBeforeHidingCopiedIndicator, update } from './update'
-import { view } from './view'
+import { init } from './init.vibe'
+import { Message } from './message.vibe'
+import {
+  CopySnippet,
+  WaitBeforeHidingCopiedIndicator,
+  update,
+} from './update.vibe'
+import { view } from './view.vibe'
 
 const snippetId = 'counter-example'
 

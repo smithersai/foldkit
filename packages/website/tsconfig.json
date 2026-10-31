@@ -4,7 +4,8 @@
     "moduleResolution": "bundler",
     "isolatedModules": true,
     "noEmit": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true
   },
   "include": [
     "src/**/*",
@@ -15,5 +16,8 @@
     "scripts/**/*",
     "e2e/**/*"
   ],
-  "exclude": ["src/snippet/**/*"]
+  "exclude": ["src/snippet/**/*"],
+  "vibelang": {
+    "trustedPackages": ["foldkit", "@foldkit/*"]
+  }
 }

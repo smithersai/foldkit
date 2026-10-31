@@ -1,0 +1,21 @@
+import { type Update } from 'foldkit'
+import { modifyFields } from 'foldkit/struct'
+
+import { Message } from './message.vibe'
+import { type Model } from './model.vibe'
+
+export const update = (model: Model, message: Message): infer _ =>
+  Message.match<Update.Return<Model, Message>>(message, {
+    ToggledCodeDisclosure: ({ disclosureId, isOpen }): infer _ => ({
+      model: modifyFields(model, {
+        openDisclosureIds: isOpen
+          ? HashSet.add(disclosureId)
+          : HashSet.remove(disclosureId),
+      }),
+    }),
+    CompletedMeasureSnippetHeight: ({ snippetId, snippetSize }): infer _ => ({
+      model: modifyFields(model, {
+        snippetSizes: HashMap.set(snippetId, snippetSize),
+      }),
+    }),
+  })
