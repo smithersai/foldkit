@@ -1,7 +1,7 @@
 import { Effect } from 'effect'
 import { Server } from 'foldkit/experimental'
 
-import { init, view } from './main'
+import { init, view } from './main.vibe'
 
 export const renderDocument = Server.renderDocument
 

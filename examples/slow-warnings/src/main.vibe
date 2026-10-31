@@ -1,4 +1,5 @@
-import { Array, Match, Number, Option, Schema, Stream, pipe } from 'effect'
+import { Clock } from 'effect'
+import { Array as Arr, Number as Num, pipe } from 'effect'
 import { Dom, Runtime, Subscription, type Update } from 'foldkit'
 import { type Document, type Html, HtmlBuilder, createLazy } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -11,25 +12,22 @@ const PATCH_ROW_COUNT = 4000
 const MAX_WARNING_COUNT = 8
 const SLOW_WARNING_EVENT = 'foldkit:slow-warning'
 
-const Workload = Schema.Literals([
-  'Idle',
-  'Update',
-  'View',
-  'Patch',
-  'SubscriptionDependencies',
-])
-type Workload = typeof Workload.Type
+schema Workload =
+  | 'Idle'
+  | 'Update'
+  | 'View'
+  | 'Patch'
+  | 'SubscriptionDependencies'
 
 type SlowPhase = Runtime.SlowPhase
 
-export const SlowWarningReport = Schema.Struct({
-  phase: Runtime.SlowPhase,
-  durationMs: Schema.Number,
-  thresholdMs: Schema.Number,
-  trigger: Schema.String,
-  details: Schema.String,
-})
-export type SlowWarningReport = typeof SlowWarningReport.Type
+export schema SlowWarningReport {
+  phase: Runtime.SlowPhase
+  durationMs: number
+  thresholdMs: number
+  trigger: string
+  details: string
+}
 
 export const SlowWarning = Schema.Struct({
   id: Schema.Number,
@@ -39,14 +37,13 @@ export type SlowWarning = typeof SlowWarning.Type
 
 // MODEL
 
-export const Model = Schema.Struct({
-  activeWorkload: Workload,
-  nextWarningId: Schema.Number,
-  warnings: Schema.Array(SlowWarning),
-  patchRows: Schema.Number,
-  patchRun: Schema.Number,
-})
-export type Model = typeof Model.Type
+export schema Model {
+  activeWorkload: Workload
+  nextWarningId: number
+  warnings: ReadonlyArray<SlowWarning>
+  patchRows: number
+  patchRun: number
+}
 
 // MESSAGE
 
@@ -65,11 +62,16 @@ const slowWarningTarget: Dom.TypedEventTarget<{
   [SLOW_WARNING_EVENT]: CustomEvent<SlowWarningReport>
 }> = new EventTarget()
 
+// Retain synchronous CPU work using the standard Clock service.
+const clock = runSync(effect {
+  return Clock.Clock()
+})
+
 const burnCpu = (durationMs: number): number => {
-  const stopAt = performance.now() + durationMs
+  const stopAt = Number(clock.monotonicTimeNanosUnsafe()) / 1e6 + durationMs
   let checksum = 0
 
-  while (performance.now() < stopAt) {
+  while (Number(clock.monotonicTimeNanosUnsafe()) / 1e6 < stopAt) {
     checksum = (checksum + Math.sqrt(checksum + 1)) % 100000
   }
 
@@ -78,51 +80,40 @@ const burnCpu = (durationMs: number): number => {
 
 const messageToTag = ({ _tag }: Message): string => _tag
 
-const maybeMessageTrigger = (message: Option.Option<Message>): string =>
-  Option.match(message, {
-    onNone: () => 'initial render',
-    onSome: messageToTag,
-  })
+const maybeMessageTrigger = (message: Option<Message>): string => match (message) {
+  when Option.None: 'initial render';
+  when Option.Some(let value): messageToTag(value);
+}
 
 const triggerForSlowContext = (
   context: Runtime.SlowContext<Model, Message>,
-): string =>
-  Match.value(context).pipe(
-    Match.withReturnType<string>(),
-    Match.tagsExhaustive({
-      Update: ({ message }) => messageToTag(message),
-      View: ({ message }) => maybeMessageTrigger(message),
-      Patch: ({ message }) => maybeMessageTrigger(message),
-      SubscriptionDependencies: ({ subscriptionKey }) => subscriptionKey,
-    }),
-  )
+): string => match (context) {
+  when { _tag: "Update", let message }: messageToTag(message);
+  when { _tag: "View", let message }: maybeMessageTrigger(message);
+  when { _tag: "Patch", let message }: maybeMessageTrigger(message);
+  when { _tag: "SubscriptionDependencies", let subscriptionKey }:
+    subscriptionKey;
+}
 
 const detailsForSlowContext = (
   context: Runtime.SlowContext<Model, Message>,
-): string =>
-  Match.value(context).pipe(
-    Match.withReturnType<string>(),
-    Match.tagsExhaustive({
-      Update: () =>
-        'CPU work ran inside update before Foldkit could return the next Model.',
-      View: () =>
-        'The view function performed expensive synchronous work while building the next VNode tree.',
-      Patch: () =>
-        'The patch phase inserted thousands of keyed rows into the live DOM.',
-      SubscriptionDependencies: () =>
-        'A subscription spent time deriving its dependency struct from the Model.',
-    }),
-  )
+): string => match (context) {
+  when { _tag: "Update" }:
+    'CPU work ran inside update before Foldkit could return the next Model.';
+  when { _tag: "View" }:
+    'The view function performed expensive synchronous work while building the next VNode tree.';
+  when { _tag: "Patch" }:
+    'The patch phase inserted thousands of keyed rows into the live DOM.';
+  when { _tag: "SubscriptionDependencies" }:
+    'A subscription spent time deriving its dependency struct from the Model.';
+}
 
-const phaseLabel = (phase: SlowPhase): string =>
-  Match.value(phase).pipe(
-    Match.withReturnType<string>(),
-    Match.when('Update', () => 'Update'),
-    Match.when('View', () => 'View'),
-    Match.when('Patch', () => 'Patch'),
-    Match.when('SubscriptionDependencies', () => 'Subscription dependencies'),
-    Match.exhaustive,
-  )
+const phaseLabel = (phase: SlowPhase): string => match (phase) {
+  when 'Update': 'Update';
+  when 'View': 'View';
+  when 'Patch': 'Patch';
+  when 'SubscriptionDependencies': 'Subscription dependencies';
+}
 
 const slowContextToReport = (
   context: Runtime.SlowContext<Model, Message>,
@@ -150,11 +141,11 @@ export const handleSlow = (
 // UPDATE
 
 const prependWarning =
-  (warning: SlowWarning) =>
+  (warning: SlowWarning): infer _ =>
   (warnings: ReadonlyArray<SlowWarning>): ReadonlyArray<SlowWarning> =>
-    pipe(warnings, Array.prepend(warning), Array.take(MAX_WARNING_COUNT))
+    pipe(warnings, Arr.prepend(warning), Arr.take(MAX_WARNING_COUNT))
 
-export const update = (model: Model, message: Message) =>
+export const update = (model: Model, message: Message): infer _ =>
   Message.match<Update.Return<Model, Message>>(message, {
     ClickedRunUpdateWork: () => {
       burnCpu(UPDATE_WORK_MS)
@@ -174,7 +165,7 @@ export const update = (model: Model, message: Message) =>
       model: modifyFields(model, {
         activeWorkload: () => 'Patch',
         patchRows: () => PATCH_ROW_COUNT,
-        patchRun: Number.increment,
+        patchRun: Num.increment,
       }),
     }),
     ClickedRunSubscriptionDependenciesWork: () => ({
@@ -197,7 +188,7 @@ export const update = (model: Model, message: Message) =>
       return {
         model: modifyFields(model, {
           activeWorkload: () => 'Idle',
-          nextWarningId: Number.increment,
+          nextWarningId: Num.increment,
           warnings: prependWarning(warning),
         }),
       }
@@ -260,18 +251,13 @@ const buttonClass =
 const secondaryButtonClass =
   'inline-flex items-center justify-center rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950'
 
-const phaseAccentClass = (phase: SlowPhase): string =>
-  Match.value(phase).pipe(
-    Match.withReturnType<string>(),
-    Match.when('Update', () => 'border-amber-400 bg-amber-50 text-amber-950'),
-    Match.when('View', () => 'border-sky-400 bg-sky-50 text-sky-950'),
-    Match.when('Patch', () => 'border-rose-400 bg-rose-50 text-rose-950'),
-    Match.when(
-      'SubscriptionDependencies',
-      () => 'border-emerald-400 bg-emerald-50 text-emerald-950',
-    ),
-    Match.exhaustive,
-  )
+const phaseAccentClass = (phase: SlowPhase): string => match (phase) {
+  when 'Update': 'border-amber-400 bg-amber-50 text-amber-950';
+  when 'View': 'border-sky-400 bg-sky-50 text-sky-950';
+  when 'Patch': 'border-rose-400 bg-rose-50 text-rose-950';
+  when 'SubscriptionDependencies':
+    'border-emerald-400 bg-emerald-50 text-emerald-950';
+}
 
 const burnCpuDuringView = (workload: Workload): void => {
   if (workload === 'View') {
@@ -385,7 +371,7 @@ const warningsView = (
           ),
         ],
       ),
-      Array.match(warnings, {
+      Arr.match(warnings, {
         onEmpty: () =>
           h.div(
             [
@@ -398,7 +384,7 @@ const warningsView = (
         onNonEmpty: warnings =>
           h.ul(
             [h.Class('grid gap-3')],
-            Array.map(warnings, warning => warningView(warning, h)),
+            Arr.map(warnings, warning => warningView(warning, h)),
           ),
       }),
     ],
@@ -422,7 +408,7 @@ const patchRowsView = (
     return h.keyed('div')(
       `rows-${patchRun}`,
       [h.Class('grid max-h-80 gap-1 overflow-auto pr-2')],
-      Array.map(Array.range(1, rowCount), row =>
+      Arr.map(Arr.range(1, rowCount), row =>
         h.keyed('div')(
           `patch-row-${patchRun}-${row}`,
           [
@@ -434,8 +420,7 @@ const patchRowsView = (
             h.span([], [`Patch row ${row}`]),
             h.span([h.Class('font-mono')], [`run ${patchRun}`]),
           ],
-        ),
-      ),
+        )),
     )
   }
 }

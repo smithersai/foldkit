@@ -1,13 +1,4 @@
-import {
-  Clock,
-  Duration,
-  Effect,
-  Schema,
-  Stream,
-  String,
-  flow,
-  pipe,
-} from 'effect'
+import { String as Str } from 'effect'
 import { Command, Runtime, Subscription, type Update } from 'foldkit'
 import { Document, Html, HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -19,12 +10,11 @@ const TICK_INTERVAL_MS = 10
 
 // MODEL
 
-export const Model = Schema.Struct({
-  elapsedMs: Schema.Number,
-  isRunning: Schema.Boolean,
-  startTime: Schema.Number,
-})
-export type Model = typeof Model.Type
+export schema Model {
+  elapsedMs: number
+  isRunning: boolean
+  startTime: number
+}
 
 // MESSAGE
 
@@ -44,26 +34,30 @@ export type Message = typeof Message.Type
 export const DetermineStartTime = Command.define('DetermineStartTime', {
   args: { elapsedMs: Schema.Number },
   messages: [Message.CompletedDetermineStartTime],
-  execute: ({ elapsedMs }) =>
-    Effect.gen(function* () {
-      const now = yield* Clock.currentTimeMillis
+  execute: (
+    { elapsedMs },
+  ): ReturnType<typeof Message.CompletedDetermineStartTime>!! =>
+    effect {
+      const now = try Clock.currentTimeMillis
       return Message.CompletedDetermineStartTime({ startTime: now - elapsedMs })
-    }),
+    },
 })
 
 export const DetermineTickTime = Command.define('DetermineTickTime', {
   args: { startTime: Schema.Number },
   messages: [Message.CompletedDetermineTickTime],
-  execute: ({ startTime }) =>
-    Effect.gen(function* () {
-      const now = yield* Clock.currentTimeMillis
+  execute: (
+    { startTime },
+  ): ReturnType<typeof Message.CompletedDetermineTickTime>!! =>
+    effect {
+      const now = try Clock.currentTimeMillis
       return Message.CompletedDetermineTickTime({ elapsedMs: now - startTime })
-    }),
+    },
 })
 
 // UPDATE
 
-export const update = (model: Model, message: Message) =>
+export const update = (model: Model, message: Message): infer _ =>
   Message.match<Update.Return<Model, Message>>(message, {
     ClickedStart: () => ({
       model,
@@ -122,11 +116,12 @@ export const subscriptions = Subscription.make<Model, Message>()(entry => ({
       modelToDependencies: model => ({ isRunning: model.isRunning }),
       dependenciesToStream: ({ isRunning }) =>
         Stream.when(
-          Stream.tick(Duration.millis(TICK_INTERVAL_MS)).pipe(
-            Stream.drop(1),
-            Stream.map(Message.Ticked),
+          Stream.tick(Duration.millis(TICK_INTERVAL_MS)).drop(1).map(
+            Message.Ticked,
           ),
-          Effect.sync(() => isRunning),
+          effect {
+            return isRunning
+          },
         ),
     },
   ),
@@ -135,25 +130,17 @@ export const subscriptions = Subscription.make<Model, Message>()(entry => ({
 // VIEW
 
 const formatTime = (ms: number): string => {
-  const minutes = pipe(Duration.millis(ms), Duration.toMinutes, floorAndPad)
-
-  const seconds = pipe(
-    Duration.millis(ms % 60000),
-    Duration.toSeconds,
-    floorAndPad,
-  )
-
-  const centiseconds = pipe(
-    Duration.millis(ms % 1000),
-    Duration.toMillis,
-    v => v / 10,
-    floorAndPad,
-  )
-
+  const minutes = Duration.millis(ms) |> Duration.toMinutes(%)
+    |> floorAndPad(%)
+  const seconds = Duration.millis(ms % 60000) |> Duration.toSeconds(%)
+    |> floorAndPad(%)
+  const centiseconds = Duration.millis(ms % 1000) |> Duration.toMillis(%)
+    |> floorAndPad(% / 10)
   return `${minutes}:${seconds}.${centiseconds}`
 }
 
-const floorAndPad = flow(Math.floor, v => v.toString(), String.padStart(2, '0'))
+const floorAndPad = (value: number): string =>
+  Math.floor(value).toString() |> Str.padStart(2, '0')(%)
 
 export const view = (model: Model, h: HtmlBuilder<Message>): Document => ({
   title: `Stopwatch ${formatTime(model.elapsedMs)}`,
@@ -196,33 +183,33 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => ({
 const startStopButton = (isRunning: boolean, h: HtmlBuilder<Message>): Html =>
   isRunning
     ? Button.view(
-        {
-          onClick: Message.ClickedStop(),
-          toView: attributes =>
-            h.button(
-              [
-                ...attributes.button,
-                h.Class(buttonStyle + ' bg-red-500 hover:bg-red-600'),
-              ],
-              ['Stop'],
-            ),
-        },
-        h,
-      )
+      {
+        onClick: Message.ClickedStop(),
+        toView: attributes =>
+          h.button(
+            [
+              ...attributes.button,
+              h.Class(buttonStyle + ' bg-red-500 hover:bg-red-600'),
+            ],
+            ['Stop'],
+          ),
+      },
+      h,
+    )
     : Button.view(
-        {
-          onClick: Message.ClickedStart(),
-          toView: attributes =>
-            h.button(
-              [
-                ...attributes.button,
-                h.Class(buttonStyle + ' bg-green-500 hover:bg-green-600'),
-              ],
-              ['Start'],
-            ),
-        },
-        h,
-      )
+      {
+        onClick: Message.ClickedStart(),
+        toView: attributes =>
+          h.button(
+            [
+              ...attributes.button,
+              h.Class(buttonStyle + ' bg-green-500 hover:bg-green-600'),
+            ],
+            ['Start'],
+          ),
+      },
+      h,
+    )
 
 // STYLE
 
