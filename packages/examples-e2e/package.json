@@ -21,6 +21,6 @@
     "eslint": "^10.11.0",
     "playwright": "^1.63.0",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
-    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-ec9d7ad96db7.tgz"
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz"
   }
 }

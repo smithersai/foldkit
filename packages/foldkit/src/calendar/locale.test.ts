@@ -13,7 +13,7 @@ import {
   formatLong,
   formatMonthYear,
   formatShort,
-} from './locale.js'
+} from './locale.vibe'
 
 describe('date format schemas', () => {
   it('requires at least one part', () => {
