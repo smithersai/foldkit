@@ -1,7 +1,7 @@
 import { Array, HashSet, Match, Option, Order, Record, pipe } from 'effect'
 
 import type { MessageTagCount } from './protocol.js'
-import { toInspectableValue } from './serialize.js'
+import { toInspectableValue } from './serialize.vibe'
 import {
   type HistoryEntry,
   INIT_INDEX,

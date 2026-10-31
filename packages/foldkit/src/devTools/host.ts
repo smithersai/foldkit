@@ -11,7 +11,7 @@ export type {
   StoreState,
 } from './store.js'
 
-export { toInspectableValue } from './serialize.js'
+export { toInspectableValue } from './serialize.vibe'
 
 export {
   GOT_MESSAGE_PATTERN,

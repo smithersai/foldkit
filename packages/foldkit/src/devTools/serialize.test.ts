@@ -5,7 +5,7 @@ import {
   toInspectableValue,
   toSerializedEntry,
   toSerializedMount,
-} from './serialize.js'
+} from './serialize.vibe'
 import type { HistoryEntry } from './store.js'
 
 describe('toInspectableValue', () => {

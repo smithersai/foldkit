@@ -49,7 +49,7 @@ import {
   toSerializedCommand,
   toSerializedEntry,
   toSerializedMount,
-} from './serialize.js'
+} from './serialize.vibe'
 import {
   type DevToolsStore,
   INIT_INDEX,
