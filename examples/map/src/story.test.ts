@@ -12,7 +12,7 @@ import {
   UnlockBodyScroll,
   update,
 } from './main'
-import { eiffelTower, initialModel, mountedModel } from './main.fixture'
+import { eiffelTower, initialModel, mountedModel } from './main.fixture.vibe'
 
 test('mounting the map records the host id in the Model', () => {
   story(

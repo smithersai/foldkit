@@ -21,8 +21,8 @@ import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&ur
 
 import { Button, Input } from '@foldkit/ui'
 
-import { Location, featuredLocations } from './locations'
-import { getMap, removeMap, setMap } from './mapHost'
+import { Location, featuredLocations } from './locations.vibe'
+import { getMap, removeMap, setMap } from './mapHost.vibe'
 
 // CONSTANT
 

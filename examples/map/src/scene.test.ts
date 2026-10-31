@@ -25,7 +25,7 @@ import {
   update,
   view,
 } from './main'
-import { initialModel, mountedModel } from './main.fixture'
+import { initialModel, mountedModel } from './main.fixture.vibe'
 
 const acknowledgeMapMount = Mount.resolve(
   MountMap,

@@ -1,8 +1,7 @@
-import { Option } from 'effect'
 import { modifyFields } from 'foldkit/struct'
 
-import { Location, featuredLocations } from './locations'
-import { GeolocateState, type Model } from './main'
+import { Location, featuredLocations } from './locations.vibe'
+import { GeolocateState, type Model } from './main.ts'
 
 export const initialModel: Model = {
   locations: featuredLocations,

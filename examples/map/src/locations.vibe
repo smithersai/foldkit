@@ -1,13 +1,10 @@
-import { Schema } from 'effect'
-
-export const Location = Schema.Struct({
-  id: Schema.String,
-  name: Schema.String,
-  region: Schema.String,
-  lng: Schema.Number,
-  lat: Schema.Number,
-})
-export type Location = typeof Location.Type
+export schema Location {
+  id: string
+  name: string
+  region: string
+  lng: number
+  lat: number
+}
 
 export const featuredLocations: ReadonlyArray<Location> = [
   {
