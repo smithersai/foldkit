@@ -1,4 +1,4 @@
-import { Array, Effect, Number, Option, Random, Schema, pipe } from 'effect'
+import { Array as Arr, Number as Num } from 'effect'
 import { Canvas, Command, Runtime, Subscription, type Update } from 'foldkit'
 import { Document, Html, HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -28,23 +28,21 @@ const PALETTE: ReadonlyArray<string> = [
 ]
 const FALLBACK_COLOR = '#ffffff'
 
-const Ball = Schema.Struct({
-  id: Schema.Number,
-  x: Schema.Number,
-  y: Schema.Number,
-  vx: Schema.Number,
-  vy: Schema.Number,
-  radius: Schema.Number,
-  color: Schema.String,
-})
-type Ball = typeof Ball.Type
+schema Ball {
+  id: number
+  x: number
+  y: number
+  vx: number
+  vy: number
+  radius: number
+  color: string
+}
 
-export const Model = Schema.Struct({
-  balls: Schema.Array(Ball),
-  nextId: Schema.Number,
-  isRunning: Schema.Boolean,
-})
-export type Model = typeof Model.Type
+export schema Model {
+  balls: ReadonlyArray<Ball>
+  nextId: number
+  isRunning: boolean
+}
 
 // MESSAGE
 
@@ -76,18 +74,16 @@ export const init: Runtime.ApplicationInit<Model, Message> = () => ({
 export const GenerateBall = Command.define('GenerateBall', {
   args: { x: Schema.Number, y: Schema.Number },
   messages: [Message.CompletedGenerateBall],
-  execute: ({ x, y }) =>
-    Effect.gen(function* () {
-      const angle = yield* Random.nextBetween(0, FULL_CIRCLE_RADIANS)
-      const speed = yield* Random.nextBetween(BALL_SPEED_MIN, BALL_SPEED_MAX)
-      const radius = yield* Random.nextBetween(BALL_RADIUS_MIN, BALL_RADIUS_MAX)
-      const colorIndex = yield* Random.nextIntBetween(0, PALETTE.length, {
+  execute: ({ x, y }): ReturnType<typeof Message.CompletedGenerateBall>!! =>
+    effect {
+      const angle = try Random.nextBetween(0, FULL_CIRCLE_RADIANS)
+      const speed = try Random.nextBetween(BALL_SPEED_MIN, BALL_SPEED_MAX)
+      const radius = try Random.nextBetween(BALL_RADIUS_MIN, BALL_RADIUS_MAX)
+      const colorIndex = try Random.nextIntBetween(0, PALETTE.length, {
         halfOpen: true,
       })
-      const color = pipe(
-        PALETTE,
-        Array.get(colorIndex),
-        Option.getOrElse(() => FALLBACK_COLOR),
+      const color = Arr.get(PALETTE, colorIndex).getOrElse((): string =>
+        FALLBACK_COLOR
       )
       return Message.CompletedGenerateBall({
         x,
@@ -97,14 +93,13 @@ export const GenerateBall = Command.define('GenerateBall', {
         radius,
         color,
       })
-    }),
+    },
 })
 
 // UPDATE
 
 const advanceBall =
-  (deltaSeconds: number) =>
-  (ball: Ball): Ball => {
+  (deltaSeconds: number): (ball: Ball) => Ball => (ball: Ball): Ball => {
     const nextX = ball.x + ball.vx * deltaSeconds
     const nextY = ball.y + ball.vy * deltaSeconds
     const minX = ball.radius
@@ -121,11 +116,11 @@ const advanceBall =
     })
   }
 
-export const update = (model: Model, message: Message) =>
+export const update = (model: Model, message: Message): infer _ =>
   Message.match<Update.Return<Model, Message>>(message, {
     TickedFrame: ({ deltaTime }) => ({
       model: modifyFields(model, {
-        balls: Array.map(advanceBall(deltaTime / MS_PER_SECOND)),
+        balls: Arr.map(advanceBall(deltaTime / MS_PER_SECOND)),
       }),
     }),
 
@@ -136,7 +131,7 @@ export const update = (model: Model, message: Message) =>
 
     CompletedGenerateBall: ({ x, y, vx, vy, radius, color }) => ({
       model: modifyFields(model, {
-        balls: Array.append({
+        balls: Arr.append({
           id: model.nextId,
           x,
           y,
@@ -145,7 +140,7 @@ export const update = (model: Model, message: Message) =>
           radius,
           color,
         }),
-        nextId: Number.increment,
+        nextId: Num.increment,
       }),
     }),
 
@@ -185,7 +180,7 @@ const ballShape = (ball: Ball): Canvas.Shape =>
 
 const sceneShapes = (model: Model): ReadonlyArray<Canvas.Shape> => [
   backgroundShape,
-  ...Array.map(model.balls, ballShape),
+  ...Arr.map(model.balls, ballShape),
 ]
 
 const controlsView = (model: Model, h: HtmlBuilder<Message>): Html =>

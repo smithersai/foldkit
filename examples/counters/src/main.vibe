@@ -1,4 +1,4 @@
-import { Array, Option, Schema, pipe } from 'effect'
+import { Array as Arr } from 'effect'
 import { Runtime, Update } from 'foldkit'
 import { Document, Html, HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -6,21 +6,19 @@ import { modifyFields } from 'foldkit/struct'
 
 import { Button } from '@foldkit/ui'
 
-import * as Counter from './counter'
+import * as Counter from './counter.vibe'
 
 // MODEL
 
-const Row = Schema.Struct({
-  id: Schema.String,
-  counter: Counter.Model,
-})
-type Row = typeof Row.Type
+schema Row {
+  id: string
+  counter: Counter.Model
+}
 
-export const Model = Schema.Struct({
-  rows: Schema.Array(Row),
-  nextRowId: Schema.Number,
-})
-export type Model = typeof Model.Type
+export schema Model {
+  rows: ReadonlyArray<Row>
+  nextRowId: number
+}
 
 // MESSAGE
 
@@ -37,30 +35,28 @@ export type Message = typeof Message.Type
 
 // UPDATE
 
-const foldCounter = (id: string) =>
+const foldCounter = (id: string): infer _ =>
   Update.foldChild({
     update: Counter.update,
     read: (model: Model) =>
-      pipe(
-        Array.findFirst(model.rows, row => row.id === id),
-        Option.map(row => row.counter),
-      ),
+      Arr.findFirst(model.rows, row => row.id === id)
+        .map(row => row.counter),
     write: (model, nextCounter) =>
       modifyFields(model, {
-        rows: Array.map(row =>
+        rows: Arr.map(row =>
           row.id === id
             ? modifyFields(row, { counter: () => nextCounter })
-            : row,
+            : row
         ),
       }),
     toParentMessage: message => Message.GotCounterMessage({ id, message }),
   })
 
-export const update = (model: Model, message: Message) =>
+export const update = (model: Model, message: Message): infer _ =>
   Message.match<Update.Return<Model, Message>>(message, {
     ClickedAddRow: () => ({
       model: modifyFields(model, {
-        rows: Array.append({
+        rows: Arr.append({
           id: `counter-${model.nextRowId}`,
           counter: Counter.init,
         }),
@@ -69,7 +65,7 @@ export const update = (model: Model, message: Message) =>
     }),
     ClickedRemoveRow: ({ id }) => ({
       model: modifyFields(model, {
-        rows: Array.filter(row => row.id !== id),
+        rows: Arr.filter(row => row.id !== id),
       }),
     }),
     GotCounterMessage: ({ id, message }) => foldCounter(id)(model, message),
