@@ -1,6 +1,6 @@
 import { Array, Data, Predicate, Result } from 'effect'
 
-import { type VNode, dedupeMemoizedResult, memoizedVNodes } from '../vdom.js'
+import { type VNode, dedupeMemoizedResult, memoizedVNodes } from '../vdom.vibe'
 import {
   type BoundaryId,
   type TrackedBoundaryWrap,

@@ -12,7 +12,7 @@ import {
 import { describe, expect, it, vi } from 'vitest'
 
 import { defineMessageUnion } from '../message/index.js'
-import { modifyFields } from '../struct/index.js'
+import { modifyFields } from '../struct/index.vibe'
 import {
   type Bridge,
   type CommandRecord,

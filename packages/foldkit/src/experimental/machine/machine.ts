@@ -11,7 +11,7 @@ import {
   pipe,
 } from 'effect'
 
-import type { Command } from '../../command/index.js'
+import type { Command } from '../../command/index.vibe'
 import type * as Update from '../../update/index.js'
 
 // STATE

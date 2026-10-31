@@ -3,7 +3,7 @@ import { expectTypeOf } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import * as Command from '../command/index.js'
+import * as Command from '../command/index.vibe'
 import { defineMessageUnion } from '../message/index.js'
 import { type ReturnWithOutMessage, foldChildInits } from './public.js'
 

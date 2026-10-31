@@ -2,8 +2,8 @@ import { Effect } from 'effect'
 import { TestClock } from 'effect/testing'
 import { describe, expect, it } from 'vitest'
 
-import { make } from './calendarDate.js'
-import { today } from './today.js'
+import { make } from './calendarDate.vibe'
+import { today } from './today.vibe'
 
 describe('today.local', () => {
   it('returns the calendar date at the current Clock time', () =>

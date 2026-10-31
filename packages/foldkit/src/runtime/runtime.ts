@@ -12,7 +12,7 @@ import {
   pipe,
 } from 'effect'
 
-import { DialogRuntime } from '../dom/dialogRuntime.js'
+import { DialogRuntime } from '../dom/dialogRuntime.vibe'
 import { releaseDialogResources } from '../dom/dom.js'
 import {
   Document,
@@ -21,16 +21,16 @@ import {
 } from '../html/index.js'
 import type { ManagedResources } from '../managedResource/index.js'
 import type { Ports } from '../port/index.js'
-import { RenderCommit, createCommitNotifier } from '../render/commit.js'
+import { RenderCommit, createCommitNotifier } from '../render/commit.vibe'
 import type { Subscriptions } from '../subscription/subscription.js'
 import type { Return as UpdateReturn } from '../update/index.js'
-import { Url, fromString as urlFromString } from '../url/index.js'
+import { Url, fromString as urlFromString } from '../url/index.vibe'
 import {
   type RoutingConfig,
   addNavigationEventListeners,
 } from './browserListeners.js'
 import type { CrashConfig } from './crashUI.js'
-import { deepFreeze } from './deepFreeze.js'
+import { deepFreeze } from './deepFreeze.vibe'
 import type { DevToolsConfig } from './devToolsConfig.js'
 import { makeDevToolsIntegration } from './devToolsIntegration.js'
 import { createDuplicateIdScanner } from './duplicateIdScanner.js'
@@ -45,10 +45,10 @@ import {
   type HydrationConfig,
   resolveHydrationHandoff,
 } from './hydrationHandoff.js'
-import { forkManagedResourceFibers } from './managedResourceFibers.js'
+import { forkManagedResourceFibers } from './managedResourceFibers.vibe'
 import { type MessageQueue, makeMessageQueue } from './messageQueue.js'
 import { preserveModel } from './modelPreservationBridge.js'
-import { makePreserveScheduler } from './preserveScheduler.js'
+import { makePreserveScheduler } from './preserveScheduler.vibe'
 import { type ResolvedViewTransition, makeRenderer } from './renderer.js'
 import { makeResourceProvider } from './resourceProvider.js'
 import { makeRuntimeStatus } from './runtimeStatus.js'
@@ -63,12 +63,12 @@ import {
   measureSlowPhase,
   reportSlowPhase,
 } from './slowPhase.js'
-import { forkSubscriptionFibers } from './subscriptionFibers.js'
+import { forkSubscriptionFibers } from './subscriptionFibers.vibe'
 import {
   type ViewTransitionConfig,
   __resolveStartViewTransition,
 } from './viewTransition.js'
-import { type Visibility, isVisible } from './visibility.js'
+import { type Visibility, isVisible } from './visibility.vibe'
 
 type AnyCommand<T, E = never, R = never> = {
   readonly name: string

@@ -1,7 +1,7 @@
 import { Option, String } from 'effect'
 
 import { serializedStylePropertyName } from '../domReflection.js'
-import type { VNode } from '../vdom.js'
+import type { VNode } from '../vdom.vibe'
 import { attr, isHidden, textContent } from './query.js'
 
 type MatcherContext = Readonly<{ isNot: boolean }>

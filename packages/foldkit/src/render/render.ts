@@ -1,6 +1,6 @@
 import { Effect, Option } from 'effect'
 
-import { RenderCommit } from './commit.js'
+import { RenderCommit } from './commit.vibe'
 
 const nextAnimationFrame: Effect.Effect<void> = Effect.callback<void>(
   resume => {

@@ -4,8 +4,8 @@ import { expect, vi } from 'vitest'
 import { describe, it } from '@effect/vitest'
 
 import { defineMessageUnion } from '../message/index.js'
-import type { MountAction } from '../mount/index.js'
-import { MountTracker } from '../mount/index.js'
+import type { MountAction } from '../mount/index.vibe'
+import { MountTracker } from '../mount/index.vibe'
 import { onUnmountModule } from '../onUnmountModule.js'
 import { propsModule } from '../propsModule.js'
 import { Dispatch } from '../runtime/index.js'
@@ -18,7 +18,7 @@ import {
   styleModule,
   toVNode,
 } from '../snabbdom/index.js'
-import type { VNode } from '../vdom.js'
+import type { VNode } from '../vdom.vibe'
 import type { BoundaryRegistry } from './boundary.js'
 import {
   __htmlBuilder,

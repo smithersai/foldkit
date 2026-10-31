@@ -1,0 +1,132 @@
+export const Waiting = Schema.TaggedStruct('Waiting', {})
+export const GetReady = Schema.TaggedStruct('GetReady', {})
+export const Countdown = Schema.TaggedStruct('Countdown', {
+  secondsLeft: Schema.Number,
+})
+export const Playing = Schema.TaggedStruct('Playing', {
+  secondsLeft: Schema.Number,
+})
+export const Finished = Schema.TaggedStruct('Finished', {})
+
+export type Waiting = typeof Waiting.Type
+export type GetReady = typeof GetReady.Type
+export type Countdown = typeof Countdown.Type
+export type Playing = typeof Playing.Type
+export type Finished = typeof Finished.Type
+
+export schema GameStatus = Waiting | GetReady | Countdown | Playing | Finished
+
+export schema Player {
+  id: string
+  username: string
+}
+
+export schema Game {
+  id: string
+  text: string
+}
+
+export schema GamePlayer {
+  gameId: string
+  playerId: string
+}
+
+export schema PlayerProgress {
+  playerId: string
+  gameId: string
+  userText: string
+  updatedAt: number
+  charsTyped: number
+}
+
+export schema PlayerScore {
+  playerId: string
+  username: string
+  wpm: number
+  accuracy: number
+  charsTyped: number
+  correctChars: number
+}
+
+export schema Scoreboard = ReadonlyArray<PlayerScore>
+
+export const Room = Schema.Struct({
+  id: Schema.String,
+  players: Schema.Array(Player),
+  hostId: Schema.String,
+  status: GameStatus,
+  maybeGame: Schema.Option(Game),
+  maybeScoreboard: Schema.Option(Scoreboard),
+  createdAt: Schema.Number,
+  usedGameTexts: Schema.Array(Schema.String),
+})
+export type Room = typeof Room.Type
+
+export const RoomById = Schema.HashMap(Schema.String, Room)
+export type RoomById = typeof RoomById.Type
+
+export schema error RoomNotFoundError {
+  roomId: string
+}
+
+export schema error UnauthorizedError {
+  message: string
+}
+
+export schema RoomAndPlayer { player: Player; room: Room }
+
+export const RoomWithPlayerProgress = Schema.Struct({
+  room: Room,
+  maybePlayerProgress: Schema.Option(PlayerProgress),
+})
+export type RoomWithPlayerProgress = typeof RoomWithPlayerProgress.Type
+
+export const createRoomRpc = Rpc.make('createRoom', {
+  payload: Schema.Struct({ username: Schema.String }),
+  success: RoomAndPlayer,
+})
+
+export const joinRoomRpc = Rpc.make('joinRoom', {
+  payload: Schema.Struct({ username: Schema.String, roomId: Schema.String }),
+  success: RoomAndPlayer,
+  error: RoomNotFoundError,
+})
+
+export const getRoomByIdRpc = Rpc.make('getRoomById', {
+  payload: Schema.Struct({ roomId: Schema.String }),
+  success: Room,
+  error: RoomNotFoundError,
+})
+
+export const subscribeToRoomRpc = Rpc.make('subscribeToRoom', {
+  payload: Schema.Struct({ roomId: Schema.String, playerId: Schema.String }),
+  success: RoomWithPlayerProgress,
+  error: RoomNotFoundError,
+  stream: true,
+})
+
+export const startGameRpc = Rpc.make('startGame', {
+  payload: Schema.Struct({ roomId: Schema.String, playerId: Schema.String }),
+  success: Schema.Void,
+  error: Schema.Union([RoomNotFoundError, UnauthorizedError]),
+})
+
+export const updatePlayerProgressRpc = Rpc.make('updatePlayerProgress', {
+  payload: Schema.Struct({
+    playerId: Schema.String,
+    gameId: Schema.String,
+    userText: Schema.String,
+    charsTyped: Schema.Number,
+  }),
+  success: Schema.Void,
+})
+
+export const RoomRpcs = RpcGroup.make(
+  createRoomRpc,
+  joinRoomRpc,
+  getRoomByIdRpc,
+  subscribeToRoomRpc,
+  startGameRpc,
+  updatePlayerProgressRpc,
+)
+export type RoomRpcs = typeof RoomRpcs

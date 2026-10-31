@@ -1,3 +1,4 @@
+import vibelang from 'vibelang-vite'
 import { type Plugin } from 'vite'
 import { defineConfig } from 'vitest/config'
 
@@ -61,6 +62,7 @@ const virtualModulesTestPlugin = (): Plugin => ({
 
 export default defineConfig({
   plugins: [
+    vibelang(),
     virtualModulesTestPlugin(),
     markdown({ islands: islandAttributes, frontmatter: PostFrontmatter }),
     counterDemoCodePlugin(),

@@ -7,11 +7,11 @@ settings:
 overrides:
   '@mapbox/jsonlint-lines-primitives': 2.0.2
   '@types/node': 26.4.0
-  effect: 4.0.0
-  '@effect/platform-browser': 4.0.0
-  '@effect/platform-node': 4.0.0
-  '@effect/platform-node-shared': 4.0.0
-  '@effect/vitest': 4.0.0
+  effect: 4.1.0
+  '@effect/platform-browser': 4.1.0
+  '@effect/platform-node': 4.1.0
+  '@effect/platform-node-shared': 4.1.0
+  '@effect/vitest': 4.1.0
   monaco-editor>dompurify: 3.4.14
 
 importers:
@@ -37,8 +37,11 @@ importers:
         specifier: npm:typescript@^7.0.2
         version: typescript@7.0.2
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
+      eslint:
+        specifier: ^9.39.5
+        version: 9.39.5(jiti@2.7.0)
       foldkit:
         specifier: workspace:*
         version: link:packages/foldkit
@@ -66,6 +69,12 @@ importers:
       typescript:
         specifier: npm:@typescript/typescript6@^6.0.2
         version: '@typescript/typescript6@6.0.2'
+      typescript-eslint:
+        specifier: ^8.69.0
+        version: 8.72.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0))
+      vibelang:
+        specifier: file:./.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -122,14 +131,14 @@ importers:
   examples/api-cache:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -152,6 +161,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -162,14 +177,14 @@ importers:
   examples/api-cache-query:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -192,6 +207,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -202,8 +223,8 @@ importers:
   examples/auth:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -211,8 +232,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -235,6 +256,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -245,14 +272,14 @@ importers:
   examples/canvas-art:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -275,6 +302,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -285,8 +318,8 @@ importers:
   examples/charting:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -297,8 +330,8 @@ importers:
         specifier: ^6.1.0
         version: 6.1.0
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -321,6 +354,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -331,14 +370,14 @@ importers:
   examples/counter:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -361,6 +400,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -371,14 +416,14 @@ importers:
   examples/counters:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -401,6 +446,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -411,14 +462,14 @@ importers:
   examples/crash-view:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -441,6 +492,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -451,14 +508,14 @@ importers:
   examples/embedding:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -481,6 +538,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -491,8 +554,8 @@ importers:
   examples/form:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -500,8 +563,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -524,6 +587,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -534,14 +603,14 @@ importers:
   examples/generative-art:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -564,6 +633,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -574,14 +649,14 @@ importers:
   examples/interrupting-commands:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -604,6 +679,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -614,8 +695,8 @@ importers:
   examples/job-application:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -623,8 +704,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -647,6 +728,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -657,8 +744,8 @@ importers:
   examples/kanban:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -666,8 +753,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -693,6 +780,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -703,14 +796,14 @@ importers:
   examples/managed-resource-layer:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -733,6 +826,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -743,8 +842,8 @@ importers:
   examples/map:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -752,8 +851,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -779,6 +878,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -789,8 +894,8 @@ importers:
   examples/personal-blog:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/markdown':
         specifier: workspace:*
         version: link:../../packages/markdown
@@ -801,8 +906,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -825,6 +930,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -835,8 +946,8 @@ importers:
   examples/pixel-art:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -844,8 +955,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -868,6 +979,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -878,8 +995,8 @@ importers:
   examples/query-sync:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -887,8 +1004,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -911,6 +1028,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -921,11 +1044,11 @@ importers:
   examples/route-transitions:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -948,6 +1071,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -958,14 +1087,14 @@ importers:
   examples/routing:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -988,6 +1117,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -998,14 +1133,14 @@ importers:
   examples/shopping-cart:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -1028,6 +1163,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1038,11 +1179,11 @@ importers:
   examples/slow-warnings:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -1065,6 +1206,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1075,11 +1222,11 @@ importers:
   examples/snake:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -1102,6 +1249,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1112,11 +1265,11 @@ importers:
   examples/ssg:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -1136,6 +1289,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1143,14 +1302,14 @@ importers:
   examples/ssr:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@effect/platform-node':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(redis@6.2.1(@opentelemetry/api@1.9.0))
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0))
       '@effect/platform-node-shared':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/node':
         specifier: workspace:*
         version: link:../../packages/node
@@ -1158,8 +1317,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/ui
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -1182,6 +1341,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1192,8 +1357,8 @@ importers:
   examples/state-machine:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -1201,8 +1366,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -1225,6 +1390,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1235,14 +1406,14 @@ importers:
   examples/stopwatch:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -1265,6 +1436,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1275,8 +1452,8 @@ importers:
   examples/todo:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -1284,8 +1461,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -1308,6 +1485,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1318,8 +1501,8 @@ importers:
   examples/ui-showcase:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -1327,8 +1510,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -1351,6 +1534,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1361,11 +1550,11 @@ importers:
   examples/view-transitions:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -1388,6 +1577,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1398,14 +1593,14 @@ importers:
   examples/weather:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -1428,6 +1623,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1438,8 +1639,8 @@ importers:
   examples/web-components:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -1450,8 +1651,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -1477,6 +1678,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1487,14 +1694,14 @@ importers:
   examples/websocket-chat:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -1517,6 +1724,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1545,11 +1758,11 @@ importers:
   internal/lustre-benchmark:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -1569,6 +1782,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1579,11 +1798,11 @@ importers:
   internal/performance-harness:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../packages/foldkit
@@ -1600,6 +1819,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1607,17 +1832,17 @@ importers:
   packages/create-foldkit-app:
     dependencies:
       '@effect/platform-node':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(redis@6.2.1(@opentelemetry/api@1.9.0))
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0))
       '@effect/platform-node-shared':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       chalk:
         specifier: ^6.0.0
         version: 6.0.0
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       rimraf:
         specifier: ^6.1.3
         version: 6.1.3
@@ -1626,11 +1851,14 @@ importers:
         version: 7.0.2
     devDependencies:
       '@effect/vitest':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(vitest@5.0.2)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)(vitest@5.0.2)
       '@types/node':
         specifier: 26.4.0
         version: 26.4.0
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
       vitest:
         specifier: ^5.0.2
         version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
@@ -1642,8 +1870,8 @@ importers:
         version: 2.1.1
     devDependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/ui':
         specifier: workspace:*
         version: link:../ui
@@ -1651,8 +1879,8 @@ importers:
         specifier: workspace:*
         version: link:../vite-plugin-foldkit
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../foldkit
@@ -1679,8 +1907,8 @@ importers:
         version: 8.21.3
     devDependencies:
       '@effect/platform-node':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(redis@6.2.1(@opentelemetry/api@1.9.0))
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0))
       '@foldkit/vite-plugin':
         specifier: workspace:*
         version: link:../vite-plugin-foldkit
@@ -1691,8 +1919,8 @@ importers:
         specifier: ^8.18.1
         version: 8.18.1
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../foldkit
@@ -1705,6 +1933,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-unplugin:
+        specifier: file:../../.vibelang-toolchain/vibelang-unplugin-0.0.11-d83e2657e595.tgz
+        version: file:.vibelang-toolchain/vibelang-unplugin-0.0.11-d83e2657e595.tgz(rolldown@1.2.11)(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1741,25 +1975,31 @@ importers:
       typescript:
         specifier: npm:@typescript/typescript6@^6.0.2
         version: '@typescript/typescript6@6.0.2'
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
 
   packages/foldkit:
     dependencies:
       parse5:
         specifier: ^8.0.1
         version: 8.0.1
+      vibelang-runtime:
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@effect/vitest':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(vitest@5.0.2)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)(vitest@5.0.2)
       '@vitest/coverage-v8':
         specifier: ^5.0.2
         version: 5.0.2(vitest@5.0.2)
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -1769,6 +2009,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vitest:
         specifier: ^5.0.2
         version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
@@ -1798,8 +2044,8 @@ importers:
         specifier: ^3.0.3
         version: 3.0.3
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../foldkit
@@ -1825,15 +2071,15 @@ importers:
   packages/node:
     dependencies:
       '@effect/platform-node':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(redis@6.2.1(@opentelemetry/api@1.9.0))
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0))
     devDependencies:
       '@types/node':
         specifier: 26.4.0
         version: 26.4.0
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../foldkit
@@ -1851,7 +2097,7 @@ importers:
     dependencies:
       effect-oxlint:
         specifier: ^0.3.4 || ^0.4.0
-        version: 0.3.4(effect@4.0.0)
+        version: 0.3.4(effect@4.1.0)
     devDependencies:
       '@types/node':
         specifier: 26.4.0
@@ -1860,8 +2106,8 @@ importers:
         specifier: npm:typescript@^7.0.2
         version: typescript@7.0.2
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       rimraf:
         specifier: ^6.1.3
         version: 6.1.3
@@ -1871,6 +2117,12 @@ importers:
       typescript:
         specifier: npm:@typescript/typescript6@^6.0.2
         version: '@typescript/typescript6@6.0.2'
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vitest:
         specifier: ^4.1.11
         version: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
@@ -1878,8 +2130,8 @@ importers:
   packages/typing-game/client:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@typing-game/shared':
         specifier: workspace:*
         version: link:../shared
@@ -1887,8 +2139,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../../foldkit
@@ -1911,6 +2163,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -1921,14 +2179,14 @@ importers:
   packages/typing-game/server:
     dependencies:
       '@effect/platform-node':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(redis@6.2.1(@opentelemetry/api@1.9.0))
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0))
       '@typing-game/shared':
         specifier: workspace:*
         version: link:../shared
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
     devDependencies:
       '@types/node':
         specifier: 26.4.0
@@ -1936,16 +2194,25 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
 
   packages/typing-game/shared:
     dependencies:
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
+      vibelang-runtime:
+        specifier: file:../../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
 
   packages/ui:
     dependencies:
@@ -1954,14 +2221,14 @@ importers:
         version: 1.8.0
     devDependencies:
       '@effect/vitest':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(vitest@5.0.2)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)(vitest@5.0.2)
       '@foldkit/vite-plugin':
         specifier: workspace:*
         version: link:../vite-plugin-foldkit
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../foldkit
@@ -1974,6 +2241,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vitest:
         specifier: ^5.0.2
         version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
@@ -1981,11 +2254,11 @@ importers:
   packages/vite-plugin-foldkit:
     dependencies:
       '@effect/platform-node':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(redis@6.2.1(@opentelemetry/api@1.9.0))
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0))
       '@effect/platform-node-shared':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       magic-string:
         specifier: ^1.4.2
         version: 1.4.2
@@ -2006,8 +2279,8 @@ importers:
         specifier: ^2.3.0
         version: 2.3.0(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../foldkit
@@ -2033,8 +2306,8 @@ importers:
   packages/website:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@foldkit/devtools':
         specifier: workspace:*
         version: link:../devtools
@@ -2057,8 +2330,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       effect:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.0
+        version: 4.1.0
       foldkit:
         specifier: workspace:*
         version: link:../foldkit
@@ -2076,8 +2349,8 @@ importers:
         specifier: ^4.13.0
         version: 4.13.0(playwright-core@1.63.0)
       '@effect/platform-node':
-        specifier: 4.0.0
-        version: 4.0.0(effect@4.0.0)(redis@6.2.1(@opentelemetry/api@1.9.0))
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0))
       '@foldkit/api-reference-generator':
         specifier: workspace:*
         version: link:../../internal/api-reference-generator
@@ -2117,6 +2390,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -2306,22 +2585,128 @@ packages:
     resolution: {integrity: sha512-Xc3VhU02wqZ1HvHRJUwL09HkZSTvidqY5Ya0NXBSYOxAp+Ln9dcJr9fySI+CkONzP3PekQo9WdzCv0PGER/mOA==}
     engines: {node: '>=14.17.0'}
 
-  '@effect/platform-browser@4.0.0':
-    resolution: {integrity: sha512-OHo7EPpF3RVPiI+mjoU9yd05LdCdKPjzDXqs5wRgF9CsdVvwN76B0zgt54DxPUcvMYri1tVJOtLCVnK0tRkNQQ==}
-    peerDependencies:
-      effect: 4.0.0
+  '@dprint/android-arm64@0.64.3':
+    resolution: {integrity: sha512-cRSS8GTClq/xDF3VBFAvkBwO4a0cwovwfUCyMhzKDIVvPOYr8A7zDd3fKoYfU4oCpEGZ4oFBhAw84S3ia1IRSA==}
+    cpu: [arm64]
+    os: [android]
 
-  '@effect/platform-node-shared@4.0.0':
-    resolution: {integrity: sha512-VBXHJU9UXVZPdQGGDRjGXpo+TpOzRwZuMrdKAtIxi1qwcRftmacZ1zTgIrzBa0Z2RA2KVkoOecQUsTlt/nJZhw==}
-    engines: {node: '>=18.0.0'}
-    peerDependencies:
-      effect: 4.0.0
+  '@dprint/android-x64@0.64.3':
+    resolution: {integrity: sha512-9dFcs/hXoGW9P/15QMN0zazg6ZmJq5aqDQxsbCM4i9ut7Mv5mH909ZsuuVSJNrIwaCUfFNYQTrGtALjK/CpK6g==}
+    cpu: [x64]
+    os: [android]
 
-  '@effect/platform-node@4.0.0':
-    resolution: {integrity: sha512-/L+4MUbl8FejPKLHLROYSOebvHnfixkP8KiblSD/DE5uH5xENZBHaux4nH6XMnRP+lr8ajpEJFS8sUrmmxFJeQ==}
-    engines: {node: '>=18.0.0'}
+  '@dprint/darwin-arm64@0.64.3':
+    resolution: {integrity: sha512-doIkcq1e6kbut7iGC3U+mEDrI8ncLPpZrfP0/jU4x12dX15tH7HUfoeW63AJbKL940rEBKPGemihDWA7DhGUKQ==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@dprint/darwin-x64@0.64.3':
+    resolution: {integrity: sha512-2tLgFrMGWa03WTcoXLjU1JAUmHgIUaq4I91Ik1xPx+jxt7NEkeo0qPny1bqFFtOkCkI13R5CkLAgTrNA5KK8PQ==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@dprint/freebsd-arm64@0.64.3':
+    resolution: {integrity: sha512-fJt4LMMxjNir4ingKZQ1sRSnqaTpAGR/WOmK+1AQDS4gg1cGI73Vqbe4Cgb3NZ5/0TwewNbAi7koGQXlAUNTOQ==}
+    cpu: [arm64]
+    os: [freebsd]
+
+  '@dprint/freebsd-x64@0.64.3':
+    resolution: {integrity: sha512-yfqzdI3Yt4H4AavLyWzE/HjJL17gzh8GIJF5OMNyBb8XeJPeB76U/sv7FgaURQKUr6AhIoPBqp4w+WlVftkCeg==}
+    cpu: [x64]
+    os: [freebsd]
+
+  '@dprint/linux-arm64-glibc@0.64.3':
+    resolution: {integrity: sha512-dJQ5PS0+7COmKG0NHy11pEoCfzeL1slrGuHWS0uQmyIbBskbItFnubR9KsD1J/UfYIq62rySvAm2D+MNw7cYOA==}
+    cpu: [arm64]
+    os: [linux]
+    libc: [glibc]
+
+  '@dprint/linux-arm64-musl@0.64.3':
+    resolution: {integrity: sha512-UVHeWWRAEQe3qUsM5UD7HnC8OGZIn0U864wuAHqMpGvf2ZcxE2OlGs0x0w6SU3Vwas/4XQqREkG/WgsCykeMNg==}
+    cpu: [arm64]
+    os: [linux]
+    libc: [musl]
+
+  '@dprint/linux-loong64-glibc@0.64.3':
+    resolution: {integrity: sha512-HK+8T+8TZ/xANv/8HX+W2YlpMOaHYUW4oUx2h7rUN7wcC79i7vCq6/N5qDwUIRvB5HgJ7e7ArMB5fLHgl79t3Q==}
+    cpu: [loong64]
+    os: [linux]
+    libc: [glibc]
+
+  '@dprint/linux-loong64-musl@0.64.3':
+    resolution: {integrity: sha512-ozGKUY98D9DwtXRjjwptDuimBK+FClns61wHrns8NTCKOucSPnOURn7YW3adq4uD1bPn1cAN7RxpsmiufZ1e2Q==}
+    cpu: [loong64]
+    os: [linux]
+    libc: [musl]
+
+  '@dprint/linux-ppc64-glibc@0.64.3':
+    resolution: {integrity: sha512-Whxvv7UcZX2GGiHIQy/IWmaMbfwV+9cRr9/Fpl628ipOnqzTjw7l/GVZstfDv5jQgsZYDADsgcb/xCF+zzZp4A==}
+    cpu: [ppc64]
+    os: [linux]
+    libc: [glibc]
+
+  '@dprint/linux-ppc64-musl@0.64.3':
+    resolution: {integrity: sha512-o3tW/Xv1BpjsUWEaSOGPZlnME2U+qPWR5QmnryeFyQZv8HIF4ustfIqz51w7g9X1R2J+yU0EYjEgIvPvijuFoQ==}
+    cpu: [ppc64]
+    os: [linux]
+    libc: [musl]
+
+  '@dprint/linux-riscv64-glibc@0.64.3':
+    resolution: {integrity: sha512-UngEpOD0KUWi9mPUGioYQnGuGon48+sz4sOsKzBNLYdxkeS7tlCFA3416QELcildYmHrsO79VYG9Sw6afvxzsQ==}
+    cpu: [riscv64]
+    os: [linux]
+    libc: [glibc]
+
+  '@dprint/linux-riscv64-musl@0.64.3':
+    resolution: {integrity: sha512-dGYX5X6SmVeIlxpGI6/p2Sgu0RH9oSwuuN+h+jyLo66zC9ei+3jb/+5snHuDoQLLpg5MC5KbJQvqfgCWKb4xAQ==}
+    cpu: [riscv64]
+    os: [linux]
+    libc: [musl]
+
+  '@dprint/linux-s390x-glibc@0.64.3':
+    resolution: {integrity: sha512-DsIPuN98Xz0RerI/kaQW8OGaIJGYpBhR5vPFRDb1EU1LUv8Cc4KdAFTyzGkS2CAIM3YyjgGABAxpln9NDsuKRg==}
+    cpu: [s390x]
+    os: [linux]
+    libc: [glibc]
+
+  '@dprint/linux-x64-glibc@0.64.3':
+    resolution: {integrity: sha512-wKVnD6eO8S4U8LbVcZy0l0ioJKfLbsL1OYUr0f4M99lrBv30RA385sii5Fq/NSM8O/sh9gII8zRvdtTMUWbImg==}
+    cpu: [x64]
+    os: [linux]
+    libc: [glibc]
+
+  '@dprint/linux-x64-musl@0.64.3':
+    resolution: {integrity: sha512-AhhAyhd4gG7UrP9NmV60fWf6EFHqZE3X9QW0B2LeoX9vt+rcWv3ejbGOFD8V4Wkg6LyPl49RyGgeltn9KTwD1g==}
+    cpu: [x64]
+    os: [linux]
+    libc: [musl]
+
+  '@dprint/win32-arm64@0.64.3':
+    resolution: {integrity: sha512-noAymd7nZiKB4pGEW4YbS01647n4pbBYv5GzXlFWYu408xuVWc5+b76Gua4IVO1gkiPtkBRIcmRBStXblfrRyw==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@dprint/win32-x64@0.64.3':
+    resolution: {integrity: sha512-i5yc2BcaLYX8MpvkfCSdIrbEic84AF1t7dKgJCB40m6ckxPUFygMkujfAGHLY4NNE+Q9i9RmRx6N0AiUBwcNVg==}
+    cpu: [x64]
+    os: [win32]
+
+  '@effect/platform-browser@4.1.0':
+    resolution: {integrity: sha512-IEyaPzejKozHDupOUSjQIgQYGv2C0I828up8z7/nvQTHzmQHUS2/tGMEwXX/FwAvnrWZ0H9MhlhTl18ZgCHQiQ==}
     peerDependencies:
-      effect: 4.0.0
+      effect: 4.1.0
+
+  '@effect/platform-node-shared@4.1.0':
+    resolution: {integrity: sha512-uYQfFRoxWLo8fIhiSeBcmz/R1ooOfE3HF3cWHFgxz82tZMk2Wn02BGABcdLmaAch9VpDLbtWnuhSxNyBsGMUFg==}
+    engines: {node: '>=22.19.0'}
+    peerDependencies:
+      effect: 4.1.0
+
+  '@effect/platform-node@4.1.0':
+    resolution: {integrity: sha512-v+X7moGVF9k5oMVvz0slA+NgtEod+W+oygeI285MDJgSlUCW3JcqElj+cD3rlijFZtpKhC7RLkU1GuCxjGHTpA==}
+    engines: {node: '>=22.19.0'}
+    peerDependencies:
+      effect: 4.1.0
       redis: '>=5.0.0 <7.0.0'
 
   '@effect/tsgo-darwin-arm64@0.50.0':
@@ -2363,10 +2748,10 @@ packages:
     resolution: {integrity: sha512-BCRwWFBVfQGhFPXmLlNCbYhohTPoIzCL+0iSrDkSpSN2TRtGbbxCB1Mi4oBPr1jRk5VgMB0jOFEvXmPt3SqCDg==}
     hasBin: true
 
-  '@effect/vitest@4.0.0':
-    resolution: {integrity: sha512-kGElCPFGtP+CgMCwV/HjJWqtE3zYo6I1+8MSA54l+EI24lPU9p2Efa+TBp1jfkg9j711KKzEqgSAy3VzTsb76Q==}
+  '@effect/vitest@4.1.0':
+    resolution: {integrity: sha512-+APF69oTYgGj5WCewowk1/udepH74xz4ONyH7d+UfcK0SrF3osiSwsWEyODUpJvWd6MIk5F5PcFJiE4evMuG2A==}
     peerDependencies:
-      effect: 4.0.0
+      effect: 4.1.0
       vitest: '>=5.0.0 <6.0.0'
 
   '@emnapi/core@1.11.2':
@@ -2388,17 +2773,33 @@ packages:
     resolution: {integrity: sha512-EriSTlt5OC9/7SXkRSCAhfSxxoSUgBm33OH+IkwbdpgoqsSsUg7y3uh+IICI/Qg4BBWr3U2i39RpmycbxMq4ew==}
     engines: {node: ^12.0.0 || ^14.0.0 || >=16.0.0}
 
+  '@eslint/config-array@0.21.2':
+    resolution: {integrity: sha512-nJl2KGTlrf9GjLimgIru+V/mzgSK0ABCDQRvxw5BjURL7WfH5uoWmizbH7QB6MmnMBd8cIC9uceWnezL1VZWWw==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
   '@eslint/config-array@0.23.5':
     resolution: {integrity: sha512-Y3kKLvC1dvTOT+oGlqNQ1XLqK6D1HU2YXPc52NmAlJZbMMWDzGYXMiPRJ8TYD39muD/OTjlZmNJ4ib7dvSrMBA==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
+
+  '@eslint/config-helpers@0.4.2':
+    resolution: {integrity: sha512-gBrxN88gOIf3R7ja5K9slwNayVcZgK6SOUORm2uBzTeIEfeVaIhOpCtTox3P6R7o2jLFwLFTLnC7kU/RGcYEgw==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@eslint/config-helpers@0.7.0':
     resolution: {integrity: sha512-DObd/KKUsU+FaFv4PLxSRenpXfQWmPXXP3pPZ6/K1PCrMu2vQpMDMuQe/BqYeoLcz8ro0bVDF1RxOJgfVEdhUw==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
+  '@eslint/core@0.17.0':
+    resolution: {integrity: sha512-yL/sLrpmtDaFEiUj1osRP4TI2MDz1AddJL+jZ7KSqvBuliN4xqYY54IfdN8qD8Toa6g1iloph1fxQNkjOxrrpQ==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
   '@eslint/core@1.2.1':
     resolution: {integrity: sha512-MwcE1P+AZ4C6DWlpin/OmOA54mmIZ/+xZuJiQd4SyB29oAJjN30UW9wkKNptW2ctp4cEsvhlLY/CsQ1uoHDloQ==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
+
+  '@eslint/eslintrc@3.3.7':
+    resolution: {integrity: sha512-F42g89Qd5oAWtp0k0nnSrjziAKza7w8SVT4mStc18LZMaRb4J1HQAHLCalEtDCxrTuksx7NU9qsmeLwpOfPqWw==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@eslint/js@10.0.1':
     resolution: {integrity: sha512-zeR9k5pd4gxjZ0abRoIaxdc7I3nDktoXZk2qOv9gCNWx3mVwEn32VRhyLaRsDiJjTs0xq/T8mfPtyuXu7GWBcA==}
@@ -2409,9 +2810,21 @@ packages:
       eslint:
         optional: true
 
+  '@eslint/js@9.39.5':
+    resolution: {integrity: sha512-QywQuszQh77pIXCsq998c8hbhSTI/azTty1Z6N53dmAudKHhy573j3yvRLsX2BSp8YpLtoCEG8E9DJe+8zUh4A==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@eslint/object-schema@2.1.7':
+    resolution: {integrity: sha512-VtAOaymWVfZcmZbp6E2mympDIHvyjXs/12LqWYjVw6qjrfF+VK+fyG33kChz3nnK+SU5/NeHOqrTEHS8sXO3OA==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
   '@eslint/object-schema@3.0.5':
     resolution: {integrity: sha512-vqTaUEgxzm+YDSdElad6PiRoX4t8VGDjCtt05zn4nU810UIx/uNEV7/lZJ6KwFThKZOzOxzXy48da+No7HZaMw==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
+
+  '@eslint/plugin-kit@0.4.1':
+    resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@eslint/plugin-kit@0.7.3':
     resolution: {integrity: sha512-IkO+/KEUvwbVpiURZg+P7zF74z5Jxe0UgJxVni+RtoHQ6IZieXaO02kmadomap/q+l6bc/jdPGGqTjhuZnuz1Q==}
@@ -3653,6 +4066,9 @@ packages:
   '@types/ws@8.18.1':
     resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
 
+  '@types/ws@8.18.2':
+    resolution: {integrity: sha512-67MQl+fpWKVTT1NYdnmo3U4sc/xPo/zQBncVnI74qmQa0z/b+1g6iYqNmGCPbxO+zz2aklb08a0oHfegiVd0/w==}
+
   '@typescript-eslint/eslint-plugin@8.70.1':
     resolution: {integrity: sha512-nDNrUQ/4ruSNYbu749TRY7cfrzPtoLHEXSNBI8aaNY32LlZCajixqRf3FqcKC4p5Cam4VOHYx/t+i5+nKXvrqA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
@@ -3661,8 +4077,23 @@ packages:
       eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
       typescript: '>=4.8.4 <6.1.0'
 
+  '@typescript-eslint/eslint-plugin@8.72.1':
+    resolution: {integrity: sha512-5CokTWXpmbylfFabsbvHC0CAw3XLaGnoa+nFJX5FR592h/LoZsENUE6p/rg5xvkKrFEXz6pYmgI29AgXc2N3BQ==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    peerDependencies:
+      '@typescript-eslint/parser': ^8.72.1
+      eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
+      typescript: '>=4.8.4 <6.1.0'
+
   '@typescript-eslint/parser@8.70.1':
     resolution: {integrity: sha512-nO974WLllwhSFWQXnMLj6nDGa8f0khKEz1JzpPJ1u7Vm/4X1X6ZHajpoknU4bb41vJyMB0HHVyS2GqdhWfIXZw==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    peerDependencies:
+      eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
+      typescript: '>=4.8.4 <6.1.0'
+
+  '@typescript-eslint/parser@8.72.1':
+    resolution: {integrity: sha512-ZGwZP4OCfyA0AQTpEAMWz+rtX01DRhQWW5hB0ucKDEIX5U7jdmPSaMx94rQfaPAQzIYz2BimOgKOJtjfpRFQ9g==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
       eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
@@ -3674,12 +4105,28 @@ packages:
     peerDependencies:
       typescript: '>=4.8.4 <6.1.0'
 
+  '@typescript-eslint/project-service@8.72.1':
+    resolution: {integrity: sha512-fAuVMkwdO/huI8nyo/WKnNKf6Gag93S56Rh3Ts5mGcavwSdaN8tRg1gCeIGX8PF+nzp1BjGfO4gHhGzW1J6jTg==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    peerDependencies:
+      typescript: '>=4.8.4 <6.1.0'
+
   '@typescript-eslint/scope-manager@8.70.1':
     resolution: {integrity: sha512-Pa0EeSeAusQc1WbjQMac+YfenewYTBu0KjgYvkUKwhXaHUKbFog23Dm/rp0DX/6tyYOQ3Xl1a+3EcFNZynGHCw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
+  '@typescript-eslint/scope-manager@8.72.1':
+    resolution: {integrity: sha512-lC/t6eMCZZQAAKZEYGL6RDVSuFehpdmMT6h+nJIjIa6oylN/PwDgDVtEIbB7O9xFfZYtZAYLoLlDNWKJhtF+uQ==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
   '@typescript-eslint/tsconfig-utils@8.70.1':
     resolution: {integrity: sha512-jumze1fPI+sDOaM2TWGQdn39PDxTr7TZGeuyLkAbNyx2vtMT3uRnVKChN0hfht5V2TugphJzF6bYXvBcE09qqg==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    peerDependencies:
+      typescript: '>=4.8.4 <6.1.0'
+
+  '@typescript-eslint/tsconfig-utils@8.72.1':
+    resolution: {integrity: sha512-e4D5R5vpeAEPBxT2BAzsFQL3sbwyeeeo5+aczgNSRK1V734jE7pTqaGFU+fXapWEQwnZbpFaTn32+Z8DwS6OTg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
       typescript: '>=4.8.4 <6.1.0'
@@ -3691,12 +4138,29 @@ packages:
       eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
       typescript: '>=4.8.4 <6.1.0'
 
+  '@typescript-eslint/type-utils@8.72.1':
+    resolution: {integrity: sha512-iY2wlmyrXJmx4yxUGP3aYCFF3cA/6ShddOKmLU2dx7LnEykbAM8WThlxZEfd1NddqceF6eJmZUayxx9oKIYNlg==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    peerDependencies:
+      eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
+      typescript: '>=4.8.4 <6.1.0'
+
   '@typescript-eslint/types@8.70.1':
     resolution: {integrity: sha512-Dm1ypdhhrGCTyyehxElhgJ6kgk8MVCv5qXdoOVqPr1uqk42jX8KjrZqhROvdShczA8qrDoYiOWn1ykWlx2k81Q==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
+  '@typescript-eslint/types@8.72.1':
+    resolution: {integrity: sha512-LmE5IhQet1BWOWEXqBrVtBPsMAOQ6Nzk35d+WLh3mk4EUF33sqlfxjio1MdYeSvKSG5skactKKuixBIKXhL4Rw==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
   '@typescript-eslint/typescript-estree@8.70.1':
     resolution: {integrity: sha512-TU8PwyGN0PQJUcE96mw8eCQ44SmxGdQlJmlWakHaHQ15eIuuvye5yNtmh/i6oS88jzXVQB71xdNkbkB/fMwL0g==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    peerDependencies:
+      typescript: '>=4.8.4 <6.1.0'
+
+  '@typescript-eslint/typescript-estree@8.72.1':
+    resolution: {integrity: sha512-DAlUoUV93hIvrtIQLwCbmZQYVZwOMhiHJrOVUUIWicFZaIYjTRqlY3I/NZevfkLmSqkNHRu2qYDcq9lrn16oOQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
       typescript: '>=4.8.4 <6.1.0'
@@ -3708,8 +4172,19 @@ packages:
       eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
       typescript: '>=4.8.4 <6.1.0'
 
+  '@typescript-eslint/utils@8.72.1':
+    resolution: {integrity: sha512-5v5liypurJBFHCBNqh/RjsymAD+VWcE0djuGY/BUqp5fC3Qn+luWDEksjuTtWjPn6i5zQlUtkZCRG/CYG0yCkA==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    peerDependencies:
+      eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
+      typescript: '>=4.8.4 <6.1.0'
+
   '@typescript-eslint/visitor-keys@8.70.1':
     resolution: {integrity: sha512-Vwj9lUIW5Xq3wQ9w6gv3R86g1hMK8f2zNOdGTAgeXUMMXFK78G9ruCjjqutHMNJc0+CH7LYRnHeUB9IT8wFmcw==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@typescript-eslint/visitor-keys@8.72.1':
+    resolution: {integrity: sha512-SB8xqipSzZHUePCCLNeYxqnxq83X61/qzNhjQGbTfjxGZIeOEP7tBgWYX05Tcd6CgE02WdTJnh5b8kMZJ/+bnQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@typescript/typescript-aix-ppc64@7.0.2':
@@ -4081,6 +4556,9 @@ packages:
   bail@2.0.2:
     resolution: {integrity: sha512-0xO6mYd7JB2YesxDKplafRpsiOzPt9V02ddPCLbY1xYGPOX24NTyN50qnUxgCPcSoYMhKpAuBTjQoRZCAkUDRw==}
 
+  balanced-match@1.0.2:
+    resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
+
   balanced-match@4.0.4:
     resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
     engines: {node: 18 || 20 || >=22}
@@ -4101,6 +4579,9 @@ packages:
   body-parser@2.3.0:
     resolution: {integrity: sha512-2cGmJupaNgg+QUwVLAucDuWuoMZ6EX9iHDRswZ5lsNYEmwPaRknMPCLZz07yTzVq/83p4o/wzbDZbBrTvGGTIw==}
     engines: {node: '>=18'}
+
+  brace-expansion@1.1.21:
+    resolution: {integrity: sha512-9zeA+KLZNNzglF2TPKRQEDyx6Yby7daAkuy8MiPzpXPsYDWi/DRM8jmwUDxokQjYqBpv5DgPiwD4h4ZZSy1Ujw==}
 
   brace-expansion@5.0.12:
     resolution: {integrity: sha512-YovQ3rzhaLMIrDjNDMkNS01tea93qhEhG5xy8f6+R0l+dw3Ki+5sCoIoI942iuLZTHWogWktgwVDhU09iNEimQ==}
@@ -4131,6 +4612,10 @@ packages:
   call-bound@1.0.4:
     resolution: {integrity: sha512-+ys997U96po4Kx/ABpBCqhA9EuxJaQWDQg7295H4hBphv3IZg0boBKuwYpt4YXp6MZ5AmZQnU/tyMTlRpaSejg==}
     engines: {node: '>= 0.4'}
+
+  callsites@3.1.0:
+    resolution: {integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==}
+    engines: {node: '>=6'}
 
   camelize@1.0.1:
     resolution: {integrity: sha512-dU+Tx2fsypxTgtLoE36npi3UqcjSSMNYfkqgmoEhtZrraP5VWq0K7FkWVTYa8eMPtnU/G2txVsfdCJTn9uzpuQ==}
@@ -4207,6 +4692,9 @@ packages:
     resolution: {integrity: sha512-Q7dLompI6lUwd7LWyIcP66r4WcS9u7AL2h8HaeipiRfCRPLMWqRx8fYsjb4OHi6UQFifO7XtNC2IlEJ1ozIFxw==}
     peerDependencies:
       '@floating-ui/utils': ^0.2.5
+
+  concat-map@0.0.1:
+    resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
 
   content-disposition@1.1.0:
     resolution: {integrity: sha512-5jRCH9Z/+DRP7rkvY83B+yGIGX96OYdJmzngqnw2SBSxqCFPd0w2km3s5iawpGX8krnwSGmF0FW5Nhr0Hfai3g==}
@@ -4370,6 +4858,10 @@ packages:
   dompurify@3.4.14:
     resolution: {integrity: sha512-dVoH9z+MY+C9IilgGCk3YfFqjLi3fChm2OiKJMzh6axrJ5qwxqWaZamgmHrpv22CN/KdbZJuGEGgfQoL00LTdg==}
 
+  dprint@0.64.3:
+    resolution: {integrity: sha512-/ENhr1iBM1ZfDBdLRCwSuOZ6SCv6cN6Tl3xvtJDHJbFJYjiYy6AHrzPtU/FSCvEG16YTcCNqkO/xDBxaDHIh8w==}
+    hasBin: true
+
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
     engines: {node: '>= 0.4'}
@@ -4386,10 +4878,10 @@ packages:
   effect-oxlint@0.3.4:
     resolution: {integrity: sha512-VaI72NhDI+OBk8rkWBxR3D+k8iQN5KX4caiTRtWR/KDlif4KdxmjPelQqflwwprxkGldEpLry9fQvvzlBWY6bA==}
     peerDependencies:
-      effect: 4.0.0
+      effect: 4.1.0
 
-  effect@4.0.0:
-    resolution: {integrity: sha512-ooc1TG5t+FfzgYnFz2ff6BBKyZ7EwBRVXC7c4RhQUAD6/TZ2gTXXMeb4WX7a19ozQo4J73/QW+S00YAIresoMQ==}
+  effect@4.1.0:
+    resolution: {integrity: sha512-lGx2MJJyrXA8RZb2UpQ/0Nkb5Utaimby7oD92+18noBxLPE85IFOvptdzau8dvcxAOwfwHo9iqapbKeFzqQM/Q==}
 
   emoji-regex-xs@2.0.1:
     resolution: {integrity: sha512-1QFuh8l7LqUcKe24LsPUNzjrzJQ7pgRwp1QMcZ5MX6mFplk2zQ08NVCM84++1cveaUUYtcCYHmeFEuNg16sU4g==}
@@ -4446,6 +4938,10 @@ packages:
     engines: {node: '>=6.0'}
     hasBin: true
 
+  eslint-scope@8.4.0:
+    resolution: {integrity: sha512-sNXOfKCn74rt8RICKMvJS7XKV/Xk9kA7DyJr8mJik3S7Cwgy3qlkkmyS2uQB3jiJg6VNdZd/pDBJu0nvG2NlTg==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
   eslint-scope@9.1.2:
     resolution: {integrity: sha512-xS90H51cKw0jltxmvmHy2Iai1LIqrfbw57b79w/J7MfvDfkIkFZ+kj6zC3BjtUwh150HsSSdxXZcsuv72miDFQ==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
@@ -4453,6 +4949,10 @@ packages:
   eslint-visitor-keys@3.4.3:
     resolution: {integrity: sha512-wpc+LXeiyiisxPlEkUzU6svyS1frIO3Mgxj1fdy7Pm8Ygzguax2N3Fa/D/ag1WqbOprdI+uY6wMUl8/a2G+iag==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+
+  eslint-visitor-keys@4.2.1:
+    resolution: {integrity: sha512-Uhdk5sfqcee/9H/rCOJikYz67o0a2Tw2hGRPOG2Y1R2dg7brRe1uG0yaNQDHu+TO/uQPF/5eCapvYSmHUjt7JQ==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   eslint-visitor-keys@5.0.1:
     resolution: {integrity: sha512-tD40eHxA35h0PEIZNeIjkHoDR4YjjJp34biM0mDvplBe//mB+IHCqHDGV7pxF+7MklTvighcCPPZC7ynWyjdTA==}
@@ -4467,6 +4967,21 @@ packages:
     peerDependenciesMeta:
       jiti:
         optional: true
+
+  eslint@9.39.5:
+    resolution: {integrity: sha512-DgZS62aPLXKlnxILS/AYCoRvHaZeXceIzlXPkkGGzJWSow1aEk0lbTlxUSlyjC8jcaKxAdOnTDz+o1JFSBsyjw==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+    hasBin: true
+    peerDependencies:
+      jiti: '*'
+    peerDependenciesMeta:
+      jiti:
+        optional: true
+
+  espree@10.4.0:
+    resolution: {integrity: sha512-j6PAQ2uUr79PZhBjP5C5fhl8e39FmRnOjsD5lGnWrFU8i2G776tBK7+nP8KuQUTTyAZUwfQqXAgrVH5MbH9CYQ==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   espree@11.2.0:
     resolution: {integrity: sha512-7p3DrVEIopW1B1avAGLuCSh1jubc01H2JHc8B4qqGblmg5gI9yumBgACjWo4JlIc04ufug4xJ3SQI8HkS/Rgzw==}
@@ -4570,6 +5085,10 @@ packages:
   file-entry-cache@11.1.5:
     resolution: {integrity: sha512-+PFTHITI08JIGhnNpGNI8T8inUpgZfk3GNEqfT9R2zZV2iFXg3CvqzSl/uEhs7TSGujYRELEANyDvS8Fj7+S7Q==}
 
+  file-entry-cache@8.0.0:
+    resolution: {integrity: sha512-XXTUwCvisa5oacNGRP9SfNtYBNAMi+RPwBFmblZEF7N7swHYQS6/Zfk7SRwx4D5j3CH211YNRco1DEMNVfZCnQ==}
+    engines: {node: '>=16.0.0'}
+
   filing-cabinet@5.5.1:
     resolution: {integrity: sha512-PzLBTChlVPn6LnNxF0KWs+XqPziVh3Sfmz/3TXOymHxu6a9yhrDcQn7YwgpcRM6mqhR2WHVGPR8RU4fmcF1IVA==}
     engines: {node: '>=18'}
@@ -4582,6 +5101,10 @@ packages:
   find-up@5.0.0:
     resolution: {integrity: sha512-78/PXT1wlLLDgTzDs7sjq9hzz0vXD+zn+7wypEe4fXQxCmdmqfGsEPQxmiCSQI3ajFV91bVSsvNtrJRiW6nGng==}
     engines: {node: '>=10'}
+
+  flat-cache@4.0.1:
+    resolution: {integrity: sha512-f7ccFPK3SXFHpx15UIGyRJ/FJQctuKZ0zVuN3frBo4HnK3cay9VEW0R6yPYFHC0AgqhukPzKjq22t5DmAyqGyw==}
+    engines: {node: '>=16'}
 
   flat-cache@6.1.23:
     resolution: {integrity: sha512-f++BY9pTk+983xK1FLzlLpmM0i0z+jHmx3QESGkURMXujQZz1k5wzwX6hjnQ8goaD0B+sYnDK1yZ6MTyZfUaqA==}
@@ -4646,6 +5169,10 @@ packages:
   glob@13.0.6:
     resolution: {integrity: sha512-Wjlyrolmm8uDpm/ogGyXZXb1Z+Ca2B8NbJwqBVg0axK9GbBeoS7yGV6vjXnYdGm6X53iehEuxxbyiKp8QmN4Vw==}
     engines: {node: 18 || 20 || >=22}
+
+  globals@14.0.0:
+    resolution: {integrity: sha512-oahGvuMGQlPw/ivIYBjVSrWAfWLBeku5tpPE2fOPLi+WHffIWbuh2tCjhyQhTBPMf5E9jDEH4FOmTYgYwbKwtQ==}
+    engines: {node: '>=18'}
 
   gonzales-pe@4.3.0:
     resolution: {integrity: sha512-otgSPpUmdWJ43VXyiNgEYE4luzHCL2pz4wQ0OnDluC6Eg4Ko3Vexy/SrSynglw/eR+OhkzmqFCZa/OFa/RgAOQ==}
@@ -4739,6 +5266,10 @@ packages:
     resolution: {integrity: sha512-QRUkFFsRV/6fuESxb9Vkq+a0LkSrgKXuc2NEqfikiXxxN/G3tjWt5EVUlMaImRBZRZK/jRBEbYvpPYZL8t08Zw==}
     engines: {node: '>=18'}
     hasBin: true
+
+  import-fresh@3.3.1:
+    resolution: {integrity: sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ==}
+    engines: {node: '>=6'}
 
   import-meta-resolve@4.2.0:
     resolution: {integrity: sha512-Iqv2fzaTQN28s/FwZAoFq0ZSs/7hMAHJVX+w8PZl3cY19Pxk6jFFalxQoIfW2826i/fDLXv8IiEZRIT0lDuWcg==}
@@ -4850,6 +5381,10 @@ packages:
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
+  js-yaml@4.3.2:
+    resolution: {integrity: sha512-SFNOvSJ+Dgf/9An904Yx+CgSlIPCkIpao4qo51lpee25TIRejdH3rhR4EZMGoNx3/TP3O+wzWuiTFl4sqbltzA==}
+    hasBin: true
+
   jsdom@30.1.1:
     resolution: {integrity: sha512-FahmoPK5vbPc+jxV1iErMHmAZypCZ942NHF4+qqaWAuvaKKTBZxawnmAtrbGWLU7MtlxfqIP0qw6aSI+aWGtLg==}
     engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
@@ -4858,6 +5393,9 @@ packages:
     peerDependenciesMeta:
       canvas:
         optional: true
+
+  json-buffer@3.0.1:
+    resolution: {integrity: sha512-4bV5BfR2mqfQTJm+V5tPPdf+ZpuhiIvTuAB5g8kcrXOZpTT/QwwVRWBywX1ozr6lEuPdbHxwaJlm9G6mI2sfSQ==}
 
   json-schema-traverse@0.4.1:
     resolution: {integrity: sha512-xbbCH5dCYU5T8LcEhhuh7HJ88HXuW3qsI3Y0zOZFKfZEHcpWiHU/Jxzk629Brsab/mMiHQti9wMP+845RPe3Vg==}
@@ -4884,6 +5422,9 @@ packages:
 
   kdbush@4.1.0:
     resolution: {integrity: sha512-e9vurzrXJQrFX6ckpHP3bvj5l+9CnYzkxDNnNQ1h2QTqdWsUAJgXiKdGNcOa1EY85dU8KbQ+z/FdQdB7P+9yfQ==}
+
+  keyv@4.5.4:
+    resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
 
   keyv@5.6.0:
     resolution: {integrity: sha512-CYDD3SOtsHtyXeEORYRx2qBtpDJFjRTGXUtmNEMGyzYOKj1TE3tycdlho7kA1Ufx9OYWZzg52QFBGALTirzDSw==}
@@ -5066,6 +5607,9 @@ packages:
   locate-path@6.0.0:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
     engines: {node: '>=10'}
+
+  lodash.merge@4.6.2:
+    resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
 
   log-symbols@4.1.0:
     resolution: {integrity: sha512-8XPvpAA8uyhfteu8pIvQxpJZ7SYYdpUivZpGy6sFsBuKRY/7rQGavedeB8aK+Zkyq6upMFVL/9AW6vOYzfRyLg==}
@@ -5294,6 +5838,9 @@ packages:
     resolution: {integrity: sha512-vpLQEs+VLCr1nU0BXS07maYoFwlDAH0gngQuuttxIwutDFEMHq2blX+8vpgxDdK3J1PwjCJiep77OitTZ4Ll1A==}
     engines: {node: 18 || 20 || >=22}
 
+  minimatch@3.1.5:
+    resolution: {integrity: sha512-VgjWUsnnT6n+NUk6eZq77zeFdpW2LWDzP6zFGrCbHXiYNul5Dzqk2HHQ5uFH2DNW5Xbp8+jVzaeNt94ssEEl4w==}
+
   minimist@1.2.8:
     resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
 
@@ -5430,6 +5977,10 @@ packages:
 
   pako@0.2.9:
     resolution: {integrity: sha512-NUcwaKxUxWrZLpDG+z/xZaCgQITkA/Dv4V/T6bw7VON6l1Xz/VnrBqrYjZQ12TamKHzITTfOEIYUj48y2KXImA==}
+
+  parent-module@1.0.1:
+    resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
+    engines: {node: '>=6'}
 
   parse-css-color@0.2.1:
     resolution: {integrity: sha512-bwS/GGIFV3b6KS4uwpzCFj4w297Yl3uqnSgIPsoQkx7GMLROXfMnWvxfNkL0oh8HVhZA4hvJoEoEIqonfJ3BWg==}
@@ -5654,6 +6205,10 @@ packages:
     resolution: {integrity: sha512-YQftIIC4vzO9UMhO/sCgXukNyiwVRCVaxiWskCBy7Zpqkplm8kTAISZ8O1MoKW1ca6xzgLUBjZTcDgypXvXxiQ==}
     engines: {node: '>=18'}
 
+  resolve-from@4.0.0:
+    resolution: {integrity: sha512-pb/MYmXstAkysRFx8piNI1tGFNQIFA3vkE3Gq4EuA1dF6gHp/+vgZqsCGJapvy8N3Q+4o7FwvquPJcnZ7RYy4g==}
+    engines: {node: '>=4'}
+
   resolve-pkg-maps@1.0.0:
     resolution: {integrity: sha512-seS2Tj26TBVOC2NIc2rOe2y2ZO7efxITtLZcGSOnHHNOQ7CkiUBfw0Iw2ck6xkIhPwLhKNLS8BO+hEpngQlqzw==}
 
@@ -5823,6 +6378,10 @@ packages:
     resolution: {integrity: sha512-4gB8na07fecVVkOI6Rs4e7T6NOTki5EmL7TUduTs6bu3EdnSycntVJ4re8kgZA+wx9IueI2Y11bfbgwtzuE0KQ==}
     engines: {node: '>=0.10.0'}
 
+  strip-json-comments@3.1.1:
+    resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
+    engines: {node: '>=8'}
+
   strip-json-comments@5.0.3:
     resolution: {integrity: sha512-1tB5mhVo7U+ETBKNf92xT4hrQa3pm0MZ0PQvuDnWgAAGHDsfp4lPSpiS6psrSiet87wyGPh9ft6wmhOMQ0hDiw==}
     engines: {node: '>=14.16'}
@@ -5942,6 +6501,13 @@ packages:
     peerDependencies:
       typescript: 5.0.x || 5.1.x || 5.2.x || 5.3.x || 5.4.x || 5.5.x || 5.6.x || 5.7.x || 5.8.x || 5.9.x || 6.0.x
 
+  typescript-eslint@8.72.1:
+    resolution: {integrity: sha512-3Li9FfPmQp45nxEtFD1ZCrYFI3cYK5kpyNtmm1H7lMagm8u9sy6PTjy3ytwQZs7KNukOyKFHAZ6z6GjYFeaeXw==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    peerDependencies:
+      eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
+      typescript: '>=4.8.4 <6.1.0'
+
   typescript@5.9.3:
     resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
     engines: {node: '>=14.17'}
@@ -5971,6 +6537,10 @@ packages:
     resolution: {integrity: sha512-u4UB2/IrKdU6lFxumHmmo1a3fCQO5tzQllRorfoRS63txhrB7xTpSn1PftwC4qEHkOaqP95fCWW4lJzwErwzhQ==}
     engines: {node: '>=22.19.0'}
 
+  undici@8.12.3:
+    resolution: {integrity: sha512-+fdndUTwBP86cVjihTp21hZHo7d6oj1c/47XPA3lL8mM0XHs+C4EkcjmgRsFnFk2f/UONGDy9ItBItmXsLOQHw==}
+    engines: {node: '>=22.19.0'}
+
   unicode-trie@2.0.0:
     resolution: {integrity: sha512-x7bc76x0bm4prf1VLg79uhAzKw8DVboClSN5VxJuQ+LKDOVEW9CdH+VY7SP+vX7xCYQqzzgQpFqz15zeLvAtZQ==}
 
@@ -5996,6 +6566,42 @@ packages:
     resolution: {integrity: sha512-pjy2bYhSsufwWlKwPc+l3cN7+wuJlK6uz0YdJEOlQDbl6jo/YlPi4mb8agUkVC8BF7V8NuzeyPNqRksA3hztKQ==}
     engines: {node: '>= 0.8'}
 
+  unplugin@3.4.0:
+    resolution: {integrity: sha512-9skdIFlCsPdFV7wUfZxNsFInlW+7nJmGu2gkTu0OUhF56aXGsHab9x52/QhdJ4lC7ZDPWTxbiC4ANqVlsuaW3w==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    peerDependencies:
+      '@farmfe/core': '*'
+      '@rsbuild/core': '*'
+      '@rspack/core': '*'
+      bun-types-no-globals: '*'
+      esbuild: '*'
+      rolldown: '*'
+      rollup: '*'
+      unloader: '*'
+      vite: '*'
+      webpack: '*'
+    peerDependenciesMeta:
+      '@farmfe/core':
+        optional: true
+      '@rsbuild/core':
+        optional: true
+      '@rspack/core':
+        optional: true
+      bun-types-no-globals:
+        optional: true
+      esbuild:
+        optional: true
+      rolldown:
+        optional: true
+      rollup:
+        optional: true
+      unloader:
+        optional: true
+      vite:
+        optional: true
+      webpack:
+        optional: true
+
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
 
@@ -6019,6 +6625,44 @@ packages:
 
   vfile@6.0.3:
     resolution: {integrity: sha512-KzIbH/9tXat2u30jf+smMwFCsno4wHVdNmzFyL+T/L3UGqqk6JKfVqOFOZEpZSHADH1k40ab6NUIXZq422ov3Q==}
+
+  vibelang-runtime@file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz:
+    resolution: {integrity: sha512-kgz0Ob01ppm6RPpBuyApaGFG9o0RWPBf1Z0Tlvsmyd3uXKsQZUM5jc29D3LgPBWn2OXsD2LrBdj9WnEFlHS1AQ==, tarball: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz}
+    version: 0.0.11
+    engines: {bun: '>=1.4', node: ^22.22.3 || >=24.11.1}
+    peerDependencies:
+      '@effect/platform-browser': 4.1.0
+      '@effect/platform-bun': 4.1.0
+      '@effect/platform-node': 4.1.0
+      effect: 4.1.0
+    peerDependenciesMeta:
+      '@effect/platform-browser':
+        optional: true
+      '@effect/platform-bun':
+        optional: true
+      '@effect/platform-node':
+        optional: true
+
+  vibelang-unplugin@file:.vibelang-toolchain/vibelang-unplugin-0.0.11-d83e2657e595.tgz:
+    resolution: {integrity: sha512-XTOU18tKC+hx31L0yk6e3fHlb4vRms4ySuU0Milvnn7kcOUOE5cDu4tRNT2tBYo/uplmeEy6pEQdEoTP1hG1Tg==, tarball: file:.vibelang-toolchain/vibelang-unplugin-0.0.11-d83e2657e595.tgz}
+    version: 0.0.11
+    engines: {node: ^22.22.3 || >=24.11.1}
+    peerDependencies:
+      vibelang: 0.0.11
+
+  vibelang-vite@file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz:
+    resolution: {integrity: sha512-gvFPL7T7aWR0S/9dZ9I2VkSWogooEgXAd857rNPanV2hAw+Yr/2+rHt0VxJpS1CNLnOT8CHD/dTJQYd3NrTJoA==, tarball: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz}
+    version: 0.0.11
+    engines: {node: ^22.22.3 || >=24.11.1}
+    peerDependencies:
+      vibelang: 0.0.11
+      vite: '>=7 <9'
+
+  vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz:
+    resolution: {integrity: sha512-ndRYux/Jbnizi1AgXeffGZq6JVOV9LRL6RzmFDGKR5JzIaCPzjJ9jXvBqLNpTUcOqUBmaEhhL4PlR/xuhSSBJw==, tarball: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz}
+    version: 0.0.11
+    engines: {node: ^22.22.3 || >=24.11.1}
+    hasBin: true
 
   vite@8.2.1:
     resolution: {integrity: sha512-EU/eS7BH3XROHh2YnBefjM6DBKA6ZeMZEYQbj7NLWg5wHYlhB8B/Mayd5XsgWq+NFYccDOTemRpdETWR6Ka/lw==}
@@ -6214,6 +6858,9 @@ packages:
   webidl-conversions@8.0.1:
     resolution: {integrity: sha512-BMhLD/Sw+GbJC21C/UgyaZX41nPt8bUTg+jWyDeg7e7YN4xOM05YPSIXceACnXVtqyEw/LMClUQMtMZ+PGGpqQ==}
     engines: {node: '>=20'}
+
+  webpack-virtual-modules@0.6.2:
+    resolution: {integrity: sha512-66/V2i5hQanC51vBQKPH4aI8NMAcBW59FVBs+rC7eGHupMyfn34q7rZIE+ETlJ+XTevqfUhVVBgSUNSW2flEUQ==}
 
   whatwg-mimetype@3.0.0:
     resolution: {integrity: sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q==}
@@ -6531,25 +7178,82 @@ snapshots:
 
   '@discoveryjs/json-ext@1.1.0': {}
 
-  '@effect/platform-browser@4.0.0(effect@4.0.0)':
-    dependencies:
-      effect: 4.0.0
+  '@dprint/android-arm64@0.64.3':
+    optional: true
 
-  '@effect/platform-node-shared@4.0.0(effect@4.0.0)':
+  '@dprint/android-x64@0.64.3':
+    optional: true
+
+  '@dprint/darwin-arm64@0.64.3':
+    optional: true
+
+  '@dprint/darwin-x64@0.64.3':
+    optional: true
+
+  '@dprint/freebsd-arm64@0.64.3':
+    optional: true
+
+  '@dprint/freebsd-x64@0.64.3':
+    optional: true
+
+  '@dprint/linux-arm64-glibc@0.64.3':
+    optional: true
+
+  '@dprint/linux-arm64-musl@0.64.3':
+    optional: true
+
+  '@dprint/linux-loong64-glibc@0.64.3':
+    optional: true
+
+  '@dprint/linux-loong64-musl@0.64.3':
+    optional: true
+
+  '@dprint/linux-ppc64-glibc@0.64.3':
+    optional: true
+
+  '@dprint/linux-ppc64-musl@0.64.3':
+    optional: true
+
+  '@dprint/linux-riscv64-glibc@0.64.3':
+    optional: true
+
+  '@dprint/linux-riscv64-musl@0.64.3':
+    optional: true
+
+  '@dprint/linux-s390x-glibc@0.64.3':
+    optional: true
+
+  '@dprint/linux-x64-glibc@0.64.3':
+    optional: true
+
+  '@dprint/linux-x64-musl@0.64.3':
+    optional: true
+
+  '@dprint/win32-arm64@0.64.3':
+    optional: true
+
+  '@dprint/win32-x64@0.64.3':
+    optional: true
+
+  '@effect/platform-browser@4.1.0(effect@4.1.0)':
     dependencies:
-      '@types/ws': 8.18.1
-      effect: 4.0.0
+      effect: 4.1.0
+
+  '@effect/platform-node-shared@4.1.0(effect@4.1.0)':
+    dependencies:
+      '@types/ws': 8.18.2
+      effect: 4.1.0
       ws: 8.22.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  '@effect/platform-node@4.0.0(effect@4.0.0)(redis@6.2.1(@opentelemetry/api@1.9.0))':
+  '@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0))':
     dependencies:
-      '@effect/platform-node-shared': 4.0.0(effect@4.0.0)
-      effect: 4.0.0
+      '@effect/platform-node-shared': 4.1.0(effect@4.1.0)
+      effect: 4.1.0
       redis: 6.2.1(@opentelemetry/api@1.9.0)
-      undici: 8.11.2
+      undici: 8.12.3
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -6585,9 +7289,9 @@ snapshots:
       '@effect/tsgo-win32-arm64': 0.50.0
       '@effect/tsgo-win32-x64': 0.50.0
 
-  '@effect/vitest@4.0.0(effect@4.0.0)(vitest@5.0.2)':
+  '@effect/vitest@4.1.0(effect@4.1.0)(vitest@5.0.2)':
     dependencies:
-      effect: 4.0.0
+      effect: 4.1.0
       vitest: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   '@emnapi/core@1.11.2':
@@ -6611,7 +7315,20 @@ snapshots:
       eslint: 10.11.0(jiti@2.7.0)
       eslint-visitor-keys: 3.4.3
 
+  '@eslint-community/eslint-utils@4.10.1(eslint@9.39.5(jiti@2.7.0))':
+    dependencies:
+      eslint: 9.39.5(jiti@2.7.0)
+      eslint-visitor-keys: 3.4.3
+
   '@eslint-community/regexpp@4.12.2': {}
+
+  '@eslint/config-array@0.21.2':
+    dependencies:
+      '@eslint/object-schema': 2.1.7
+      debug: 4.4.3
+      minimatch: 3.1.5
+    transitivePeerDependencies:
+      - supports-color
 
   '@eslint/config-array@0.23.5':
     dependencies:
@@ -6621,19 +7338,50 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@eslint/config-helpers@0.4.2':
+    dependencies:
+      '@eslint/core': 0.17.0
+
   '@eslint/config-helpers@0.7.0':
     dependencies:
       '@eslint/core': 1.2.1
+
+  '@eslint/core@0.17.0':
+    dependencies:
+      '@types/json-schema': 7.0.15
 
   '@eslint/core@1.2.1':
     dependencies:
       '@types/json-schema': 7.0.15
 
+  '@eslint/eslintrc@3.3.7':
+    dependencies:
+      ajv: 6.15.0
+      debug: 4.4.3
+      espree: 10.4.0
+      globals: 14.0.0
+      ignore: 5.3.2
+      import-fresh: 3.3.1
+      js-yaml: 4.3.2
+      minimatch: 3.1.5
+      strip-json-comments: 3.1.1
+    transitivePeerDependencies:
+      - supports-color
+
   '@eslint/js@10.0.1(eslint@10.11.0(jiti@2.7.0))':
     optionalDependencies:
       eslint: 10.11.0(jiti@2.7.0)
 
+  '@eslint/js@9.39.5': {}
+
+  '@eslint/object-schema@2.1.7': {}
+
   '@eslint/object-schema@3.0.5': {}
+
+  '@eslint/plugin-kit@0.4.1':
+    dependencies:
+      '@eslint/core': 0.17.0
+      levn: 0.4.1
 
   '@eslint/plugin-kit@0.7.3':
     dependencies:
@@ -7536,6 +8284,10 @@ snapshots:
     dependencies:
       '@types/node': 26.4.0
 
+  '@types/ws@8.18.2':
+    dependencies:
+      '@types/node': 26.4.0
+
   '@typescript-eslint/eslint-plugin@8.70.1(@typescript-eslint/parser@8.70.1(@typescript/typescript6@6.0.2)(eslint@10.11.0(jiti@2.7.0)))(@typescript/typescript6@6.0.2)(eslint@10.11.0(jiti@2.7.0))':
     dependencies:
       '@eslint-community/regexpp': 4.12.2
@@ -7552,6 +8304,22 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@typescript-eslint/eslint-plugin@8.72.1(@typescript-eslint/parser@8.72.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)))(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0))':
+    dependencies:
+      '@eslint-community/regexpp': 4.12.2
+      '@typescript-eslint/parser': 8.72.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0))
+      '@typescript-eslint/scope-manager': 8.72.1
+      '@typescript-eslint/type-utils': 8.72.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0))
+      '@typescript-eslint/utils': 8.72.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0))
+      '@typescript-eslint/visitor-keys': 8.72.1
+      eslint: 9.39.5(jiti@2.7.0)
+      ignore: 7.0.10
+      natural-compare: 1.4.0
+      ts-api-utils: 2.5.0(@typescript/typescript6@6.0.2)
+      typescript: '@typescript/typescript6@6.0.2'
+    transitivePeerDependencies:
+      - supports-color
+
   '@typescript-eslint/parser@8.70.1(@typescript/typescript6@6.0.2)(eslint@10.11.0(jiti@2.7.0))':
     dependencies:
       '@typescript-eslint/scope-manager': 8.70.1
@@ -7560,6 +8328,18 @@ snapshots:
       '@typescript-eslint/visitor-keys': 8.70.1
       debug: 4.4.3
       eslint: 10.11.0(jiti@2.7.0)
+      typescript: '@typescript/typescript6@6.0.2'
+    transitivePeerDependencies:
+      - supports-color
+
+  '@typescript-eslint/parser@8.72.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0))':
+    dependencies:
+      '@typescript-eslint/scope-manager': 8.72.1
+      '@typescript-eslint/types': 8.72.1
+      '@typescript-eslint/typescript-estree': 8.72.1(@typescript/typescript6@6.0.2)
+      '@typescript-eslint/visitor-keys': 8.72.1
+      debug: 4.4.3
+      eslint: 9.39.5(jiti@2.7.0)
       typescript: '@typescript/typescript6@6.0.2'
     transitivePeerDependencies:
       - supports-color
@@ -7582,10 +8362,24 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@typescript-eslint/project-service@8.72.1(@typescript/typescript6@6.0.2)':
+    dependencies:
+      '@typescript-eslint/tsconfig-utils': 8.72.1(@typescript/typescript6@6.0.2)
+      '@typescript-eslint/types': 8.72.1
+      debug: 4.4.3
+      typescript: '@typescript/typescript6@6.0.2'
+    transitivePeerDependencies:
+      - supports-color
+
   '@typescript-eslint/scope-manager@8.70.1':
     dependencies:
       '@typescript-eslint/types': 8.70.1
       '@typescript-eslint/visitor-keys': 8.70.1
+
+  '@typescript-eslint/scope-manager@8.72.1':
+    dependencies:
+      '@typescript-eslint/types': 8.72.1
+      '@typescript-eslint/visitor-keys': 8.72.1
 
   '@typescript-eslint/tsconfig-utils@8.70.1(@typescript/typescript6@6.0.2)':
     dependencies:
@@ -7594,6 +8388,10 @@ snapshots:
   '@typescript-eslint/tsconfig-utils@8.70.1(typescript@5.9.3)':
     dependencies:
       typescript: 5.9.3
+
+  '@typescript-eslint/tsconfig-utils@8.72.1(@typescript/typescript6@6.0.2)':
+    dependencies:
+      typescript: '@typescript/typescript6@6.0.2'
 
   '@typescript-eslint/type-utils@8.70.1(@typescript/typescript6@6.0.2)(eslint@10.11.0(jiti@2.7.0))':
     dependencies:
@@ -7607,7 +8405,21 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@typescript-eslint/type-utils@8.72.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0))':
+    dependencies:
+      '@typescript-eslint/types': 8.72.1
+      '@typescript-eslint/typescript-estree': 8.72.1(@typescript/typescript6@6.0.2)
+      '@typescript-eslint/utils': 8.72.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0))
+      debug: 4.4.3
+      eslint: 9.39.5(jiti@2.7.0)
+      ts-api-utils: 2.5.0(@typescript/typescript6@6.0.2)
+      typescript: '@typescript/typescript6@6.0.2'
+    transitivePeerDependencies:
+      - supports-color
+
   '@typescript-eslint/types@8.70.1': {}
+
+  '@typescript-eslint/types@8.72.1': {}
 
   '@typescript-eslint/typescript-estree@8.70.1(@typescript/typescript6@6.0.2)':
     dependencies:
@@ -7639,6 +8451,21 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@typescript-eslint/typescript-estree@8.72.1(@typescript/typescript6@6.0.2)':
+    dependencies:
+      '@typescript-eslint/project-service': 8.72.1(@typescript/typescript6@6.0.2)
+      '@typescript-eslint/tsconfig-utils': 8.72.1(@typescript/typescript6@6.0.2)
+      '@typescript-eslint/types': 8.72.1
+      '@typescript-eslint/visitor-keys': 8.72.1
+      debug: 4.4.3
+      minimatch: 10.2.6
+      semver: 7.8.5
+      tinyglobby: 0.2.17
+      ts-api-utils: 2.5.0(@typescript/typescript6@6.0.2)
+      typescript: '@typescript/typescript6@6.0.2'
+    transitivePeerDependencies:
+      - supports-color
+
   '@typescript-eslint/utils@8.70.1(@typescript/typescript6@6.0.2)(eslint@10.11.0(jiti@2.7.0))':
     dependencies:
       '@eslint-community/eslint-utils': 4.10.1(eslint@10.11.0(jiti@2.7.0))
@@ -7650,9 +8477,25 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@typescript-eslint/utils@8.72.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0))':
+    dependencies:
+      '@eslint-community/eslint-utils': 4.10.1(eslint@9.39.5(jiti@2.7.0))
+      '@typescript-eslint/scope-manager': 8.72.1
+      '@typescript-eslint/types': 8.72.1
+      '@typescript-eslint/typescript-estree': 8.72.1(@typescript/typescript6@6.0.2)
+      eslint: 9.39.5(jiti@2.7.0)
+      typescript: '@typescript/typescript6@6.0.2'
+    transitivePeerDependencies:
+      - supports-color
+
   '@typescript-eslint/visitor-keys@8.70.1':
     dependencies:
       '@typescript-eslint/types': 8.70.1
+      eslint-visitor-keys: 5.0.1
+
+  '@typescript-eslint/visitor-keys@8.72.1':
+    dependencies:
+      '@typescript-eslint/types': 8.72.1
       eslint-visitor-keys: 5.0.1
 
   '@typescript/typescript-aix-ppc64@7.0.2':
@@ -7924,6 +8767,8 @@ snapshots:
 
   bail@2.0.2: {}
 
+  balanced-match@1.0.2: {}
+
   balanced-match@4.0.4: {}
 
   base64-js@0.0.8: {}
@@ -7953,6 +8798,11 @@ snapshots:
       type-is: 2.1.0
     transitivePeerDependencies:
       - supports-color
+
+  brace-expansion@1.1.21:
+    dependencies:
+      balanced-match: 1.0.2
+      concat-map: 0.0.1
 
   brace-expansion@5.0.12:
     dependencies:
@@ -7988,6 +8838,8 @@ snapshots:
     dependencies:
       call-bind-apply-helpers: 1.0.2
       get-intrinsic: 1.3.0
+
+  callsites@3.1.0: {}
 
   camelize@1.0.1: {}
 
@@ -8039,6 +8891,8 @@ snapshots:
   composed-offset-position@0.0.6(@floating-ui/utils@0.2.12):
     dependencies:
       '@floating-ui/utils': 0.2.12
+
+  concat-map@0.0.1: {}
 
   content-disposition@1.1.0: {}
 
@@ -8197,6 +9051,28 @@ snapshots:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 
+  dprint@0.64.3:
+    optionalDependencies:
+      '@dprint/android-arm64': 0.64.3
+      '@dprint/android-x64': 0.64.3
+      '@dprint/darwin-arm64': 0.64.3
+      '@dprint/darwin-x64': 0.64.3
+      '@dprint/freebsd-arm64': 0.64.3
+      '@dprint/freebsd-x64': 0.64.3
+      '@dprint/linux-arm64-glibc': 0.64.3
+      '@dprint/linux-arm64-musl': 0.64.3
+      '@dprint/linux-loong64-glibc': 0.64.3
+      '@dprint/linux-loong64-musl': 0.64.3
+      '@dprint/linux-ppc64-glibc': 0.64.3
+      '@dprint/linux-ppc64-musl': 0.64.3
+      '@dprint/linux-riscv64-glibc': 0.64.3
+      '@dprint/linux-riscv64-musl': 0.64.3
+      '@dprint/linux-s390x-glibc': 0.64.3
+      '@dprint/linux-x64-glibc': 0.64.3
+      '@dprint/linux-x64-musl': 0.64.3
+      '@dprint/win32-arm64': 0.64.3
+      '@dprint/win32-x64': 0.64.3
+
   dunder-proto@1.0.1:
     dependencies:
       call-bind-apply-helpers: 1.0.2
@@ -8212,12 +9088,12 @@ snapshots:
 
   ee-first@1.1.1: {}
 
-  effect-oxlint@0.3.4(effect@4.0.0):
+  effect-oxlint@0.3.4(effect@4.1.0):
     dependencies:
       '@oxlint/plugins': 1.85.0
-      effect: 4.0.0
+      effect: 4.1.0
 
-  effect@4.0.0: {}
+  effect@4.1.0: {}
 
   emoji-regex-xs@2.0.1: {}
 
@@ -8258,6 +9134,11 @@ snapshots:
     optionalDependencies:
       source-map: 0.6.1
 
+  eslint-scope@8.4.0:
+    dependencies:
+      esrecurse: 4.3.0
+      estraverse: 5.3.0
+
   eslint-scope@9.1.2:
     dependencies:
       '@types/esrecurse': 4.3.1
@@ -8266,6 +9147,8 @@ snapshots:
       estraverse: 5.3.0
 
   eslint-visitor-keys@3.4.3: {}
+
+  eslint-visitor-keys@4.2.1: {}
 
   eslint-visitor-keys@5.0.1: {}
 
@@ -8305,6 +9188,53 @@ snapshots:
       jiti: 2.7.0
     transitivePeerDependencies:
       - supports-color
+
+  eslint@9.39.5(jiti@2.7.0):
+    dependencies:
+      '@eslint-community/eslint-utils': 4.10.1(eslint@9.39.5(jiti@2.7.0))
+      '@eslint-community/regexpp': 4.12.2
+      '@eslint/config-array': 0.21.2
+      '@eslint/config-helpers': 0.4.2
+      '@eslint/core': 0.17.0
+      '@eslint/eslintrc': 3.3.7
+      '@eslint/js': 9.39.5
+      '@eslint/plugin-kit': 0.4.1
+      '@humanfs/node': 0.16.8
+      '@humanwhocodes/module-importer': 1.0.1
+      '@humanwhocodes/retry': 0.4.3
+      '@types/estree': 1.0.9
+      ajv: 6.15.0
+      chalk: 4.1.2
+      cross-spawn: 7.0.6
+      debug: 4.4.3
+      escape-string-regexp: 4.0.0
+      eslint-scope: 8.4.0
+      eslint-visitor-keys: 4.2.1
+      espree: 10.4.0
+      esquery: 1.7.0
+      esutils: 2.0.3
+      fast-deep-equal: 3.1.3
+      file-entry-cache: 8.0.0
+      find-up: 5.0.0
+      glob-parent: 6.0.2
+      ignore: 5.3.2
+      imurmurhash: 0.1.4
+      is-glob: 4.0.3
+      json-stable-stringify-without-jsonify: 1.0.1
+      lodash.merge: 4.6.2
+      minimatch: 3.1.5
+      natural-compare: 1.4.0
+      optionator: 0.9.4
+    optionalDependencies:
+      jiti: 2.7.0
+    transitivePeerDependencies:
+      - supports-color
+
+  espree@10.4.0:
+    dependencies:
+      acorn: 8.18.0
+      acorn-jsx: 5.3.2(acorn@8.18.0)
+      eslint-visitor-keys: 4.2.1
 
   espree@11.2.0:
     dependencies:
@@ -8421,6 +9351,10 @@ snapshots:
     dependencies:
       flat-cache: 6.1.23
 
+  file-entry-cache@8.0.0:
+    dependencies:
+      flat-cache: 4.0.1
+
   filing-cabinet@5.5.1:
     dependencies:
       app-module-path: 2.2.0
@@ -8450,6 +9384,11 @@ snapshots:
     dependencies:
       locate-path: 6.0.0
       path-exists: 4.0.0
+
+  flat-cache@4.0.1:
+    dependencies:
+      flatted: 3.4.4
+      keyv: 4.5.4
 
   flat-cache@6.1.23:
     dependencies:
@@ -8518,6 +9457,8 @@ snapshots:
       minipass: 7.1.3
       path-scurry: 2.0.2
 
+  globals@14.0.0: {}
+
   gonzales-pe@4.3.0:
     dependencies:
       minimist: 1.2.8
@@ -8530,11 +9471,11 @@ snapshots:
     dependencies:
       '@types/node': 26.4.0
       '@types/whatwg-mimetype': 3.0.2
-      '@types/ws': 8.18.1
+      '@types/ws': 8.18.2
       buffer-image-size: 0.6.4
       entities: 7.0.1
       whatwg-mimetype: 3.0.0
-      ws: 8.21.3
+      ws: 8.22.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -8611,6 +9552,11 @@ snapshots:
   ignore@7.0.10: {}
 
   image-size@2.0.4: {}
+
+  import-fresh@3.3.1:
+    dependencies:
+      parent-module: 1.0.1
+      resolve-from: 4.0.0
 
   import-meta-resolve@4.2.0: {}
 
@@ -8691,6 +9637,10 @@ snapshots:
 
   js-tokens@4.0.0: {}
 
+  js-yaml@4.3.2:
+    dependencies:
+      argparse: 2.0.1
+
   jsdom@30.1.1(@noble/hashes@2.4.0):
     dependencies:
       '@asamuzakjp/css-color': 7.0.1
@@ -8716,6 +9666,8 @@ snapshots:
     transitivePeerDependencies:
       - '@noble/hashes'
 
+  json-buffer@3.0.1: {}
+
   json-schema-traverse@0.4.1: {}
 
   json-schema-traverse@1.0.0: {}
@@ -8731,6 +9683,10 @@ snapshots:
   jsonc-parser@3.3.1: {}
 
   kdbush@4.1.0: {}
+
+  keyv@4.5.4:
+    dependencies:
+      json-buffer: 3.0.1
 
   keyv@5.6.0:
     dependencies:
@@ -8888,6 +9844,8 @@ snapshots:
   locate-path@6.0.0:
     dependencies:
       p-locate: 5.0.0
+
+  lodash.merge@4.6.2: {}
 
   log-symbols@4.1.0:
     dependencies:
@@ -9345,6 +10303,10 @@ snapshots:
     dependencies:
       brace-expansion: 5.0.12
 
+  minimatch@3.1.5:
+    dependencies:
+      brace-expansion: 1.1.21
+
   minimist@1.2.8: {}
 
   minipass@7.1.3: {}
@@ -9553,6 +10515,10 @@ snapshots:
       '@pagefind/windows-x64': 1.5.2
 
   pako@0.2.9: {}
+
+  parent-module@1.0.1:
+    dependencies:
+      callsites: 3.1.0
 
   parse-css-color@0.2.1:
     dependencies:
@@ -9823,6 +10789,8 @@ snapshots:
 
   resolve-dependency-path@4.0.1: {}
 
+  resolve-from@4.0.0: {}
+
   resolve-pkg-maps@1.0.0: {}
 
   resolve-protobuf-schema@2.1.0:
@@ -10040,6 +11008,8 @@ snapshots:
 
   strip-json-comments@2.0.1: {}
 
+  strip-json-comments@3.1.1: {}
+
   strip-json-comments@5.0.3: {}
 
   stylus-lookup@6.1.2:
@@ -10143,6 +11113,17 @@ snapshots:
       typescript: 6.0.3
       yaml: 2.9.1
 
+  typescript-eslint@8.72.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)):
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 8.72.1(@typescript-eslint/parser@8.72.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)))(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0))
+      '@typescript-eslint/parser': 8.72.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0))
+      '@typescript-eslint/typescript-estree': 8.72.1(@typescript/typescript6@6.0.2)
+      '@typescript-eslint/utils': 8.72.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0))
+      eslint: 9.39.5(jiti@2.7.0)
+      typescript: '@typescript/typescript6@6.0.2'
+    transitivePeerDependencies:
+      - supports-color
+
   typescript@5.9.3: {}
 
   typescript@6.0.3: {}
@@ -10177,6 +11158,8 @@ snapshots:
   undici-types@8.3.0: {}
 
   undici@8.11.2: {}
+
+  undici@8.12.3: {}
 
   unicode-trie@2.0.0:
     dependencies:
@@ -10218,6 +11201,15 @@ snapshots:
 
   unpipe@1.0.0: {}
 
+  unplugin@3.4.0(rolldown@1.2.11)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)):
+    dependencies:
+      '@jridgewell/remapping': 2.3.5
+      picomatch: 4.0.7
+      webpack-virtual-modules: 0.6.2
+    optionalDependencies:
+      rolldown: 1.2.11
+      vite: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+
   uri-js@4.4.1:
     dependencies:
       punycode: 2.3.1
@@ -10241,6 +11233,38 @@ snapshots:
     dependencies:
       '@types/unist': 3.0.3
       vfile-message: 4.0.3
+
+  vibelang-runtime@file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0):
+    dependencies:
+      effect: 4.1.0
+    optionalDependencies:
+      '@effect/platform-browser': 4.1.0(effect@4.1.0)
+      '@effect/platform-node': 4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0))
+
+  vibelang-unplugin@file:.vibelang-toolchain/vibelang-unplugin-0.0.11-d83e2657e595.tgz(rolldown@1.2.11)(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)):
+    dependencies:
+      unplugin: 3.4.0(rolldown@1.2.11)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+      vibelang: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+    transitivePeerDependencies:
+      - '@farmfe/core'
+      - '@rsbuild/core'
+      - '@rspack/core'
+      - bun-types-no-globals
+      - esbuild
+      - rolldown
+      - rollup
+      - unloader
+      - vite
+      - webpack
+
+  vibelang-vite@file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)):
+    dependencies:
+      vibelang: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vite: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+
+  vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz:
+    dependencies:
+      dprint: 0.64.3
 
   vite@8.2.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1):
     dependencies:
@@ -10341,6 +11365,8 @@ snapshots:
       defaults: 1.0.4
 
   webidl-conversions@8.0.1: {}
+
+  webpack-virtual-modules@0.6.2: {}
 
   whatwg-mimetype@3.0.0: {}
 

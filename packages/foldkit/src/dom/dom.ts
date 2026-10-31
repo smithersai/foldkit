@@ -10,8 +10,8 @@ import {
 } from 'effect'
 
 import { afterCommit, afterPaint } from '../render/render.js'
-import { DialogRuntime } from './dialogRuntime.js'
-import { ElementNotFound } from './error.js'
+import { DialogRuntime } from './dialogRuntime.vibe'
+import { ElementNotFound } from './error.vibe'
 import { makeOutsideIsolation } from './inert.js'
 import { unlockScroll } from './scrollLock.js'
 

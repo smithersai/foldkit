@@ -15,14 +15,14 @@ import {
   type MountRecord,
   createDevToolsStore,
 } from '../devTools/store.js'
-import { extractSubmodelInfo, isTagged } from '../devTools/submodelPath.js'
+import { extractSubmodelInfo, isTagged } from '../devTools/submodelPath.vibe'
 import { startWebSocketBridge } from '../devTools/webSocketBridge.js'
 import {
   MountRuntime,
   MountTracker,
   type ViewState,
   liveViewStateChanges,
-} from '../mount/index.js'
+} from '../mount/index.vibe'
 import {
   type DevToolsConfig,
   resolveDevToolsConfig,

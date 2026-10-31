@@ -1,6 +1,6 @@
 import { Array, Effect, Option } from 'effect'
 
-import type { File } from './file.js'
+import type { File } from './file.vibe'
 
 type OpenPickerOptions = Readonly<{
   accept: ReadonlyArray<string>

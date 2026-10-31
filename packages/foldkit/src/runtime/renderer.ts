@@ -14,13 +14,13 @@ import {
 } from '../html/index.js'
 import { __hydrateVNode } from '../hydrate.js'
 import { FOLDKIT_APP_ATTRIBUTE } from '../hydrationMarker.js'
-import { MountRuntime, MountTracker } from '../mount/index.js'
-import type { CommitNotifier } from '../render/commit.js'
+import { MountRuntime, MountTracker } from '../mount/index.vibe'
+import type { CommitNotifier } from '../render/commit.vibe'
 import {
   VNode,
   __patchVNode,
   __recoverVNodeAfterPatchFailure,
-} from '../vdom.js'
+} from '../vdom.vibe'
 import {
   type CrashConfig,
   type VNodeSlot,
@@ -31,7 +31,7 @@ import type {
   DevToolsIntegration,
   DevToolsRenderBridge,
 } from './devToolsIntegration.js'
-import { Dispatch } from './dispatch.js'
+import { Dispatch } from './dispatch.vibe'
 import { applyDocumentMetadata } from './documentMetadata.js'
 import type { DuplicateIdScanner } from './duplicateIdScanner.js'
 import type { MessageQueue } from './messageQueue.js'

@@ -1,0 +1,96 @@
+import type { ManagedResourceConfig } from '../managedResource/index.ts'
+import type { ManagedResourceRef } from './resourceProvider.ts'
+
+/**
+ * Forks one fiber per Managed Resource into the runtime scope. Each fiber
+ * derives the resource's requirements from every Model, acquires the
+ * resource when they appear or change and releases it when they change
+ * again or go away, keeps the shared Ref pointing at the live value, and
+ * feeds the acquired, released, and error Messages into the queue.
+ */
+export const forkManagedResourceFibers = effect <Model, Message>({
+  managedResourceRefs,
+  initModel,
+  modelPubSub,
+  runtimeScope,
+  enqueueMessageEffect,
+  crashWith,
+}: Readonly<{
+  managedResourceRefs: ReadonlyArray<ManagedResourceRef<Model, Message>>
+  initModel: Model
+  modelPubSub: PubSub<Model>
+  runtimeScope: Scope
+  enqueueMessageEffect: (message: Message) => void!!
+  crashWith: (
+    cause: Cause<never>,
+    maybeMessage: Option<Message>,
+  ) => void!!
+}>): void!! => {
+  const maybeRequirementsToLifecycle = (
+    config: ManagedResourceConfig<Model, Message>,
+    resourceRef: Ref<Option<unknown>>,
+  ): (maybeRequirements: unknown) => Stream<Message> =>
+  (maybeRequirements: unknown): Stream<Message> => {
+    if (
+      Option.isOption(maybeRequirements) && Option.isNone(maybeRequirements)
+    ) {
+      return Stream.empty
+    }
+
+    const requirements = Option.isOption(maybeRequirements)
+      ? Option.getOrThrow(maybeRequirements)
+      : maybeRequirements
+
+    const acquire = effect {
+      const value = try config.acquire(requirements)
+      try Ref.set(resourceRef, Option.some(value))
+      return value
+    }
+
+    const release = effect (value: unknown): void!! => {
+      try Effect.catchCause(config.release(value), effect () => {})
+      try Ref.set(resourceRef, Option.none())
+      const message = try sync((config) => config.onReleased(), config)
+      try enqueueMessageEffect(message)
+    }
+
+    return Stream.scoped(
+      Stream.fromEffect(Effect.acquireRelease(acquire, release)),
+    )
+      .flatMap(value =>
+        Stream.concat(Stream.make(config.onAcquired(value)), Stream.never)
+      )
+      .catch(error => Stream.make(config.onAcquireError(error)))
+  }
+
+  for concurrent (const { config, ref: resourceRef } of managedResourceRefs) {
+    const modelSubscription = try effect {
+      provide Scope.Scope = runtimeScope {
+        return try PubSub.subscribe(modelPubSub)
+      }
+    }
+    const modelStream = Stream.concat(
+      Stream.make(initModel),
+      Stream.fromSubscription(modelSubscription),
+    )
+    const equivalence = Schema.toEquivalence(config.schema)
+    const runLifecycle = effect (): void!! => {
+      try Effect.catchCause(
+        modelStream
+          .map(config.modelToMaybeRequirements)
+          .changesWith(equivalence)
+          .switchMap(maybeRequirementsToLifecycle(config, resourceRef))
+          .runForEach(effect (message) => {
+            try enqueueMessageEffect(message)
+          }),
+        effect (cause) => {
+          try crashWith(cause, Option.none())
+        },
+      )
+    }
+
+    // A defect in requirements or equivalence reaches the runtime crash view.
+    // Stream.scoped supplies acquisition's Scope; release needs nothing.
+    try forkIn(runtimeScope, () => runLifecycle())
+  }
+}

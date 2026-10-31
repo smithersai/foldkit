@@ -1,0 +1,17 @@
+/** Browser → plugin: the runtime preserves its current Model under a stable id so it can be restored after a full reload. `isReloadFlush` is set by the runtime when flushing on `vite:beforeFullReload` to mark the entry as eligible for restoration; absent or `false` for ordinary debounced preserves. */
+export schema PreserveModelMessage {
+  id: string
+  model: Schema.Unknown
+  isReloadFlush?: boolean
+}
+
+/** Browser → plugin: the runtime requests its previously-preserved Model on startup, scoped by id. */
+export schema RequestModelMessage {
+  id: string
+}
+
+/** Plugin → browser: the plugin returns the preserved Model for a given runtime id. `model` is omitted when nothing is preserved (cold start, manual refresh). */
+export schema RestoreModelMessage {
+  id: string
+  model?: Schema.Unknown
+}

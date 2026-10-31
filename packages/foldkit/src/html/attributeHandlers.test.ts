@@ -1,7 +1,7 @@
 import { Context } from 'effect'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
-import { MountTracker } from '../mount/index.js'
+import { MountTracker } from '../mount/index.vibe'
 import { Dispatch } from '../runtime/index.js'
 import { __htmlBuilder } from './index.js'
 import {

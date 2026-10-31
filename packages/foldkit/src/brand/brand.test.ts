@@ -7,7 +7,7 @@ import {
   clearRuntime,
   setRuntime,
 } from '../html/runtimeSingleton.js'
-import { MountTracker } from '../mount/index.js'
+import { MountTracker } from '../mount/index.vibe'
 import { Dispatch } from '../runtime/index.js'
 import { h } from '../snabbdom/index.js'
 import { brandViewResult } from './brand.js'

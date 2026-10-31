@@ -3,7 +3,7 @@ import { expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import { fromString, when } from './optionExtensions.js'
+import { fromString, when } from './optionExtensions.vibe'
 
 describe('fromString', () => {
   it('returns Some for non-empty string', () => {

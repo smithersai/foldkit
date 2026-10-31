@@ -1,0 +1,10 @@
+import { defineTaggedUnion } from '../schema/index.ts'
+import { Url } from '../url/index.vibe'
+
+/** Union of `Internal` and `External` URL request types. */
+export const UrlRequest = defineTaggedUnion({
+  Internal: { url: Url },
+  External: { href: Schema.String },
+})
+/** Union of `Internal` and `External` URL request types. */
+export type UrlRequest = typeof UrlRequest.Type

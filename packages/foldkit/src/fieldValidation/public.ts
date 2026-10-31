@@ -17,4 +17,4 @@ export {
 
 export type { Rules, MakeRulesOptions } from './index.js'
 
-export * as Rule from './rule.js'
+export * as Rule from './rule.vibe'

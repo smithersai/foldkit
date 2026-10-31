@@ -9,9 +9,9 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@effect/platform-browser": "4.0.0",
+    "@effect/platform-browser": "4.1.0",
     "clsx": "^2.1.1",
-    "effect": "4.0.0",
+    "effect": "4.1.0",
     "foldkit": "workspace:*"
   },
   "devDependencies": {
@@ -22,6 +22,8 @@
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "^8.3.1",
-    "vitest": "^5.0.2"
+    "vitest": "^5.0.2",
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz",
+    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz"
   }
 }

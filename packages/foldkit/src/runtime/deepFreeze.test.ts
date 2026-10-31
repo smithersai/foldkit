@@ -3,7 +3,7 @@ import { expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import { deepFreeze } from './deepFreeze.js'
+import { deepFreeze } from './deepFreeze.vibe'
 
 describe('deepFreeze', () => {
   it('returns primitives unchanged', () => {

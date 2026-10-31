@@ -1,6 +1,6 @@
 import { Effect } from 'effect'
 
-export { UrlRequest } from './urlRequest.js'
+export { UrlRequest } from './urlRequest.vibe'
 
 /** Pushes a new URL to browser history and triggers Foldkit's URL change handling. */
 export const pushUrl = (url: string): Effect.Effect<void> =>

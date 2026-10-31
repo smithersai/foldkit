@@ -24,7 +24,7 @@ import {
   pageMatchingEntries,
   pathOrder,
   readSummarizedValueAt,
-} from './historyQuery.js'
+} from './historyQuery.vibe'
 import {
   DiffValue,
   Event,
@@ -37,19 +37,19 @@ import {
   Response,
   ResponseFrame,
   RuntimeInfo,
-} from './protocol.js'
+} from './protocol.vibe'
 import {
   diagnoseVariantPath,
   indexMessageSchemaDocument,
   narrowToVariant,
   splitVariantPath,
-} from './schemaSummarize.js'
+} from './schemaSummarize.vibe'
 import {
   toInspectableValue,
   toSerializedCommand,
   toSerializedEntry,
   toSerializedMount,
-} from './serialize.js'
+} from './serialize.vibe'
 import {
   type DevToolsStore,
   INIT_INDEX,
@@ -62,7 +62,7 @@ import {
   formatPathNotFound,
   resolvePath,
   summarizeValue,
-} from './summarize.js'
+} from './summarize.vibe'
 
 type Hot = NonNullable<ImportMeta['hot']>
 

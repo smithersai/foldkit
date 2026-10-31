@@ -1,4 +1,5 @@
-import { Array, Crypto, Effect, Schema } from 'effect'
+import { Array, Effect, Schema } from 'effect'
+import { SecureRandom } from 'effect/crypto'
 import { Command, Update } from 'foldkit'
 import { defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
@@ -40,12 +41,12 @@ export const init = (initialEntryId: string): Model => ({
 export const GenerateEntryId = Command.define('GenerateEntryId', {
   messages: [Message.SucceededGenerateEntryId, Message.FailedGenerateEntryId],
   execute: Effect.gen(function* () {
-    const crypto = yield* Crypto.Crypto
-    const entryId = yield* crypto.randomUUIDv4
+    const secureRandom = yield* SecureRandom.SecureRandom
+    const entryId = yield* secureRandom.uuidV4()
     return Message.SucceededGenerateEntryId({ entryId })
   }).pipe(
-    Effect.provide(BrowserCrypto.layer),
-    Effect.catch(() => Effect.succeed(Message.FailedGenerateEntryId())),
+    Effect.provide(BrowserCrypto.layerSecureRandom),
+    Effect.catchDefect(() => Effect.succeed(Message.FailedGenerateEntryId())),
   ),
 })
 

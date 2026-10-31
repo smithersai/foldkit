@@ -3,6 +3,7 @@ import { existsSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
 import { basename, extname, join, relative, resolve } from 'node:path'
 import { codeToHtml } from 'shiki'
+import vibelang from 'vibelang-vite'
 import { type Plugin, defineConfig } from 'vite'
 
 import { markdown } from '@foldkit/markdown/vite'
@@ -902,6 +903,7 @@ const playgroundShellFallbackPlugin = (): Plugin => ({
 
 export default defineConfig({
   plugins: [
+    vibelang(),
     tailwindcss(),
     foldkit({
       devToolsMcpPort: 9988,

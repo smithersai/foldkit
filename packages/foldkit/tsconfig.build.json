@@ -1,11 +1,15 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
+    "rewriteRelativeImportExtensions": true,
     "noEmit": false,
     "composite": true,
     "declaration": true,
     "declarationMap": true,
     "outDir": "dist"
   },
-  "exclude": ["src/**/*.test.ts"]
+  "exclude": ["src/**/*.test.ts"],
+  "vibelang": {
+    "declarationSidecars": true
+  }
 }

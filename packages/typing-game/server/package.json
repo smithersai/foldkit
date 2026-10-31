@@ -6,16 +6,17 @@
   "scripts": {
     "dev": "node --watch src/index.ts",
     "start": "node dist/index.js",
-    "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "build": "vibelang",
+    "typecheck": "vibelang --noEmit"
   },
   "dependencies": {
-    "@effect/platform-node": "4.0.0",
+    "@effect/platform-node": "4.1.0",
     "@typing-game/shared": "workspace:*",
-    "effect": "4.0.0"
+    "effect": "4.1.0"
   },
   "devDependencies": {
     "@types/node": "26.4.0",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vibelang": "file:../../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz"
   }
 }

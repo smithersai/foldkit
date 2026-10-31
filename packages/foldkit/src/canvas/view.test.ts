@@ -8,7 +8,7 @@ import {
   __clearRuntime as clearHtmlRuntime,
   __setRuntime as setHtmlRuntime,
 } from '../html/index.js'
-import { MountTracker } from '../mount/index.js'
+import { MountTracker } from '../mount/index.vibe'
 import { propsModule } from '../propsModule.js'
 import { Dispatch } from '../runtime/index.js'
 import {
@@ -20,8 +20,8 @@ import {
   styleModule,
   toVNode,
 } from '../snabbdom/index.js'
-import type { VNode } from '../vdom.js'
-import { Circle, Rect } from './shape.js'
+import type { VNode } from '../vdom.vibe'
+import { Circle, Rect } from './shape.vibe'
 import { view } from './view.js'
 
 const patch = init([

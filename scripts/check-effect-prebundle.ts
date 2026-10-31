@@ -1,139 +1,97 @@
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import * as ts from 'typescript'
 
 import { readForcedEffectEntries } from '../packages/vite-plugin-foldkit/test/forcedEffectEntries.ts'
 
-const FOLDKIT_SRC = 'packages/foldkit/src'
+const FOLDKIT_DIST = 'packages/foldkit/dist'
 const PLUGIN_FILE = 'packages/vite-plugin-foldkit/src/index.ts'
 const LIST_NAME = 'FORCE_INCLUDED_EFFECT_ENTRIES'
 
-const collectTsFiles = (dir: string): ReadonlyArray<string> => {
+// Check emitted runtime imports: VibeLang's implicit namespaces and direct
+// Effect subpaths are absent from a TypeScript-only source scan.
+const collectRuntimeFiles = (dir: string): ReadonlyArray<string> => {
   const out: Array<string> = []
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry)
     if (statSync(full).isDirectory()) {
-      out.push(...collectTsFiles(full))
-    } else if (entry.endsWith('.ts') && !entry.endsWith('.d.ts')) {
+      out.push(...collectRuntimeFiles(full))
+    } else if (entry.endsWith('.js')) {
       out.push(full)
     }
   }
   return out
 }
 
-const isCapitalized = (name: string): boolean => {
-  const first = name.charAt(0)
-  return first !== '' && first === first.toUpperCase()
-}
-
-const extractEffectNamespacesFromSource = (
-  source: string,
-): ReadonlySet<string> => {
+const extractEffectEntries = (file: string): ReadonlySet<string> => {
   const sourceFile = ts.createSourceFile(
-    'temp.ts',
-    source,
+    file,
+    readFileSync(file, 'utf8'),
     ts.ScriptTarget.Latest,
     true,
+    ts.ScriptKind.JS,
   )
-  const namespaces = new Set<string>()
-
+  const entries = new Set<string>()
   ts.forEachChild(sourceFile, node => {
-    if (!ts.isImportDeclaration(node)) return
-    if (node.importClause?.isTypeOnly) return
-
-    const moduleSpec = node.moduleSpecifier
-    if (!ts.isStringLiteral(moduleSpec)) return
-    if (moduleSpec.text !== 'effect') return
-
-    const namedBindings = node.importClause?.namedBindings
-    if (!namedBindings || !ts.isNamedImports(namedBindings)) return
-
-    for (const element of namedBindings.elements) {
-      if (element.isTypeOnly) continue
-      const name = (element.propertyName ?? element.name).text
-      if (isCapitalized(name)) {
-        namespaces.add(name)
+    if (
+      !ts.isImportDeclaration(node) ||
+      !ts.isStringLiteral(node.moduleSpecifier)
+    )
+      return
+    const specifier = node.moduleSpecifier.text
+    if (specifier.startsWith('effect/')) {
+      entries.add(specifier)
+      return
+    }
+    if (specifier !== 'effect') return
+    entries.add('effect')
+    const bindings = node.importClause?.namedBindings
+    if (bindings && ts.isNamedImports(bindings)) {
+      for (const binding of bindings.elements) {
+        const name = (binding.propertyName ?? binding.name).text
+        if (/^[A-Z]/.test(name)) entries.add(`effect/${name}`)
       }
     }
   })
-
-  return namespaces
+  return entries
 }
 
-type PluginEffectIncludes = Readonly<{
-  isBareEffectIncluded: boolean
-  namespaces: ReadonlySet<string>
-}>
-
-const toPluginEffectIncludes = (
-  entries: ReadonlyArray<string>,
-): PluginEffectIncludes => {
-  const namespaces = new Set<string>()
-  let isBareEffectIncluded = false
-
-  for (const entry of entries) {
-    if (entry === 'effect') {
-      isBareEffectIncluded = true
-    } else if (entry.startsWith('effect/')) {
-      namespaces.add(entry.slice('effect/'.length))
-    }
-  }
-
-  return { isBareEffectIncluded, namespaces }
-}
-
-const foldkitNamespaces = (() => {
-  const all = new Set<string>()
-  for (const file of collectTsFiles(FOLDKIT_SRC)) {
-    const source = readFileSync(file, 'utf-8')
-    for (const name of extractEffectNamespacesFromSource(source)) {
-      all.add(name)
-    }
-  }
-  return all
-})()
-
-const pluginIncludes = toPluginEffectIncludes(readForcedEffectEntries())
-
-if (!pluginIncludes.isBareEffectIncluded) {
-  console.error(`ERROR: ${LIST_NAME} in ${PLUGIN_FILE} must include 'effect'.`)
-  console.error('')
+if (!existsSync(FOLDKIT_DIST)) {
   console.error(
-    `Foldkit's distribution imports the bare barrel, so omitting it can load`,
-  )
-  console.error(
-    `raw Effect beside optimized subpaths and create two Effect instances.`,
+    'Build Foldkit first with pnpm build:packages; the prebundle guard checks emitted JavaScript, including VibeLang imports.',
   )
   process.exit(1)
 }
 
-const missing = [...foldkitNamespaces]
-  .filter(name => !pluginIncludes.namespaces.has(name))
-  .sort()
+const files = collectRuntimeFiles(FOLDKIT_DIST)
+if (files.length === 0) {
+  console.error(
+    'No Foldkit runtime JavaScript found. Run pnpm build:packages before checking Effect prebundling.',
+  )
+  process.exit(1)
+}
 
+const required = new Set<string>()
+for (const file of files) {
+  for (const entry of extractEffectEntries(file)) required.add(entry)
+}
+const included = new Set(readForcedEffectEntries())
+if (!included.has('effect')) {
+  console.error(`ERROR: ${LIST_NAME} in ${PLUGIN_FILE} must include 'effect'.`)
+  process.exit(1)
+}
+
+const missing = [...required].filter(entry => !included.has(entry)).sort()
 if (missing.length > 0) {
   console.error(
-    `ERROR: foldkit imports the following from \`effect\` but they are missing`,
+    `ERROR: built Foldkit imports are missing from ${LIST_NAME} in ${PLUGIN_FILE}:`,
   )
-  console.error(`from ${LIST_NAME} in ${PLUGIN_FILE}:`)
-  console.error('')
-  for (const name of missing) {
-    console.error(`  'effect/${name}',`)
-  }
-  console.error('')
+  for (const entry of missing) console.error(`  '${entry}',`)
   console.error(
-    `Add them to the list. Vite's dep optimizer scans the consumer's source`,
+    'Include every runtime Effect entry so Vite prebundles it before serving the client.',
   )
-  console.error(
-    `for \`effect\` imports; namespaces foldkit's compiled dist references that`,
-  )
-  console.error(
-    `the consumer never mentions by name are missing from the prebundled blob`,
-  )
-  console.error(`and crash at runtime in dev.`)
   process.exit(1)
 }
-
 console.log(
-  `OK: bare effect and ${foldkitNamespaces.size} namespaces verified in plugin list.`,
+  `OK: ${required.size} Effect entries verified across ${files.length} built runtime files, including VibeLang output.`,
 )

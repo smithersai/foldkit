@@ -3,7 +3,7 @@ import { afterEach, beforeEach, expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import { MountTracker } from '../mount/index.js'
+import { MountTracker } from '../mount/index.vibe'
 import { Dispatch } from '../runtime/index.js'
 import { type HtmlBuilder, __htmlBuilder } from './index.js'
 import {

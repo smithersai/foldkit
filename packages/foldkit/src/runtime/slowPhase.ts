@@ -1,6 +1,6 @@
 import { Array, Match, Option, Predicate, Record, Schema, pipe } from 'effect'
 
-import type { Visibility } from './visibility.js'
+import type { Visibility } from './visibility.vibe'
 
 /** Context provided when view construction exceeds its configured time budget. */
 export type SlowViewContext<Model, Message> = Readonly<{

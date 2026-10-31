@@ -1,1 +1,1 @@
-export * from './asyncData.js'
+export * from './asyncData.vibe'

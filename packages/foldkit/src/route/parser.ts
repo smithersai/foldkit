@@ -11,7 +11,7 @@ import {
   pipe,
 } from 'effect'
 
-import { Url } from '../url/index.js'
+import { Url } from '../url/index.vibe'
 
 /**
  * Error type for route parsing failures.

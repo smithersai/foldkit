@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "pretypecheck": "node ../../internal/api-reference-generator/generate.mjs",
     "typecheck": "tsc --noEmit",
-    "format": "oxfmt",
+    "format": "(oxfmt) && vibelang-format --write",
     "test": "vitest run",
     "openapi": "vite build --config vite.scripts.config.ts --ssr scripts/openApi.ts --outDir dist-scripts && node dist-scripts/openApi.js",
     "test:e2e": "playwright test",
@@ -23,7 +23,7 @@
     "preview:search": "pnpm build && pnpm prerender && vite preview"
   },
   "dependencies": {
-    "@effect/platform-browser": "4.0.0",
+    "@effect/platform-browser": "4.1.0",
     "@foldkit/devtools": "workspace:*",
     "@foldkit/markdown": "workspace:*",
     "@foldkit/ui": "workspace:*",
@@ -31,7 +31,7 @@
     "@vercel/speed-insights": "^2.0.0",
     "@webcontainer/api": "^1.6.4",
     "clsx": "^2.1.1",
-    "effect": "4.0.0",
+    "effect": "4.1.0",
     "foldkit": "workspace:*",
     "monaco-editor": "^0.56.0",
     "shiki": "^4.4.3",
@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
-    "@effect/platform-node": "4.0.0",
+    "@effect/platform-node": "4.1.0",
     "@foldkit/api-reference-generator": "workspace:*",
     "@foldkit/vite-plugin": "workspace:*",
     "@playwright/test": "^1.63.0",
@@ -54,6 +54,8 @@
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "^8.3.1",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.11",
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz",
+    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz"
   }
 }

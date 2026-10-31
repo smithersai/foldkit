@@ -1,10 +1,10 @@
 import { Effect, Match, Option, Schema } from 'effect'
 
-import * as Command from '../../command/index.js'
+import * as Command from '../../command/index.vibe'
 import * as File from '../../file/index.js'
 import type { Html, HtmlBuilder } from '../../html/index.js'
 import { defineMessageUnion } from '../../message/index.js'
-import { modifyFields } from '../../struct/index.js'
+import { modifyFields } from '../../struct/index.vibe'
 import type * as Update from '../../update/index.js'
 
 // MODEL

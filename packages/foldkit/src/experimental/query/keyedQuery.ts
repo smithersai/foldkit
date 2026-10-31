@@ -13,9 +13,9 @@ import {
 } from 'effect'
 
 import * as AsyncData from '../../asyncData/index.js'
-import * as Command from '../../command/index.js'
+import * as Command from '../../command/index.vibe'
 import { defineMessageUnion } from '../../message/index.js'
-import { modifyFields } from '../../struct/index.js'
+import { modifyFields } from '../../struct/index.vibe'
 import * as Update from '../../update/index.js'
 import {
   type AsyncDataTransition,
@@ -31,7 +31,7 @@ import {
   liftChildFold,
   parentFieldToLens,
   runExecute,
-} from './internal.js'
+} from './internal.vibe'
 
 export type SyncFields = {
   readonly [x: PropertyKey]: Schema.Codec<unknown, unknown, never, never>

@@ -1,7 +1,7 @@
 import { Array, type Effect, Function, Option, pipe } from 'effect'
 
 import { type AsyncData } from '../asyncData/index.js'
-import { type Command, mapMessage, mapMessages } from '../command/index.js'
+import { type Command, mapMessage, mapMessages } from '../command/index.vibe'
 
 /** The Commands collection an update return may include. The collection keeps
  *  the order in which the update returned them, but the runtime forks the
