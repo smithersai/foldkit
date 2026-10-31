@@ -205,6 +205,8 @@ const FORCE_INCLUDED_EFFECT_ENTRIES: ReadonlyArray<string> = [
   'effect/Struct',
   'effect/SubscriptionRef',
   'effect/Types',
+  'effect/http/FetchHttpClient',
+  'effect/http/HttpClient',
 ]
 
 // NOTE: Adding includes to an environment whose optimizer is otherwise disabled

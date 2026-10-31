@@ -40,6 +40,8 @@ git subtree pull --prefix=repos/effect https://github.com/Effect-TS/effect.git "
 
 ## Before You Push
 
+The Effect prebundle guard checks emitted JavaScript, including imports VibeLang adds for implicit Effect namespaces. The hook builds the workspace before running `pnpm check:effect-prebundle`; when running that check alone after runtime edits, run `pnpm build:packages` first.
+
 The pre-push hook runs `pnpm pre-push`, which is the same suite CI runs. You can run it yourself at any point:
 
 ```sh
