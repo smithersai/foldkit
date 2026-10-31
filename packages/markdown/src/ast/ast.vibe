@@ -1,4 +1,4 @@
-import { Function, Option, Predicate, Schema } from 'effect'
+import { Option, Predicate, Schema } from 'effect'
 import type { Array, SchemaAST } from 'effect'
 import { taggedStruct } from 'foldkit/schema'
 
@@ -67,17 +67,17 @@ export type InlineEncoded =
   | Readonly<{ _tag: 'Strong'; content: ReadonlyArray<InlineEncoded> }>
   | Readonly<{ _tag: 'Strikethrough'; content: ReadonlyArray<InlineEncoded> }>
   | Readonly<{
-      _tag: 'Link'
-      url: string
-      maybeTitle: string | null | undefined
-      content: ReadonlyArray<InlineEncoded>
-    }>
+    _tag: 'Link'
+    url: string
+    maybeTitle: string | null | undefined
+    content: ReadonlyArray<InlineEncoded>
+  }>
   | Readonly<{
-      _tag: 'Image'
-      url: string
-      alt: string
-      maybeTitle: string | null | undefined
-    }>
+    _tag: 'Image'
+    url: string
+    alt: string
+    maybeTitle: string | null | undefined
+  }>
 
 /** Schema for {@link Text}. */
 export const Text = taggedStruct('Text', { value: Schema.String })
@@ -95,17 +95,18 @@ export const HardBreak = taggedStruct('HardBreak')
 // the union alias and fails with TS2456, so the unions and their members stay
 // hand-written.
 /** Schema for {@link Inline}. */
-export const Inline: Schema.Codec<Inline, InlineEncoded> = Schema.suspend(() =>
-  Schema.Union([
-    Text,
-    InlineCode,
-    HardBreak,
-    Emphasis,
-    Strong,
-    Strikethrough,
-    Link,
-    Image,
-  ]),
+export const Inline: Schema.Codec<Inline, InlineEncoded> = Schema.suspend(
+  (): infer _ =>
+    Schema.Union([
+      Text,
+      InlineCode,
+      HardBreak,
+      Emphasis,
+      Strong,
+      Strikethrough,
+      Link,
+      Image,
+    ]),
 )
 
 /** Schema for {@link Emphasis}. */
@@ -257,37 +258,37 @@ export type TableRowEncoded = Readonly<{
 /** The wire form of {@link Block}, as emitted into compiled markdown modules. */
 export type BlockEncoded =
   | Readonly<{
-      _tag: 'Heading'
-      level: HeadingLevel
-      content: ReadonlyArray<InlineEncoded>
-    }>
+    _tag: 'Heading'
+    level: HeadingLevel
+    content: ReadonlyArray<InlineEncoded>
+  }>
   | Readonly<{ _tag: 'Paragraph'; content: ReadonlyArray<InlineEncoded> }>
   | Readonly<{
-      _tag: 'CodeBlock'
-      maybeLanguage: string | null | undefined
-      maybeMeta: string | null | undefined
-      value: string
-    }>
+    _tag: 'CodeBlock'
+    maybeLanguage: string | null | undefined
+    maybeMeta: string | null | undefined
+    value: string
+  }>
   | Readonly<{
-      _tag: 'List'
-      isOrdered: boolean
-      maybeStartNumber: number | null | undefined
-      items: Array.NonEmptyReadonlyArray<ListItemEncoded>
-    }>
+    _tag: 'List'
+    isOrdered: boolean
+    maybeStartNumber: number | null | undefined
+    items: Array.NonEmptyReadonlyArray<ListItemEncoded>
+  }>
   | Readonly<{ _tag: 'Blockquote'; blocks: ReadonlyArray<BlockEncoded> }>
   | Readonly<{ _tag: 'ThematicBreak' }>
   | Readonly<{
-      _tag: 'Table'
-      alignments: ReadonlyArray<Alignment>
-      headerRow: TableRowEncoded
-      bodyRows: ReadonlyArray<TableRowEncoded>
-    }>
+    _tag: 'Table'
+    alignments: ReadonlyArray<Alignment>
+    headerRow: TableRowEncoded
+    bodyRows: ReadonlyArray<TableRowEncoded>
+  }>
   | Readonly<{
-      _tag: 'Island'
-      name: string
-      attributes: Readonly<Record<string, string>>
-      blocks: ReadonlyArray<BlockEncoded>
-    }>
+    _tag: 'Island'
+    name: string
+    attributes: Readonly<Record<string, string>>
+    blocks: ReadonlyArray<BlockEncoded>
+  }>
 
 // NOTE: Manual type definitions and the explicit annotation are required
 // because TypeScript cannot infer types for self-recursive schemas built
@@ -296,17 +297,18 @@ export type BlockEncoded =
 // the union alias and fails with TS2456, so the unions and their members stay
 // hand-written.
 /** Schema for {@link Block}. */
-export const Block: Schema.Codec<Block, BlockEncoded> = Schema.suspend(() =>
-  Schema.Union([
-    Heading,
-    Paragraph,
-    CodeBlock,
-    List,
-    Blockquote,
-    ThematicBreak,
-    Table,
-    Island,
-  ]),
+export const Block: Schema.Codec<Block, BlockEncoded> = Schema.suspend(
+  (): infer _ =>
+    Schema.Union([
+      Heading,
+      Paragraph,
+      CodeBlock,
+      List,
+      Blockquote,
+      ThematicBreak,
+      Table,
+      Island,
+    ]),
 )
 
 /** Schema for {@link Heading}. */
@@ -380,8 +382,7 @@ export const Island = taggedStruct('Island', {
 // DOCUMENT
 
 /** A compiled markdown document: the block sequence of one source file. */
-export const MarkdownDocument = Schema.Struct({ blocks: Schema.Array(Block) })
-export type MarkdownDocument = typeof MarkdownDocument.Type
+export schema MarkdownDocument { blocks: ReadonlyArray<Block> }
 
 /** The wire form of {@link MarkdownDocument}. */
 export type MarkdownDocumentEncoded = typeof MarkdownDocument.Encoded
@@ -410,14 +411,14 @@ export const decodeDocument = (
   overrideOptions?: SchemaAST.ParseOptions,
 ): MarkdownDocument => {
   if (overrideOptions === undefined && Predicate.isObject(wire)) {
-    return Option.match(Option.fromNullishOr(documentByWire.get(wire)), {
-      onNone: () => {
+    return match (Option.fromNullishOr(documentByWire.get(wire))) {
+      when Option.None: do {
         const document = decodeDocumentUncached(wire)
         documentByWire.set(wire, document)
-        return document
-      },
-      onSome: Function.identity,
-    })
+        document
+      };
+      when Option.Some(let document): document;
+    }
   } else {
     return decodeDocumentUncached(wire, overrideOptions)
   }

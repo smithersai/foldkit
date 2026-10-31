@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { decodeDocument } from './ast.js'
+import { decodeDocument } from './ast.vibe'
 
 const wireDocument = (): unknown => ({
   blocks: [

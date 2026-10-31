@@ -6,8 +6,9 @@ import { Schema } from 'effect'
  * decode past strings, for example `Schema.NumberFromString` for numeric
  * attributes.
  */
-export type IslandDefinition = Schema.Struct<Schema.Struct.Fields> &
-  Readonly<{ DecodingServices: never; EncodingServices: never }>
+export type IslandDefinition =
+  & Schema.Struct<Schema.Struct.Fields>
+  & Readonly<{ DecodingServices: never; EncodingServices: never }>
 
 /**
  * Attribute schemas by island directive name. One definition record serves
