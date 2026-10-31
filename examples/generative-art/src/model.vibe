@@ -1,9 +1,6 @@
-import { Schema } from 'effect'
-
 import { Slider } from '@foldkit/ui'
 
-export const Point = Schema.Struct({ x: Schema.Number, y: Schema.Number })
-export type Point = typeof Point.Type
+export schema Point { x: number; y: number }
 
 export const Particle = Schema.Struct({
   id: Schema.Number,

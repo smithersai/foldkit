@@ -1,4 +1,3 @@
-import { Effect, Option, Random, Schema } from 'effect'
 import { Command } from 'foldkit'
 
 import {
@@ -13,32 +12,32 @@ import {
   PARTICLE_SPEED_MAX,
   PARTICLE_SPEED_MIN,
   SETTLE_BAND_PX,
-} from './constant'
-import { Message } from './message'
+} from './constant.ts'
+import { Message } from './message.ts'
 
 export const GenerateAmbientParticle = Command.define(
   'GenerateAmbientParticle',
   {
     messages: [Message.CompletedGenerateAmbientParticle],
-    execute: Effect.gen(function* () {
-      const x = yield* Random.nextBetween(
+    execute: effect {
+      const x = try Random.nextBetween(
         SETTLE_BAND_PX,
         CANVAS_WIDTH - SETTLE_BAND_PX,
       )
-      const y = yield* Random.nextBetween(
+      const y = try Random.nextBetween(
         SETTLE_BAND_PX,
         CANVAS_HEIGHT - SETTLE_BAND_PX,
       )
-      const baseHue = yield* Random.nextBetween(HUE_MIN, HUE_MAX)
-      const hueDriftPerSecond = yield* Random.nextBetween(
+      const baseHue = try Random.nextBetween(HUE_MIN, HUE_MAX)
+      const hueDriftPerSecond = try Random.nextBetween(
         HUE_DRIFT_MIN,
         HUE_DRIFT_MAX,
       )
-      const lifespanMs = yield* Random.nextBetween(
+      const lifespanMs = try Random.nextBetween(
         PARTICLE_LIFESPAN_MIN_MS,
         PARTICLE_LIFESPAN_MAX_MS,
       )
-      const speed = yield* Random.nextBetween(
+      const speed = try Random.nextBetween(
         PARTICLE_SPEED_MIN,
         PARTICLE_SPEED_MAX,
       )
@@ -52,7 +51,7 @@ export const GenerateAmbientParticle = Command.define(
         initialAngle: Option.none(),
         initialSpeedScale: 1,
       })
-    }),
+    },
   },
 )
 
@@ -70,33 +69,35 @@ export const GenerateBurstParticle = Command.define('GenerateBurstParticle', {
     hueAnchor: Schema.Number,
   },
   messages: [Message.CompletedGenerateBurstParticle],
-  execute: ({ x, y, angle, hueAnchor }) =>
-    Effect.gen(function* () {
-      const jitterX = yield* Random.nextBetween(
+  execute: (
+    { x, y, angle, hueAnchor },
+  ): ReturnType<typeof Message.CompletedGenerateBurstParticle>!! =>
+    effect {
+      const jitterX = try Random.nextBetween(
         -BURST_POSITION_JITTER_PX,
         BURST_POSITION_JITTER_PX,
       )
-      const jitterY = yield* Random.nextBetween(
+      const jitterY = try Random.nextBetween(
         -BURST_POSITION_JITTER_PX,
         BURST_POSITION_JITTER_PX,
       )
-      const hueOffset = yield* Random.nextBetween(
+      const hueOffset = try Random.nextBetween(
         -BURST_HUE_JITTER_DEGREES,
         BURST_HUE_JITTER_DEGREES,
       )
-      const hueDriftPerSecond = yield* Random.nextBetween(
+      const hueDriftPerSecond = try Random.nextBetween(
         HUE_DRIFT_MIN,
         HUE_DRIFT_MAX,
       )
-      const lifespanMs = yield* Random.nextBetween(
+      const lifespanMs = try Random.nextBetween(
         PARTICLE_LIFESPAN_MIN_MS * BURST_LIFESPAN_FACTOR,
         PARTICLE_LIFESPAN_MAX_MS * BURST_LIFESPAN_FACTOR,
       )
-      const speed = yield* Random.nextBetween(
+      const speed = try Random.nextBetween(
         PARTICLE_SPEED_MIN,
         PARTICLE_SPEED_MAX,
       )
-      const initialSpeedScale = yield* Random.nextBetween(
+      const initialSpeedScale = try Random.nextBetween(
         BURST_INITIAL_SPEED_SCALE_MIN,
         BURST_INITIAL_SPEED_SCALE_MAX,
       )
@@ -110,5 +111,5 @@ export const GenerateBurstParticle = Command.define('GenerateBurstParticle', {
         initialAngle: Option.some(angle),
         initialSpeedScale,
       })
-    }),
+    },
 })

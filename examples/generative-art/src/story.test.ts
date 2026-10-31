@@ -5,7 +5,7 @@ import { describe, expect, test } from 'vitest'
 
 import { Slider } from '@foldkit/ui'
 
-import { GenerateAmbientParticle } from './command'
+import { GenerateAmbientParticle } from './command.vibe'
 import {
   DELTA_SECONDS_CAP,
   FLOW_STRENGTH_MAX,
@@ -19,7 +19,7 @@ import {
   SPAWN_PER_FRAME_MAX,
 } from './constant'
 import { Message } from './message'
-import { type Model, type Particle } from './model'
+import { type Model, type Particle } from './model.vibe'
 import { update } from './update'
 
 const initialModel: Model = {

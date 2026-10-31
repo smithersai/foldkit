@@ -1,4 +1,4 @@
-import { Array, Option, pipe } from 'effect'
+import { Array as Arr, pipe } from 'effect'
 import { Canvas } from 'foldkit'
 import { Document, Html, HtmlBuilder } from 'foldkit/html'
 
@@ -24,9 +24,9 @@ import {
   SATURATION_PERCENT,
   TWO_PI,
   VIGNETTE_ALPHA,
-} from './constant'
-import { Message } from './message'
-import type { Model, Particle, Point } from './model'
+} from './constant.ts'
+import { Message } from './message.ts'
+import type { Model, Particle, Point } from './model.vibe'
 
 const fadeAlpha = (particle: Particle): number => {
   const remainingMs = particle.lifespanMs - particle.ageMs
@@ -36,8 +36,8 @@ const fadeAlpha = (particle: Particle): number => {
 }
 
 const currentHue = (particle: Particle, elapsedSeconds: number): number => {
-  const drift =
-    particle.hueDriftPerSecond * (elapsedSeconds - particle.bornAtSeconds)
+  const drift = particle.hueDriftPerSecond
+    * (elapsedSeconds - particle.bornAtSeconds)
   const raw = particle.baseHue + drift
   return ((raw % HUE_MAX) + HUE_MAX) % HUE_MAX
 }
@@ -45,12 +45,13 @@ const currentHue = (particle: Particle, elapsedSeconds: number): number => {
 const trailToInstructions = (
   trail: ReadonlyArray<Point>,
 ): ReadonlyArray<Canvas.PathInstruction> =>
-  Array.matchLeft(trail, {
+  Arr.matchLeft(trail, {
     onEmpty: () => [],
     onNonEmpty: (head, tail) => [
       Canvas.MoveTo({ x: head.x, y: head.y }),
-      ...Array.map(tail, segment =>
-        Canvas.LineTo({ x: segment.x, y: segment.y }),
+      ...Arr.map(
+        tail,
+        segment => Canvas.LineTo({ x: segment.x, y: segment.y }),
       ),
     ],
   })
@@ -70,12 +71,14 @@ const particleShapes = (
   }
   const instructions = trailToInstructions(particle.trail)
   const hue = currentHue(particle, elapsedSeconds)
-  const glowColor = `hsla(${hue}, ${SATURATION_PERCENT}%, ${GLOW_LIGHTNESS_PERCENT}%, ${
-    GLOW_ALPHA_BASE * fade
-  })`
-  const coreColor = `hsla(${hue}, ${SATURATION_PERCENT}%, ${CORE_LIGHTNESS_PERCENT}%, ${
-    CORE_ALPHA_BASE * fade
-  })`
+  const glowColor =
+    `hsla(${hue}, ${SATURATION_PERCENT}%, ${GLOW_LIGHTNESS_PERCENT}%, ${
+      GLOW_ALPHA_BASE * fade
+    })`
+  const coreColor =
+    `hsla(${hue}, ${SATURATION_PERCENT}%, ${CORE_LIGHTNESS_PERCENT}%, ${
+      CORE_ALPHA_BASE * fade
+    })`
   return [
     Canvas.Path({
       instructions,
@@ -113,49 +116,47 @@ const nebulaGlowAt = (index: number, elapsedSeconds: number): Canvas.Shape => {
   const fallbackHalf = 0.5
   const driftSpeed = pipe(
     NEBULA_DRIFT_SPEEDS,
-    Array.get(index),
+    Arr.get(index),
     Option.getOrElse(() => fallbackZero),
   )
   const offsetX = pipe(
     NEBULA_OFFSETS_X,
-    Array.get(index),
+    Arr.get(index),
     Option.getOrElse(() => fallbackHalf),
   )
   const offsetY = pipe(
     NEBULA_OFFSETS_Y,
-    Array.get(index),
+    Arr.get(index),
     Option.getOrElse(() => fallbackHalf),
   )
   const amplitudeX = pipe(
     NEBULA_DRIFT_AMPLITUDES_X,
-    Array.get(index),
+    Arr.get(index),
     Option.getOrElse(() => fallbackZero),
   )
   const amplitudeY = pipe(
     NEBULA_DRIFT_AMPLITUDES_Y,
-    Array.get(index),
+    Arr.get(index),
     Option.getOrElse(() => fallbackZero),
   )
   const color = pipe(
     NEBULA_COLORS,
-    Array.get(index),
+    Arr.get(index),
     Option.getOrElse(() => NEBULA_FALLBACK_COLOR),
   )
   const phase = (index / NEBULA_GLOW_COUNT) * TWO_PI
   return Canvas.Circle({
-    x:
-      CANVAS_WIDTH * offsetX +
-      Math.sin(elapsedSeconds * driftSpeed + phase) * amplitudeX,
-    y:
-      CANVAS_HEIGHT * offsetY +
-      Math.cos(elapsedSeconds * driftSpeed + phase) * amplitudeY,
+    x: CANVAS_WIDTH * offsetX
+      + Math.sin(elapsedSeconds * driftSpeed + phase) * amplitudeX,
+    y: CANVAS_HEIGHT * offsetY
+      + Math.cos(elapsedSeconds * driftSpeed + phase) * amplitudeY,
     radius: NEBULA_GLOW_RADIUS,
     fill: color,
   })
 }
 
 const nebulaShapes = (elapsedSeconds: number): ReadonlyArray<Canvas.Shape> =>
-  Array.makeBy(NEBULA_GLOW_COUNT, index => nebulaGlowAt(index, elapsedSeconds))
+  Arr.makeBy(NEBULA_GLOW_COUNT, index => nebulaGlowAt(index, elapsedSeconds))
 
 const backgroundShape = Canvas.Rect({
   x: 0,
@@ -170,8 +171,8 @@ const VIGNETTE_STRIP_WIDTH = 80
 const VIGNETTE_STEPS = 4
 const VIGNETTE_ALPHA_PER_STEP = VIGNETTE_ALPHA / VIGNETTE_STEPS
 
-const vignetteStrips: ReadonlyArray<Canvas.Shape> = Array.flatMap(
-  Array.makeBy(VIGNETTE_STEPS, step => step),
+const vignetteStrips: ReadonlyArray<Canvas.Shape> = Arr.flatMap(
+  Arr.makeBy(VIGNETTE_STEPS, step => step),
   step => {
     const stripWidth = VIGNETTE_STRIP_WIDTH * (1 - step / VIGNETTE_STEPS)
     if (stripWidth <= VIGNETTE_INSET) {
@@ -214,8 +215,8 @@ const vignetteStrips: ReadonlyArray<Canvas.Shape> = Array.flatMap(
 const particleHeadShape = (
   particle: Particle,
   elapsedSeconds: number,
-): Option.Option<Canvas.Shape> =>
-  Option.map(Array.last(particle.trail), head => {
+): Option<Canvas.Shape> =>
+  Option.map(Arr.last(particle.trail), head => {
     const hue = currentHue(particle, elapsedSeconds)
     const fade = fadeAlpha(particle)
     return Canvas.Circle({
@@ -229,37 +230,41 @@ const particleHeadShape = (
   })
 
 const mouseIndicator = (
-  maybeMousePosition: Option.Option<Point>,
-): ReadonlyArray<Canvas.Shape> =>
-  Option.match(maybeMousePosition, {
-    onNone: () => [],
-    onSome: position => [
-      Canvas.Circle({
-        x: position.x,
-        y: position.y,
-        radius: MOUSE_INFLUENCE_RADIUS,
-        fill: 'rgba(255, 255, 255, 0.04)',
-      }),
-    ],
-  })
+  maybeMousePosition: Option<Point>,
+): ReadonlyArray<
+  Canvas.Shape
+> => match (maybeMousePosition) {
+  when Option.None: [];
+  when Option.Some(let position): [
+    Canvas.Circle({
+      x: position.x,
+      y: position.y,
+      radius: MOUSE_INFLUENCE_RADIUS,
+      fill: 'rgba(255, 255, 255, 0.04)',
+    }),
+  ];
+}
 
 const sceneShapes = (model: Model): ReadonlyArray<Canvas.Shape> => [
   backgroundShape,
   ...nebulaShapes(model.elapsedSeconds),
-  ...Array.flatMap(model.particles, particle =>
-    particleShapes(particle, model.elapsedSeconds),
+  ...Arr.flatMap(
+    model.particles,
+    particle => particleShapes(particle, model.elapsedSeconds),
   ),
-  ...Array.flatMap(model.particles, particle =>
-    Option.toArray(particleHeadShape(particle, model.elapsedSeconds)),
+  ...Arr.flatMap(
+    model.particles,
+    particle =>
+      Option.toArray(particleHeadShape(particle, model.elapsedSeconds)),
   ),
   ...vignetteStrips,
   ...mouseIndicator(model.maybeMousePosition),
 ]
 
 const buttonClass =
-  'min-w-20 px-4 py-2 text-sm font-medium tracking-wide uppercase rounded-md ' +
-  'border border-white/15 bg-white/5 hover:bg-white/10 hover:border-white/25 ' +
-  'text-white/85 transition-colors duration-200'
+  'min-w-20 px-4 py-2 text-sm font-medium tracking-wide uppercase rounded-md '
+  + 'border border-white/15 bg-white/5 hover:bg-white/10 hover:border-white/25 '
+  + 'text-white/85 transition-colors duration-200'
 
 const sliderRowClass = 'flex flex-col gap-2 min-w-44'
 
@@ -352,8 +357,8 @@ const controlsView = (model: Model, h: HtmlBuilder<Message>): Html =>
   h.div(
     [
       h.Class(
-        'flex flex-wrap items-end gap-6 mt-6 px-6 py-4 rounded-xl ' +
-          'bg-black/40 border border-white/10 backdrop-blur',
+        'flex flex-wrap items-end gap-6 mt-6 px-6 py-4 rounded-xl '
+          + 'bg-black/40 border border-white/10 backdrop-blur',
       ),
     ],
     [
@@ -406,9 +411,9 @@ const headerView = (h: HtmlBuilder<Message>): Html =>
       h.h1(
         [
           h.Class(
-            'text-3xl font-light tracking-[0.3em] uppercase ' +
-              'bg-gradient-to-r from-fuchsia-300 via-cyan-200 to-amber-200 ' +
-              'bg-clip-text text-transparent',
+            'text-3xl font-light tracking-[0.3em] uppercase '
+              + 'bg-gradient-to-r from-fuchsia-300 via-cyan-200 to-amber-200 '
+              + 'bg-clip-text text-transparent',
           ),
         ],
         ['Prism Field'],
@@ -425,9 +430,9 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => ({
   body: h.div(
     [
       h.Class(
-        'flex flex-col items-center justify-center min-h-screen p-8 ' +
-          'bg-[radial-gradient(ellipse_at_top,_#1a0a2c_0%,_#04010a_55%,_#000_100%)] ' +
-          'text-white font-mono select-none',
+        'flex flex-col items-center justify-center min-h-screen p-8 '
+          + 'bg-[radial-gradient(ellipse_at_top,_#1a0a2c_0%,_#04010a_55%,_#000_100%)] '
+          + 'text-white font-mono select-none',
       ),
     ],
     [
@@ -437,9 +442,8 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => ({
           width: CANVAS_WIDTH,
           height: CANVAS_HEIGHT,
           shapes: sceneShapes(model),
-          className:
-            'rounded-2xl shadow-[0_0_120px_rgba(80,30,140,0.35)] ' +
-            'border border-white/10 cursor-crosshair',
+          className: 'rounded-2xl shadow-[0_0_120px_rgba(80,30,140,0.35)] '
+            + 'border border-white/10 cursor-crosshair',
           onPointerDown: ({ x, y }) => Message.PressedCanvas({ x, y }),
           onPointerMove: ({ x, y }) => Message.MovedPointer({ x, y }),
         },

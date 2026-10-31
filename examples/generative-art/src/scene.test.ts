@@ -15,9 +15,9 @@ import {
   NOISE_SCALE_MIN_DIVISOR,
   NOISE_SCALE_STEP,
 } from './constant'
-import { type Model, type Particle } from './model'
+import { type Model, type Particle } from './model.vibe'
 import { update } from './update'
-import { view } from './view'
+import { view } from './view.vibe'
 
 const initialModel: Model = {
   particles: [],

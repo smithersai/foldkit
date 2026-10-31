@@ -1,4 +1,4 @@
-import { Array } from 'effect'
+import { Array as Arr } from 'effect'
 
 const FADE_QUINTIC_COEFFICIENT = 6
 const FADE_QUARTIC_COEFFICIENT = 15
@@ -14,18 +14,18 @@ const UINT32_RANGE = 0x100000000
 const TWO_PI = Math.PI * 2
 
 const fade = (t: number): number =>
-  t *
-  t *
-  t *
-  (t * (t * FADE_QUINTIC_COEFFICIENT - FADE_QUARTIC_COEFFICIENT) +
-    FADE_CUBIC_COEFFICIENT)
+  t
+  * t
+  * t
+  * (t * (t * FADE_QUINTIC_COEFFICIENT - FADE_QUARTIC_COEFFICIENT)
+    + FADE_CUBIC_COEFFICIENT)
 
 const lerp = (a: number, b: number, t: number): number => a + (b - a) * t
 
 const gradientAngle = (ix: number, iy: number): number => {
   const seeded = (ix * HASH_PRIME_X + iy * HASH_PRIME_Y) | 0
-  const mixed =
-    ((seeded ^ (seeded >>> HASH_SHIFT_INTERMIX)) * HASH_PRIME_FINAL) | 0
+  const mixed = ((seeded ^ (seeded >>> HASH_SHIFT_INTERMIX)) * HASH_PRIME_FINAL)
+    | 0
   const avalanched = (mixed ^ (mixed >>> HASH_SHIFT_AVALANCHE)) >>> 0
   return (avalanched / UINT32_RANGE) * TWO_PI
 }
@@ -76,14 +76,13 @@ export const fractalNoise = (
   lacunarity: number,
 ): number => {
   const seed = { total: 0, weight: 0, amplitude: 1, frequency: 1 }
-  const accumulated = Array.reduce(
-    Array.makeBy(octaves, octaveIndex => octaveIndex),
+  const accumulated = Arr.reduce(
+    Arr.makeBy(octaves, octaveIndex => octaveIndex),
     seed,
     accumulator => ({
-      total:
-        accumulator.total +
-        perlin2(x * accumulator.frequency, y * accumulator.frequency) *
-          accumulator.amplitude,
+      total: accumulator.total
+        + perlin2(x * accumulator.frequency, y * accumulator.frequency)
+          * accumulator.amplitude,
       weight: accumulator.weight + accumulator.amplitude,
       amplitude: accumulator.amplitude * persistence,
       frequency: accumulator.frequency * lacunarity,

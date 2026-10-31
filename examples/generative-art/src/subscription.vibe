@@ -1,10 +1,9 @@
-import { Option } from 'effect'
 import { Subscription } from 'foldkit'
 
 import { Slider } from '@foldkit/ui'
 
-import { Message } from './message'
-import type { Model } from './model'
+import { Message } from './message.ts'
+import type { Model } from './model.vibe'
 
 const flowStrengthSliderSubscriptions = Subscription.lift({
   flowStrengthSliderPointer: Slider.subscriptions.dragPointer,

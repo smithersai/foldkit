@@ -4,7 +4,7 @@ import { modifyFields } from 'foldkit/struct'
 
 import { Slider } from '@foldkit/ui'
 
-import { GenerateAmbientParticle, GenerateBurstParticle } from './command'
+import { GenerateAmbientParticle, GenerateBurstParticle } from './command.vibe'
 import {
   BURST_BOOST_DURATION_MS,
   BURST_HUE_ANCHOR_DRIFT_DEG_PER_SECOND,
@@ -32,8 +32,8 @@ import {
   TWO_PI,
 } from './constant'
 import { Message } from './message'
-import { Model, Particle, Point } from './model'
-import { fractalNoise } from './noise'
+import { Model, Particle, Point } from './model.vibe'
+import { fractalNoise } from './noise.vibe'
 
 type UpdateReturn = Update.Return<Model, Message>
 

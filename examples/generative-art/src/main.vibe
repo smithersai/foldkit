@@ -1,9 +1,9 @@
-import { Array, Option } from 'effect'
+import { Array as Arr } from 'effect'
 import { Runtime } from 'foldkit'
 
 import { Slider } from '@foldkit/ui'
 
-import { GenerateAmbientParticle } from './command'
+import { GenerateAmbientParticle } from './command.vibe'
 import {
   FLOW_STRENGTH_MAX,
   FLOW_STRENGTH_MIN,
@@ -14,12 +14,12 @@ import {
   NOISE_SCALE_MAX_DIVISOR,
   NOISE_SCALE_MIN_DIVISOR,
   NOISE_SCALE_STEP,
-} from './constant'
-import { Message } from './message'
-import { Model } from './model'
-import { subscriptions } from './subscription'
-import { update } from './update'
-import { view } from './view'
+} from './constant.ts'
+import { Message } from './message.ts'
+import { Model } from './model.vibe'
+import { subscriptions } from './subscription.vibe'
+import { update } from './update.ts'
+import { view } from './view.vibe'
 
 export const init: Runtime.ApplicationInit<Model, Message> = () => ({
   model: {
@@ -53,9 +53,7 @@ export const init: Runtime.ApplicationInit<Model, Message> = () => ({
       step: NOISE_SCALE_STEP,
     }),
   },
-  commands: Array.makeBy(INITIAL_PARTICLE_COUNT, () =>
-    GenerateAmbientParticle(),
-  ),
+  commands: Arr.makeBy(INITIAL_PARTICLE_COUNT, () => GenerateAmbientParticle()),
 })
 
 export { Message, Model, subscriptions, update, view }
