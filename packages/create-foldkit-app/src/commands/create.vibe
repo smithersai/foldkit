@@ -1,0 +1,267 @@
+import chalk from 'chalk'
+import { Console, FileSystem, Layer, Option, Path } from 'effect'
+import { ChildProcess, ChildProcessSpawner } from 'effect/process'
+import { NodeChildProcessSpawner } from '@effect/platform-node'
+import * as Process from 'vibelang-runtime/experimental/Process'
+import { ExperimentalNodeProcess } from 'vibelang-runtime/experimental/platform-node'
+import { Prompt } from 'effect/cli'
+
+import { type Example, examples } from '../examples.ts'
+import { type Rendering, Scaffold, renderings } from '../rendering.ts'
+import { createProject } from '../utils/files.vibe'
+import {
+  type PackageManager,
+  devCommand,
+  installDependencies,
+  readFoldkitSubtreeRef,
+} from '../utils/packages.ts'
+import { validateProjectName } from '../validateName.vibe'
+
+type CreateInput = Readonly<{
+  name: Option.Option<string>
+  rendering: Option.Option<Rendering>
+  example: Option.Option<Example>
+  packageManager: Option.Option<PackageManager>
+  maybeDependencyManifestsDirectory: Option.Option<string>
+}>
+
+const promptForName = Prompt.String({
+  message: 'Give your project a name',
+  validate: effect (value) => {
+    return match (validateProjectName(value)) {
+      when Option.None: value;
+      when Option.Some(let message): throw message;
+    }
+  },
+})
+
+const promptForRendering = Prompt.Select<Rendering>({
+  message: 'Pick a rendering mode',
+  choices: renderings.map(({ value, title, description }): infer _ => ({
+    value,
+    title,
+    description,
+  })),
+})
+
+const promptForExample = Prompt.AutoComplete({
+  message: 'Pick a starting example',
+  choices: examples.map(({ value, title, description }): infer _ => ({
+    value,
+    title,
+    description,
+  })),
+})
+
+const promptForPackageManager = Prompt.Select<PackageManager>({
+  message: 'Pick a package manager',
+  choices: [
+    { value: 'pnpm', title: 'pnpm' },
+    { value: 'npm', title: 'npm' },
+    { value: 'yarn', title: 'yarn' },
+    { value: 'bun', title: 'bun' },
+  ],
+})
+
+const resolveScaffold = effect (
+  rendering: Rendering,
+  maybeExample: Option.Option<Example>,
+) => {
+  return match (rendering) {
+    when 'spa': do {
+      const example = match (maybeExample) {
+        when Option.None: try promptForExample;
+        when Option.Some(let example): example;
+      }
+      Scaffold.Spa({ example })
+    };
+    when 'ssg': Scaffold.Ssg();
+    when 'ssr': Scaffold.Ssr();
+  }
+}
+
+const resolveInput = effect (
+  input: CreateInput,
+): { name: string; scaffold: Scaffold; packageManager: PackageManager }!(string | Error)!Prompt.Environment => {
+  const name = match (input.name) {
+    when Option.None: try promptForName;
+    when Option.Some(let value): value;
+  }
+  const rendering = match (input.rendering) {
+    when Option.None: try promptForRendering;
+    when Option.Some(let value): value;
+  }
+  if (rendering !== 'spa' && Option.isSome(input.example)) {
+    throw 'The --example flag only applies to spa rendering.'
+  }
+  const scaffold = try resolveScaffold(rendering, input.example)
+  const packageManager = match (input.packageManager) {
+    when Option.None: try promptForPackageManager;
+    when Option.Some(let value): value;
+  }
+  return { name, scaffold, packageManager }
+}
+
+const validateProject = effect (
+  name: string,
+  projectPath: string,
+  packageManager: PackageManager,
+) => {
+  const fs = try FileSystem.FileSystem
+  if (try fs.exists(projectPath)) {
+    throw 'Directory ' + name + ' already exists!'
+  }
+  let exitCode: number | null = null
+  try {
+    provide Layer.merge(NodeChildProcessSpawner.layer, ExperimentalNodeProcess.layer) {
+      const host = try Process.Process
+      const isWindows = (try host.platform) === 'win32'
+      const command = isWindows
+        ? ChildProcess.make('where ' + packageManager, [], {
+          shell: true,
+          stdin: 'pipe',
+          stdout: 'pipe',
+          stderr: 'pipe',
+        })
+        : ChildProcess.make('which', [packageManager], {
+          shell: false,
+          stdin: 'pipe',
+          stdout: 'pipe',
+          stderr: 'pipe',
+        })
+      const spawner = try ChildProcessSpawner.ChildProcessSpawner
+      exitCode = try spawner.exitCode(command)
+    }
+  } catch (_error) {
+  }
+  if (exitCode !== 0) {
+    throw "Package manager '" + packageManager
+      + "' is not available. Please install it first."
+  }
+}
+
+const setupProject = effect (
+  name: string,
+  projectPath: string,
+  scaffold: Scaffold,
+  packageManager: PackageManager,
+) => {
+  try Console.log(chalk.blue('🚀 Creating your Foldkit app...'))
+  try Console.log('')
+
+  try createProject(name, projectPath, scaffold, packageManager)
+
+  try Console.log(chalk.green(`✅ Created project`))
+  try Console.log('')
+}
+
+const installProjectDependencies = effect (
+  projectPath: string,
+  packageManager: PackageManager,
+  scaffold: Scaffold,
+  maybeDependencyManifestsDirectory: Option.Option<string>,
+) => {
+  try Console.log(
+    chalk.blue(`📦 Installing dependencies with ${packageManager}...`),
+  )
+
+  try installDependencies(
+    projectPath,
+    packageManager,
+    scaffold,
+    maybeDependencyManifestsDirectory,
+  )
+
+  try Console.log(chalk.green('✅ Dependencies installed'))
+  try Console.log('')
+}
+
+const displaySuccessMessage = effect (
+  name: string,
+  packageManager: PackageManager,
+  subtreeRef: string,
+) => {
+  try Console.log(chalk.bold('All systems nominal.'))
+  try Console.log('')
+  try Console.log(`  > ${chalk.cyan('cd')} ${name}`)
+  const dev = try sync(
+    (manager: PackageManager): string => devCommand(manager),
+    packageManager,
+  )
+  try Console.log(`  > ${chalk.cyan(dev)}`)
+  try Console.log('')
+  try Console.log(chalk.bold('AI-Assisted Development'))
+  try Console.log('')
+  try Console.log(
+    '  Vendor Foldkit in as a git subtree, pinned to the release this\n'
+      + '  project installs, so your AI assistant can reference the matching\n'
+      + '  source, examples, and documentation. Commit the scaffold first so\n'
+      + '  subtree has a base commit to merge into:',
+  )
+  try Console.log('')
+  try Console.log(`  > ${chalk.cyan('cd')} ${name}`)
+  try Console.log(`  > ${chalk.cyan('git init')}`)
+  try Console.log(`  > ${chalk.cyan('git add .')}`)
+  try Console.log(
+    `  > ${chalk.cyan('git commit -m "chore: initial commit"')}`,
+  )
+  try Console.log(
+    `  > ${
+      chalk.cyan(
+        `git subtree add --prefix=repos/foldkit https://github.com/foldkit/foldkit.git ${subtreeRef} --squash`,
+      )
+    }`,
+  )
+  try Console.log('')
+  try Console.log(`  Details: ${chalk.cyan('foldkit.dev/ai/overview')}`)
+  try Console.log('')
+  try Console.log(`Training manual: ${chalk.cyan('foldkit.dev')}`)
+  try Console.log(
+    `Incident report: ${chalk.cyan('github.com/foldkit/foldkit/issues')}`,
+  )
+  try Console.log('')
+  try Console.log(`Crew channel: ${chalk.cyan('discord.gg/kav8VNxqGm')}`)
+  try Console.log('')
+  try Console.log('Transmissions:')
+  try Console.log(`  Newsletter:  ${chalk.cyan('foldkit.dev/newsletter')}`)
+  try Console.log(`  X:           ${chalk.cyan('x.com/devinjameson')}`)
+  try Console.log(
+    `  Bluesky:     ${chalk.cyan('bsky.app/profile/devinjameson.bsky.social')}`,
+  )
+  try Console.log(
+    `  Threads:     ${chalk.cyan('threads.com/@devinthedeveloper')}`,
+  )
+  try Console.log('')
+  try Console.log(
+    'Foldkit is a one-astronaut nights-and-weekends project.\n'
+      + 'If you have praise or criticism, do share.\n'
+      + "Please. It's lonely out here.",
+  )
+  try Console.log('')
+  try Console.log('Love you,')
+  try Console.log('Mission Control')
+  try Console.log('')
+}
+
+export const create = effect (input: CreateInput) => {
+  const { name, scaffold, packageManager } = try resolveInput(input)
+  const path = try Path.Path
+  if (
+    Option.isSome(input.maybeDependencyManifestsDirectory)
+    && !path.isAbsolute(input.maybeDependencyManifestsDirectory.value)
+  ) {
+    throw 'CREATE_FOLDKIT_APP_DEPENDENCY_MANIFESTS_DIRECTORY must be an absolute path.'
+  }
+  const projectPath = path.resolve(name)
+  try validateProject(name, projectPath, packageManager)
+  const subtreeRef = try readFoldkitSubtreeRef
+  try setupProject(name, projectPath, scaffold, packageManager)
+  try installProjectDependencies(
+    projectPath,
+    packageManager,
+    scaffold,
+    input.maybeDependencyManifestsDirectory,
+  )
+  try displaySuccessMessage(name, packageManager, subtreeRef)
+  return name
+}

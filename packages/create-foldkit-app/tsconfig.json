@@ -8,5 +8,9 @@
     "types": ["node"],
     "noEmit": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "vibelang": {
+    "declarationSidecars": true,
+    "trustedPackages": ["chalk"]
+  }
 }
