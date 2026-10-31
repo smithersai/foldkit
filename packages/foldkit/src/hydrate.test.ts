@@ -18,7 +18,7 @@ import {
 import { __elementSignature, __hydrateVNode } from './hydrate.js'
 import { defineMessageUnion } from './message/index.js'
 import { type VNode, h as snabbdomH, toVNode } from './snabbdom/index.js'
-import { patch } from './vdom.vibe'
+import { patch } from './vdom.js'
 
 const Message = defineMessageUnion({
   ClickedButton: {},

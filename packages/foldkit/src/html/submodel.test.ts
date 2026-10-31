@@ -6,7 +6,7 @@ import { describe, it } from '@effect/vitest'
 import { MountTracker } from '../mount/index.vibe'
 import { Dispatch } from '../runtime/index.js'
 import { h } from '../snabbdom/index.js'
-import { type VNode, dedupeSharedVNodes, memoizedVNodes } from '../vdom.vibe'
+import { type VNode, dedupeSharedVNodes, memoizedVNodes } from '../vdom.js'
 import {
   type BoundaryRegistry,
   beginRender,

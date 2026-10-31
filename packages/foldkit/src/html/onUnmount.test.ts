@@ -19,7 +19,7 @@ import {
   styleModule,
   toVNode,
 } from '../snabbdom/index.js'
-import { type VNode, dedupeSharedVNodes } from '../vdom.vibe'
+import { type VNode, dedupeSharedVNodes } from '../vdom.js'
 import type { BoundaryRegistry } from './boundary.js'
 import { childAttributes } from './childAttribute.vibe'
 import {

@@ -19,7 +19,7 @@ import {
   styleModule,
   toVNode,
 } from '../snabbdom/index.js'
-import type { VNode } from '../vdom.vibe'
+import type { VNode } from '../vdom.js'
 import {
   __htmlBuilder,
   __clearRuntime as clearHtmlRuntime,

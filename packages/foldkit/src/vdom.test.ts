@@ -9,7 +9,7 @@ import {
   memoizedVNodes,
   patch,
   toVNode,
-} from './vdom.vibe'
+} from './vdom.js'
 
 const asVNode = (child: VNode | string | undefined): VNode => {
   if (child === undefined || typeof child === 'string') {

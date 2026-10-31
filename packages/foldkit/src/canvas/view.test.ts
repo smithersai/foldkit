@@ -20,7 +20,7 @@ import {
   styleModule,
   toVNode,
 } from '../snabbdom/index.js'
-import type { VNode } from '../vdom.vibe'
+import type { VNode } from '../vdom.js'
 import { Circle, Rect } from './shape.js'
 import { view } from './view.js'
 

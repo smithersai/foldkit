@@ -25,7 +25,7 @@ import {
 import type { VNode } from './snabbdom/index.js'
 import { h, toVNode } from './snabbdom/index.js'
 import { tagNameFromSelector } from './tagName.js'
-import { dedupeSharedVNodes, patch } from './vdom.vibe'
+import { dedupeSharedVNodes, patch } from './vdom.js'
 
 // NOTE: the differ only knows the page through the `elm` pointers on its
 // vnodes; `patch` never queries the document. On a server-rendered page the

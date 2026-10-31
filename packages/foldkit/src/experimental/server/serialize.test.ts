@@ -26,7 +26,7 @@ import { defineMessageUnion } from '../../message/index.js'
 import { markTrustedInnerHtml } from '../../propertyProvenance.js'
 import { h as snabbdomH } from '../../snabbdom/index.js'
 import type { VNode } from '../../snabbdom/vnode.js'
-import { __patchVNode } from '../../vdom.vibe'
+import { __patchVNode } from '../../vdom.js'
 import { serializeHtml } from './serialize.js'
 
 const Message = defineMessageUnion({
