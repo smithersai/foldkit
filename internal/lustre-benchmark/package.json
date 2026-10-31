@@ -12,12 +12,13 @@
     "bench:verify": "node bench/verify.mjs",
     "dev": "vite",
     "profile": "RUN_LUSTRE_PROFILE=1 vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "vibelang --noEmit"
   },
   "dependencies": {
     "@effect/platform-browser": "4.1.0",
     "effect": "4.1.0",
-    "foldkit": "workspace:*"
+    "foldkit": "workspace:*",
+    "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz"
   },
   "devDependencies": {
     "@foldkit/vite-plugin": "workspace:*",

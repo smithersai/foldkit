@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config'
 import { foldkitAliases } from '../../examples/vite.aliases'
 
 export default defineConfig({
-  plugins: [vibelang()],
+  plugins: [vibelang({ register: true })],
   resolve: {
     alias: foldkitAliases(__dirname),
   },
