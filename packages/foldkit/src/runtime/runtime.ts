@@ -45,7 +45,7 @@ import {
   type HydrationConfig,
   resolveHydrationHandoff,
 } from './hydrationHandoff.js'
-import { forkManagedResourceFibers } from './managedResourceFibers.js'
+import { forkManagedResourceFibers } from './managedResourceFibers.vibe'
 import { type MessageQueue, makeMessageQueue } from './messageQueue.js'
 import { preserveModel } from './modelPreservationBridge.js'
 import { makePreserveScheduler } from './preserveScheduler.vibe'
