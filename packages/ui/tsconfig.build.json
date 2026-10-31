@@ -10,6 +10,12 @@
   },
   "exclude": ["src/**/*.test.ts"],
   "vibelang": {
-    "declarationSidecars": true
+    "declarationSidecars": true,
+    "trustedPackages": ["foldkit"]
+  },
+  "vibe": {
+    "severities": {
+      "EK4842": "off"
+    }
   }
 }

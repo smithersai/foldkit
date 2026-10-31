@@ -29,7 +29,7 @@ import {
   show as animationShow,
   update as animationUpdate,
 } from '../animation/update.js'
-import { groupContiguous } from '../group.js'
+import { groupContiguous } from '../group.vibe'
 import * as OptionExt from '../internal/optionExtensions.js'
 import { idSelector } from '../internal/selectors.js'
 import {

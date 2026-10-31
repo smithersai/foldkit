@@ -134,8 +134,8 @@
   ],
   "scripts": {
     "clean": "rimraf dist *.tsbuildinfo",
-    "build": "pnpm run clean && tsc -b tsconfig.build.json && node scripts/brand-dist.mjs",
-    "watch": "tsc -b tsconfig.build.json --watch",
+    "build": "pnpm run clean && vibelang -b tsconfig.build.json && node scripts/brand-dist.mjs",
+    "watch": "vibelang -b tsconfig.build.json --watch",
     "lint": "(pnpm --filter @foldkit/oxlint-plugin build && oxlint src) && eslint --config ../../.vibelang/eslint.config.mjs \"**/*.vibe\" --no-error-on-unmatched-pattern",
     "typecheck": "vibelang -p tsconfig.json --noEmit",
     "test": "vitest run"
@@ -145,7 +145,8 @@
     "foldkit": ">=0.167.0"
   },
   "dependencies": {
-    "@floating-ui/dom": "^1.8.0"
+    "@floating-ui/dom": "^1.8.0",
+    "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz"
   },
   "devDependencies": {
     "@effect/vitest": "4.1.0",
@@ -157,7 +158,8 @@
     "typescript": "7.1.0-dev.20261031.1",
     "vitest": "^5.0.2",
     "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz",
-    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz"
+    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz",
+    "fast-check": "^4.10.2"
   },
   "keywords": [
     "foldkit",

@@ -4,6 +4,12 @@
   },
   "extends": "./tsconfig.base.json",
   "vibelang": {
-    "declarationSidecars": true
+    "declarationSidecars": true,
+    "trustedPackages": ["foldkit"]
+  },
+  "vibe": {
+    "severities": {
+      "EK4842": "off"
+    }
   }
 }
