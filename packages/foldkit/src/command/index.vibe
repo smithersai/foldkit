@@ -17,16 +17,16 @@ export { CommandDefinitionTypeId }
  *  interrupt registry so a later Interrupt Command can stop it. */
 export type Command<T, E = never, R = never> = [T] extends [Schema.Top]
   ? Readonly<{
-    mutable name: string
-    mutable args?: Record<string, unknown>
-    mutable key?: string
-    mutable effect: Schema.Schema.Type<T>!E!R
+    name: string
+    args?: Record<string, unknown>
+    key?: string
+    effect: Schema.Schema.Type<T>!E!R
   }>
   : Readonly<{
-    mutable name: string
-    mutable args?: Record<string, unknown>
-    mutable key?: string
-    mutable effect: T!E!R
+    name: string
+    args?: Record<string, unknown>
+    key?: string
+    effect: T!E!R
   }>
 
 /** @internal A single link in a Command's message-mapping chain. Each mapper
@@ -45,12 +45,12 @@ type MessageMapper = (message: unknown) => unknown
  *  optional because Commands built by hand (not via {@link define}) carry no
  *  chain; readers treat its absence as an empty chain. */
 type CommandWithMappers = Readonly<{
-  mutable name: string
-  mutable args?: Record<string, unknown>
-  mutable key?: string
-  mutable interruptsKey?: string
-  mutable effect: unknown!unknown!unknown
-  mutable messageMappers?: ReadonlyArray<MessageMapper>
+  name: string
+  args?: Record<string, unknown>
+  key?: string
+  interruptsKey?: string
+  effect: unknown!unknown!unknown
+  messageMappers?: ReadonlyArray<MessageMapper>
 }>
 
 /** A Command definition for a Command with no declared args. Call as `Definition()` to produce a Command instance. */
@@ -60,7 +60,7 @@ export interface CommandDefinitionNoArgs<
 > {
   readonly [CommandDefinitionTypeId]: CommandDefinitionTypeId
   readonly name: Name
-  (): Readonly<{ mutable name: Name; mutable effect: Eff }>
+  (): Readonly<{ name: Name; effect: Eff }>
 }
 
 /** A Command definition for a Command with declared args. Call as `Definition(args)` to produce a Command instance. */
@@ -72,9 +72,9 @@ export interface CommandDefinitionWithArgs<
   readonly [CommandDefinitionTypeId]: CommandDefinitionTypeId
   readonly name: Name
   (args: Schema.Schema.Type<Schema.Struct<Fields>>): Readonly<{
-    mutable name: Name
-    mutable args: Schema.Schema.Type<Schema.Struct<Fields>>
-    mutable effect: Eff
+    name: Name
+    args: Schema.Schema.Type<Schema.Struct<Fields>>
+    effect: Eff
   }>
 }
 
@@ -101,22 +101,22 @@ export type InterruptOption<
 > =
   | true
   | Readonly<{
-    mutable keyFields: Array.NonEmptyReadonlyArray<KeyField>
-    mutable toKey: (keyArgs: Pick<Args, KeyField>) => string
+    keyFields: Array.NonEmptyReadonlyArray<KeyField>
+    toKey: (keyArgs: Pick<Args, KeyField>) => string
   }>
 
 /** @internal The shape {@link define} reads at runtime. The public overloads
  *  carry the precise types; this is only what the implementation destructures. */
 type DefineConfig = Readonly<{
-  mutable args?: Schema.Struct.Fields
-  mutable messages: ReadonlyArray<Schema.Top>
-  mutable interrupt?:
+  args?: Schema.Struct.Fields
+  messages: ReadonlyArray<Schema.Top>
+  interrupt?:
     | true
     | Readonly<{
-      mutable keyFields?: ReadonlyArray<string>
-      mutable toKey?: (keyArgs: any) => string
+      keyFields?: ReadonlyArray<string>
+      toKey?: (keyArgs: any) => string
     }>
-  mutable execute: any
+  execute: any
 }>
 
 // NOTE: The suspend is load bearing, not a redundant wrapper. Without it the
@@ -129,7 +129,7 @@ type DefineConfig = Readonly<{
 // execution, where the runtime can contain any failure it produces.
 // A no-args `execute` is already an Effect value and needs no equivalent.
 const suspendExecute = effect (
-  config: { mutable execute: (args: any) => any!any!any },
+  config: { execute: (args: any) => any!any!any },
   args: any,
 ): any!any!any => {
   return try config.execute(args)
@@ -236,15 +236,15 @@ export function define<
 >(
   name: Name,
   config: Readonly<{
-    mutable args: Fields
-    mutable messages: Messages
-    mutable interrupt: Readonly<{
-      mutable keyFields: Array.NonEmptyReadonlyArray<KeyField>
-      mutable toKey: (
+    args: Fields
+    messages: Messages
+    interrupt: Readonly<{
+      keyFields: Array.NonEmptyReadonlyArray<KeyField>
+      toKey: (
         keyArgs: Pick<Schema.Schema.Type<Schema.Struct<Fields>>, KeyField>,
       ) => string
     }>
-    mutable execute: (args: Schema.Schema.Type<Schema.Struct<Fields>>) => Eff
+    execute: (args: Schema.Schema.Type<Schema.Struct<Fields>>) => Eff
   }>,
 ): Interruptible.DefinitionWithArgs<
   Name,
@@ -261,10 +261,10 @@ export function define<
 >(
   name: Name,
   config: Readonly<{
-    mutable args: Fields
-    mutable messages: Messages
-    mutable interrupt: true
-    mutable execute: (args: Schema.Schema.Type<Schema.Struct<Fields>>) => Eff
+    args: Fields
+    messages: Messages
+    interrupt: true
+    execute: (args: Schema.Schema.Type<Schema.Struct<Fields>>) => Eff
   }>,
 ): Interruptible.DefinitionWithArgsNameKeyed<Name, Fields, Eff>
 
@@ -276,10 +276,10 @@ export function define<
 >(
   name: Name,
   config: Readonly<{
-    mutable args: Fields
-    mutable messages: Messages
-    mutable interrupt?: never
-    mutable execute: (args: Schema.Schema.Type<Schema.Struct<Fields>>) => Eff
+    args: Fields
+    messages: Messages
+    interrupt?: never
+    execute: (args: Schema.Schema.Type<Schema.Struct<Fields>>) => Eff
   }>,
 ): CommandDefinitionWithArgs<Name, Fields, Eff>
 
@@ -290,9 +290,9 @@ export function define<
 >(
   name: Name,
   config: Readonly<{
-    mutable messages: Messages
-    mutable interrupt: true
-    mutable execute: Eff
+    messages: Messages
+    interrupt: true
+    execute: Eff
   }>,
 ): Interruptible.DefinitionNoArgs<Name, Eff>
 
@@ -303,9 +303,9 @@ export function define<
 >(
   name: Name,
   config: Readonly<{
-    mutable messages: Messages
-    mutable interrupt?: never
-    mutable execute: Eff
+    messages: Messages
+    interrupt?: never
+    execute: Eff
   }>,
 ): CommandDefinitionNoArgs<Name, Eff>
 
@@ -419,15 +419,15 @@ export const mapEffect: {
   2,
   <A, E1, R1, E2, R2>(
     command: Readonly<{
-      mutable name: string
-      mutable args?: Record<string, unknown>
-      mutable effect: A!E1!R1
+      name: string
+      args?: Record<string, unknown>
+      effect: A!E1!R1
     }>,
     f: (effect: A!E1!R1) => NoInfer<A>!E2!R2,
   ): Readonly<{
-    mutable name: string
-    mutable args?: Record<string, unknown>
-    mutable effect: A!E2!R2
+    name: string
+    args?: Record<string, unknown>
+    effect: A!E2!R2
   }> => ({ ...command, effect: f(command.effect) }),
 )
 
@@ -466,15 +466,15 @@ export const mapMessage: {
   2,
   <FromMessage, ToMessage, E = never, R = never>(
     command: Readonly<{
-      mutable name: string
-      mutable args?: Record<string, unknown>
-      mutable effect: FromMessage!E!R
+      name: string
+      args?: Record<string, unknown>
+      effect: FromMessage!E!R
     }>,
     f: (message: FromMessage) => ToMessage,
   ): Readonly<{
-    mutable name: string
-    mutable args?: Record<string, unknown>
-    mutable effect: ToMessage!E!R
+    name: string
+    args?: Record<string, unknown>
+    effect: ToMessage!E!R
   }> => {
     const withMappers: CommandWithMappers = command
     const mapped = {

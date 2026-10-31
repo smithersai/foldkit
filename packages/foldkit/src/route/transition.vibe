@@ -49,7 +49,7 @@ const hasTag =
   <Tag extends string>(routeTag: Tag): infer _ =>
   <Route extends Readonly<{ _tag: string }>>(
     route: Route,
-  ): route is Extract<Route, { mutable _tag: Tag }> => route._tag === routeTag
+  ): route is Extract<Route, { _tag: Tag }> => route._tag === routeTag
 
 /** The route a transition entered, narrowed to the given tag: `Some` of
  *  the entered route when this transition entered it, and `None`
@@ -62,7 +62,7 @@ export const entered = <
 >(
   transition: Transition<Route>,
   routeTag: Tag,
-): Option<Extract<Route, { mutable _tag: Tag }>> =>
+): Option<Extract<Route, { _tag: Tag }>> =>
   Option.filter(enteredAny(transition), hasTag(routeTag))
 
 /** The route a transition left, whichever route that was:
@@ -92,7 +92,7 @@ export const exited = <
 >(
   transition: Transition<Route>,
   routeTag: Tag,
-): Option<Extract<Route, { mutable _tag: Tag }>> =>
+): Option<Extract<Route, { _tag: Tag }>> =>
   Option.filter(exitedAny(transition), hasTag(routeTag))
 
 /** Both sides of a within-route navigation: `Some` of the previous and
@@ -113,8 +113,8 @@ export const stayed = <
   routeTag: Tag,
 ): Option<
   Readonly<{
-    previousRoute: Extract<Route, { mutable _tag: Tag }>
-    nextRoute: Extract<Route, { mutable _tag: Tag }>
+    previousRoute: Extract<Route, { _tag: Tag }>
+    nextRoute: Extract<Route, { _tag: Tag }>
   }>
 > => {
   const { maybePreviousRoute, nextRoute } = transition
@@ -187,7 +187,7 @@ const matchTransition = <
   transition: Transition<Route>,
   routeTag: Tag,
   handlers: MatchHandlers<
-    Extract<Route, { mutable _tag: Tag }>,
+    Extract<Route, { _tag: Tag }>,
     Entered,
     Exited,
     Stayed,
@@ -227,7 +227,7 @@ export function match<Output>(): <
   transition: Transition<Route>,
   routeTag: Tag,
   handlers: MatchHandlers<
-    Extract<Route, { mutable _tag: Tag }>,
+    Extract<Route, { _tag: Tag }>,
     Output,
     Output,
     Output,
@@ -245,7 +245,7 @@ export function match<
   transition: Transition<Route>,
   routeTag: Tag,
   handlers: MatchHandlers<
-    Extract<Route, { mutable _tag: Tag }>,
+    Extract<Route, { _tag: Tag }>,
     Entered,
     Exited,
     Stayed,
@@ -263,7 +263,7 @@ export function match<
   transition?: Transition<Route>,
   routeTag?: Tag,
   handlers?: MatchHandlers<
-    Extract<Route, { mutable _tag: Tag }>,
+    Extract<Route, { _tag: Tag }>,
     Entered,
     Exited,
     Stayed,
@@ -294,7 +294,7 @@ const matchOrElseTransition = <
   routeTag: Tag,
   handlers: Partial<
     MatchHandlers<
-      Extract<Route, { mutable _tag: Tag }>,
+      Extract<Route, { _tag: Tag }>,
       Entered,
       Exited,
       Stayed,
@@ -329,7 +329,7 @@ export function matchOrElse<Output>(): <
   routeTag: Tag,
   handlers: Partial<
     MatchHandlers<
-      Extract<Route, { mutable _tag: Tag }>,
+      Extract<Route, { _tag: Tag }>,
       Output,
       Output,
       Output,
@@ -351,7 +351,7 @@ export function matchOrElse<
   routeTag: Tag,
   handlers: Partial<
     MatchHandlers<
-      Extract<Route, { mutable _tag: Tag }>,
+      Extract<Route, { _tag: Tag }>,
       Entered,
       Exited,
       Stayed,
@@ -373,7 +373,7 @@ export function matchOrElse<
   routeTag?: Tag,
   handlers?: Partial<
     MatchHandlers<
-      Extract<Route, { mutable _tag: Tag }>,
+      Extract<Route, { _tag: Tag }>,
       Entered,
       Exited,
       Stayed,

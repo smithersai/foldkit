@@ -188,7 +188,7 @@ const findVariantByTag = (
 const singleUnionFieldOf = (
   variant: unknown,
 ): Option<
-  { mutable name: string; mutable members: ReadonlyArray<unknown> }
+  { name: string; members: ReadonlyArray<unknown> }
 > => {
   if (!isRecord(variant)) {
     return Option.none()
@@ -325,16 +325,16 @@ export const diagnoseVariantPath = (
   document: unknown,
   segments: ReadonlyArray<string>,
 ): Option<{
-  mutable prefix: ReadonlyArray<string>
-  mutable failingSegment: Option<string>
-  mutable available: ReadonlyArray<string>
+  prefix: ReadonlyArray<string>
+  failingSegment: Option<string>
+  available: ReadonlyArray<string>
 }> => {
   const tryLength = (
     length: number,
   ): Option<{
-    mutable prefix: ReadonlyArray<string>
-    mutable failingSegment: Option<string>
-    mutable available: ReadonlyArray<string>
+    prefix: ReadonlyArray<string>
+    failingSegment: Option<string>
+    available: ReadonlyArray<string>
   }> => {
     if (length < 0) {
       return Option.none()

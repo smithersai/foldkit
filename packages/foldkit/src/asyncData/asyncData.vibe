@@ -5,27 +5,27 @@ import { taggedStruct } from '../schema/index.ts'
 // STATE
 
 /** The `Idle` state: nothing requested yet. */
-export type Idle = Readonly<{ mutable _tag: 'Idle' }>
+export type Idle = Readonly<{ _tag: 'Idle' }>
 
 /** The `Loading` state: first request in flight, no prior data. */
-export type Loading = Readonly<{ mutable _tag: 'Loading' }>
+export type Loading = Readonly<{ _tag: 'Loading' }>
 
 /** The `Refreshing` state: reloading while holding the previous good data. */
 export type Refreshing<A> = Readonly<
-  { mutable _tag: 'Refreshing'; mutable data: A }
+  { _tag: 'Refreshing'; data: A }
 >
 
 /** The `Failure` state: request failed, showing the failure. */
-export type Failure<E> = Readonly<{ mutable _tag: 'Failure'; mutable error: E }>
+export type Failure<E> = Readonly<{ _tag: 'Failure'; error: E }>
 
 /** The `Stale` state: the last refresh failed, still holding the previous
  *  good data. The failed-refresh mirror of `Refreshing`. */
 export type Stale<A, E> = Readonly<
-  { mutable _tag: 'Stale'; mutable error: E; mutable data: A }
+  { _tag: 'Stale'; error: E; data: A }
 >
 
 /** The `Success` state: request succeeded, data present. */
-export type Success<A> = Readonly<{ mutable _tag: 'Success'; mutable data: A }>
+export type Success<A> = Readonly<{ _tag: 'Success'; data: A }>
 
 /** The six-state union for an asynchronously loaded value: `Idle | Loading
  *  | Refreshing(data) | Failure(error) | Stale(error, data) | Success(data)`.
@@ -68,7 +68,7 @@ export const Loading = taggedStruct('Loading')
  *  value builder, generic in `A`; use the `Schema` factory's `Refreshing`
  *  for a Schema-bound constructor. */
 export const Refreshing = <A>(
-  payload: Readonly<{ mutable data: A }>,
+  payload: Readonly<{ data: A }>,
 ): AsyncData<A, never> => ({
   _tag: 'Refreshing',
   data: payload.data,
@@ -78,7 +78,7 @@ export const Refreshing = <A>(
  *  builder, generic in `E`; use the `Schema` factory's `Failure` for a
  *  Schema-bound constructor. */
 export const Failure = <E>(
-  payload: Readonly<{ mutable error: E }>,
+  payload: Readonly<{ error: E }>,
 ): AsyncData<never, E> => ({
   _tag: 'Failure',
   error: payload.error,
@@ -88,7 +88,7 @@ export const Failure = <E>(
  *  last good data. Plain value builder, generic in `A` and `E`; use the
  *  `Schema` factory's `Stale` for a Schema-bound constructor. */
 export const Stale = <A, E>(
-  payload: Readonly<{ mutable error: E; mutable data: A }>,
+  payload: Readonly<{ error: E; data: A }>,
 ): AsyncData<A, E> => ({
   _tag: 'Stale',
   error: payload.error,
@@ -99,7 +99,7 @@ export const Stale = <A, E>(
  *  generic in `A`; use the `Schema` factory's `Success` for a Schema-bound
  *  constructor. */
 export const Success = <A>(
-  payload: Readonly<{ mutable data: A }>,
+  payload: Readonly<{ data: A }>,
 ): AsyncData<A, never> => ({
   _tag: 'Success',
   data: payload.data,
@@ -118,12 +118,12 @@ export const fail = <E, A = never>(error: E): AsyncData<A, E> =>
 /** The encoded (wire) form of a `AsyncData<A, E>` whose data encodes to
  *  `AI` and whose error encodes to `EI`. */
 export type AsyncDataEncoded<AI, EI> =
-  | Readonly<{ mutable _tag: 'Idle' }>
-  | Readonly<{ mutable _tag: 'Loading' }>
-  | Readonly<{ mutable _tag: 'Refreshing'; mutable data: AI }>
-  | Readonly<{ mutable _tag: 'Failure'; mutable error: EI }>
-  | Readonly<{ mutable _tag: 'Stale'; mutable error: EI; mutable data: AI }>
-  | Readonly<{ mutable _tag: 'Success'; mutable data: AI }>
+  | Readonly<{ _tag: 'Idle' }>
+  | Readonly<{ _tag: 'Loading' }>
+  | Readonly<{ _tag: 'Refreshing'; data: AI }>
+  | Readonly<{ _tag: 'Failure'; error: EI }>
+  | Readonly<{ _tag: 'Stale'; error: EI; data: AI }>
+  | Readonly<{ _tag: 'Success'; data: AI }>
 
 /** What the `Schema` factory returns: the six-state Union codec to embed in
  *  a Model plus the Schema-bound constructors for the four parameterized
@@ -132,17 +132,17 @@ export type AsyncDataEncoded<AI, EI> =
 export type AsyncDataSchema<A, AI, E, EI> = Readonly<{
   /** The six-state Union codec. Embed this in your Model, or in
    *  `Schema.HashMap(key, this)` for a keyed cache. */
-  mutable schema: EffectSchema.Codec<AsyncData<A, E>, AsyncDataEncoded<AI, EI>>
-  mutable Idle: typeof Idle
-  mutable Loading: typeof Loading
-  mutable Refreshing: (
-    payload: Readonly<{ mutable data: A }>,
+  schema: EffectSchema.Codec<AsyncData<A, E>, AsyncDataEncoded<AI, EI>>
+  Idle: typeof Idle
+  Loading: typeof Loading
+  Refreshing: (
+    payload: Readonly<{ data: A }>,
   ) => AsyncData<A, E>
-  mutable Failure: (payload: Readonly<{ mutable error: E }>) => AsyncData<A, E>
-  mutable Stale: (
-    payload: Readonly<{ mutable error: E; mutable data: A }>,
+  Failure: (payload: Readonly<{ error: E }>) => AsyncData<A, E>
+  Stale: (
+    payload: Readonly<{ error: E; data: A }>,
   ) => AsyncData<A, E>
-  mutable Success: (payload: Readonly<{ mutable data: A }>) => AsyncData<A, E>
+  Success: (payload: Readonly<{ data: A }>) => AsyncData<A, E>
 }>
 
 /** Builds the six-state `AsyncData` Schema for the given data and error
@@ -221,27 +221,27 @@ export const Schema = <A, AI, E, EI>(
 export const match: {
   <A, E, B, C = B, D = B, F = B, G = B, H = B>(
     handlers: Readonly<{
-      mutable onIdle: Function.LazyArg<B>
-      mutable onLoading: Function.LazyArg<C>
-      mutable onRefreshing: (data: A) => D
-      mutable onFailure: (error: E) => F
-      mutable onStale: (
-        payload: Readonly<{ mutable error: E; mutable data: A }>,
+      onIdle: Function.LazyArg<B>
+      onLoading: Function.LazyArg<C>
+      onRefreshing: (data: A) => D
+      onFailure: (error: E) => F
+      onStale: (
+        payload: Readonly<{ error: E; data: A }>,
       ) => G
-      mutable onSuccess: (data: A) => H
+      onSuccess: (data: A) => H
     }>,
   ): (self: AsyncData<A, E>) => B | C | D | F | G | H
   <A, E, B, C = B, D = B, F = B, G = B, H = B>(
     self: AsyncData<A, E>,
     handlers: Readonly<{
-      mutable onIdle: Function.LazyArg<B>
-      mutable onLoading: Function.LazyArg<C>
-      mutable onRefreshing: (data: A) => D
-      mutable onFailure: (error: E) => F
-      mutable onStale: (
-        payload: Readonly<{ mutable error: E; mutable data: A }>,
+      onIdle: Function.LazyArg<B>
+      onLoading: Function.LazyArg<C>
+      onRefreshing: (data: A) => D
+      onFailure: (error: E) => F
+      onStale: (
+        payload: Readonly<{ error: E; data: A }>,
       ) => G
-      mutable onSuccess: (data: A) => H
+      onSuccess: (data: A) => H
     }>,
   ): B | C | D | F | G | H
 } = Function.dual(
@@ -249,14 +249,14 @@ export const match: {
   <A, E, B>(
     self: AsyncData<A, E>,
     handlers: Readonly<{
-      mutable onIdle: Function.LazyArg<B>
-      mutable onLoading: Function.LazyArg<B>
-      mutable onRefreshing: (data: A) => B
-      mutable onFailure: (error: E) => B
-      mutable onStale: (
-        payload: Readonly<{ mutable error: E; mutable data: A }>,
+      onIdle: Function.LazyArg<B>
+      onLoading: Function.LazyArg<B>
+      onRefreshing: (data: A) => B
+      onFailure: (error: E) => B
+      onStale: (
+        payload: Readonly<{ error: E; data: A }>,
       ) => B
-      mutable onSuccess: (data: A) => B
+      onSuccess: (data: A) => B
     }>,
   ): B => {
     if (isIdle(self)) {

@@ -48,9 +48,9 @@ export type MountDefinitionTypeId = typeof MountDefinitionTypeId
  *  `Mount.defineStream` exposes the raw Stream shape for continuous-event
  *  cases. */
 export type MountAction<Message, E = never> = Readonly<{
-  mutable name: string
-  mutable args?: Record<string, unknown>
-  mutable f: (
+  name: string
+  args?: Record<string, unknown>
+  f: (
     element: Element,
     viewStateChanges: Stream<ViewState>,
   ) => Stream<Message, E>
@@ -61,8 +61,8 @@ export interface MountDefinitionNoArgs<Name extends string, ResultMessage> {
   readonly [MountDefinitionTypeId]: MountDefinitionTypeId
   readonly name: Name
   (): Readonly<{
-    mutable name: Name
-    mutable f: (
+    name: Name
+    f: (
       element: Element,
       viewStateChanges: Stream<ViewState>,
     ) => Stream<ResultMessage>
@@ -78,9 +78,9 @@ export interface MountDefinitionWithArgs<
   readonly [MountDefinitionTypeId]: MountDefinitionTypeId
   readonly name: Name
   (args: Schema.Schema.Type<Schema.Struct<Fields>>): Readonly<{
-    mutable name: Name
-    mutable args: Schema.Schema.Type<Schema.Struct<Fields>>
-    mutable f: (
+    name: Name
+    args: Schema.Schema.Type<Schema.Struct<Fields>>
+    f: (
       element: Element,
       viewStateChanges: Stream<ViewState>,
     ) => Stream<ResultMessage>
@@ -110,23 +110,23 @@ type ViewStateChangesFieldIsReserved =
 
 /** @internal Fields the runtime supplies to every Mount execution. */
 type ExecuteRuntimeInput = Readonly<{
-  mutable element: Element
-  mutable viewStateChanges: Stream<ViewState>
+  element: Element
+  viewStateChanges: Stream<ViewState>
 }>
 
 /** @internal Type-level rejection for args that collide with runtime fields. */
 type ReservedExecuteFields = Readonly<{
-  mutable element?: ElementFieldIsReserved
-  mutable viewStateChanges?: ViewStateChangesFieldIsReserved
+  element?: ElementFieldIsReserved
+  viewStateChanges?: ViewStateChangesFieldIsReserved
 }>
 
 /** @internal The shape {@link define} and {@link defineStream} read at
  *  runtime. The public overloads carry the precise types; this is only what
  *  the implementations destructure. */
 type DefineConfig = Readonly<{
-  mutable args?: Schema.Struct.Fields
-  mutable messages: ReadonlyArray<Schema.Top>
-  mutable execute: any
+  args?: Schema.Struct.Fields
+  messages: ReadonlyArray<Schema.Top>
+  execute: any
 }>
 
 /** @internal Stamps a callable Definition with its Mount name and the
@@ -318,9 +318,9 @@ export function define<
 >(
   name: Name,
   config: Readonly<{
-    mutable args: Fields & ReservedExecuteFields
-    mutable messages: Messages
-    mutable execute: (
+    args: Fields & ReservedExecuteFields
+    messages: Messages
+    execute: (
       input: ExecuteRuntimeInput & Schema.Schema.Type<Schema.Struct<Fields>>,
     ) => Schema.Schema.Type<Messages[number]>!!Scope
   }>,
@@ -332,9 +332,9 @@ export function define<
 >(
   name: Name,
   config: Readonly<{
-    mutable args?: never
-    mutable messages: Messages
-    mutable execute: (
+    args?: never
+    messages: Messages
+    execute: (
       input: ExecuteRuntimeInput,
     ) => Schema.Schema.Type<Messages[number]>!!Scope
   }>,
@@ -493,9 +493,9 @@ export function defineStream<
 >(
   name: Name,
   config: Readonly<{
-    mutable args: Fields & ReservedExecuteFields
-    mutable messages: Messages
-    mutable execute: (
+    args: Fields & ReservedExecuteFields
+    messages: Messages
+    execute: (
       input: ExecuteRuntimeInput & Schema.Schema.Type<Schema.Struct<Fields>>,
     ) => Stream<Schema.Schema.Type<Messages[number]>, never, never>
   }>,
@@ -507,9 +507,9 @@ export function defineStream<
 >(
   name: Name,
   config: Readonly<{
-    mutable args?: never
-    mutable messages: Messages
-    mutable execute: (
+    args?: never
+    messages: Messages
+    execute: (
       input: ExecuteRuntimeInput,
     ) => Stream<Schema.Schema.Type<Messages[number]>, never, never>
   }>,

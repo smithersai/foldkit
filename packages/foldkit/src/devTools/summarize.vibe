@@ -182,7 +182,7 @@ const formatAvailableKeys = (
 /** Formats a `NotFound` result for `ResponseError.reason`, including the keys
  * available where the lookup stopped. */
 export const formatPathNotFound = (
-  notFound: Extract<PathResolution, { mutable _tag: 'NotFound' }>,
+  notFound: Extract<PathResolution, { _tag: 'NotFound' }>,
 ): string => match (formatAvailableKeys(notFound.availableKeys)) {
   when Option.None: notFound.reason;
   when Option.Some(let hint): `${notFound.reason} ${hint}`;

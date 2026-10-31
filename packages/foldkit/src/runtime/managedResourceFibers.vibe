@@ -16,12 +16,12 @@ export const forkManagedResourceFibers = effect <Model, Message>({
   enqueueMessageEffect,
   crashWith,
 }: Readonly<{
-  mutable managedResourceRefs: ReadonlyArray<ManagedResourceRef<Model, Message>>
-  mutable initModel: Model
-  mutable modelPubSub: PubSub<Model>
-  mutable runtimeScope: Scope
-  mutable enqueueMessageEffect: (message: Message) => void!!
-  mutable crashWith: (
+  managedResourceRefs: ReadonlyArray<ManagedResourceRef<Model, Message>>
+  initModel: Model
+  modelPubSub: PubSub<Model>
+  runtimeScope: Scope
+  enqueueMessageEffect: (message: Message) => void!!
+  crashWith: (
     cause: Cause<never>,
     maybeMessage: Option<Message>,
   ) => void!!

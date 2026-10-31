@@ -29,7 +29,7 @@
     "@effect/vitest": "4.1.0",
     "@types/node": "26.4.0",
     "vitest": "^5.0.2",
-    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-9219ac1f72e2.tgz"
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-ec9d7ad96db7.tgz"
   },
   "keywords": [
     "create-foldkit-app",

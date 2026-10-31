@@ -32,10 +32,10 @@ export type Outcome = typeof Outcome.Type
  *  under their key for the duration of their Effect; Interrupt Commands look
  *  the key up and interrupt every holder. Internal to the runtime. */
 export type __Registry = Readonly<{
-  mutable lookup: (key: string) => ReadonlyArray<Fiber.Fiber<unknown, unknown>>
-  mutable register: (key: string, fiber: Fiber.Fiber<unknown, unknown>) => void
-  mutable release: (key: string, fiber: Fiber.Fiber<unknown, unknown>) => void
-  mutable interrupt: (key: string) => Outcome!!
+  lookup: (key: string) => ReadonlyArray<Fiber.Fiber<unknown, unknown>>
+  register: (key: string, fiber: Fiber.Fiber<unknown, unknown>) => void
+  release: (key: string, fiber: Fiber.Fiber<unknown, unknown>) => void
+  interrupt: (key: string) => Outcome!!
 }>
 
 /** @internal Creates an interrupt registry. The runtime creates one per
@@ -139,9 +139,9 @@ export interface InterruptDefinitionNoArgs<Name extends string> {
   readonly [CommandDefinitionTypeId]: CommandDefinitionTypeId
   readonly name: `${Name}.Interrupt`
   <ToMessage>(toMessage: (outcome: Outcome) => ToMessage): Readonly<{
-    mutable name: `${Name}.Interrupt`
-    mutable interruptsKey: string
-    mutable effect: ToMessage!!
+    name: `${Name}.Interrupt`
+    interruptsKey: string
+    effect: ToMessage!!
   }>
 }
 
@@ -156,10 +156,10 @@ export interface InterruptDefinitionWithArgs<Name extends string, KeyArgs> {
     keyArgs: KeyArgs,
     toMessage: (outcome: Outcome) => ToMessage,
   ): Readonly<{
-    mutable name: `${Name}.Interrupt`
-    mutable args: KeyArgs
-    mutable interruptsKey: string
-    mutable effect: ToMessage!!
+    name: `${Name}.Interrupt`
+    args: KeyArgs
+    interruptsKey: string
+    effect: ToMessage!!
   }>
 }
 
@@ -173,7 +173,7 @@ export interface DefinitionNoArgs<
   readonly [CommandDefinitionTypeId]: CommandDefinitionTypeId
   readonly name: Name
   readonly Interrupt: InterruptDefinitionNoArgs<Name>
-  (): Readonly<{ mutable name: Name; mutable key: string; mutable effect: Eff }>
+  (): Readonly<{ name: Name; key: string; effect: Eff }>
 }
 
 /** An interruptible Command definition with declared args and a key derived
@@ -190,10 +190,10 @@ export interface DefinitionWithArgs<
   readonly name: Name
   readonly Interrupt: InterruptDefinitionWithArgs<Name, KeyArgs>
   (args: Schema.Schema.Type<Schema.Struct<Fields>>): Readonly<{
-    mutable name: Name
-    mutable args: Schema.Schema.Type<Schema.Struct<Fields>>
-    mutable key: string
-    mutable effect: Eff
+    name: Name
+    args: Schema.Schema.Type<Schema.Struct<Fields>>
+    key: string
+    effect: Eff
   }>
 }
 
@@ -212,10 +212,10 @@ export interface DefinitionWithArgsNameKeyed<
   readonly name: Name
   readonly Interrupt: InterruptDefinitionNoArgs<Name>
   (args: Schema.Schema.Type<Schema.Struct<Fields>>): Readonly<{
-    mutable name: Name
-    mutable args: Schema.Schema.Type<Schema.Struct<Fields>>
-    mutable key: string
-    mutable effect: Eff
+    name: Name
+    args: Schema.Schema.Type<Schema.Struct<Fields>>
+    key: string
+    effect: Eff
   }>
 }
 
