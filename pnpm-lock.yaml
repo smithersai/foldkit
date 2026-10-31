@@ -1933,6 +1933,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-3ee099e972e9.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-3ee099e972e9.tgz
+      vibelang-unplugin:
+        specifier: file:../../.vibelang-toolchain/vibelang-unplugin-0.0.11-d83e2657e595.tgz
+        version: file:.vibelang-toolchain/vibelang-unplugin-0.0.11-d83e2657e595.tgz(rolldown@1.2.11)(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-3ee099e972e9.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
@@ -6539,6 +6545,42 @@ packages:
     resolution: {integrity: sha512-pjy2bYhSsufwWlKwPc+l3cN7+wuJlK6uz0YdJEOlQDbl6jo/YlPi4mb8agUkVC8BF7V8NuzeyPNqRksA3hztKQ==}
     engines: {node: '>= 0.8'}
 
+  unplugin@3.4.0:
+    resolution: {integrity: sha512-9skdIFlCsPdFV7wUfZxNsFInlW+7nJmGu2gkTu0OUhF56aXGsHab9x52/QhdJ4lC7ZDPWTxbiC4ANqVlsuaW3w==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    peerDependencies:
+      '@farmfe/core': '*'
+      '@rsbuild/core': '*'
+      '@rspack/core': '*'
+      bun-types-no-globals: '*'
+      esbuild: '*'
+      rolldown: '*'
+      rollup: '*'
+      unloader: '*'
+      vite: '*'
+      webpack: '*'
+    peerDependenciesMeta:
+      '@farmfe/core':
+        optional: true
+      '@rsbuild/core':
+        optional: true
+      '@rspack/core':
+        optional: true
+      bun-types-no-globals:
+        optional: true
+      esbuild:
+        optional: true
+      rolldown:
+        optional: true
+      rollup:
+        optional: true
+      unloader:
+        optional: true
+      vite:
+        optional: true
+      webpack:
+        optional: true
+
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
 
@@ -6579,6 +6621,13 @@ packages:
         optional: true
       '@effect/platform-node':
         optional: true
+
+  vibelang-unplugin@file:.vibelang-toolchain/vibelang-unplugin-0.0.11-d83e2657e595.tgz:
+    resolution: {integrity: sha512-XTOU18tKC+hx31L0yk6e3fHlb4vRms4ySuU0Milvnn7kcOUOE5cDu4tRNT2tBYo/uplmeEy6pEQdEoTP1hG1Tg==, tarball: file:.vibelang-toolchain/vibelang-unplugin-0.0.11-d83e2657e595.tgz}
+    version: 0.0.11
+    engines: {node: ^22.22.3 || >=24.11.1}
+    peerDependencies:
+      vibelang: 0.0.11
 
   vibelang-vite@file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz:
     resolution: {integrity: sha512-gvFPL7T7aWR0S/9dZ9I2VkSWogooEgXAd857rNPanV2hAw+Yr/2+rHt0VxJpS1CNLnOT8CHD/dTJQYd3NrTJoA==, tarball: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz}
@@ -6788,6 +6837,9 @@ packages:
   webidl-conversions@8.0.1:
     resolution: {integrity: sha512-BMhLD/Sw+GbJC21C/UgyaZX41nPt8bUTg+jWyDeg7e7YN4xOM05YPSIXceACnXVtqyEw/LMClUQMtMZ+PGGpqQ==}
     engines: {node: '>=20'}
+
+  webpack-virtual-modules@0.6.2:
+    resolution: {integrity: sha512-66/V2i5hQanC51vBQKPH4aI8NMAcBW59FVBs+rC7eGHupMyfn34q7rZIE+ETlJ+XTevqfUhVVBgSUNSW2flEUQ==}
 
   whatwg-mimetype@3.0.0:
     resolution: {integrity: sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q==}
@@ -11128,6 +11180,15 @@ snapshots:
 
   unpipe@1.0.0: {}
 
+  unplugin@3.4.0(rolldown@1.2.11)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)):
+    dependencies:
+      '@jridgewell/remapping': 2.3.5
+      picomatch: 4.0.7
+      webpack-virtual-modules: 0.6.2
+    optionalDependencies:
+      rolldown: 1.2.11
+      vite: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+
   uri-js@4.4.1:
     dependencies:
       punycode: 2.3.1
@@ -11158,6 +11219,22 @@ snapshots:
     optionalDependencies:
       '@effect/platform-browser': 4.1.0(effect@4.1.0)
       '@effect/platform-node': 4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0))
+
+  vibelang-unplugin@file:.vibelang-toolchain/vibelang-unplugin-0.0.11-d83e2657e595.tgz(rolldown@1.2.11)(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-3ee099e972e9.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)):
+    dependencies:
+      unplugin: 3.4.0(rolldown@1.2.11)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+      vibelang: file:.vibelang-toolchain/vibelang-0.0.11-3ee099e972e9.tgz
+    transitivePeerDependencies:
+      - '@farmfe/core'
+      - '@rsbuild/core'
+      - '@rspack/core'
+      - bun-types-no-globals
+      - esbuild
+      - rolldown
+      - rollup
+      - unloader
+      - vite
+      - webpack
 
   vibelang-vite@file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-3ee099e972e9.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)):
     dependencies:
@@ -11267,6 +11344,8 @@ snapshots:
       defaults: 1.0.4
 
   webidl-conversions@8.0.1: {}
+
+  webpack-virtual-modules@0.6.2: {}
 
   whatwg-mimetype@3.0.0: {}
 
