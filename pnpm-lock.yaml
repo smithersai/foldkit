@@ -2129,6 +2129,9 @@ importers:
       unified:
         specifier: ^11.0.5
         version: 11.0.5
+      vibelang-runtime:
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       '@types/mdast':
         specifier: ^4.0.4
@@ -2154,6 +2157,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
