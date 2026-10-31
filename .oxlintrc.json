@@ -76,6 +76,7 @@
     }
   ],
   "ignorePatterns": [
+    "**/*.d.vibe.ts",
     "dist/",
     "node_modules/",
     "repos/",

@@ -2117,6 +2117,12 @@ importers:
       typescript:
         specifier: npm:@typescript/typescript6@^6.0.2
         version: '@typescript/typescript6@6.0.2'
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vitest:
         specifier: ^4.1.11
         version: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
@@ -2188,16 +2194,25 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
 
   packages/typing-game/shared:
     dependencies:
       effect:
         specifier: 4.1.0
         version: 4.1.0
+      vibelang-runtime:
+        specifier: file:../../../.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-c838030582d5.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
     devDependencies:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
 
   packages/ui:
     dependencies:
@@ -2226,6 +2241,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a2b67ac4484b.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-ded6f21a5a10.tgz)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vitest:
         specifier: ^5.0.2
         version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))

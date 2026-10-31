@@ -10,5 +10,8 @@
     "declarationMap": true,
     "rewriteRelativeImportExtensions": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "vibelang": {
+    "declarationSidecars": true
+  }
 }

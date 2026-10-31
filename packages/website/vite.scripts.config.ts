@@ -1,3 +1,4 @@
+import vibelang from 'vibelang-vite'
 import { defineConfig } from 'vite'
 
 // NOTE: These scripts need Vite to resolve shared application modules, but they
@@ -5,4 +6,4 @@ import { defineConfig } from 'vite'
 // view-identity transform would add branding calls inside callbacks that
 // Playwright serializes into the browser, where the imported helper is
 // unavailable.
-export default defineConfig({})
+export default defineConfig({ plugins: [vibelang()] })
