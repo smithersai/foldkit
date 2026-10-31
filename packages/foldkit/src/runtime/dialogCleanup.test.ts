@@ -1,7 +1,7 @@
 import { Effect, Fiber, Schema } from 'effect'
 import { describe, expect, it, vi } from 'vitest'
 
-import * as Command from '../command/index.js'
+import * as Command from '../command/index.vibe'
 import * as Dom from '../dom/index.js'
 import { defineMessageUnion } from '../message/index.js'
 import type * as Update from '../update/index.js'

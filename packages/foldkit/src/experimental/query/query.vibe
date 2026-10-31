@@ -1,7 +1,7 @@
 import { Number as EffectNumber } from 'effect'
 
 import * as AsyncData from '../../asyncData/index.ts'
-import * as Command from '../../command/index.ts'
+import * as Command from '../../command/index.vibe'
 import { defineMessageUnion } from '../../message/index.ts'
 import { modifyFields } from '../../struct/index.vibe'
 import * as Update from '../../update/index.ts'

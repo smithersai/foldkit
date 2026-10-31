@@ -1,5 +1,5 @@
 import * as AsyncData from '../../asyncData/index.ts'
-import * as Command from '../../command/index.ts'
+import * as Command from '../../command/index.vibe'
 import * as Update from '../../update/index.ts'
 
 export type FoldLens<ParentModel, ParentMessage, ChildModel, ChildMessage> =

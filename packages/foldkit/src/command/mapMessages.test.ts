@@ -3,7 +3,7 @@ import { expect, expectTypeOf } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import * as Command from './index.js'
+import * as Command from './index.vibe'
 
 const CompletedFetchNotes = Schema.TaggedStruct('CompletedFetchNotes', {
   noteCount: Schema.Number,

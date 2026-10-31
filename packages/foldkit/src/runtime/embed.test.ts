@@ -1,7 +1,7 @@
 import { Effect, Exit, Queue, Schema, Stream } from 'effect'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import * as Command from '../command/index.js'
+import * as Command from '../command/index.vibe'
 import { type Html, __htmlBuilder } from '../html/index.js'
 import { defineMessageUnion } from '../message/index.js'
 import * as Mount from '../mount/index.vibe'

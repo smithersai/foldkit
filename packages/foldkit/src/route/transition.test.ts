@@ -3,7 +3,7 @@ import { expect, expectTypeOf, vi } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import type * as Command from '../command/index.js'
+import type * as Command from '../command/index.vibe'
 import { defineMessageUnion } from '../message/index.js'
 import * as Update from '../update/index.js'
 import { defineRouteUnion } from './index.js'

@@ -1,6 +1,6 @@
 import { Array, Effect, Option, Schema } from 'effect'
 
-import * as Command from '../../command/index.js'
+import * as Command from '../../command/index.vibe'
 import { defineMessageUnion } from '../../message/index.js'
 import { modifyFields } from '../../struct/index.vibe'
 import * as Update from '../../update/index.js'

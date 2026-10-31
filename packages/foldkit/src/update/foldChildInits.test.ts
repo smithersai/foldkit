@@ -3,7 +3,7 @@ import { expect, expectTypeOf } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import * as Command from '../command/index.js'
+import * as Command from '../command/index.vibe'
 import { defineMessageUnion } from '../message/index.js'
 import { modifyFields } from '../struct/index.vibe'
 import * as Story from '../test/story.js'

@@ -1,6 +1,6 @@
 import { Effect, Schema } from "effect";
 import * as AsyncData from '../../asyncData/index.js';
-import * as Command from '../../command/index.js';
+import * as Command from '../../command/index.vibe';
 import * as Update from '../../update/index.js';
 import { type CompletedFetchOf, type LiftQuery } from './internal.vibe';
 export type QueryConfig<Name extends string, A, AI, E, EI, R> = Readonly<{

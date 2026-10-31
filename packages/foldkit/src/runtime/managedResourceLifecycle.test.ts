@@ -1,7 +1,7 @@
 import { Context, Effect, Fiber, Layer, Option, Schema } from 'effect'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import * as Command from '../command/index.js'
+import * as Command from '../command/index.vibe'
 import { __htmlBuilder } from '../html/index.js'
 import * as ManagedResource from '../managedResource/index.js'
 import { make } from '../managedResource/managedResource.js'

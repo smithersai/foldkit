@@ -1,7 +1,13 @@
-import { Array, Effect, Function, Option, Predicate, Schema } from 'effect'
+import {
+  Array,
+  Function as EffectFunction,
+  Option,
+  Predicate,
+  Schema,
+} from 'effect'
 
-import { CommandDefinitionTypeId, brandAsDefinition } from './brand.js'
-import * as Interruptible from './interruptible/index.js'
+import { CommandDefinitionTypeId, brandAsDefinition } from './brand.ts'
+import * as Interruptible from './interruptible/index.ts'
 
 export { CommandDefinitionTypeId }
 
@@ -11,17 +17,17 @@ export { CommandDefinitionTypeId }
  *  interrupt registry so a later Interrupt Command can stop it. */
 export type Command<T, E = never, R = never> = [T] extends [Schema.Top]
   ? Readonly<{
-      name: string
-      args?: Record<string, unknown>
-      key?: string
-      effect: Effect.Effect<Schema.Schema.Type<T>, E, R>
-    }>
+    mutable name: string
+    mutable args?: Record<string, unknown>
+    mutable key?: string
+    mutable effect: Schema.Schema.Type<T>!E!R
+  }>
   : Readonly<{
-      name: string
-      args?: Record<string, unknown>
-      key?: string
-      effect: Effect.Effect<T, E, R>
-    }>
+    mutable name: string
+    mutable args?: Record<string, unknown>
+    mutable key?: string
+    mutable effect: T!E!R
+  }>
 
 /** @internal A single link in a Command's message-mapping chain. Each mapper
  *  lifts the previous result Message into the next Message space. Typed
@@ -39,36 +45,36 @@ type MessageMapper = (message: unknown) => unknown
  *  optional because Commands built by hand (not via {@link define}) carry no
  *  chain; readers treat its absence as an empty chain. */
 type CommandWithMappers = Readonly<{
-  name: string
-  args?: Record<string, unknown>
-  key?: string
-  interruptsKey?: string
-  effect: Effect.Effect<unknown, unknown, unknown>
-  messageMappers?: ReadonlyArray<MessageMapper>
+  mutable name: string
+  mutable args?: Record<string, unknown>
+  mutable key?: string
+  mutable interruptsKey?: string
+  mutable effect: unknown!unknown!unknown
+  mutable messageMappers?: ReadonlyArray<MessageMapper>
 }>
 
 /** A Command definition for a Command with no declared args. Call as `Definition()` to produce a Command instance. */
 export interface CommandDefinitionNoArgs<
   Name extends string,
-  Eff extends Effect.Effect<any, any, any>,
+  Eff extends any!any!any,
 > {
   readonly [CommandDefinitionTypeId]: CommandDefinitionTypeId
   readonly name: Name
-  (): Readonly<{ name: Name; effect: Eff }>
+  (): Readonly<{ mutable name: Name; mutable effect: Eff }>
 }
 
 /** A Command definition for a Command with declared args. Call as `Definition(args)` to produce a Command instance. */
 export interface CommandDefinitionWithArgs<
   Name extends string,
   Fields extends Schema.Struct.Fields,
-  Eff extends Effect.Effect<any, any, any>,
+  Eff extends any!any!any,
 > {
   readonly [CommandDefinitionTypeId]: CommandDefinitionTypeId
   readonly name: Name
   (args: Schema.Schema.Type<Schema.Struct<Fields>>): Readonly<{
-    name: Name
-    args: Schema.Schema.Type<Schema.Struct<Fields>>
-    effect: Eff
+    mutable name: Name
+    mutable args: Schema.Schema.Type<Schema.Struct<Fields>>
+    mutable effect: Eff
   }>
 }
 
@@ -77,8 +83,8 @@ export type CommandDefinition<
   Name extends string = string,
   ResultMessage = any,
 > =
-  | CommandDefinitionNoArgs<Name, Effect.Effect<ResultMessage, any, any>>
-  | CommandDefinitionWithArgs<Name, any, Effect.Effect<ResultMessage, any, any>>
+  | CommandDefinitionNoArgs<Name, ResultMessage!any!any>
+  | CommandDefinitionWithArgs<Name, any, ResultMessage!any!any>
 
 /** Makes a Command interruptible. `true` keys every invocation by the Command
  *  name, which is what you want when at most one invocation is meaningfully in
@@ -95,22 +101,22 @@ export type InterruptOption<
 > =
   | true
   | Readonly<{
-      keyFields: Array.NonEmptyReadonlyArray<KeyField>
-      toKey: (keyArgs: Pick<Args, KeyField>) => string
-    }>
+    mutable keyFields: Array.NonEmptyReadonlyArray<KeyField>
+    mutable toKey: (keyArgs: Pick<Args, KeyField>) => string
+  }>
 
 /** @internal The shape {@link define} reads at runtime. The public overloads
  *  carry the precise types; this is only what the implementation destructures. */
 type DefineConfig = Readonly<{
-  args?: Schema.Struct.Fields
-  messages: ReadonlyArray<Schema.Top>
-  interrupt?:
+  mutable args?: Schema.Struct.Fields
+  mutable messages: ReadonlyArray<Schema.Top>
+  mutable interrupt?:
     | true
     | Readonly<{
-        keyFields?: ReadonlyArray<string>
-        toKey?: (keyArgs: any) => string
-      }>
-  execute: any
+      mutable keyFields?: ReadonlyArray<string>
+      mutable toKey?: (keyArgs: any) => string
+    }>
+  mutable execute: any
 }>
 
 // NOTE: The suspend is load bearing, not a redundant wrapper. Without it the
@@ -122,10 +128,12 @@ type DefineConfig = Readonly<{
 // surfaced this, not the boundary of it. Suspending defers the body to
 // execution, where the runtime can contain any failure it produces.
 // A no-args `execute` is already an Effect value and needs no equivalent.
-const suspendExecute = (
-  config: DefineConfig,
+const suspendExecute = effect (
+  config: { mutable execute: (args: any) => any!any!any },
   args: any,
-): Effect.Effect<any, any, any> => Effect.suspend(() => config.execute(args))
+): any!any!any => {
+  return try config.execute(args)
+}
 
 /**
  * Defines a Command. Every input is a named field: `args` declares the args
@@ -221,21 +229,22 @@ export function define<
   const Name extends string,
   Fields extends Schema.Struct.Fields,
   const Messages extends ReadonlyArray<Schema.Top>,
-  const KeyField extends keyof Schema.Schema.Type<Schema.Struct<Fields>> &
-    string,
-  Eff extends Effect.Effect<Schema.Schema.Type<Messages[number]>, any, any>,
+  const KeyField extends
+    & keyof Schema.Schema.Type<Schema.Struct<Fields>>
+    & string,
+  Eff extends Schema.Schema.Type<Messages[number]>!any!any,
 >(
   name: Name,
   config: Readonly<{
-    args: Fields
-    messages: Messages
-    interrupt: Readonly<{
-      keyFields: Array.NonEmptyReadonlyArray<KeyField>
-      toKey: (
+    mutable args: Fields
+    mutable messages: Messages
+    mutable interrupt: Readonly<{
+      mutable keyFields: Array.NonEmptyReadonlyArray<KeyField>
+      mutable toKey: (
         keyArgs: Pick<Schema.Schema.Type<Schema.Struct<Fields>>, KeyField>,
       ) => string
     }>
-    execute: (args: Schema.Schema.Type<Schema.Struct<Fields>>) => Eff
+    mutable execute: (args: Schema.Schema.Type<Schema.Struct<Fields>>) => Eff
   }>,
 ): Interruptible.DefinitionWithArgs<
   Name,
@@ -248,14 +257,14 @@ export function define<
   const Name extends string,
   Fields extends Schema.Struct.Fields,
   const Messages extends ReadonlyArray<Schema.Top>,
-  Eff extends Effect.Effect<Schema.Schema.Type<Messages[number]>, any, any>,
+  Eff extends Schema.Schema.Type<Messages[number]>!any!any,
 >(
   name: Name,
   config: Readonly<{
-    args: Fields
-    messages: Messages
-    interrupt: true
-    execute: (args: Schema.Schema.Type<Schema.Struct<Fields>>) => Eff
+    mutable args: Fields
+    mutable messages: Messages
+    mutable interrupt: true
+    mutable execute: (args: Schema.Schema.Type<Schema.Struct<Fields>>) => Eff
   }>,
 ): Interruptible.DefinitionWithArgsNameKeyed<Name, Fields, Eff>
 
@@ -263,40 +272,40 @@ export function define<
   const Name extends string,
   Fields extends Schema.Struct.Fields,
   const Messages extends ReadonlyArray<Schema.Top>,
-  Eff extends Effect.Effect<Schema.Schema.Type<Messages[number]>, any, any>,
+  Eff extends Schema.Schema.Type<Messages[number]>!any!any,
 >(
   name: Name,
   config: Readonly<{
-    args: Fields
-    messages: Messages
-    interrupt?: never
-    execute: (args: Schema.Schema.Type<Schema.Struct<Fields>>) => Eff
+    mutable args: Fields
+    mutable messages: Messages
+    mutable interrupt?: never
+    mutable execute: (args: Schema.Schema.Type<Schema.Struct<Fields>>) => Eff
   }>,
 ): CommandDefinitionWithArgs<Name, Fields, Eff>
 
 export function define<
   const Name extends string,
   const Messages extends ReadonlyArray<Schema.Top>,
-  Eff extends Effect.Effect<Schema.Schema.Type<Messages[number]>, any, any>,
+  Eff extends Schema.Schema.Type<Messages[number]>!any!any,
 >(
   name: Name,
   config: Readonly<{
-    messages: Messages
-    interrupt: true
-    execute: Eff
+    mutable messages: Messages
+    mutable interrupt: true
+    mutable execute: Eff
   }>,
 ): Interruptible.DefinitionNoArgs<Name, Eff>
 
 export function define<
   const Name extends string,
   const Messages extends ReadonlyArray<Schema.Top>,
-  Eff extends Effect.Effect<Schema.Schema.Type<Messages[number]>, any, any>,
+  Eff extends Schema.Schema.Type<Messages[number]>!any!any,
 >(
   name: Name,
   config: Readonly<{
-    messages: Messages
-    interrupt?: never
-    execute: Eff
+    mutable messages: Messages
+    mutable interrupt?: never
+    mutable execute: Eff
   }>,
 ): CommandDefinitionNoArgs<Name, Eff>
 
@@ -306,7 +315,7 @@ export function define(name: string, config: DefineConfig): unknown {
 
   if (Option.isNone(maybeInterrupt)) {
     if (isArgsDeclared) {
-      const definition = (args: any) => ({
+      const definition = (args: any): CommandWithMappers => ({
         name,
         args,
         effect: suspendExecute(config, args),
@@ -315,7 +324,7 @@ export function define(name: string, config: DefineConfig): unknown {
       brandAsDefinition(definition, name)
       return definition
     } else {
-      const definition = () => ({
+      const definition = (): CommandWithMappers => ({
         name,
         effect: config.execute,
         messageMappers: [],
@@ -326,15 +335,14 @@ export function define(name: string, config: DefineConfig): unknown {
   }
 
   const { value: interrupt } = maybeInterrupt
-  const maybeToKey =
-    Predicate.isObject(interrupt) &&
-    Predicate.hasProperty(interrupt, 'toKey') &&
-    Predicate.isFunction(interrupt.toKey)
-      ? Option.some(interrupt.toKey)
-      : Option.none<(keyArgs: any) => string>()
+  const maybeToKey = Predicate.isObject(interrupt)
+      && Predicate.hasProperty(interrupt, 'toKey')
+      && Predicate.isFunction(interrupt.toKey)
+    ? Option.some(interrupt.toKey)
+    : Option.none<(keyArgs: any) => string>()
 
   if (!isArgsDeclared) {
-    const definition = () => ({
+    const definition = (): CommandWithMappers => ({
       name,
       key: name,
       effect: Interruptible.__registerKeyWhileRunning(name, config.execute),
@@ -348,7 +356,7 @@ export function define(name: string, config: DefineConfig): unknown {
   }
 
   if (Option.isNone(maybeToKey)) {
-    const definition = (args: any) => ({
+    const definition = (args: any): CommandWithMappers => ({
       name,
       args,
       key: name,
@@ -368,7 +376,7 @@ export function define(name: string, config: DefineConfig): unknown {
   const { value: toKey } = maybeToKey
   const toFullKey = (keyArgs: any): string => `${name}:${toKey(keyArgs)}`
 
-  const definition = (args: any) => {
+  const definition = (args: any): CommandWithMappers => {
     const key = toFullKey(args)
     return {
       name,
@@ -401,25 +409,25 @@ export function define(name: string, config: DefineConfig): unknown {
  *  `foldkit/prefer-command-mapmessage` lint rule flags this misuse. */
 export const mapEffect: {
   <A, E1, R1, E2, R2>(
-    f: (effect: Effect.Effect<A, E1, R1>) => Effect.Effect<NoInfer<A>, E2, R2>,
+    f: (effect: A!E1!R1) => NoInfer<A>!E2!R2,
   ): (command: Command<A, E1, R1>) => Command<A, E2, R2>
   <A, E1, R1, E2, R2>(
     command: Command<A, E1, R1>,
-    f: (effect: Effect.Effect<A, E1, R1>) => Effect.Effect<NoInfer<A>, E2, R2>,
+    f: (effect: A!E1!R1) => NoInfer<A>!E2!R2,
   ): Command<A, E2, R2>
-} = Function.dual(
+} = EffectFunction.dual(
   2,
   <A, E1, R1, E2, R2>(
     command: Readonly<{
-      name: string
-      args?: Record<string, unknown>
-      effect: Effect.Effect<A, E1, R1>
+      mutable name: string
+      mutable args?: Record<string, unknown>
+      mutable effect: A!E1!R1
     }>,
-    f: (effect: Effect.Effect<A, E1, R1>) => Effect.Effect<NoInfer<A>, E2, R2>,
+    f: (effect: A!E1!R1) => NoInfer<A>!E2!R2,
   ): Readonly<{
-    name: string
-    args?: Record<string, unknown>
-    effect: Effect.Effect<A, E2, R2>
+    mutable name: string
+    mutable args?: Record<string, unknown>
+    mutable effect: A!E2!R2
   }> => ({ ...command, effect: f(command.effect) }),
 )
 
@@ -454,32 +462,30 @@ export const mapMessage: {
   ): <E = never, R = never>(
     command: Command<FromMessage, E, R>,
   ) => Command<ToMessage, E, R>
-} = Function.dual(
+} = EffectFunction.dual(
   2,
   <FromMessage, ToMessage, E = never, R = never>(
     command: Readonly<{
-      name: string
-      args?: Record<string, unknown>
-      effect: Effect.Effect<FromMessage, E, R>
+      mutable name: string
+      mutable args?: Record<string, unknown>
+      mutable effect: FromMessage!E!R
     }>,
     f: (message: FromMessage) => ToMessage,
   ): Readonly<{
-    name: string
-    args?: Record<string, unknown>
-    effect: Effect.Effect<ToMessage, E, R>
+    mutable name: string
+    mutable args?: Record<string, unknown>
+    mutable effect: ToMessage!E!R
   }> => {
-    /* eslint-disable @typescript-eslint/consistent-type-assertions */
-    const withMappers = command as unknown as CommandWithMappers
-    return {
+    const withMappers: CommandWithMappers = command
+    const mapped = {
       ...withMappers,
-      effect: Effect.map(command.effect, f),
+      effect: effect {
+        const message = try command.effect
+        return try sync((f, message) => f(message), f, message)
+      },
       messageMappers: [...(withMappers.messageMappers ?? []), f],
-    } as unknown as Readonly<{
-      name: string
-      args?: Record<string, unknown>
-      effect: Effect.Effect<ToMessage, E, R>
-    }>
-    /* eslint-enable @typescript-eslint/consistent-type-assertions */
+    }
+    return mapped
   },
 )
 
@@ -519,11 +525,11 @@ export const mapMessages: {
   ): <E = never, R = never>(
     commands: ReadonlyArray<Command<FromMessage, E, R>> | undefined,
   ) => ReadonlyArray<Command<ToMessage, E, R>>
-} = Function.dual(
+} = EffectFunction.dual(
   2,
   <FromMessage, ToMessage, E = never, R = never>(
     commands: ReadonlyArray<Command<FromMessage, E, R>> | undefined,
     f: (message: FromMessage) => ToMessage,
   ): ReadonlyArray<Command<ToMessage, E, R>> =>
-    Array.map(commands ?? [], command => mapMessage(command, f)),
+    Array.map(commands ?? [], (command): infer _ => mapMessage(command, f)),
 )
