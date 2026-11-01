@@ -34,7 +34,7 @@ type ChildMessageConstruction = Readonly<{
   messagePath?: ImportedMessagePath
 }>
 
-const moduleExtensionPattern = /\.(?:cjs|cts|js|jsx|mjs|mts|ts|tsx)$/
+const moduleExtensionPattern = /\.(?:cjs|cts|js|jsx|mjs|mts|ts|tsx|vibe)$/
 
 const moduleSegmentName = (segment: string): string =>
   segment.replace(moduleExtensionPattern, '')
