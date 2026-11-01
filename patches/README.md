@@ -50,3 +50,23 @@ accepted declaration spelling policy (decided detail 263).
 callback contract and a batch of 250 generated callback shapes against
 stock TypeScript, with single-threaded raw declaration comparisons before
 and after formatting.
+
+## `vite@8.3.1`
+
+Vite's dependency optimizer marks an in-flight build cancelled, then removes
+its temporary directory without waiting for the bundle writer. The server
+can report that it is closed while Rolldown still writes dependencies,
+racing application or test cleanup. The patch drains the existing build
+result before removing the directory, including when the build rejects.
+
+`packages/vite-plugin-foldkit/test/optimizerShutdown.test.ts` holds a real
+optimizer writer behind a barrier and checks that `server.close()` observes
+the completed writer. The regression and its 100-run property fail without
+the patch and pass with it. The property covers build startup, generation,
+writing and bundle close with generated event-loop interleavings. Existing
+resolution tests retain their original cleanup and assertions.
+
+Refresh with `pnpm patch vite@8.3.1` and `pnpm patch-commit`; keep the
+shutdown tests passing. This patch covers the confirmed in-flight writer
+race. It does not claim that every dependency-scanning shutdown race is
+fixed.

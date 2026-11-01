@@ -17,6 +17,7 @@ overrides:
 patchedDependencies:
   effect-oxlint@0.3.4: 5ae1feddd491062272373f775b503eba796f277697b34a9a65faf2f92dd72e20
   knip@6.38.0: e6383dad5c49dd2ad320b00e2b5a52e0932217aea0fc51a725af6a2e559bc2fe
+  vite@8.3.1: 836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27
 
 importers:
 
@@ -84,7 +85,7 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
 
   comparisons/pixel-art-react:
     dependencies:
@@ -100,7 +101,7 @@ importers:
     devDependencies:
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       '@testing-library/dom':
         specifier: ^10.4.2
         version: 10.4.2
@@ -118,7 +119,7 @@ importers:
         version: 19.3.0(@types/react@19.3.0)
       '@vitejs/plugin-react':
         specifier: ^6.1.1
-        version: 6.1.1(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 6.1.1(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       jsdom:
         specifier: ^30.1.1
         version: 30.1.1(@noble/hashes@2.4.0)
@@ -130,10 +131,10 @@ importers:
         version: 7.0.2
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^4.1.11
-        version: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/api-cache:
     dependencies:
@@ -161,7 +162,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -176,13 +177,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/api-cache-query:
     dependencies:
@@ -210,7 +211,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -225,13 +226,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/auth:
     dependencies:
@@ -262,7 +263,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       fast-check:
         specifier: 4.3.0
         version: 4.3.0
@@ -280,13 +281,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/canvas-art:
     dependencies:
@@ -314,7 +315,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -329,13 +330,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/charting:
     dependencies:
@@ -369,7 +370,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       fast-check:
         specifier: 4.3.0
         version: 4.3.0
@@ -387,13 +388,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/counter:
     dependencies:
@@ -421,7 +422,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -436,13 +437,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/counters:
     dependencies:
@@ -470,7 +471,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -485,13 +486,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/crash-view:
     dependencies:
@@ -519,7 +520,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       fast-check:
         specifier: 4.3.0
         version: 4.3.0
@@ -537,13 +538,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/embedding:
     dependencies:
@@ -571,7 +572,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -586,13 +587,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/form:
     dependencies:
@@ -623,7 +624,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -638,13 +639,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/generative-art:
     dependencies:
@@ -672,7 +673,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -687,13 +688,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/interrupting-commands:
     dependencies:
@@ -721,7 +722,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -736,13 +737,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/job-application:
     dependencies:
@@ -773,7 +774,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -788,13 +789,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/kanban:
     dependencies:
@@ -828,7 +829,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -843,13 +844,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/managed-resource-layer:
     dependencies:
@@ -877,7 +878,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -892,13 +893,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/map:
     dependencies:
@@ -932,7 +933,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       fast-check:
         specifier: 4.3.0
         version: 4.3.0
@@ -950,13 +951,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/personal-blog:
     dependencies:
@@ -990,7 +991,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -1005,13 +1006,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/pixel-art:
     dependencies:
@@ -1042,7 +1043,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -1057,13 +1058,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/query-sync:
     dependencies:
@@ -1094,7 +1095,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -1109,13 +1110,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/route-transitions:
     dependencies:
@@ -1140,7 +1141,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -1155,13 +1156,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/routing:
     dependencies:
@@ -1189,7 +1190,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -1204,13 +1205,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/shopping-cart:
     dependencies:
@@ -1238,7 +1239,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -1253,13 +1254,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/slow-warnings:
     dependencies:
@@ -1284,7 +1285,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -1299,13 +1300,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/snake:
     dependencies:
@@ -1330,7 +1331,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -1345,13 +1346,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/ssg:
     dependencies:
@@ -1376,7 +1377,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -1388,10 +1389,10 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
 
   examples/ssr:
     dependencies:
@@ -1428,7 +1429,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -1443,13 +1444,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/state-machine:
     dependencies:
@@ -1480,7 +1481,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -1495,13 +1496,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/stopwatch:
     dependencies:
@@ -1529,7 +1530,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -1544,13 +1545,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/todo:
     dependencies:
@@ -1581,7 +1582,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -1596,13 +1597,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/ui-showcase:
     dependencies:
@@ -1633,7 +1634,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -1648,13 +1649,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/view-transitions:
     dependencies:
@@ -1679,7 +1680,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -1694,13 +1695,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/weather:
     dependencies:
@@ -1728,7 +1729,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -1743,13 +1744,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/web-components:
     dependencies:
@@ -1786,7 +1787,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -1801,13 +1802,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   examples/websocket-chat:
     dependencies:
@@ -1832,7 +1833,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -1847,13 +1848,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   internal/api-reference-generator:
     devDependencies:
@@ -1908,13 +1909,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^4.1.11
-        version: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   internal/performance-harness:
     dependencies:
@@ -1936,7 +1937,7 @@ importers:
         version: link:../../packages/vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -1948,10 +1949,10 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
 
   packages/create-foldkit-app:
     dependencies:
@@ -1991,10 +1992,10 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   packages/devtools:
     dependencies:
@@ -2037,10 +2038,10 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vitest:
         specifier: ^4.1.11
-        version: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   packages/devtools-mcp:
     dependencies:
@@ -2086,16 +2087,16 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-unplugin:
         specifier: file:../../.vibelang-toolchain/vibelang-unplugin-0.0.11-1672af3fce63.tgz
-        version: file:.vibelang-toolchain/vibelang-unplugin-0.0.11-1672af3fce63.tgz(rolldown@1.2.11)(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-unplugin-0.0.11-1672af3fce63.tgz(rolldown@1.2.11)(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^4.1.11
-        version: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   packages/examples-e2e:
     devDependencies:
@@ -2168,10 +2169,10 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   packages/markdown:
     dependencies:
@@ -2223,13 +2224,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^4.1.11
-        version: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   packages/node:
     dependencies:
@@ -2254,7 +2255,7 @@ importers:
         version: 7.0.2
       vitest:
         specifier: ^4.1.11
-        version: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   packages/oxlint-plugin-foldkit:
     dependencies:
@@ -2291,13 +2292,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-unplugin:
         specifier: file:../../.vibelang-toolchain/vibelang-unplugin-0.0.11-1672af3fce63.tgz
-        version: file:.vibelang-toolchain/vibelang-unplugin-0.0.11-1672af3fce63.tgz(rolldown@1.2.11)(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-unplugin-0.0.11-1672af3fce63.tgz(rolldown@1.2.11)(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vitest:
         specifier: ^4.1.11
-        version: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   packages/typing-game/client:
     dependencies:
@@ -2328,7 +2329,7 @@ importers:
         version: link:../../vite-plugin-foldkit
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
@@ -2343,13 +2344,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^4.1.11
-        version: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   packages/typing-game/server:
     dependencies:
@@ -2436,10 +2437,10 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vitest:
         specifier: ^5.0.2
-        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   packages/vite-plugin-foldkit:
     dependencies:
@@ -2460,7 +2461,7 @@ importers:
         version: 1.4.2
       vitefu:
         specifier: ^1.1.3
-        version: 1.1.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 1.1.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       ws:
         specifier: ^8.21.3
         version: 8.21.3
@@ -2473,7 +2474,7 @@ importers:
         version: 8.18.1
       '@vitejs/plugin-basic-ssl':
         specifier: ^2.3.0
-        version: 2.3.0(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 2.3.0(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       effect:
         specifier: 4.1.0
         version: 4.1.0
@@ -2497,16 +2498,16 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vite-host:
         specifier: npm:vite@8.2.1
         version: vite@8.2.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^4.1.11
-        version: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   packages/website:
     dependencies:
@@ -2573,7 +2574,7 @@ importers:
         version: 2.6.2
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       fast-check:
         specifier: 4.10.2
         version: 4.10.2
@@ -2606,13 +2607,13 @@ importers:
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
       vibelang-vite:
         specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz
-        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
-        version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+        version: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: ^4.1.11
-        version: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+        version: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
 packages:
 
@@ -7562,7 +7563,7 @@ snapshots:
   '@effect/vitest@4.1.0(effect@4.1.0)(vitest@5.0.2)':
     dependencies:
       effect: 4.1.0
-      vitest: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+      vitest: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   '@emnapi/core@1.11.2':
     dependencies:
@@ -8431,12 +8432,12 @@ snapshots:
       '@tailwindcss/oxide-win32-arm64-msvc': 4.3.3
       '@tailwindcss/oxide-win32-x64-msvc': 4.3.3
 
-  '@tailwindcss/vite@4.3.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))':
+  '@tailwindcss/vite@4.3.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))':
     dependencies:
       '@tailwindcss/node': 4.3.3
       '@tailwindcss/oxide': 4.3.3
       tailwindcss: 4.3.3
-      vite: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+      vite: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
 
   '@tanstack/react-virtual@3.14.13(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
     dependencies:
@@ -8467,7 +8468,7 @@ snapshots:
       picocolors: 1.1.1
       redent: 3.0.0
     optionalDependencies:
-      vitest: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+      vitest: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   '@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
     dependencies:
@@ -8863,14 +8864,14 @@ snapshots:
     optionalDependencies:
       react: 19.3.0
 
-  '@vitejs/plugin-basic-ssl@2.3.0(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))':
+  '@vitejs/plugin-basic-ssl@2.3.0(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))':
     dependencies:
-      vite: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+      vite: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
 
-  '@vitejs/plugin-react@6.1.1(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))':
+  '@vitejs/plugin-react@6.1.1(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))':
     dependencies:
       '@rolldown/pluginutils': 1.0.1
-      vite: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+      vite: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
 
   '@vitest/coverage-v8@4.1.11(vitest@4.1.11)':
     dependencies:
@@ -8884,7 +8885,7 @@ snapshots:
       obug: 2.2.1
       std-env: 4.2.0
       tinyrainbow: 3.1.1
-      vitest: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+      vitest: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
     optional: true
 
   '@vitest/coverage-v8@5.0.2(vitest@5.0.2)':
@@ -8897,7 +8898,7 @@ snapshots:
       obug: 2.2.1
       std-env: 4.2.0
       tinyrainbow: 3.1.1
-      vitest: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+      vitest: 5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
 
   '@vitest/expect@4.1.11':
     dependencies:
@@ -8914,22 +8915,22 @@ snapshots:
     dependencies:
       '@vitest/istanbul-lib-coverage': 1.0.1
 
-  '@vitest/mocker@4.1.11(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))':
+  '@vitest/mocker@4.1.11(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))':
     dependencies:
       '@vitest/spy': 4.1.11
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+      vite: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
 
-  '@vitest/mocker@5.0.2(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))':
+  '@vitest/mocker@5.0.2(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       '@vitest/spy': 5.0.2
       estree-walker: 3.0.3
       magic-string: 1.4.2
     optionalDependencies:
-      vite: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+      vite: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
 
   '@vitest/pretty-format@4.1.11':
     dependencies:
@@ -11512,14 +11513,14 @@ snapshots:
 
   unpipe@1.0.0: {}
 
-  unplugin@3.4.0(rolldown@1.2.11)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)):
+  unplugin@3.4.0(rolldown@1.2.11)(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)):
     dependencies:
       '@jridgewell/remapping': 2.3.5
       picomatch: 4.0.7
       webpack-virtual-modules: 0.6.2
     optionalDependencies:
       rolldown: 1.2.11
-      vite: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+      vite: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
 
   uri-js@4.4.1:
     dependencies:
@@ -11552,9 +11553,9 @@ snapshots:
       '@effect/platform-browser': 4.1.0(effect@4.1.0)
       '@effect/platform-node': 4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0))
 
-  vibelang-unplugin@file:.vibelang-toolchain/vibelang-unplugin-0.0.11-1672af3fce63.tgz(rolldown@1.2.11)(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)):
+  vibelang-unplugin@file:.vibelang-toolchain/vibelang-unplugin-0.0.11-1672af3fce63.tgz(rolldown@1.2.11)(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)):
     dependencies:
-      unplugin: 3.4.0(rolldown@1.2.11)(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+      unplugin: 3.4.0(rolldown@1.2.11)(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vibelang: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
     transitivePeerDependencies:
       - '@farmfe/core'
@@ -11568,10 +11569,10 @@ snapshots:
       - vite
       - webpack
 
-  vibelang-vite@file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)):
+  vibelang-vite@file:.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)):
     dependencies:
       vibelang: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
-      vite: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+      vite: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
 
   vibelang@file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0):
     dependencies:
@@ -11591,7 +11592,7 @@ snapshots:
       jiti: 2.7.0
       yaml: 2.9.1
 
-  vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1):
+  vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1):
     dependencies:
       lightningcss: 1.33.0
       picomatch: 4.0.7
@@ -11604,14 +11605,14 @@ snapshots:
       jiti: 2.7.0
       yaml: 2.9.1
 
-  vitefu@1.1.3(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)):
+  vitefu@1.1.3(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)):
     optionalDependencies:
-      vite: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+      vite: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
 
-  vitest@4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)):
+  vitest@4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)):
     dependencies:
       '@vitest/expect': 4.1.11
-      '@vitest/mocker': 4.1.11(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+      '@vitest/mocker': 4.1.11(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       '@vitest/pretty-format': 4.1.11
       '@vitest/runner': 4.1.11
       '@vitest/snapshot': 4.1.11
@@ -11628,7 +11629,7 @@ snapshots:
       tinyexec: 1.3.1
       tinyglobby: 0.2.17
       tinyrainbow: 3.1.1
-      vite: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+      vite: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
@@ -11639,10 +11640,10 @@ snapshots:
     transitivePeerDependencies:
       - msw
 
-  vitest@5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)):
+  vitest@5.0.2(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@5.0.2)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)):
     dependencies:
       '@types/chai': 5.2.3
-      '@vitest/mocker': 5.0.2(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+      '@vitest/mocker': 5.0.2(vite@8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       chai: 6.2.2
       es-module-lexer: 2.3.2
       expect-type: 1.4.0
@@ -11653,7 +11654,7 @@ snapshots:
       tinybench: 6.2.0
       tinyexec: 1.3.1
       tinyglobby: 0.2.17
-      vite: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
+      vite: 8.3.1(patch_hash=836a22527bb4b49500626c52be8295cbcab180fce5ffa61dfe54e89c76485e27)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
       why-is-node-running: 3.2.2
     optionalDependencies:
       '@opentelemetry/api': 1.9.0

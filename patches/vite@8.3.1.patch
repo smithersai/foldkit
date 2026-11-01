@@ -1,0 +1,17 @@
+diff --git a/dist/node/chunks/node.js b/dist/node/chunks/node.js
+index ee0a227ca9d629a7b70a66cb328095bd309ea85e..14ab4602de3a665d16c9d4313f49d8f9166762b2 100644
+--- a/dist/node/chunks/node.js
++++ b/dist/node/chunks/node.js
+@@ -28414,7 +28414,11 @@ function runOptimizeDeps(environment, depsInfo) {
+ 			optimizerContext.cancelled = true;
+ 			const { context } = await preparedRun;
+ 			context?.cancel();
+-			cleanUp();
++			try {
++				await runResult;
++			} finally {
++				cleanUp();
++			}
+ 		},
+ 		result: runResult
+ 	};

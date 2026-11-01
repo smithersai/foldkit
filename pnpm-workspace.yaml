@@ -47,3 +47,4 @@ overrides:
 patchedDependencies:
   effect-oxlint@0.3.4: patches/effect-oxlint@0.3.4.patch
   knip@6.38.0: patches/knip@6.38.0.patch
+  vite@8.3.1: patches/vite@8.3.1.patch
