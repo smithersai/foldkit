@@ -1,4 +1,4 @@
-import { Effect, FileSystem as FileSystem_1, Option } from 'effect';
+import { Effect, FileSystem, Option } from 'effect';
 import type { PlatformError } from 'effect/PlatformError';
 import { AppRoute } from '../src/route.vibe';
 import { type BlogPostEntry } from './blogPosts.vibe';
@@ -23,4 +23,4 @@ export declare const extractPostArticleHtml: (pageHtml: string) => Option.Option
  */
 export declare const toFeedArticleHtml: (articleHtml: string) => string;
 export declare const buildBlogRssFeed: (posts: ReadonlyArray<BlogPostEntry>, articleHtmlBySlug: ReadonlyMap<string, string>) => string;
-export declare const readTemplateFrom: (indexPath: string, templateCopyPath: string) => Effect.Effect<string, PlatformError, FileSystem_1.FileSystem>;
+export declare const readTemplateFrom: (indexPath: string, templateCopyPath: string) => Effect.Effect<string, PlatformError, FileSystem.FileSystem>;

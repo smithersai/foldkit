@@ -1,6 +1,6 @@
 import { type AppRoute } from '../src/route.vibe';
 import { type PageMetadata } from './metadata.vibe';
-export { extractMarkdownFromRenderedDocument } from './markdownDocument.js';
+export { extractMarkdownFromRenderedDocument } from './markdownDocument.ts';
 export declare const urlPathToMarkdownPath: (urlPath: string) => string;
 export declare const shouldExportMarkdown: (route: AppRoute) => boolean;
 export type LlmsIndexEntry = Readonly<{

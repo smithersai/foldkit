@@ -1,5 +1,5 @@
 import { Option, Schema } from 'effect';
-import { type NamedSchemas } from './typeToString.js';
+import { type NamedSchemas } from './typeToString.ts';
 import { type TypeDocJson } from './typedoc.vibe';
 export declare const ApiParameter: Schema.Struct<{
     readonly name: Schema.String;

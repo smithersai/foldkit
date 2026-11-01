@@ -1,5 +1,5 @@
 import type { Heading, MarkdownDocument } from '@foldkit/markdown';
-import type { TableOfContentsEntry } from '../tableOfContentsEntry.js';
+import type { TableOfContentsEntry } from '../tableOfContentsEntry.ts';
 /** Stable heading ids by node identity, shared by the view and the extractor. */
 export type HeadingIds = ReadonlyMap<Heading, string>;
 /** The extracted table of contents plus the id assigned to every heading. */

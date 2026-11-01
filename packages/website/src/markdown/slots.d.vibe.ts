@@ -1,5 +1,5 @@
 import { Html } from 'foldkit/html';
-import { type CodeBlock } from '../component/index.js';
+import { type CodeBlock } from '../component/index.ts';
 import type { RenderHeadingLink } from '../prose.vibe';
 /**
  * Live demos a page embeds, keyed by the names on its `::Demo{name}` islands.

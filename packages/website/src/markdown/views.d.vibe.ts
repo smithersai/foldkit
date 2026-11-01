@@ -1,6 +1,6 @@
 import 'foldkit/html';
 import type * as Markdown from '@foldkit/markdown';
-import { CodeBlock } from '../component/index.js';
+import { CodeBlock } from '../component/index.ts';
 import { type RenderHeadingLink } from '../prose.vibe';
 import { type HeadingIds } from './tableOfContents.vibe';
 /** Everything a document needs to render its nodes with the site's styling. */

@@ -1,4 +1,4 @@
-import { Effect, FileSystem as FileSystem_1 } from 'effect';
+import { Effect, FileSystem } from 'effect';
 import { type Browser } from 'playwright';
 import { type AppRoute } from '../src/route.vibe';
 import { type ApiModuleNameResolver } from './metadata.vibe';
@@ -9,7 +9,7 @@ declare class OgImageError extends OgImageError_base<{
     readonly message: string;
 }> {
 }
-export declare const generateOgImages: (routes: ReadonlyArray<AppRoute>, routeToUrlPath: (route: AppRoute) => string, distDir: string, resolveApiModuleName: ApiModuleNameResolver, browser: Browser) => Effect.Effect<void, OgImageError | import("effect/PlatformError").PlatformError, FileSystem_1.FileSystem>;
+export declare const generateOgImages: (routes: ReadonlyArray<AppRoute>, routeToUrlPath: (route: AppRoute) => string, distDir: string, resolveApiModuleName: ApiModuleNameResolver, browser: Browser) => Effect.Effect<void, OgImageError | import("effect/PlatformError").PlatformError, FileSystem.FileSystem>;
 export declare const ORGANIZATION_SCHEMA: {
     '@context': string;
     '@type': string;

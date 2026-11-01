@@ -1,7 +1,7 @@
 import { Option } from 'effect';
 import { Submodel } from 'foldkit';
 import { type ResolvedTheme } from '../../colorScheme.vibe';
-import { type CodeBlock } from '../../component/index.js';
+import { type CodeBlock } from '../../component/index.ts';
 export declare const view: Submodel.View<{
     readonly demoTabs: {
         readonly id: string;

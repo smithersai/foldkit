@@ -1,6 +1,6 @@
 import { Submodel } from 'foldkit';
 import { Html } from 'foldkit/html';
-import { type CodeBlock } from '../../component/index.js';
+import { type CodeBlock } from '../../component/index.ts';
 import { type RenderHeadingLink } from '../../prose.vibe';
 declare const { tableOfContents, view: renderPage }: Readonly<{
     tableOfContents: readonly Readonly<{

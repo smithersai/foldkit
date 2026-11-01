@@ -1,7 +1,7 @@
 import { Effect, Option, Schema } from 'effect';
 import { AsyncData, Command, Submodel, Update } from 'foldkit';
-import { CodeBlock } from '../../component/index.js';
-import type { TableOfContentsEntry } from '../../tableOfContentsEntry.js';
+import { CodeBlock } from '../../component/index.ts';
+import type { TableOfContentsEntry } from '../../tableOfContentsEntry.ts';
 import { Message } from './message.vibe';
 import { type Model } from './model.vibe';
 import { ExampleSources } from './sources.vibe';

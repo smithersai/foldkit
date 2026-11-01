@@ -1,6 +1,6 @@
-import { createIntersectionObserver } from '../browserIntersection.ts'
+import { ExperimentalBrowserIntersectionObserver } from 'vibelang-runtime/experimental/platform-browser'
 import { elementWithId } from '../browserDocument.ts'
-import { Array as Arr } from 'effect'
+import { Array as Arr, Iterable as Iter } from 'effect'
 import { AsyncData, Render, Subscription } from 'foldkit'
 
 import { Message } from '../message.vibe'
@@ -203,10 +203,15 @@ export const subscriptions = Subscription.make<Model, Message>()((
 
             try Render.afterCommit
 
-            try Effect.acquireRelease(
-              Effect.sync(() => {
-                const visibleSections = MutableRef.make(HashSet.empty<string>())
-                const observer = createIntersectionObserver(
+            provide ExperimentalBrowserIntersectionObserver.layer {
+              const visibleSections = MutableRef.make(HashSet.empty<string>())
+              const targets = Iter.filter(
+                Iter.map(sections, elementWithId),
+                (element): element is HTMLElement => element !== null,
+              )
+              try (try Experimental.IntersectionObserver.IntersectionObserver)
+                .observe(
+                  targets,
                   entries => {
                     Arr.forEach(
                       entries,
@@ -236,24 +241,10 @@ export const subscriptions = Subscription.make<Model, Message>()((
                       };
                     }
                   },
-                  {
-                    rootMargin: '-100px 0px -80% 0px',
-                  },
+                  { rootMargin: '-100px 0px -80% 0px' },
                 )
-
-                Arr.forEach(sections, sectionId => {
-                  const element = elementWithId(sectionId)
-                  if (element) {
-                    observer.observe(element)
-                  }
-                })
-
-                return observer
-              }),
-              observer => Effect.sync(() => observer.disconnect()),
-            )
-
-            return try Effect.never
+              return try Effect.never
+            }
           }
         ),
     },

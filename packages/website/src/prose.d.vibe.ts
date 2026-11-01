@@ -1,5 +1,5 @@
 import { Html, type HtmlBuilder } from 'foldkit/html';
-import { type TableOfContentsEntry } from './tableOfContentsEntry.js';
+import { type TableOfContentsEntry } from './tableOfContentsEntry.ts';
 /**
  * Builds the copy-link control beside a section heading.
  *
