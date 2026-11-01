@@ -1,6 +1,6 @@
-import { createServer } from './httpPlatform.ts'
+import { ExperimentalNodeHttpServer } from 'vibelang-runtime/experimental/platform-node'
 
-import { NodeCrypto, NodeHttpServer, NodeRuntime } from '@effect/platform-node'
+import { NodeCrypto, NodeRuntime } from '@effect/platform-node'
 import * as Shared from '@typing-game/shared'
 
 import {
@@ -62,7 +62,7 @@ const HttpAppLive = Layer.unwrap(effect {
 
 const Main = HttpAppLive.pipe(
   HttpServer.withLogAddress,
-  Layer.provide(NodeHttpServer.layer(createServer, { port: 3001 })),
+  Layer.provide(ExperimentalNodeHttpServer.layer({ port: 3001 })),
 )
 
 NodeRuntime.runMain(Layer.launch(Main))
