@@ -2044,6 +2044,9 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: 1.29.0
         version: 1.29.0(zod@4.6.5)
+      vibelang-runtime:
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-7461dd0df1ce.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-7461dd0df1ce.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
       ws:
         specifier: ^8.21.3
         version: 8.21.3
@@ -2081,6 +2084,9 @@ importers:
       vibelang-unplugin:
         specifier: file:../../.vibelang-toolchain/vibelang-unplugin-0.0.11-7e3b05c3f55f.tgz
         version: file:.vibelang-toolchain/vibelang-unplugin-0.0.11-7e3b05c3f55f.tgz(rolldown@1.2.11)(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-43acc36bf08f.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-6f2666fdf1ab.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-6f2666fdf1ab.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-43acc36bf08f.tgz(effect@4.1.0))(vite@8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)
