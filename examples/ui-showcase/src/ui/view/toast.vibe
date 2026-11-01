@@ -1,27 +1,21 @@
-import { Match, Option } from 'effect'
 import { Submodel } from 'foldkit'
 import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import type { EntryHandlers, Variant } from '@foldkit/ui/toast'
 
-import * as Icon from '../../icon'
-import { Message as UiMessage } from '../message'
-import type { UiModel } from '../model'
-import { Toast } from '../toast'
+import * as Icon from '../../icon.ts'
+import { Message as UiMessage } from '../message.ts'
+import type { UiModel } from '../model.vibe'
+import { Toast } from '../toast.vibe'
 
 type Entry = typeof Toast.Entry.Type
 
-const variantClassName = (variant: Variant): string =>
-  Match.value(variant).pipe(
-    Match.when('Info', () => 'border-gray-300 bg-white text-gray-900'),
-    Match.when(
-      'Success',
-      () => 'border-emerald-300 bg-emerald-50 text-emerald-900',
-    ),
-    Match.when('Warning', () => 'border-amber-300 bg-amber-50 text-amber-900'),
-    Match.when('Error', () => 'border-red-300 bg-red-50 text-red-900'),
-    Match.exhaustive,
-  )
+const variantClassName = (variant: Variant): string => match (variant) {
+  when 'Info': 'border-gray-300 bg-white text-gray-900';
+  when 'Success': 'border-emerald-300 bg-emerald-50 text-emerald-900';
+  when 'Warning': 'border-amber-300 bg-amber-50 text-amber-900';
+  when 'Error': 'border-red-300 bg-red-50 text-red-900';
+}
 
 const entryClassName =
   'w-80 motion-safe:data-[swipe=settling]:transition-[translate] motion-safe:data-[swipe=settling]:duration-150 motion-safe:data-[swipe=settling]:ease-out motion-safe:data-[swipe=end]:transition-[translate] motion-safe:data-[swipe=end]:duration-[240ms] motion-safe:data-[swipe=end]:ease-in'
@@ -34,7 +28,9 @@ const renderToastEntry = (
   return h.div(
     [
       h.Class(
-        `relative rounded-lg border shadow-sm p-3 pr-9 ${variantClassName(entry.variant)}`,
+        `relative rounded-lg border shadow-sm p-3 pr-9 ${
+          variantClassName(entry.variant)
+        }`,
       ),
     ],
     [
@@ -47,9 +43,9 @@ const renderToastEntry = (
           ),
         ],
       ),
-      ...Option.match(entry.payload.maybeDescription, {
-        onNone: () => [],
-        onSome: description => [
+      ...match (entry.payload.maybeDescription) {
+        when Option.None: [];
+        when Option.Some(let description): [
           h.p(
             [h.Class('text-sm text-gray-700 mt-0.5')],
             [
@@ -59,8 +55,8 @@ const renderToastEntry = (
               ),
             ],
           ),
-        ],
-      }),
+        ];
+      },
       h.button(
         [
           ...handlers.dismiss,

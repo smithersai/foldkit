@@ -1,5 +1,3 @@
-import { Schema } from 'effect'
-
 import { Toast as UiToast } from '@foldkit/ui'
 
 /** Payload shape for the showcase's toast stack. Consumer decides what goes

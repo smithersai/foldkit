@@ -1,12 +1,11 @@
-import { Option } from 'effect'
 import { Submodel } from 'foldkit'
 import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { Combobox, Dialog } from '@foldkit/ui'
 
-import { Message as UiMessage } from '../message'
-import type { City, UiModel } from '../model'
-import { CityCombobox, comboboxInputs } from './combobox'
+import { Message as UiMessage } from '../message.ts'
+import type { City, UiModel } from '../model.vibe'
+import { CityCombobox, comboboxInputs } from './combobox.vibe'
 
 const triggerClassName =
   'px-4 py-2 text-base font-normal cursor-pointer transition rounded-lg border border-gray-300 bg-white text-gray-900 hover:bg-gray-100 select-none'
@@ -104,7 +103,7 @@ const editFiltersContent = (
   title: Dialog.RenderInfo['title'],
   description: Dialog.RenderInfo['description'],
   comboboxModel: Combobox.Model,
-  maybeSelectedCity: Option.Option<City>,
+  maybeSelectedCity: Option<City>,
   h: HtmlBuilder<UiMessage>,
 ): ReadonlyArray<Html> => [
   h.h2([...title, h.Class(titleClassName)], ['Edit filters']),
@@ -198,9 +197,9 @@ const dialogWithPanel = (
     [...dialog, h.Class(dialogClassName)],
     isVisible
       ? [
-          h.div([...backdrop, h.Class(backdropClassName)]),
-          h.div([...panel, h.Class(panelClassNameValue)], content()),
-        ]
+        h.div([...backdrop, h.Class(backdropClassName)]),
+        h.div([...panel, h.Class(panelClassNameValue)], content()),
+      ]
       : [],
   )
 
@@ -262,7 +261,7 @@ const animatedDemo = (
 const overlayDemo = (
   dialogModel: Dialog.Model,
   comboboxModel: Combobox.Model,
-  maybeSelectedCity: Option.Option<City>,
+  maybeSelectedCity: Option<City>,
   h: HtmlBuilder<UiMessage>,
 ): Html => {
   const overlayDialogView = (render: Dialog.RenderInfo): Html =>

@@ -1,4 +1,3 @@
-import { Schema } from 'effect'
 import { File, Calendar as FoldkitCalendar } from 'foldkit'
 
 import {
@@ -20,49 +19,41 @@ import {
   VirtualList,
 } from '@foldkit/ui'
 
-import { Toast } from './toast'
+import { Toast } from './toast.vibe'
 
-export const Plan = Schema.Literals(['Startup', 'Business', 'Enterprise'])
-export type Plan = typeof Plan.Type
+export schema Plan = 'Startup' | 'Business' | 'Enterprise'
 
-export const DemoTab = Schema.Literals(['Foldkit', 'React', 'Elm'])
-export type DemoTab = typeof DemoTab.Type
+export schema DemoTab = 'Foldkit' | 'React' | 'Elm'
 
-export const City = Schema.Literals([
-  'Johannesburg',
-  'Kyiv',
-  'Oxford',
-  'Plymouth',
-  'Quito',
-  'Wellington',
-  'Zurich',
-])
-export type City = typeof City.Type
+export schema City =
+  | 'Johannesburg'
+  | 'Kyiv'
+  | 'Oxford'
+  | 'Plymouth'
+  | 'Quito'
+  | 'Wellington'
+  | 'Zurich'
 
-export const ListboxItem = Schema.Literals([
-  'Michael Bluth',
-  'Lindsay Funke',
-  'Gob Bluth',
-  'George Michael',
-  'Maeby Funke',
-  'Buster Bluth',
-  'Tobias Funke',
-  'Lucille Bluth',
-])
-export type ListboxItem = typeof ListboxItem.Type
+export schema ListboxItem =
+  | 'Michael Bluth'
+  | 'Lindsay Funke'
+  | 'Gob Bluth'
+  | 'George Michael'
+  | 'Maeby Funke'
+  | 'Buster Bluth'
+  | 'Tobias Funke'
+  | 'Lucille Bluth'
 
-export const DemoCard = Schema.Struct({
-  id: Schema.String,
-  label: Schema.String,
-})
-export type DemoCard = typeof DemoCard.Type
+export schema DemoCard {
+  id: string
+  label: string
+}
 
-export const DemoColumn = Schema.Struct({
-  id: Schema.String,
-  label: Schema.String,
-  cards: Schema.Array(DemoCard),
-})
-export type DemoColumn = typeof DemoColumn.Type
+export schema DemoColumn {
+  id: string
+  label: string
+  cards: ReadonlyArray<DemoCard>
+}
 
 export const UiModel = Schema.Struct({
   mobileMenuDialog: Dialog.Model,

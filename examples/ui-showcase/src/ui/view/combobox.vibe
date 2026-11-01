@@ -1,14 +1,14 @@
 import clsx from 'clsx'
-import { Array, Option } from 'effect'
+import { Array as Arr } from 'effect'
 import { Submodel } from 'foldkit'
 import { type Html, type HtmlBuilder, childAttributes } from 'foldkit/html'
 
 import { Combobox } from '@foldkit/ui'
 import type { AnchorConfig } from '@foldkit/ui/combobox'
 
-import * as Icon from '../../icon'
-import { Message as UiMessage } from '../message'
-import type { City, UiModel } from '../model'
+import * as Icon from '../../icon.ts'
+import { Message as UiMessage } from '../message.ts'
+import type { City, UiModel } from '../model.vibe'
 
 export const CityCombobox = Combobox.create<City>()
 export const CityMultiCombobox = Combobox.Multi.create<City>()
@@ -53,9 +53,10 @@ const emptyTagClassName = 'text-sm py-0.5 text-gray-400'
 const filterCities = (inputValue: string): ReadonlyArray<City> =>
   inputValue === ''
     ? CITIES
-    : Array.filter(CITIES, city =>
-        city.toLowerCase().includes(inputValue.toLowerCase()),
-      )
+    : Arr.filter(
+      CITIES,
+      city => city.toLowerCase().includes(inputValue.toLowerCase()),
+    )
 
 export const comboboxInputs = (
   {
@@ -291,13 +292,13 @@ export const view = Submodel.defineView<UiModel, UiMessage>(
           [
             h.div(
               [h.Class('flex flex-wrap gap-1.5 mb-2')],
-              Array.match(model.comboboxMultiDemoSelectedCities, {
+              Arr.match(model.comboboxMultiDemoSelectedCities, {
                 onEmpty: () => [
                   h.span([h.Class(emptyTagClassName)], ['No selection']),
                 ],
                 onNonEmpty: selectedCities =>
                   selectedCities.map(city =>
-                    h.span([h.Class(tagClassName)], [city]),
+                    h.span([h.Class(tagClassName)], [city])
                   ),
               }),
             ),

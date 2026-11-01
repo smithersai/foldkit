@@ -5,7 +5,7 @@ import { Tooltip } from '@foldkit/ui'
 import type { AnchorConfig } from '@foldkit/ui/tooltip'
 
 import { Message as UiMessage } from '../message'
-import type { UiModel } from '../model'
+import type { UiModel } from '../model.vibe'
 
 const triggerClassName =
   'inline-flex items-center gap-1.5 px-4 py-2 text-base font-normal cursor-pointer transition rounded-lg border border-gray-300 bg-white text-gray-900 hover:bg-gray-100 select-none'

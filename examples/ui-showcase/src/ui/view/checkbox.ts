@@ -4,7 +4,7 @@ import type { Html, HtmlBuilder } from 'foldkit/html'
 import { Checkbox } from '@foldkit/ui'
 
 import { Message as UiMessage } from '../message'
-import type { UiModel } from '../model'
+import type { UiModel } from '../model.vibe'
 
 const CHECKBOX_BASIC_DEMO_ID = 'checkbox-basic-demo'
 const CHECKBOX_ALL_DEMO_ID = 'checkbox-all-demo'

@@ -1,11 +1,10 @@
-import { Option } from 'effect'
 import { Subscription } from 'foldkit'
 
 import { DragAndDrop, Slider } from '@foldkit/ui'
 
-import { Message as UiMessage } from './message'
-import type { UiModel } from './model'
-import { Toast } from './toast'
+import { Message as UiMessage } from './message.ts'
+import type { UiModel } from './model.vibe'
+import { Toast } from './toast.vibe'
 
 const dragAndDropSubscriptions = Subscription.lift({
   dragPointer: DragAndDrop.subscriptions.documentPointer,

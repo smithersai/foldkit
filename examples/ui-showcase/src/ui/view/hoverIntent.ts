@@ -4,7 +4,7 @@ import type { Html } from 'foldkit/html'
 import { HoverIntent } from '@foldkit/ui'
 
 import { Message as UiMessage } from '../message'
-import type { UiModel } from '../model'
+import type { UiModel } from '../model.vibe'
 
 const triggerClassName =
   'inline-flex cursor-pointer items-center rounded-lg bg-accent-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-accent-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-600'

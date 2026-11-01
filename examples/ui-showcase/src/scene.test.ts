@@ -3,7 +3,7 @@ import { click, expect, given, role, scene, text } from 'foldkit/scene'
 import { describe, test } from 'vitest'
 
 import { AppRoute, type Model, update, view } from './main'
-import { uiInit } from './ui/init'
+import { uiInit } from './ui/init.vibe'
 
 const today = Calendar.make(2026, 4, 16)
 const uiInit_ = uiInit(today)

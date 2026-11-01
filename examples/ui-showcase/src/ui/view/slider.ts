@@ -4,7 +4,7 @@ import type { Html } from 'foldkit/html'
 import { Slider } from '@foldkit/ui'
 
 import { Message as UiMessage } from '../message'
-import type { UiModel } from '../model'
+import type { UiModel } from '../model.vibe'
 
 const horizontalRowClassName = 'flex flex-col gap-2 w-full max-w-sm'
 

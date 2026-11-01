@@ -5,7 +5,7 @@ import type { Html, HtmlBuilder } from 'foldkit/html'
 import { Tabs } from '@foldkit/ui'
 
 import { Message as UiMessage } from '../message'
-import { type DemoTab, type UiModel } from '../model'
+import { type DemoTab, type UiModel } from '../model.vibe'
 
 const demoTabs: ReadonlyArray<DemoTab> = ['Foldkit', 'React', 'Elm']
 

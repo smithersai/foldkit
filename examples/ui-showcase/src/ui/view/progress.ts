@@ -4,7 +4,7 @@ import type { Html } from 'foldkit/html'
 import { Progress } from '@foldkit/ui'
 
 import type { Message as UiMessage } from '../message'
-import type { UiModel } from '../model'
+import type { UiModel } from '../model.vibe'
 
 const rowClassName = 'flex flex-col gap-2 w-full max-w-sm'
 const headerClassName = 'flex items-center justify-between text-sm'

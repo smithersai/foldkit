@@ -20,7 +20,7 @@ import {
   VirtualList,
 } from '@foldkit/ui'
 
-import { Toast } from './toast'
+import { Toast } from './toast.vibe'
 
 export const Message = defineMessageUnion({
   GotMobileMenuDialogMessage: { message: Dialog.Message },

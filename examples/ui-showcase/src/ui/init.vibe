@@ -1,4 +1,3 @@
-import { Option } from 'effect'
 import { Calendar, type Update } from 'foldkit'
 
 import {
@@ -20,9 +19,9 @@ import {
   VirtualList,
 } from '@foldkit/ui'
 
-import type { Message as UiMessage } from './message'
-import type { UiModel } from './model'
-import { Toast } from './toast'
+import type { Message as UiMessage } from './message.ts'
+import type { UiModel } from './model.vibe'
+import { Toast } from './toast.vibe'
 
 type InitReturn = Update.Return<UiModel, UiMessage>
 

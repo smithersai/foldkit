@@ -29,13 +29,17 @@ import type {
   ListboxItem,
   Plan,
   UiModel,
-} from './model'
-import { Toast } from './toast'
-import { CityCombobox, CityMultiCombobox } from './view/combobox'
-import { CharacterListbox, ItemListbox, ItemMultiListbox } from './view/listbox'
+} from './model.vibe'
+import { Toast } from './toast.vibe'
+import { CityCombobox, CityMultiCombobox } from './view/combobox.vibe'
+import {
+  CharacterListbox,
+  ItemListbox,
+  ItemMultiListbox,
+} from './view/listbox.vibe'
 import { PlanRadioGroup } from './view/radioGroup'
 import { DemoTabs } from './view/tabs'
-import { ROW_COUNT as VIRTUAL_LIST_ROW_COUNT } from './view/virtualList'
+import { ROW_COUNT as VIRTUAL_LIST_ROW_COUNT } from './view/virtualList.vibe'
 
 const reorderColumns = (
   columns: ReadonlyArray<DemoColumn>,

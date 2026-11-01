@@ -19,10 +19,10 @@ import { Url, toString as urlToString } from 'foldkit/url'
 import { Dialog, Nav } from '@foldkit/ui'
 
 import * as Icon from './icon'
-import { uiInit } from './ui/init'
+import { uiInit } from './ui/init.vibe'
 import { Message as UiMessage } from './ui/message'
-import { UiModel } from './ui/model'
-import * as UiSubscriptions from './ui/subscriptions'
+import { UiModel } from './ui/model.vibe'
+import * as UiSubscriptions from './ui/subscriptions.vibe'
 import { closeMobileMenu, openMobileMenu, uiUpdate } from './ui/update'
 import * as View from './ui/view'
 

@@ -1,12 +1,11 @@
-import { Match } from 'effect'
 import { Submodel } from 'foldkit'
 import { type Html, type HtmlBuilder, childAttributes } from 'foldkit/html'
 
 import { Menu } from '@foldkit/ui'
 
-import * as Icon from '../../icon'
-import { Message as UiMessage } from '../message'
-import type { UiModel } from '../model'
+import * as Icon from '../../icon.ts'
+import { Message as UiMessage } from '../message.ts'
+import type { UiModel } from '../model.vibe'
 
 const triggerClassName =
   'inline-flex items-center gap-1.5 px-4 py-2 text-base font-normal cursor-pointer transition rounded-lg border border-gray-300 bg-white text-gray-900 hover:bg-gray-100 select-none'
@@ -41,35 +40,32 @@ const MENU_ITEMS: ReadonlyArray<MenuItem> = [
   'Delete',
 ]
 
-const menuItemIcon = (item: MenuItem): Html =>
-  Match.value(item).pipe(
-    Match.when('Edit', () => Icon.pencil(ICON_SIZE)),
-    Match.when('Duplicate', () => Icon.documentDuplicate(ICON_SIZE)),
-    Match.when('Archive', () => Icon.archiveBox(ICON_SIZE)),
-    Match.when('Move', () => Icon.arrowRight(ICON_SIZE)),
-    Match.when('Delete', () => Icon.trash(ICON_SIZE)),
-    Match.exhaustive,
-  )
+const menuItemIcon = (item: MenuItem): Html => match (item) {
+  when 'Edit': Icon.pencil(ICON_SIZE);
+  when 'Duplicate': Icon.documentDuplicate(ICON_SIZE);
+  when 'Archive': Icon.archiveBox(ICON_SIZE);
+  when 'Move': Icon.arrowRight(ICON_SIZE);
+  when 'Delete': Icon.trash(ICON_SIZE);
+}
 
 const isItemDisabled = (item: MenuItem): boolean => item === 'Archive'
 
-const itemGroupKey = (item: MenuItem): string =>
-  Match.value(item).pipe(
-    Match.when('Delete', () => 'Danger'),
-    Match.orElse(() => 'Actions'),
-  )
+const itemGroupKey = (item: MenuItem): string => match (item) {
+  when 'Delete': 'Danger';
+  default: 'Actions';
+}
 
 const groupToHeading = (
   groupKey: string,
   h: HtmlBuilder<UiMessage>,
 ): Menu.GroupHeading | undefined => {
-  return Match.value(groupKey).pipe(
-    Match.when('Danger', () => ({
+  return match (groupKey) {
+    when 'Danger': ({
       content: h.span([], ['Danger Zone']),
       className: headingClassName,
-    })),
-    Match.orElse(() => undefined),
-  )
+    });
+    default: undefined;
+  }
 }
 
 const MENU_ANCHOR = {
@@ -81,11 +77,11 @@ const MENU_ANCHOR = {
 const menuViewConfig = (
   itemsClassNameValue: string,
   h: HtmlBuilder<UiMessage>,
-) => {
+): infer _ => {
   return {
     anchor: MENU_ANCHOR,
     items: MENU_ITEMS,
-    itemToConfig: (item: MenuItem) => ({
+    itemToConfig: (item: MenuItem): infer _ => ({
       className: itemClassName,
       content: h.div(
         [h.Class('flex items-center gap-2.5')],
@@ -102,7 +98,8 @@ const menuViewConfig = (
     backdropAttributes: childAttributes([h.Class(backdropClassName)]),
     attributes: childAttributes([h.Class(wrapperClassName)]),
     itemGroupKey,
-    groupToHeading: (groupKey: string) => groupToHeading(groupKey, h),
+    groupToHeading: (groupKey: string): Menu.GroupHeading | undefined =>
+      groupToHeading(groupKey, h),
   }
 }
 

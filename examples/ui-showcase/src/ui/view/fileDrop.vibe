@@ -1,11 +1,11 @@
-import { Array, Match, Number } from 'effect'
+import { Array as Arr, Number as Num } from 'effect'
 import { File, Submodel } from 'foldkit'
 import type { Html } from 'foldkit/html'
 
 import { FileDrop } from '@foldkit/ui'
 
-import { Message as UiMessage } from '../message'
-import type { UiModel } from '../model'
+import { Message as UiMessage } from '../message.ts'
+import type { UiModel } from '../model.vibe'
 
 const dropZoneClassName =
   'flex flex-col items-center gap-2 cursor-pointer rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 px-6 py-10 text-center hover:border-accent-400 select-none data-[drag-over]:border-accent-500 data-[drag-over]:bg-accent-50'
@@ -27,15 +27,16 @@ const removeButtonClassName =
 const BYTES_PER_KB = 1024
 const BYTES_PER_MB = BYTES_PER_KB * BYTES_PER_KB
 
-const formatFileSize = (bytes: number): string =>
-  Match.value(bytes).pipe(
-    Match.when(Number.isLessThan(BYTES_PER_KB), () => `${bytes} B`),
-    Match.when(
-      Number.isLessThan(BYTES_PER_MB),
-      () => `${(bytes / BYTES_PER_KB).toFixed(1)} KB`,
-    ),
-    Match.orElse(() => `${(bytes / BYTES_PER_MB).toFixed(1)} MB`),
-  )
+const formatFileSize = (bytes: number): string => {
+  const value = bytes
+  const isBytes = Num.isLessThan(BYTES_PER_KB)
+  const isKilobytes = Num.isLessThan(BYTES_PER_MB)
+  return match (value) {
+    when isBytes: `${bytes} B`;
+    when isKilobytes: `${(bytes / BYTES_PER_KB).toFixed(1)} KB`;
+    default: `${(bytes / BYTES_PER_MB).toFixed(1)} MB`;
+  }
+}
 
 const fileKey = (file: File.File): string =>
   `${File.name(file)}:${File.size(file)}:${file.lastModified}`
@@ -76,7 +77,7 @@ export const view = Submodel.defineView<UiModel, UiMessage>(
               toParentMessage: message =>
                 UiMessage.GotFileDropBasicDemoMessage({ message }),
             }),
-            ...Array.match(model.fileDropBasicDemoFiles, {
+            ...Arr.match(model.fileDropBasicDemoFiles, {
               onEmpty: () => [],
               onNonEmpty: files =>
                 files.map((file, fileIndex) =>
@@ -110,7 +111,7 @@ export const view = Submodel.defineView<UiModel, UiMessage>(
                         ['Remove'],
                       ),
                     ],
-                  ),
+                  )
                 ),
             }),
           ],

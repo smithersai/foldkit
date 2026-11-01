@@ -1,30 +1,14 @@
-import { Match, Option } from 'effect'
 import { Submodel } from 'foldkit'
 import type { ChildAttribute, Html, HtmlBuilder } from 'foldkit/html'
 
-import { Calendar, DatePicker } from '@foldkit/ui'
-import type { AnchorConfig } from '@foldkit/ui/popover'
+import { Calendar } from '@foldkit/ui'
 
-import * as Icon from '../../icon'
-import { Message as UiMessage } from '../message'
-import type { UiModel } from '../model'
+import * as Icon from '../../icon.ts'
+import { Message as UiMessage } from '../message.ts'
+import type { UiModel } from '../model.vibe'
 
-const triggerClassName =
-  'inline-flex items-center justify-between gap-2 min-w-48 px-4 py-2 text-base font-normal cursor-pointer transition rounded-lg border border-gray-300 bg-white text-gray-900 hover:bg-gray-100 select-none'
-
-const triggerContentClassName = 'flex w-full items-center justify-between gap-4'
-
-const placeholderClassName = 'text-gray-500'
-
-const panelClassName =
-  'rounded-xl border border-gray-200 bg-white p-4 shadow-lg z-10 outline-none'
-
-const backdropClassName = 'fixed inset-0 z-0'
-
-const wrapperClassName = 'relative inline-block'
-
-const calendarWrapperClassName =
-  'flex flex-col gap-3 select-none min-w-[268px] min-h-[284px]'
+const containerClassName =
+  'inline-flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm select-none min-w-[304px] min-h-[324px]'
 
 const headerClassName = 'flex items-center justify-between gap-2'
 
@@ -53,6 +37,7 @@ const monthYearGridClassName =
 
 const monthYearButtonClassName =
   'flex h-full w-full items-center justify-center rounded-md text-sm text-gray-900 tabular-nums cursor-pointer hover:bg-gray-100 group-data-[today]:ring-1 group-data-[today]:ring-gray-400 group-data-[selected]:bg-accent-600 group-data-[selected]:text-white! group-data-[selected]:hover:bg-accent-600 group-data-[focused]:outline-2 group-data-[focused]:outline-offset-2 group-data-[focused]:outline-accent-500 group-data-[disabled]:cursor-not-allowed group-data-[disabled]:opacity-40'
+
 // PIECES
 
 const navButton = (
@@ -83,7 +68,7 @@ const weekRow = (week: Calendar.Week, h: HtmlBuilder<UiMessage>): Html =>
             [cell.label],
           ),
         ],
-      ),
+      )
     ),
   )
 
@@ -94,7 +79,7 @@ const daysView = (
   h: HtmlBuilder<UiMessage>,
 ): Html =>
   h.div(
-    [...days.root, h.Class(calendarWrapperClassName)],
+    [...days.root, h.Class(containerClassName)],
     [
       h.div(
         [h.Class(headerClassName)],
@@ -113,7 +98,7 @@ const daysView = (
               h.div(
                 [...header.attributes, h.Class(columnHeaderClassName)],
                 [header.name],
-              ),
+              )
             ),
           ),
           ...days.weeks.map(week => weekRow(week, h)),
@@ -127,7 +112,7 @@ const monthsView = (
   h: HtmlBuilder<UiMessage>,
 ): Html =>
   h.div(
-    [...months.root, h.Class(calendarWrapperClassName)],
+    [...months.root, h.Class(containerClassName)],
     [
       h.div(
         [h.Class(`${headerClassName} justify-center`)],
@@ -144,7 +129,7 @@ const monthsView = (
                 [cell.shortLabel],
               ),
             ],
-          ),
+          )
         ),
       ),
     ],
@@ -155,7 +140,7 @@ const yearsView = (
   h: HtmlBuilder<UiMessage>,
 ): Html =>
   h.div(
-    [...years.root, h.Class(calendarWrapperClassName)],
+    [...years.root, h.Class(containerClassName)],
     [
       h.div(
         [h.Class(headerClassName)],
@@ -179,83 +164,36 @@ const yearsView = (
                 [cell.label],
               ),
             ],
-          ),
+          )
         ),
       ),
     ],
   )
 
-// TRIGGER
-
-const DATE_PICKER_ANCHOR: AnchorConfig = {
-  placement: 'bottom-start',
-  gap: 4,
-  padding: 8,
-}
-
-const formatTriggerLabel = (
-  date: Readonly<{ year: number; month: number; day: number }>,
-): string =>
-  `${date.year}-${String(date.month).padStart(2, '0')}-${String(date.day).padStart(2, '0')}`
-
-const triggerContent = (
-  maybeDate: Option.Option<
-    Readonly<{ year: number; month: number; day: number }>
-  >,
-  h: HtmlBuilder<UiMessage>,
-): Html => {
-  return h.div(
-    [h.Class(triggerContentClassName)],
-    [
-      Option.match(maybeDate, {
-        onNone: () => h.span([h.Class(placeholderClassName)], ['Pick a date']),
-        onSome: date => h.span([], [formatTriggerLabel(date)]),
-      }),
-      Icon.chevronDown('w-4 h-4'),
-    ],
-  )
-}
-
 // VIEW
 
 export const view = Submodel.defineView<UiModel, UiMessage>(
   (model, h): Html => {
+    const calendarView = (u: Calendar.CalendarAttributes): infer _ => match (u) {
+      when { _tag: "Days" } and let days: daysView(days, h);
+      when { _tag: "Months" } and let months: monthsView(months, h);
+      when { _tag: "Years" } and let years: yearsView(years, h);
+    }
+
     return h.div(
       [],
       [
-        h.h2(
-          [h.Class('text-2xl font-bold text-gray-900 mb-6')],
-          ['Date Picker'],
-        ),
-        h.label(
-          [
-            h.For(DatePicker.triggerId(model.datePickerBasicDemo.id)),
-            h.Class('block mb-1.5 text-sm font-medium text-gray-900'),
-          ],
-          ['Due date'],
-        ),
+        h.h2([h.Class('text-2xl font-bold text-gray-900 mb-6')], ['Calendar']),
         h.submodel({
-          slotId: model.datePickerBasicDemo.id,
-          model: model.datePickerBasicDemo,
-          view: DatePicker.view,
+          slotId: model.calendarBasicDemo.id,
+          model: model.calendarBasicDemo,
+          view: Calendar.view,
           viewInputs: {
-            anchor: DATE_PICKER_ANCHOR,
-            maybeSelectedDate: model.maybeDatePickerBasicDemoSelectedDate,
-            triggerContent: maybeDate => triggerContent(maybeDate, h),
-            triggerClassName,
-            panelClassName,
-            backdropClassName,
-            className: wrapperClassName,
-            toCalendarView: Match.type<Calendar.CalendarAttributes>().pipe(
-              Match.tagsExhaustive({
-                Days: days => daysView(days, h),
-                Months: months => monthsView(months, h),
-                Years: years => yearsView(years, h),
-              }),
-            ),
+            maybeSelectedDate: model.maybeCalendarBasicDemoSelectedDate,
+            toView: calendarView,
           },
           toParentMessage: message =>
-            UiMessage.GotDatePickerBasicDemoMessage({ message }),
+            UiMessage.GotCalendarBasicDemoMessage({ message }),
         }),
       ],
     )

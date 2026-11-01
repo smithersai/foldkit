@@ -1,11 +1,11 @@
-import { Array, Match, Option, pipe } from 'effect'
+import { Array as Arr, pipe } from 'effect'
 import { Submodel } from 'foldkit'
 import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { VirtualList } from '@foldkit/ui'
 
-import { Message as UiMessage } from '../message'
-import type { UiModel } from '../model'
+import { Message as UiMessage } from '../message.ts'
+import type { UiModel } from '../model.vibe'
 
 type Activity = Readonly<{
   id: number
@@ -66,7 +66,7 @@ const branchNames = [
 ]
 
 const cycle = (xs: ReadonlyArray<string>, index: number): string =>
-  pipe(xs, Array.get(index % xs.length), Option.getOrThrow)
+  pipe(xs, Arr.get(index % xs.length), Option.getOrThrow)
 
 const formatTimeAgo = (hours: number): string => {
   if (hours < 1) {
@@ -88,15 +88,14 @@ const formatTimeAgo = (hours: number): string => {
 
 const targetForVerb = (verb: string, index: number): string => {
   const number = ((index * 13) % 9999) + 1
-  return Match.value(verb).pipe(
-    Match.withReturnType<string>(),
-    Match.when('pushed to', () => cycle(branchNames, index)),
-    Match.whenOr('opened', 'closed', 'reopened', () => `issue #${number}`),
-    Match.orElse(() => `PR #${number}`),
-  )
+  return match (verb) {
+    when 'pushed to': cycle(branchNames, index);
+    when 'opened' or 'closed' or 'reopened': `issue #${number}`;
+    default: `PR #${number}`;
+  }
 }
 
-const sampleActivities: ReadonlyArray<Activity> = Array.makeBy(
+const sampleActivities: ReadonlyArray<Activity> = Arr.makeBy(
   ROW_COUNT,
   index => {
     const actor = cycle(actorNames, index)
@@ -150,37 +149,44 @@ type Summary = Readonly<{
 const summaries: ReadonlyArray<Summary> = [
   {
     title: 'CI passing across all browsers',
-    body: 'Resolved the flake in the snapshot suite and confirmed the migration step runs idempotently against staging.',
+    body:
+      'Resolved the flake in the snapshot suite and confirmed the migration step runs idempotently against staging.',
     artifact: 'ci/run-4892',
   },
   {
     title: 'Tracking upstream change',
-    body: 'Linked the upstream regression and added reproduction context so the next reviewer has everything in one place.',
+    body:
+      'Linked the upstream regression and added reproduction context so the next reviewer has everything in one place.',
     artifact: 'tracker/issue-218',
   },
   {
     title: 'Release notes ready for review',
-    body: 'Bumped the patch version, regenerated the changelog, and queued the release notes for editorial pass.',
+    body:
+      'Bumped the patch version, regenerated the changelog, and queued the release notes for editorial pass.',
     artifact: 'release/v0.42.1-rc1',
   },
   {
     title: 'Rollback plan coordinated',
-    body: 'Walked through the unwind steps with on-call and pre-staged the revert PR in case the deploy needs to be undone.',
+    body:
+      'Walked through the unwind steps with on-call and pre-staged the revert PR in case the deploy needs to be undone.',
     artifact: 'runbook/rollback-checklist',
   },
   {
     title: 'Failure trace attached',
-    body: 'Captured the steps to reproduce, attached the failing trace, and tagged the owning team for triage.',
+    body:
+      'Captured the steps to reproduce, attached the failing trace, and tagged the owning team for triage.',
     artifact: 'traces/failure-7c2e',
   },
   {
     title: 'Visual direction approved',
-    body: 'Aligned with the design team on spacing, contrast, and the dark-mode treatment before merging the implementation.',
+    body:
+      'Aligned with the design team on spacing, contrast, and the dark-mode treatment before merging the implementation.',
     artifact: 'design/spec-v3',
   },
   {
     title: 'Migration verified on staging',
-    body: 'Confirmed the migration runs cleanly against the staging snapshot and produces the expected row counts on every shard.',
+    body:
+      'Confirmed the migration runs cleanly against the staging snapshot and produces the expected row counts on every shard.',
     artifact: 'migration/2026-04-batch',
   },
 ]
@@ -189,7 +195,7 @@ const SHORT_ROW_HEIGHT_PX = 56
 const TALL_ROW_HEIGHT_PX = 112
 
 const summaryFor = (index: number): Summary =>
-  pipe(summaries, Array.get(index % summaries.length), Option.getOrThrow)
+  pipe(summaries, Arr.get(index % summaries.length), Option.getOrThrow)
 
 export const variableActivities: ReadonlyArray<Activity> = sampleActivities
 

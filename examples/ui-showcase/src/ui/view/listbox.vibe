@@ -1,12 +1,12 @@
-import { Array, Option } from 'effect'
+import { Array as Arr } from 'effect'
 import { Submodel } from 'foldkit'
 import { type Html, type HtmlBuilder, childAttributes } from 'foldkit/html'
 
 import { Listbox } from '@foldkit/ui'
 
-import * as Icon from '../../icon'
-import { Message as UiMessage } from '../message'
-import type { ListboxItem, UiModel } from '../model'
+import * as Icon from '../../icon.ts'
+import { Message as UiMessage } from '../message.ts'
+import type { ListboxItem, UiModel } from '../model.vibe'
 
 const LISTBOX_ITEMS: ReadonlyArray<ListboxItem> = [
   'Michael Bluth',
@@ -91,7 +91,7 @@ const buttonContent = (label: string, h: HtmlBuilder<UiMessage>): Html =>
     [h.span([], [label]), Icon.chevronDown('w-4 h-4')],
   )
 
-const chromeAttributes = (h: HtmlBuilder<UiMessage>) => ({
+const chromeAttributes = (h: HtmlBuilder<UiMessage>): infer _ => ({
   buttonAttributes: childAttributes([h.Class(triggerClassName)]),
   itemsAttributes: childAttributes([h.Class(itemsClassName)]),
   backdropAttributes: childAttributes([h.Class(backdropClassName)]),
@@ -116,7 +116,7 @@ const field = (
 
 const singleSelectDemo = (
   listboxModel: Listbox.Model,
-  maybeSelectedItem: Option.Option<ListboxItem>,
+  maybeSelectedItem: Option<ListboxItem>,
   h: HtmlBuilder<UiMessage>,
 ): Html => {
   const buttonLabel = Option.getOrElse(
@@ -153,11 +153,11 @@ const multiSelectDemo = (
   selectedItems: ReadonlyArray<ListboxItem>,
   h: HtmlBuilder<UiMessage>,
 ): Html => {
-  const buttonLabel = Array.match(selectedItems, {
+  const buttonLabel = Arr.match(selectedItems, {
     onEmpty: () => 'Select Bluths',
     onNonEmpty: items =>
       items.length === 1
-        ? Array.headNonEmpty(items)
+        ? Arr.headNonEmpty(items)
         : `${items.length} selected`,
   })
 
@@ -188,7 +188,7 @@ const multiSelectDemo = (
 
 const groupedDemo = (
   listboxModel: Listbox.Model,
-  maybeSelectedItem: Option.Option<string>,
+  maybeSelectedItem: Option<string>,
   h: HtmlBuilder<UiMessage>,
 ): Html => {
   const buttonLabel = Option.getOrElse(
