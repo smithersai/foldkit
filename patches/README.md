@@ -53,20 +53,25 @@ and after formatting.
 
 ## `vite@8.3.1`
 
-Vite's dependency optimizer marks an in-flight build cancelled, then removes
-its temporary directory without waiting for the bundle writer. The server
-can report that it is closed while Rolldown still writes dependencies,
-racing application or test cleanup. The patch drains the existing build
-result before removing the directory, including when the build rejects.
+Vite can report that a server is closed while its dependency optimizer still
+writes files, racing fixture and application cleanup. The patch waits for
+the current optimizer bundle before removing its temporary directory,
+including when that bundle rejects.
+
+A dependency scan that finishes after close skips optimization. It cannot
+start another bundle or create another temporary dependency directory
+during shutdown.
 
 `packages/vite-plugin-foldkit/test/optimizerShutdown.test.ts` holds a real
 optimizer writer behind a barrier and checks that `server.close()` observes
-the completed writer. The regression and its 100-run property fail without
-the patch and pass with it. The property covers build startup, generation,
-writing and bundle close with generated event-loop interleavings. Existing
-resolution tests retain their original cleanup and assertions.
+the completed writer. Its 100-run property covers build startup,
+generation, writing and bundle close with generated release ordering.
+
+`packages/vite-plugin-foldkit/test/optimizerScanShutdown.test.ts` pauses a
+real dependency scan before closing. Its named Foldkit-resolution corpus
+and 100-run property cover dependencies present or absent, crawl holding
+and generated release ordering. They check temporary-directory cleanup
+and writer starts after close.
 
 Refresh with `pnpm patch vite@8.3.1` and `pnpm patch-commit`; keep the
-shutdown tests passing. This patch covers the confirmed in-flight writer
-race. It does not claim that every dependency-scanning shutdown race is
-fixed.
+shutdown tests passing.
