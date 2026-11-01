@@ -1,7 +1,7 @@
 import { Array, Equal, Option, Order, Record, String, pipe } from 'effect'
 import { type Html, inertHtml as ih } from 'foldkit/html'
 
-import type { Model } from '../model'
+import type { Model } from '../model.vibe'
 import type { Education, Skills, WorkHistory } from '../step'
 import { employmentRange } from './format'
 

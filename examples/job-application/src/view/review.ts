@@ -5,8 +5,8 @@ import type { Html, HtmlBuilder } from 'foldkit/html'
 import { Button } from '@foldkit/ui'
 
 import { Step } from '../domain'
-import { Message } from '../message'
-import { type Model, Submission } from '../model'
+import { Message } from '../message.vibe'
+import { type Model, Submission } from '../model.vibe'
 import { Education, PersonalInfo, Skills, WorkHistory } from '../step'
 import { employmentRange, pluralize } from './format'
 

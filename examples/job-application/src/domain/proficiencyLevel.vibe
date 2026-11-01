@@ -1,0 +1,7 @@
+export schema ProficiencyLevel =
+  | 'Beginner'
+  | 'Intermediate'
+  | 'Advanced'
+  | 'Expert'
+
+export const all: ReadonlyArray<ProficiencyLevel> = ProficiencyLevel.literals
