@@ -25,6 +25,7 @@ import {
   ExampleSources,
   loadSourcesForSlug,
 } from './sources.vibe'
+import { isHtmlIframeElement } from '../../browserElement.ts'
 
 export { Message } from './message.vibe'
 export { CurrentSourcesAsyncData, Model } from './model.vibe'
@@ -76,7 +77,7 @@ const isExampleUrlMessageFromIframe = (
   && typeof event.data.url === 'string'
 
 const observeExampleUrlMessages = (element: Element): infer _ => {
-  if (!(element instanceof HTMLIFrameElement)) {
+  if (!isHtmlIframeElement(element)) {
     return Stream.empty
   }
 
