@@ -4,10 +4,9 @@ export schema ExampleSourceFile {
   rawCode: string
 }
 
-export const ExampleSources = Schema.Struct({
-  files: Schema.Array(ExampleSourceFile),
-})
-export type ExampleSources = typeof ExampleSources.Type
+export schema ExampleSources {
+  files: ReadonlyArray<ExampleSourceFile>
+}
 
 type SourceLoader = () => Promise<Readonly<{ default: ExampleSources }>>
 
