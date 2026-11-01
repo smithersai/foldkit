@@ -95,6 +95,7 @@ const domStateParity =
     files: [
       'packages/examples-e2e/package.json',
       'scripts/check-dom-state-parity.mts',
+      'scripts/check-dom-state-parity.vibe',
     ],
     prefixes: ['packages/foldkit/'],
   })
@@ -144,6 +145,7 @@ const website =
       '.github/workflows/deploy-website.yml',
       '.github/workflows/release.yml',
       'scripts/build-examples.ts',
+      'scripts/build-examples.vibe',
       'scripts/check-playground-ssg-build.ts',
       'scripts/example-bridge.js',
       'scripts/lib/package-version.d.mts',
