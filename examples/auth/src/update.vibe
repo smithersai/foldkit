@@ -4,7 +4,7 @@ import { modifyFields } from 'foldkit/struct'
 import { toString as urlToString } from 'foldkit/url'
 
 import { ClearSession, LogError, SaveSession } from './command.vibe'
-import { Message } from './message.ts'
+import { Message } from './message.vibe'
 import { LoggedIn, LoggedOut, Model } from './model.vibe'
 import {
   AppRoute,

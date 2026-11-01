@@ -5,7 +5,7 @@ import { BrowserKeyValueStore } from '@effect/platform-browser'
 
 import { SESSION_STORAGE_KEY } from './constant.ts'
 import { Session, SessionJsonString } from './domain/session.vibe'
-import { Message } from './message.ts'
+import { Message } from './message.vibe'
 import { LoggedIn, LoggedOut, Model } from './model.vibe'
 import { AppRoute, urlToAppRoute } from './route.vibe'
 import { RedirectToDashboard, RedirectToLogin } from './update.vibe'

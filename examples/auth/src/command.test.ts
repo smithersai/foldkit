@@ -3,7 +3,7 @@ import fc from 'fast-check'
 import { afterEach, expect, test, vi } from 'vitest'
 
 import { LogError } from './command.vibe'
-import { Message } from './message.ts'
+import { Message } from './message.vibe'
 
 afterEach(() => vi.restoreAllMocks())
 

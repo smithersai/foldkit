@@ -1,6 +1,6 @@
 import { Effect, Option } from "effect";
 import { Command, Update } from 'foldkit';
-import { Message } from './message.js';
+import { Message } from './message.vibe';
 import { Model } from './model.vibe';
 export declare const RedirectToLogin: Command.CommandDefinitionNoArgs<"RedirectToLogin", Effect.Effect<{
     readonly _tag: "CompletedNavigateInternal";

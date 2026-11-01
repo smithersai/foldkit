@@ -13,7 +13,7 @@ import { describe, test } from 'vitest'
 
 import { SaveSession } from './command.vibe'
 import { Session } from './domain/session.vibe'
-import { Message } from './message.ts'
+import { Message } from './message.vibe'
 import { LoggedOut } from './model.vibe'
 import {
   Message as LoginMessage,

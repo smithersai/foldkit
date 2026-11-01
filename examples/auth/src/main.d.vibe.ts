@@ -1,6 +1,6 @@
 import { Effect, Schema } from "effect";
 import { Runtime } from 'foldkit';
-import { Message } from './message.js';
+import { Message } from './message.vibe';
 import { Model } from './model.vibe';
 export declare const Flags: Schema.Struct<{
     readonly maybeSession: Schema.Option<Schema.Struct<{
