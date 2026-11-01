@@ -1,6 +1,3 @@
-import { Effect, Record, Schema } from 'effect'
-import { HttpClient, HttpClientRequest } from 'effect/http'
-
 // CONSTANT
 
 const HTTP_OK_MIN = 200
@@ -26,25 +23,21 @@ export const encodePackageName = (packageName: string): string =>
   encodeURIComponent(packageName)
 
 export const fetchJson =
-  (client: HttpClient.HttpClient) =>
-  <A, I>(schema: Schema.Codec<A, I>) =>
+  (client: HttpClient): infer _ =>
+  <A, I>(schema: Schema.Codec<A, I>): infer _ =>
   (
     url: string,
     headers: Readonly<globalThis.Record<string, string>> = Record.empty(),
-  ): Effect.Effect<A, Error> =>
-    Effect.gen(function* () {
-      const request = HttpClientRequest.get(url).pipe(
-        HttpClientRequest.setHeaders(headers),
-      )
-      const response = yield* client.execute(request)
-
+  ): A!Error =>
+    effect {
+      const request = HttpClientRequest.get(url)
+        |> HttpClientRequest.setHeaders(headers)(%)
+      const response = try client.execute(request)
       if (!isSuccessfulStatus(response.status)) {
-        return yield* Effect.fail(
-          new Error(`GET ${url} returned HTTP ${response.status}.`),
-        )
+        throw new Error(`GET ${url} returned HTTP ${response.status}.`)
       }
-
-      return yield* Schema.decodeUnknownEffect(schema)(
-        yield* response.json,
-      ).pipe(Effect.mapError(error => new Error(errorMessage(error))))
-    })
+      const json = try response.json
+      return Schema.decodeUnknownEffect(schema)(json) catch effect (error) => {
+        throw new Error(errorMessage(error))
+      }
+    }

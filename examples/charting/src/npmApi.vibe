@@ -1,0 +1,64 @@
+import type { PackageSpec } from './domain.vibe'
+import { encodePackageName, fetchJson } from './http.vibe'
+
+// CONSTANT
+
+const NPM_DOWNLOADS_API = 'https://api.npmjs.org/downloads/range/last-year'
+const NPM_REGISTRY_API = 'https://registry.npmjs.org'
+
+// SCHEMA
+
+export schema NpmDownloadDay { day: string; downloads: number }
+
+export schema NpmDownloadsResponse { downloads: ReadonlyArray<NpmDownloadDay> }
+
+export const NpmVersionMetadata = Schema.Struct({
+  dependencies: Schema.OptionFromOptional(
+    Schema.Record(Schema.String, Schema.String),
+  ),
+  peerDependencies: Schema.OptionFromOptional(
+    Schema.Record(Schema.String, Schema.String),
+  ),
+})
+export type NpmVersionMetadata = typeof NpmVersionMetadata.Type
+
+export schema NpmPackument {
+  name: string
+  time: Readonly<Record<string, string>>
+  versions: Readonly<Record<string, NpmVersionMetadata>>
+  'dist-tags': { latest: string }
+}
+
+// SERVICE
+
+export service NpmApi {
+  static readonly key = 'charting/NpmApi'
+  fetchPackage(spec: PackageSpec): Readonly<{
+    downloads: typeof NpmDownloadsResponse.Type
+    packument: typeof NpmPackument.Type
+  }>!Error
+}
+
+export const NpmApiLive: Layer<NpmApi, never, HttpClient> = Layer.effect(
+  NpmApi,
+  effect {
+    const client = HttpClient()
+    const fetch_ = fetchJson(client)
+    return {
+      fetchPackage: (spec: PackageSpec): infer _ => {
+        const downloadsUrl = `${NPM_DOWNLOADS_API}/${
+          encodePackageName(spec.npmName)
+        }`
+        const packumentUrl = `${NPM_REGISTRY_API}/${
+          encodePackageName(spec.npmName)
+        }`
+        return effect {
+          return try all({
+            downloads: fetch_(NpmDownloadsResponse)(downloadsUrl),
+            packument: fetch_(NpmPackument)(packumentUrl),
+          }, { concurrency: 'unbounded' })
+        }
+      },
+    }
+  },
+)

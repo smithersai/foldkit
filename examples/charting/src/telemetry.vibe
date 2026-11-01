@@ -20,14 +20,14 @@ import type {
   GitHubRepositoryResponse,
   GitHubStarHistoryResponse,
   GitHubStatResult,
-} from './githubApi.ts'
-import { GitHubApi } from './githubApi.ts'
+} from './githubApi.vibe'
+import { GitHubApi } from './githubApi.vibe'
 import type {
   NpmDownloadsResponse,
   NpmPackument,
   NpmVersionMetadata,
-} from './npmApi.ts'
-import { NpmApi } from './npmApi.ts'
+} from './npmApi.vibe'
+import { NpmApi } from './npmApi.vibe'
 import {
   LAST_YEAR_WEEKS,
   type WeeklyCount,

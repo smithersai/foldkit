@@ -1,10 +1,10 @@
 import { Effect, Option } from "effect";
 import { ContributorSummary, DependencyEdge, PackageSnapshot, Telemetry, WeeklyTelemetry } from './domain.vibe';
 import type { PackageId, PackageSpec } from './domain.vibe';
-import type { GitHubCommitActivityResponse, GitHubContributorResponse, GitHubIssueResponse, GitHubPullRequestResponse, GitHubReleaseResponse, GitHubRepositoryResponse, GitHubStarHistoryResponse, GitHubStatResult } from './githubApi.js';
-import { GitHubApi } from './githubApi.js';
-import type { NpmDownloadsResponse, NpmPackument, NpmVersionMetadata } from './npmApi.js';
-import { NpmApi } from './npmApi.js';
+import type { GitHubCommitActivityResponse, GitHubContributorResponse, GitHubIssueResponse, GitHubPullRequestResponse, GitHubReleaseResponse, GitHubRepositoryResponse, GitHubStarHistoryResponse, GitHubStatResult } from './githubApi.vibe';
+import { GitHubApi } from './githubApi.vibe';
+import type { NpmDownloadsResponse, NpmPackument, NpmVersionMetadata } from './npmApi.vibe';
+import { NpmApi } from './npmApi.vibe';
 import { type WeeklyCount } from './weeks.vibe';
 export type RawPackageData = Readonly<{
     spec: PackageSpec;

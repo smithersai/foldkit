@@ -3,9 +3,9 @@ import { Command, Http } from 'foldkit'
 import { getChart } from './chartHost.vibe'
 import { ChartMode, PackageId, Period, Telemetry } from './domain.vibe'
 import { makeChartOption } from './echarts.vibe'
-import { GitHubApiLive } from './githubApi.ts'
+import { GitHubApiLive } from './githubApi.vibe'
 import { Message } from './message.vibe'
-import { NpmApiLive } from './npmApi.ts'
+import { NpmApiLive } from './npmApi.vibe'
 import { fetchRawTelemetry, transformTelemetry } from './telemetry.vibe'
 
 // COMMAND
