@@ -2,7 +2,7 @@ import { Effect } from 'effect'
 import fc from 'fast-check'
 import { afterEach, expect, test, vi } from 'vitest'
 
-import { Geolocate } from './main.ts'
+import { Geolocate } from './main.vibe'
 
 afterEach(() => vi.unstubAllGlobals())
 

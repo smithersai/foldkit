@@ -1,7 +1,7 @@
 import { modifyFields } from 'foldkit/struct'
 
 import { Location, featuredLocations } from './locations.vibe'
-import { GeolocateState, type Model } from './main.ts'
+import { GeolocateState, type Model } from './main.vibe'
 
 export const initialModel: Model = {
   locations: featuredLocations,
