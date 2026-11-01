@@ -14,12 +14,12 @@
     "@effect/platform-node": "4.1.0",
     "@typing-game/shared": "workspace:*",
     "effect": "4.1.0",
-    "vibelang-runtime": "file:../../../.vibelang-toolchain/vibelang-runtime-0.0.11-7461dd0df1ce.tgz"
+    "vibelang-runtime": "file:../../../.vibelang-toolchain/vibelang-runtime-0.0.11-22e46b61b67d.tgz"
   },
   "devDependencies": {
     "@types/node": "26.4.0",
     "typescript": "^7.0.2",
-    "vibelang": "file:../../../.vibelang-toolchain/vibelang-0.0.11-43acc36bf08f.tgz",
+    "vibelang": "file:../../../.vibelang-toolchain/vibelang-0.0.11-77d824d4b61a.tgz",
     "fast-check": "^4.10.2"
   }
 }

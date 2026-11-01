@@ -23,7 +23,7 @@
     "typescript": "^7.0.2",
     "vite": "^8.3.1",
     "vitest": "^5.0.2",
-    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-43acc36bf08f.tgz",
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-77d824d4b61a.tgz",
     "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-6f2666fdf1ab.tgz"
   }
 }

@@ -1,4 +1,4 @@
-import { Predicate, Schema } from "effect";
+import { Predicate, Schema } from 'effect';
 /** An error message for a rule: either a static string, or a function that receives the invalid value. */
 export type RuleMessage<A> = string | ((value: A) => string);
 /** A tuple of a predicate and error message used for field validation. */

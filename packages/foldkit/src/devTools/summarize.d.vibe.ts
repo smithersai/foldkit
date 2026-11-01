@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 declare const PathResolution: import("../schema/index.js").TaggedUnion<{
     readonly Found: {
         value: Schema.Unknown;

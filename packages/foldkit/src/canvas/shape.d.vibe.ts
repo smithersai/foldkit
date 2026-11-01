@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 /** A 2D point in canvas-local coordinates. */
 export declare const Point: Schema.Struct<{
     readonly x: Schema.Number;

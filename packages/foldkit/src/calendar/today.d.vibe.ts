@@ -1,4 +1,4 @@
-import { Effect } from "effect";
+import { Effect } from 'effect';
 /**
  * Effect-based accessors for the current calendar date. Uses Effect's `Clock`
  * service under the hood, so tests can freeze time with `TestClock` and

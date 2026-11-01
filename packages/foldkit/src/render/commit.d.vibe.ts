@@ -1,4 +1,4 @@
-import { Context } from "effect";
+import { Context } from 'effect';
 declare const RenderCommit_base: Context.ServiceClass<RenderCommit, "@foldkit/RenderCommit", {
     readonly isCommitPending: () => boolean;
     readonly onNextCommit: (callback: () => void) => () => void;

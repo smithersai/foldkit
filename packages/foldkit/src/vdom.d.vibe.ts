@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import { type VNode, toVNode } from './snabbdom/index.js';
 export type { VNode } from './snabbdom/index.js';
 export { toVNode };

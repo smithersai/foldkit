@@ -1,4 +1,4 @@
-import { Data } from "effect";
+import { Data } from 'effect';
 import { type Example } from './examples.js';
 export declare const RENDERING_VALUES: readonly ['spa', 'ssg', 'ssr'];
 export type Rendering = (typeof RENDERING_VALUES)[number];

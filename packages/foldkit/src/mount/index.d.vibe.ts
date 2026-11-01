@@ -1,4 +1,4 @@
-import { Context, Effect, Schema, Scope, Stream } from "effect";
+import { Context, Effect, Schema, Scope, Stream } from 'effect';
 declare const MountTracker_base: Context.ServiceClass<MountTracker, "@foldkit/MountTracker", {
     readonly started: (name: string, args?: Record<string, unknown>) => void;
     readonly ended: (name: string, args?: Record<string, unknown>) => void;

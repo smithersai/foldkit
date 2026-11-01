@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 import type { CalendarDate } from './calendarDate.vibe';
 /**
  * One part of a `DateFormat`. Name parts draw from the `LocaleConfig`, number

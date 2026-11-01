@@ -1,4 +1,4 @@
-import { Effect, Option } from "effect";
+import { Effect, Option } from 'effect';
 /** The `sessionStorage` key a runtime uses for its preserved scroll offset,
  *  scoped by runtime id so multiple runtimes never read each other's value. */
 export declare const preservedScrollStorageKey: (runtimeId: string) => string;

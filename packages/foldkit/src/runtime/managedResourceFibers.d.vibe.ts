@@ -1,4 +1,4 @@
-import { Cause, Effect, Option, PubSub, Scope } from "effect";
+import { Cause, Effect, Option, PubSub, Scope } from 'effect';
 import type { ManagedResourceRef } from './resourceProvider.js';
 /**
  * Forks one fiber per Managed Resource into the runtime scope. Each fiber

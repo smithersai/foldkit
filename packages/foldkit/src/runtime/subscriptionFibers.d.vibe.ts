@@ -1,4 +1,4 @@
-import { Cause, Effect, Option, PubSub, Scope } from "effect";
+import { Cause, Effect, Option, PubSub, Scope } from 'effect';
 import type { Subscriptions } from '../subscription/subscription.vibe';
 import { type ResolvedSlowPhaseConfig, type SlowSubscriptionDependenciesContext } from './slowPhase.vibe';
 /**

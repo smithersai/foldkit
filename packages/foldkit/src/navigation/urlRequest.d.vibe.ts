@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 /** Union of `Internal` and `External` URL request types. */
 export declare const UrlRequest: import("../schema/index.js").TaggedUnion<{
     readonly Internal: {

@@ -1,4 +1,4 @@
-import { Option, Schema } from "effect";
+import { Option, Schema } from 'effect';
 /** Schema representing a parsed URL with protocol, host, port, pathname, search, and hash fields. */
 export declare const Url: Schema.Struct<{
     readonly protocol: Schema.String;

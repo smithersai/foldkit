@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 import { type CalendarDate } from './calendarDate.vibe';
 /**
  * Schema for days of the week, Sunday through Saturday. Tagged union preferred

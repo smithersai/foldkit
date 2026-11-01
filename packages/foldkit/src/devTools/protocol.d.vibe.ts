@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 /** A serialized Command produced during a Message dispatch (or `init`). `args` is `Some` when the Command declared an args record. `maybeSubmodelPath` is `None` until the result Message resolves, `Some([])` for a top-level result, and `Some(tags)` for a Submodel-routed result. */
 export declare const SerializedCommand: Schema.Struct<{
     readonly name: Schema.String;
