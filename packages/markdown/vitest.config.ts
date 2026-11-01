@@ -2,7 +2,7 @@ import vibelang from 'vibelang-vite'
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
-  plugins: [vibelang()],
+  plugins: [vibelang({ register: true })],
   test: {
     environment: 'happy-dom',
   },
