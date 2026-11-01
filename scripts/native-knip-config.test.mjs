@@ -34,6 +34,9 @@ const checkNativeConfig = paths => {
         name: 'foldkit-native-knip-fixture',
         private: true,
         type: 'module',
+        // The compiled .vibe configs import the runtime and the config loads
+        // vibelang/knip, as the root manifest declares them.
+        devDependencies: { vibelang: '*', 'vibelang-runtime': '*' },
       }),
     )
     symlinkSync(
