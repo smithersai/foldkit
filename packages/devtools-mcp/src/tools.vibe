@@ -1,4 +1,4 @@
-import { Array, Effect, Option, Schema } from 'effect'
+import { Array as EffectArray, Option, Schema } from 'effect'
 import {
   MAX_DISPATCH_BATCH_SIZE,
   Request,
@@ -9,7 +9,7 @@ import {
   type ListedRuntime,
   type RelayClient,
   errorReason,
-} from './relayClient.js'
+} from './relayClient.ts'
 
 const RUNTIME_ID_DESCRIPTION =
   'Optional connection id of a specific Foldkit runtime. Defaults to the most recently connected runtime of the most recently started dev server. Call `foldkit_list_runtimes` to find runtimes in other applications, each with its `projectRoot`.'
@@ -23,7 +23,8 @@ const RuntimeIdField = Schema.optional(
 const ListLimit = Schema.Int.check(
   Schema.isBetween({ minimum: 1, maximum: 500 }),
 ).annotate({
-  description: `Maximum number of entries to return. Defaults to ${DEFAULT_LIST_MESSAGES_LIMIT}; max 500.`,
+  description:
+    `Maximum number of entries to return. Defaults to ${DEFAULT_LIST_MESSAGES_LIMIT}; max 500.`,
 })
 
 const SinceIndex = Schema.Int.annotate({
@@ -163,7 +164,8 @@ const DispatchMessagesInput = Schema.Struct({
   messages: Schema.Array(Schema.Record(Schema.String, Schema.Unknown))
     .check(Schema.isNonEmpty(), Schema.isMaxLength(MAX_DISPATCH_BATCH_SIZE))
     .annotate({
-      description: `An ordered list of Foldkit Message objects to dispatch into the runtime, first to last. Must hold between 1 and ${MAX_DISPATCH_BATCH_SIZE} Messages. Each must match the runtime's Message Schema; call foldkit_get_message_schema to learn the shapes. The runtime decodes every entry before dispatching any of them, so one invalid entry rejects the whole batch with its zero-based position and nothing is dispatched.`,
+      description:
+        `An ordered list of Foldkit Message objects to dispatch into the runtime, first to last. Must hold between 1 and ${MAX_DISPATCH_BATCH_SIZE} Messages. Each must match the runtime's Message Schema; call foldkit_get_message_schema to learn the shapes. The runtime decodes every entry before dispatching any of them, so one invalid entry rejects the whole batch with its zero-based position and nothing is dispatched.`,
     }),
 })
 
@@ -205,7 +207,7 @@ export type ToolDefinition = Readonly<{
   name: string
   description: string
   inputSchema: object
-  handle: (rawInput: unknown) => Effect.Effect<ToolResult>
+  handle: (rawInput: unknown) => ToolResult!!
 }>
 
 const formatResult = (value: unknown): ToolResult => ({
@@ -221,15 +223,24 @@ const formatError = (reason: string): ToolResult => ({
  * Decode a tool's raw input against its Effect Schema. Failure surfaces as an
  * `Error` for the outer handler's `catchAll` to convert into a `ToolResult`.
  */
+error InvalidToolInput {
+  message: string
+}
+
 const decodeInput = <Input>(
   schema: Schema.Codec<Input>,
   rawInput: unknown,
-): Effect.Effect<Input, Error> =>
-  Schema.decodeUnknownEffect(schema)(rawInput).pipe(
-    Effect.mapError(error => new Error(`Invalid input: ${error.message}`)),
-  )
+): Input!InvalidToolInput => {
+  try {
+    return Schema.decodeUnknownEffect(schema)(rawInput)
+  } catch (error) {
+    throw new InvalidToolInput({ message: `Invalid input: ${error.message}` })
+  }
+}
 
-const listedRuntimeOutput = ({ runtime, maybeProjectRoot }: ListedRuntime) =>
+const listedRuntimeOutput = (
+  { runtime, maybeProjectRoot }: ListedRuntime,
+): infer _ =>
   Option.match(maybeProjectRoot, {
     onNone: () => runtime,
     onSome: projectRoot => ({ ...runtime, projectRoot }),
@@ -244,16 +255,17 @@ const callRuntimeRequest = (
   relayClient: RelayClient,
   explicitRuntimeId: string | undefined,
   buildRequest: () => typeof Request.Type,
-): Effect.Effect<ToolResult> =>
-  Effect.gen(function* () {
-    const response = yield* relayClient.sendRequest(
+): ToolResult!! => {
+  try {
+    const response = relayClient.sendRequest(
       buildRequest(),
       Option.fromNullishOr(explicitRuntimeId),
     )
     return responseToToolResult(response)
-  }).pipe(
-    Effect.catch(error => Effect.succeed(formatError(errorReason(error)))),
-  )
+  } catch (error) {
+    return formatError(sync((failure: Error) => errorReason(failure), error))
+  }
+}
 
 type RuntimeToolInput = Readonly<{ runtime_id?: string | undefined }>
 
@@ -262,22 +274,24 @@ type RuntimeToolInput = Readonly<{ runtime_id?: string | undefined }>
  * issues a typed `Request`, and formats the response. Used for every tool
  * except `foldkit_list_runtimes`, which does not target a specific runtime.
  */
-const runRuntimeTool =
-  <Input extends RuntimeToolInput>(
-    inputSchema: Schema.Codec<Input>,
-    buildRequest: (input: Input) => typeof Request.Type,
-    relayClient: RelayClient,
-  ) =>
-  (rawInput: unknown): Effect.Effect<ToolResult> =>
-    Effect.gen(function* () {
-      const input = yield* decodeInput(inputSchema, rawInput)
+const runRuntimeTool = <Input extends RuntimeToolInput>(
+  inputSchema: Schema.Codec<Input>,
+  buildRequest: (input: Input) => typeof Request.Type,
+  relayClient: RelayClient,
+): (rawInput: unknown) => ToolResult!! =>
+(rawInput: unknown): ToolResult!! => {
+  try {
+    const input = decodeInput(inputSchema, rawInput)
 
-      return yield* callRuntimeRequest(relayClient, input.runtime_id, () =>
-        buildRequest(input),
-      )
-    }).pipe(
-      Effect.catch(error => Effect.succeed(formatError(errorReason(error)))),
+    return callRuntimeRequest(
+      relayClient,
+      input.runtime_id,
+      () => buildRequest(input),
     )
+  } catch (error) {
+    return formatError(sync((failure: Error) => errorReason(failure), error))
+  }
+}
 
 /**
  * Build the read-only Foldkit DevTools tool definitions. Each tool decodes its
@@ -460,7 +474,8 @@ export const buildTools = (
   },
   {
     name: 'foldkit_dispatch_messages',
-    description: `Dispatch an ordered batch of Messages into a Foldkit runtime in one call, first to last, as if the application produced them in quick succession. Prefer this over repeated foldkit_dispatch_message calls when staging state that takes several Messages: reproducing a bug, filling a form, or building a history fixture. Takes 1 to ${MAX_DISPATCH_BATCH_SIZE} Messages. Validation is all-or-nothing: the runtime decodes every payload against the Message Schema before dispatching any of them, and one invalid entry rejects the whole batch with an error naming its zero-based position, so there is never a partially applied prefix to clean up. On success the response carries acceptedAtIndices, the predicted history index for each Message in request order; the runtime may still record its own Messages between entries (for example a Command completing mid-burst), exactly as with rapid user input, and Messages excluded from history via excludeFromHistory are dispatched but never recorded, so entries after one land below their predicted index. Requires DevToolsConfig.Message, like foldkit_dispatch_message.`,
+    description:
+      `Dispatch an ordered batch of Messages into a Foldkit runtime in one call, first to last, as if the application produced them in quick succession. Prefer this over repeated foldkit_dispatch_message calls when staging state that takes several Messages: reproducing a bug, filling a form, or building a history fixture. Takes 1 to ${MAX_DISPATCH_BATCH_SIZE} Messages. Validation is all-or-nothing: the runtime decodes every payload against the Message Schema before dispatching any of them, and one invalid entry rejects the whole batch with an error naming its zero-based position, so there is never a partially applied prefix to clean up. On success the response carries acceptedAtIndices, the predicted history index for each Message in request order; the runtime may still record its own Messages between entries (for example a Command completing mid-burst), exactly as with rapid user input, and Messages excluded from history via excludeFromHistory are dispatched but never recorded, so entries after one land below their predicted index. Requires DevToolsConfig.Message, like foldkit_dispatch_message.`,
     inputSchema: toInputSchema(DispatchMessagesInput),
     handle: runRuntimeTool(
       DispatchMessagesInput,
@@ -478,10 +493,12 @@ export const buildTools = (
         Effect.map(listed =>
           formatResult({
             _tag: 'ResponseRuntimes',
-            runtimes: Array.map(listed, listedRuntimeOutput),
-          }),
+            runtimes: EffectArray.map(listed, listedRuntimeOutput),
+          })
         ),
-        Effect.catch(error => Effect.succeed(formatError(errorReason(error)))),
+        Effect.catch(error =>
+          formatError(sync((failure: Error) => errorReason(failure), error))
+        ),
       ),
   },
 ]

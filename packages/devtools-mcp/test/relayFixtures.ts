@@ -10,11 +10,11 @@ import { type RawData, WebSocket } from 'ws'
 import { foldkit } from '@foldkit/vite-plugin'
 
 import { type RelayClient, makeRelayClient } from '../src/relayClient.ts'
-import { resolveRelayTargets } from '../src/relayLocation.ts'
+import { resolveRelayTargets } from '../src/relayLocation.vibe'
 import {
   type RelayRegistryReader,
   makeRelayRegistryReader,
-} from '../src/relayRegistry.ts'
+} from '../src/relayRegistry.vibe'
 import { boundPort } from './boundPort.ts'
 import {
   RELAY_DIRECTORY_VARIABLE,

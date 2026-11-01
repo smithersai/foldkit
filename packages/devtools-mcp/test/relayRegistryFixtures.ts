@@ -2,7 +2,7 @@ import { ConfigProvider, Effect, HashSet, Option, Ref } from 'effect'
 
 import { NodeServices } from '@effect/platform-node'
 
-import type { RelayRegistryReader } from '../src/relayRegistry.ts'
+import type { RelayRegistryReader } from '../src/relayRegistry.vibe'
 
 export const RELAY_DIRECTORY_VARIABLE = 'FOLDKIT_DEVTOOLS_RELAY_DIRECTORY'
 export const RUNTIME_DIRECTORY_VARIABLE = 'XDG_RUNTIME_DIR'

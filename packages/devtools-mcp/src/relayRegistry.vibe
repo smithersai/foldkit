@@ -1,0 +1,273 @@
+import {
+  Array as EffectArray,
+  FileSystem,
+  HashSet,
+  Order,
+  Path,
+  Ref,
+  String as EffectString,
+} from 'effect'
+import type { ChildProcessSpawner } from 'effect/process'
+import {
+  RELAY_REGISTRY_DIRECTORY_NAME,
+  RELAY_REGISTRY_DIRECTORY_VARIABLE,
+  RelayRecord,
+} from 'foldkit/devtools-protocol'
+
+import {
+  homeDirectory,
+  isProcessAlive,
+  isWindows,
+  temporaryDirectory,
+} from './relayRegistry.platform.ts'
+import {
+  type RelayRegistryTrust,
+  relayRegistryTrust,
+} from './relayRegistryTrust.ts'
+
+const RUNTIME_DIRECTORY_VARIABLE = 'XDG_RUNTIME_DIR'
+const RECORD_FILE_EXTENSION = '.json'
+const RETIRING_RECORD_SUFFIX = '.retiring'
+
+export type RelayRegistryServices = FileSystem.FileSystem | Path.Path
+
+export type RelayRegistryReader = Readonly<{
+  trust: RelayRegistryTrust
+  reportedRefusals: Ref.Ref<HashSet.HashSet<string>>
+}>
+
+type RootPathApi = Pick<Path.Path, 'isAbsolute' | 'relative' | 'sep'>
+
+const decodeRelayRecord = Schema.decodeUnknownOption(
+  Schema.fromJsonString(RelayRecord),
+)
+
+const relayRegistryDirectory: string!!Path.Path = effect {
+  const path = Path.Path()
+  const maybeConfigured = Config.option(
+    Config.String(RELAY_REGISTRY_DIRECTORY_VARIABLE),
+  )() catch (error) => die(error)
+  const maybeRuntimeDirectory = Config.option(
+    Config.String(RUNTIME_DIRECTORY_VARIABLE),
+  )() catch (error) => die(error)
+  const host = sync(() => ({
+    isWindows: isWindows(),
+    temporaryDirectory: temporaryDirectory(),
+    homeDirectory: homeDirectory(),
+  }))
+  const defaultParent = host.isWindows
+    ? host.temporaryDirectory
+    : path.join(host.homeDirectory, '.cache')
+  return maybeConfigured.getOrElse(() =>
+    path.join(
+      maybeRuntimeDirectory.getOrElse(() => defaultParent),
+      RELAY_REGISTRY_DIRECTORY_NAME,
+    )
+  )
+}
+
+const readRecordFile = (
+  filePath: string,
+): Option<RelayRecord>!!FileSystem.FileSystem => {
+  const fileSystem = FileSystem.FileSystem()
+  return decodeRelayRecord(fileSystem.readFileString(filePath)) catch Option.none<RelayRecord>()
+}
+
+const renameRecord = (
+  fileSystem: FileSystem.FileSystem,
+  from: string,
+  to: string,
+): boolean!! => {
+  try {
+    fileSystem.rename(from, to)
+    return true
+  } catch {
+    return false
+  }
+}
+
+const retireStaleRecord = (
+  filePath: string,
+  record: RelayRecord,
+): void!!FileSystem.FileSystem => {
+  const fileSystem = FileSystem.FileSystem()
+  const retiringPath = `${filePath}.${
+    encodeURIComponent(record.id)
+  }${RETIRING_RECORD_SUFFIX}`
+  const wasRecordMoved = renameRecord(fileSystem, filePath, retiringPath)
+
+  if (!wasRecordMoved) {
+    return
+  }
+
+  const maybeRetiringRecord = readRecordFile(retiringPath)
+  const isOriginalRecord = maybeRetiringRecord.exists(
+    retiringRecord => retiringRecord.id === record.id,
+  )
+
+  if (!isOriginalRecord) {
+    fileSystem.link(retiringPath, filePath) catch undefined
+  }
+
+  fileSystem.remove(retiringPath, { force: true }) catch undefined
+}
+
+const readLiveRecordFile = (
+  filePath: string,
+): Option<RelayRecord>!!FileSystem.FileSystem => {
+  const maybeRecord = readRecordFile(filePath)
+
+  if (
+    maybeRecord is Option.Some(let record)
+    && !sync((pid: number) => isProcessAlive(pid), record.pid)
+  ) {
+    retireStaleRecord(filePath, record)
+
+    return Option.none<RelayRecord>()
+  }
+
+  return maybeRecord
+}
+
+const newestFirst: Order.Order<RelayRecord> = Order.mapInput(
+  Order.flip(Order.Number),
+  record => record.startedAt,
+)
+
+export const isWithinRoot = (
+  root: string,
+  candidate: string,
+  pathApi: RootPathApi,
+): boolean => {
+  const relativePath = pathApi.relative(root, candidate)
+
+  return (
+    relativePath === ''
+    || (relativePath !== '..'
+      && !relativePath.startsWith(`..${pathApi.sep}`)
+      && !pathApi.isAbsolute(relativePath))
+  )
+}
+
+export const makeRelayRegistryReader: RelayRegistryReader!! = effect {
+  const reportedRefusals = Ref.make(HashSet.empty<string>())
+  const registryReader: RelayRegistryReader = {
+    trust: relayRegistryTrust,
+    reportedRefusals,
+  }
+
+  return registryReader
+}
+
+const reportRefusal = (
+  reportedRefusals: Ref.Ref<HashSet.HashSet<string>>,
+  directory: string,
+  reason: string,
+): void!! => {
+  const line =
+    `[foldkit-devtools-mcp] ignoring the relay registry at ${directory}: it ${reason}`
+  const isFirstReport = Ref.modify(reportedRefusals, reported => [
+    !HashSet.has(reported, line),
+    HashSet.add(reported, line),
+  ])
+
+  if (isFirstReport) {
+    Console.error(line)
+  }
+}
+
+const trustedRegistryDirectory = (
+  registryReader: RelayRegistryReader,
+): Option<string>!!RelayRegistryServices | ChildProcessSpawner.ChildProcessSpawner => {
+  const fileSystem = FileSystem.FileSystem()
+  const directory = relayRegistryDirectory()
+  const isPresent = fileSystem.exists(directory) catch false
+  if (!isPresent) {
+    return Option.none()
+  }
+
+  const inspection = registryReader.trust.inspect(directory)
+
+  if (inspection.maybeRefusal is Option.Some(let reason)) {
+    reportRefusal(registryReader.reportedRefusals, directory, reason)
+
+    return Option.none()
+  }
+
+  return Option.some(inspection.directory)
+}
+
+const realRoot = (root: string): string!!RelayRegistryServices => {
+  const fileSystem = FileSystem.FileSystem()
+  const path = Path.Path()
+  const resolvedRoot = path.resolve(root)
+
+  return fileSystem.realPath(resolvedRoot) catch resolvedRoot
+}
+
+const segmentCount = (root: string, path: Path.Path): number =>
+  EffectArray.length(
+    EffectArray.filter(
+      EffectString.split(root, path.sep),
+      EffectString.isNonEmpty,
+    ),
+  )
+
+export const discoverRelays = (
+  projectRoot: string,
+  registryReader: RelayRegistryReader,
+): ReadonlyArray<RelayRecord>!never!RelayRegistryServices | ChildProcessSpawner.ChildProcessSpawner => {
+  const maybeDirectory = trustedRegistryDirectory(registryReader)
+
+  if (maybeDirectory is Option.None) {
+    return []
+  }
+
+  const fileSystem = FileSystem.FileSystem()
+  const path = Path.Path()
+  const directory = maybeDirectory.value
+  const fileNames: ReadonlyArray<string> = fileSystem.readDirectory(directory)
+    catch []
+  const recordFileNames = EffectArray.filter(
+    fileNames,
+    EffectString.endsWith(RECORD_FILE_EXTENSION),
+  )
+  const records = EffectArray.getSomes(
+    forEach(
+      recordFileNames,
+      recordFileName =>
+        readLiveRecordFile(path.join(directory, recordFileName)),
+    ),
+  )
+
+  const realProjectRoot = realRoot(projectRoot)
+  const rootedRecords = forEach(records, record => ({
+    record,
+    root: realRoot(record.root),
+  }))
+
+  const recordsInside = EffectArray.filter(
+    rootedRecords,
+    ({ root }) => isWithinRoot(realProjectRoot, root, path),
+  )
+  const recordsEnclosing = EffectArray.filter(
+    rootedRecords,
+    ({ root }) => isWithinRoot(root, realProjectRoot, path),
+  )
+  const nearestDepth = EffectArray.reduce(
+    recordsEnclosing,
+    0,
+    (depth, { root }) => Math.max(depth, segmentCount(root, path)),
+  )
+  const selected = recordsInside.length > 0
+    ? recordsInside
+    : EffectArray.filter(
+      recordsEnclosing,
+      ({ root }) => segmentCount(root, path) === nearestDepth,
+    )
+
+  return EffectArray.sort(
+    EffectArray.map(selected, ({ record }) => record),
+    newestFirst,
+  )
+}
