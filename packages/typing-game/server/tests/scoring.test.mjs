@@ -5,8 +5,8 @@ import { test } from 'node:test'
 
 import * as Shared from '@typing-game/shared'
 
-import { CHARS_PER_WORD, PLAYING_SECONDS } from '../src/game.vibe'
-import { calculateScoreboard, getPlayerProgress } from '../src/scoring.vibe'
+import { CHARS_PER_WORD, PLAYING_SECONDS } from '../dist/game.js'
+import { calculateScoreboard, getPlayerProgress } from '../dist/scoring.js'
 
 test('scoring is cold, replayable, and preserves each player and zero-typing accuracy', async () => {
   await fc.assert(
@@ -36,7 +36,6 @@ test('scoring is cold, replayable, and preserves each player and zero-typing acc
           maybeGame: hasGame ? Option.some(game) : Option.none(),
           maybeScoreboard: Option.none(),
         })
-        /** @type {HashMap.HashMap<Shared.GamePlayer, Shared.PlayerProgress>} */
         let progress = HashMap.empty()
         for (const [index, input] of inputs.entries()) {
           if (!input.hasProgress) continue
@@ -63,7 +62,6 @@ test('scoring is cold, replayable, and preserves each player and zero-typing acc
               })
             })
           : []
-        /** @type {Effect.Effect<Shared.Scoreboard, never, never>} */
         const program = calculateScoreboard(room, progress)
         assert(Effect.isEffect(program))
         assert.deepEqual(await Effect.runPromise(program), expected)

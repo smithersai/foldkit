@@ -13,7 +13,7 @@
     "lint": "pnpm build:packages && pnpm --filter @typing-game/shared build && pnpm lint:ci",
     "lint:ci": "(oxlint --disable-nested-config && pnpm lint:applications && pnpm lint:effect) && eslint --config .vibelang/eslint.config.mjs \"**/*.vibe\" --no-error-on-unmatched-pattern",
     "lint:applications": "(oxlint --config .oxlintrc.app.json --disable-nested-config examples packages/website/src packages/typing-game/client/src) && eslint --config .vibelang/eslint.app.config.mjs examples packages/website/src packages/typing-game/client/src --no-error-on-unmatched-pattern",
-    "lint:effect": "(effect-tsgo patch --no-typescript --oxlint && oxlint --config .oxlintrc.effect.json --disable-nested-config --deny-warnings packages examples scripts && vibelang lint -c .oxlintrc.effect.json --deny-warnings packages examples scripts) && eslint --config .vibelang/eslint.effect.config.mjs packages examples scripts --no-error-on-unmatched-pattern",
+    "lint:effect": "pnpm --filter @typing-game/server build && (effect-tsgo patch --no-typescript --oxlint && oxlint --config .oxlintrc.effect.json --disable-nested-config --deny-warnings packages examples scripts && vibelang lint -c .oxlintrc.effect.json --deny-warnings packages examples scripts) && eslint --config .vibelang/eslint.effect.config.mjs packages examples scripts --no-error-on-unmatched-pattern",
     "check:dead-code": "NODE_OPTIONS=\"${NODE_OPTIONS:+$NODE_OPTIONS }--import=vibelang/register\" knip --no-progress --include files,dependencies,unlisted,unresolved,binaries,duplicates,catalog --treat-config-hints-as-errors",
     "check:effect-prebundle": "node scripts/check-effect-prebundle.ts",
     "check:ui-subpath-exports": "node scripts/check-ui-subpath-exports.ts",
@@ -122,7 +122,7 @@
     "fast-check": "^4.10.2"
   },
   "simple-git-hooks": {
-    "commit-msg": "if grep -q 'Co-Authored-By.*[Cc]laude' \"$1\"; then echo '\\n❌ Commit message contains a Claude Co-Authored-By line. Remove it and try again.' && exit 1; fi",
+    "commit-msg": "if grep -q 'Co-Authored-By.*[Cc]laude' \"$1\"; then echo '\\n\u274c Commit message contains a Claude Co-Authored-By line. Remove it and try again.' && exit 1; fi",
     "pre-push": "bash scripts/run-pre-push.sh"
   },
   "engines": {
