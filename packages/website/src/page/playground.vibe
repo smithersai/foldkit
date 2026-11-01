@@ -68,7 +68,10 @@ export type Message = typeof Message.Type
 
 // INIT
 
-const PREFERRED_INITIAL_FILES: ReadonlyArray<string> = ['src/main.ts']
+const PREFERRED_INITIAL_FILES: ReadonlyArray<string> = [
+  'src/main.vibe',
+  'src/main.ts',
+]
 
 const maybeFilesForSlug = (
   slug: string,
