@@ -2,8 +2,8 @@ import { BrowserStream } from '@effect/platform-browser'
 import {
   ExperimentalBrowserAnimations,
   ExperimentalBrowserDocument,
+  ExperimentalBrowserWindow,
 } from 'vibelang-runtime/experimental/platform-browser'
-import { autoScroll } from './dragAndDrop.platform.ts'
 import { Array, pipe } from 'effect'
 import * as Command from 'foldkit/command'
 import * as Dom from 'foldkit/dom'
@@ -16,6 +16,25 @@ import * as Update from 'foldkit/update'
 
 import { documentDragStyles } from '../internal/documentDragStyles.vibe'
 import { attributeSelector } from '../internal/selectors.ts'
+
+const DEFAULT_AUTO_SCROLL_EDGE_PIXELS = 40
+const DEFAULT_AUTO_SCROLL_MAX_SPEED = 15
+
+const autoScroll = (browserWindow: Window, clientY: number): void => {
+  const viewportHeight = browserWindow.innerHeight
+  const distanceFromTop = clientY
+  const distanceFromBottom = viewportHeight - clientY
+
+  if (distanceFromTop < DEFAULT_AUTO_SCROLL_EDGE_PIXELS) {
+    const speed = DEFAULT_AUTO_SCROLL_MAX_SPEED
+      * (1 - distanceFromTop / DEFAULT_AUTO_SCROLL_EDGE_PIXELS)
+    browserWindow.scrollBy(0, -speed)
+  } else if (distanceFromBottom < DEFAULT_AUTO_SCROLL_EDGE_PIXELS) {
+    const speed = DEFAULT_AUTO_SCROLL_MAX_SPEED
+      * (1 - distanceFromBottom / DEFAULT_AUTO_SCROLL_EDGE_PIXELS)
+    browserWindow.scrollBy(0, speed)
+  }
+}
 
 // MODEL
 
@@ -710,7 +729,9 @@ export const subscriptions = Subscription.make<Model, Message>()((
         Stream.when(
           Stream.callback<typeof Message.AdvancedAutoScrollFrame.Type>(
             effect (queue) => {
-              provide ExperimentalBrowserAnimations.layer {
+              provide Layer.mergeAll(ExperimentalBrowserAnimations.layer, ExperimentalBrowserWindow.layer) {
+                const windowService = try Experimental.Window.Window()
+                const browserWindow = try windowService.current
                 const animations = try Experimental.Animations.Animations()
                 try Effect.acquireRelease(
                   Effect.sync((): infer _ => {
@@ -718,7 +739,7 @@ export const subscriptions = Subscription.make<Model, Message>()((
                       cancel: (): void => {},
                     }
                     const step = (): void => {
-                      autoScroll(readDependencies().clientY)
+                      autoScroll(browserWindow, readDependencies().clientY)
                       Queue.offerUnsafe(
                         queue,
                         Message.AdvancedAutoScrollFrame(),
