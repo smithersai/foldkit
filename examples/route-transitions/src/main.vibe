@@ -1,4 +1,4 @@
-import { Array, Duration, Effect, Match, Option, Schema, pipe } from 'effect'
+import { Array as Arr, pipe } from 'effect'
 import { Command, Runtime, Update } from 'foldkit'
 import { Document, Html, HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -27,8 +27,7 @@ const MAX_LOGGED_TRANSITIONS = 20
 
 // MODEL
 
-export const CatalogStatus = Schema.Literals(['Idle', 'Loading', 'Ready'])
-export type CatalogStatus = typeof CatalogStatus.Type
+export schema CatalogStatus = 'Idle' | 'Loading' | 'Ready'
 
 export const PaintingStatus = defineTaggedUnion({
   Idle: {},
@@ -74,40 +73,64 @@ export type Message = typeof Message.Type
 const NavigateInternal = Command.define('NavigateInternal', {
   args: { url: Schema.String },
   messages: [Message.CompletedNavigateInternal],
-  execute: ({ url }) =>
-    pushUrl(url).pipe(Effect.as(Message.CompletedNavigateInternal())),
+  execute: (
+    { url },
+  ): ReturnType<typeof Message.CompletedNavigateInternal>!! => {
+    const completed = Message.CompletedNavigateInternal()
+    return effect {
+      try pushUrl(url)
+      return completed
+    }
+  },
 })
 
 const LoadExternal = Command.define('LoadExternal', {
   args: { href: Schema.String },
   messages: [Message.CompletedLoadExternal],
-  execute: ({ href }) =>
-    load(href).pipe(Effect.as(Message.CompletedLoadExternal())),
+  execute: ({ href }): ReturnType<typeof Message.CompletedLoadExternal>!! => {
+    const completed = Message.CompletedLoadExternal()
+    return effect {
+      try load(href)
+      return completed
+    }
+  },
 })
 
 export const LoadCatalog = Command.define('LoadCatalog', {
   messages: [Message.SucceededLoadCatalog],
-  execute: Effect.sleep(CATALOG_LATENCY).pipe(
-    Effect.as(Message.SucceededLoadCatalog()),
-  ),
+  execute: do {
+    const completed = Message.SucceededLoadCatalog()
+    effect {
+      try sleep(CATALOG_LATENCY)
+      return completed
+    }
+  },
 })
 
 export const LoadPainting = Command.define('LoadPainting', {
   args: { paintingId: Schema.Number },
   messages: [Message.SucceededLoadPainting],
-  execute: ({ paintingId }) =>
-    Effect.sleep(PAINTING_LATENCY).pipe(
-      Effect.as(Message.SucceededLoadPainting({ paintingId })),
-    ),
+  execute: (
+    { paintingId },
+  ): ReturnType<typeof Message.SucceededLoadPainting>!! => {
+    const completed = Message.SucceededLoadPainting({ paintingId })
+    return effect {
+      try sleep(PAINTING_LATENCY)
+      return completed
+    }
+  },
 })
 
 export const SaveDraft = Command.define('SaveDraft', {
   args: { draft: Schema.String },
   messages: [Message.SucceededSaveDraft],
-  execute: ({ draft }) =>
-    Effect.sleep(SAVE_LATENCY).pipe(
-      Effect.as(Message.SucceededSaveDraft({ draft })),
-    ),
+  execute: ({ draft }): ReturnType<typeof Message.SucceededSaveDraft>!! => {
+    const completed = Message.SucceededSaveDraft({ draft })
+    return effect {
+      try sleep(SAVE_LATENCY)
+      return completed
+    }
+  },
 })
 
 // UPDATE
@@ -119,50 +142,43 @@ export type AppTransition = Transition.Transition<AppRoute>
 
 const nextSequenceNumber = (
   transitionLog: ReadonlyArray<LoggedTransition>,
-): number =>
-  Option.match(Array.head(transitionLog), {
-    onNone: () => 1,
-    onSome: newestEntry => newestEntry.sequenceNumber + 1,
-  })
+): number => match (Arr.head(transitionLog)) {
+  when Option.None: (1);
+  when Option.Some(let newestEntry): (newestEntry.sequenceNumber + 1);
+}
 
-const logTransition =
-  (transition: AppTransition): Step =>
-  model => ({
-    model: modifyFields(model, {
-      transitionLog: transitionLog =>
-        pipe(
-          transitionLog,
-          Array.prepend({
-            sequenceNumber: nextSequenceNumber(transitionLog),
-            maybePreviousRoute: transition.maybePreviousRoute,
-            nextRoute: transition.nextRoute,
-          }),
-          Array.take(MAX_LOGGED_TRANSITIONS),
-        ),
-    }),
-  })
+const logTransition = (transition: AppTransition): Step => model => ({
+  model: modifyFields(model, {
+    transitionLog: transitionLog =>
+      pipe(
+        transitionLog,
+        Arr.prepend({
+          sequenceNumber: nextSequenceNumber(transitionLog),
+          maybePreviousRoute: transition.maybePreviousRoute,
+          nextRoute: transition.nextRoute,
+        }),
+        Arr.take(MAX_LOGGED_TRANSITIONS),
+      ),
+  }),
+})
 
-const loadCatalogOnGalleryEntry =
-  (transition: AppTransition): Step =>
-  model =>
-    Transition.isEntering(transition, 'Gallery') &&
-    model.catalogStatus !== 'Loading'
-      ? {
-          model: modifyFields(model, { catalogStatus: () => 'Loading' }),
-          commands: [LoadCatalog()],
-        }
-      : { model }
+const loadCatalogOnGalleryEntry = (transition: AppTransition): Step => model =>
+  Transition.isEntering(transition, 'Gallery')
+    && model.catalogStatus !== 'Loading'
+    ? {
+      model: modifyFields(model, { catalogStatus: () => 'Loading' }),
+      commands: [LoadCatalog()],
+    }
+    : { model }
 
 const keepModel: Step = model => ({ model })
 
-const loadPainting =
-  (paintingId: number): Step =>
-  model => ({
-    model: modifyFields(model, {
-      paintingStatus: () => PaintingStatus.Loading({ paintingId }),
-    }),
-    commands: [LoadPainting({ paintingId })],
-  })
+const loadPainting = (paintingId: number): Step => model => ({
+  model: modifyFields(model, {
+    paintingStatus: () => PaintingStatus.Loading({ paintingId }),
+  }),
+  commands: [LoadPainting({ paintingId })],
+})
 
 const reconcilePaintingRoute = (transition: AppTransition): Step =>
   Transition.matchOrElse<Step>()(
@@ -178,12 +194,10 @@ const reconcilePaintingRoute = (transition: AppTransition): Step =>
     () => keepModel,
   )
 
-const saveDraftOnStudioExit =
-  (transition: AppTransition): Step =>
-  model =>
-    Transition.isExiting(transition, 'Studio') && model.studioDraft !== ''
-      ? { model, commands: [SaveDraft({ draft: model.studioDraft })] }
-      : { model }
+const saveDraftOnStudioExit = (transition: AppTransition): Step => model =>
+  Transition.isExiting(transition, 'Studio') && model.studioDraft !== ''
+    ? { model, commands: [SaveDraft({ draft: model.studioDraft })] }
+    : { model }
 
 const handleTransition = (
   model: Model,
@@ -196,7 +210,7 @@ const handleTransition = (
     saveDraftOnStudioExit(transition),
   ])
 
-export const update = (model: Model, message: Message) =>
+export const update = (model: Model, message: Message): infer _ =>
   Message.match<UpdateReturn>(message, {
     CompletedNavigateInternal: () => ({ model }),
     CompletedLoadExternal: () => ({ model }),
@@ -227,13 +241,13 @@ export const update = (model: Model, message: Message) =>
     }),
 
     SucceededLoadPainting: ({ paintingId }) =>
-      model.paintingStatus._tag === 'Loading' &&
-      model.paintingStatus.paintingId === paintingId
+      model.paintingStatus._tag === 'Loading'
+        && model.paintingStatus.paintingId === paintingId
         ? {
-            model: modifyFields(model, {
-              paintingStatus: () => PaintingStatus.Ready({ paintingId }),
-            }),
-          }
+          model: modifyFields(model, {
+            paintingStatus: () => PaintingStatus.Ready({ paintingId }),
+          }),
+        }
         : { model },
 
     UpdatedStudioDraft: ({ value }) => ({
@@ -277,8 +291,10 @@ const navigationView = (
   currentRoute: AppRoute,
   h: HtmlBuilder<Message>,
 ): Html => {
-  const navLinkClassName = (isActive: boolean) =>
-    `font-medium px-3 py-1 rounded transition hover:bg-indigo-500 ${isActive ? 'bg-indigo-700' : ''}`
+  const navLinkClassName = (isActive: boolean): string =>
+    `font-medium px-3 py-1 rounded transition hover:bg-indigo-500 ${
+      isActive ? 'bg-indigo-700' : ''
+    }`
 
   return h.nav(
     [h.Class('bg-indigo-600 text-white p-4')],
@@ -306,8 +322,8 @@ const navigationView = (
                   h.Href(galleryRouter()),
                   h.Class(
                     navLinkClassName(
-                      currentRoute._tag === 'Gallery' ||
-                        currentRoute._tag === 'Painting',
+                      currentRoute._tag === 'Gallery'
+                        || currentRoute._tag === 'Painting',
                     ),
                   ),
                 ],
@@ -393,7 +409,7 @@ const loadingView = (label: string, h: HtmlBuilder<Message>): Html =>
 const paintingGridView = (h: HtmlBuilder<Message>): Html =>
   h.ul(
     [h.Class('grid gap-4 sm:grid-cols-2 list-none')],
-    Array.map(paintings, painting =>
+    Arr.map(paintings, painting =>
       h.keyed('li')(
         String(painting.id),
         [],
@@ -420,8 +436,7 @@ const paintingGridView = (h: HtmlBuilder<Message>): Html =>
             ],
           ),
         ],
-      ),
-    ),
+      )),
   )
 
 const galleryView = (
@@ -449,20 +464,18 @@ const galleryView = (
 
 const neighborView = (
   label: string,
-  maybeNeighbor: Option.Option<Painting>,
+  maybeNeighbor: Option<Painting>,
   h: HtmlBuilder<Message>,
-): Html =>
-  Option.match(maybeNeighbor, {
-    onNone: () => h.span([h.Class('text-gray-300')], [label]),
-    onSome: neighbor =>
-      h.a(
-        [
-          h.Href(paintingRouter({ paintingId: neighbor.id })),
-          h.Class('text-indigo-600 hover:underline font-medium'),
-        ],
-        [label],
-      ),
-  })
+): Html => match (maybeNeighbor) {
+  when Option.None: (h.span([h.Class('text-gray-300')], [label]));
+  when Option.Some(let neighbor): (h.a(
+    [
+      h.Href(paintingRouter({ paintingId: neighbor.id })),
+      h.Class('text-indigo-600 hover:underline font-medium'),
+    ],
+    [label],
+  ));
+}
 
 const paintingNeighborsView = (
   paintingIndex: number,
@@ -471,12 +484,12 @@ const paintingNeighborsView = (
   h.div(
     [h.Class('flex items-center justify-between mt-6')],
     [
-      neighborView('← Previous', Array.get(paintings, paintingIndex - 1), h),
+      neighborView('← Previous', Arr.get(paintings, paintingIndex - 1), h),
       h.span(
         [h.Class('text-sm text-gray-500')],
         [`${paintingIndex + 1} of ${paintings.length}`],
       ),
-      neighborView('Next →', Array.get(paintings, paintingIndex + 1), h),
+      neighborView('Next →', Arr.get(paintings, paintingIndex + 1), h),
     ],
   )
 
@@ -508,8 +521,8 @@ const foundPaintingView = (
   paintingStatus: PaintingStatus,
   h: HtmlBuilder<Message>,
 ): Html => {
-  const isPaintingReady =
-    paintingStatus._tag === 'Ready' && paintingStatus.paintingId === painting.id
+  const isPaintingReady = paintingStatus._tag === 'Ready'
+    && paintingStatus.paintingId === painting.id
 
   return h.div(
     [],
@@ -523,21 +536,21 @@ const foundPaintingView = (
       ),
       isPaintingReady
         ? h.article(
-            [h.Class('bg-white rounded-lg shadow overflow-hidden')],
-            [
-              h.div([h.Class(`h-56 bg-gradient-to-br ${painting.gradient}`)]),
-              h.div(
-                [h.Class('p-6')],
-                [
-                  h.h1(
-                    [h.Class('text-3xl font-bold text-gray-800 mb-1')],
-                    [painting.title],
-                  ),
-                  h.p([h.Class('text-gray-500')], [painting.artist]),
-                ],
-              ),
-            ],
-          )
+          [h.Class('bg-white rounded-lg shadow overflow-hidden')],
+          [
+            h.div([h.Class(`h-56 bg-gradient-to-br ${painting.gradient}`)]),
+            h.div(
+              [h.Class('p-6')],
+              [
+                h.h1(
+                  [h.Class('text-3xl font-bold text-gray-800 mb-1')],
+                  [painting.title],
+                ),
+                h.p([h.Class('text-gray-500')], [painting.artist]),
+              ],
+            ),
+          ],
+        )
         : loadingView('Unpacking the painting…', h),
       paintingNeighborsView(paintingIndex, h),
     ],
@@ -548,16 +561,17 @@ const paintingView = (
   paintingId: number,
   paintingStatus: PaintingStatus,
   h: HtmlBuilder<Message>,
-): Html =>
-  Option.match(findPaintingWithIndex(paintingId), {
-    onNone: () => missingPaintingView(paintingId, h),
-    onSome: ({ painting, paintingIndex }) =>
-      foundPaintingView(painting, paintingIndex, paintingStatus, h),
-  })
+): Html => match (findPaintingWithIndex(paintingId)) {
+  when Option.None: (missingPaintingView(paintingId, h));
+  when Option.Some(let matchedOptionValue): do {
+    const { painting, paintingIndex } = matchedOptionValue
+    foundPaintingView(painting, paintingIndex, paintingStatus, h)
+  };
+}
 
 const studioView = (
   studioDraft: string,
-  maybeSavedDraft: Option.Option<string>,
+  maybeSavedDraft: Option<string>,
   h: HtmlBuilder<Message>,
 ): Html =>
   h.div(
@@ -581,25 +595,24 @@ const studioView = (
       h.div(
         [h.Class('mt-6')],
         [
-          Option.match(maybeSavedDraft, {
-            onNone: () =>
-              h.p([h.Class('text-sm text-gray-500')], ['Nothing saved yet.']),
-            onSome: savedDraft =>
-              h.div(
-                [h.Class('bg-white border border-gray-200 rounded-lg p-4')],
-                [
-                  h.h2(
-                    [
-                      h.Class(
-                        'text-sm font-medium text-gray-500 uppercase tracking-wide mb-1',
-                      ),
-                    ],
-                    ['Last saved draft'],
-                  ),
-                  h.p([h.Class('text-gray-800')], [savedDraft]),
-                ],
-              ),
-          }),
+          match (maybeSavedDraft) {
+            when Option.None:
+              (h.p([h.Class('text-sm text-gray-500')], ['Nothing saved yet.']));
+            when Option.Some(let savedDraft): (h.div(
+              [h.Class('bg-white border border-gray-200 rounded-lg p-4')],
+              [
+                h.h2(
+                  [
+                    h.Class(
+                      'text-sm font-medium text-gray-500 uppercase tracking-wide mb-1',
+                    ),
+                  ],
+                  ['Last saved draft'],
+                ),
+                h.p([h.Class('text-gray-800')], [savedDraft]),
+              ],
+            ));
+          },
         ],
       ),
     ],
@@ -642,10 +655,12 @@ const logEntryBadges = (
   transition: AppTransition,
   h: HtmlBuilder<Message>,
 ): ReadonlyArray<Html> => {
-  const coldLoadBadges = Option.match(transition.maybePreviousRoute, {
-    onNone: () => [badgeView('bg-violet-100 text-violet-700', 'Cold load', h)],
-    onSome: () => [],
-  })
+  const coldLoadBadges = match (transition.maybePreviousRoute) {
+    when Option.None: [
+      badgeView('bg-violet-100 text-violet-700', 'Cold load', h),
+    ];
+    when Option.Some: [];
+  }
 
   const maybeEnteredBadge = Option.map(
     Transition.enteredAny(transition),
@@ -653,8 +668,10 @@ const logEntryBadges = (
       badgeView('bg-emerald-100 text-emerald-700', `Entered ${route._tag}`, h),
   )
 
-  const maybeExitedBadge = Option.map(Transition.exitedAny(transition), route =>
-    badgeView('bg-amber-100 text-amber-700', `Exited ${route._tag}`, h),
+  const maybeExitedBadge = Option.map(
+    Transition.exitedAny(transition),
+    route =>
+      badgeView('bg-amber-100 text-amber-700', `Exited ${route._tag}`, h),
   )
 
   const maybeStayedBadge = Option.map(
@@ -667,13 +684,13 @@ const logEntryBadges = (
       ),
   )
 
-  const helperBadges = Array.getSomes([
+  const helperBadges = Arr.getSomes([
     maybeEnteredBadge,
     maybeExitedBadge,
     maybeStayedBadge,
   ])
 
-  return Array.match([...coldLoadBadges, ...helperBadges], {
+  return Arr.match([...coldLoadBadges, ...helperBadges], {
     onEmpty: () => [
       badgeView('bg-gray-100 text-gray-600', 'Stayed within route', h),
     ],
@@ -685,10 +702,10 @@ const logEntryView = (
   entry: LoggedTransition,
   h: HtmlBuilder<Message>,
 ): Html => {
-  const sourceLabel = Option.match(entry.maybePreviousRoute, {
-    onNone: () => 'Cold load',
-    onSome: routeLabel,
-  })
+  const sourceLabel = match (entry.maybePreviousRoute) {
+    when Option.None: 'Cold load';
+    when Option.Some(let route): routeLabel(route);
+  }
 
   return h.keyed('li')(
     String(entry.sequenceNumber),
@@ -697,7 +714,9 @@ const logEntryView = (
       h.p(
         [h.Class('text-xs text-gray-500 mb-2')],
         [
-          `#${entry.sequenceNumber} ${sourceLabel} → ${routeLabel(entry.nextRoute)}`,
+          `#${entry.sequenceNumber} ${sourceLabel} → ${
+            routeLabel(entry.nextRoute)
+          }`,
         ],
       ),
       h.div([h.Class('flex flex-wrap gap-1.5')], logEntryBadges(entry, h)),
@@ -722,18 +741,15 @@ const transitionLogView = (
       ),
       h.ul(
         [h.Class('space-y-3 list-none')],
-        Array.map(transitionLog, entry => logEntryView(entry, h)),
+        Arr.map(transitionLog, entry => logEntryView(entry, h)),
       ),
     ],
   )
 
-const routeTitle = (route: AppRoute): string =>
-  Match.value(route).pipe(
-    Match.tag('Home', () => 'Route Transitions'),
-    Match.orElse(
-      currentRoute => `${routeLabel(currentRoute)} | Route Transitions`,
-    ),
-  )
+const routeTitle = (route: AppRoute): string => match (route) {
+  when { _tag: 'Home' }: 'Route Transitions';
+  when let currentRoute: `${routeLabel(currentRoute)} | Route Transitions`;
+}
 
 export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
   const routeContent = AppRoute.match(model.route, {
