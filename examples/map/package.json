@@ -26,7 +26,7 @@
     "typescript": "^7.0.2",
     "vite": "^8.3.1",
     "vitest": "^5.0.2",
-    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz",
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-079434a148d1.tgz",
     "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz",
     "fast-check": "4.3.0"
   }

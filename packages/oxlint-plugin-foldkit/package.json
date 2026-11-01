@@ -33,7 +33,7 @@
     "rolldown": "^1.2.11",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "vitest": "^4.1.11",
-    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz",
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-079434a148d1.tgz",
     "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz",
     "vibelang-unplugin": "file:../../.vibelang-toolchain/vibelang-unplugin-0.0.11-7e3b05c3f55f.tgz",
     "fast-check": "^4.10.2"

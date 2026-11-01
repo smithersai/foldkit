@@ -49,7 +49,7 @@
     "vite-host": "npm:vite@8.2.1",
     "vitest": "^4.1.11",
     "fast-check": "^4.10.2",
-    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-c9437b7749c9.tgz",
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-079434a148d1.tgz",
     "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz"
   },
   "keywords": [
