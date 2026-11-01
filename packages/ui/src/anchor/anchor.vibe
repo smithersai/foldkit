@@ -1,4 +1,13 @@
-import { Array, Function, Option, Schema, String, pipe } from 'effect'
+import {
+  browserDocument,
+  computedStyle,
+  isHtmlElement,
+  isKeyboardEvent,
+  isShadowRoot,
+  portalElementCleanup,
+  requestFrame,
+} from './anchor.platform.ts'
+import { Array, Function, String, pipe } from 'effect'
 
 import {
   type Placement as FloatingPlacement,
@@ -45,16 +54,14 @@ export const Padding = Schema.Union([
 export type Padding = typeof Padding.Type
 
 /** Static configuration for anchor-based positioning of a floating element relative to a button. */
-export const AnchorConfig = Schema.Struct({
-  placement: Schema.optional(Placement),
-  gap: Schema.optional(Schema.Number),
-  offset: Schema.optional(Schema.Number),
-  padding: Schema.optional(Padding),
-  portal: Schema.optional(Schema.Boolean),
-  isPlacementLocked: Schema.optional(Schema.Boolean),
-})
-
-export type AnchorConfig = typeof AnchorConfig.Type
+export schema AnchorConfig {
+  placement?: Placement
+  gap?: number
+  offset?: number
+  padding?: Padding
+  portal?: boolean
+  isPlacementLocked?: boolean
+}
 
 const PORTAL_ROOT_ID = 'foldkit-portal-root'
 const DIALOG_PORTAL_ROOT_ATTRIBUTE = 'data-foldkit-portal-root'
@@ -66,9 +73,9 @@ const getOrCreateContainingRootPortalRoot = (element: Element): HTMLElement => {
   // escaping ancestor clipping. `getRootNode()` must be read here, before the
   // element is relocated out of the mounting tree.
   const root = element.getRootNode()
-  const inShadow = root instanceof ShadowRoot
-  const owner: Document | ShadowRoot = inShadow ? root : document
-  const parent: ParentNode = inShadow ? root : document.body
+  const inShadow = isShadowRoot(root)
+  const owner: Document | ShadowRoot = inShadow ? root : browserDocument()
+  const parent: ParentNode = inShadow ? root : browserDocument().body
 
   const existing = owner.getElementById(PORTAL_ROOT_ID)
 
@@ -76,7 +83,7 @@ const getOrCreateContainingRootPortalRoot = (element: Element): HTMLElement => {
     return existing
   }
 
-  const portalRoot = document.createElement('div')
+  const portalRoot = browserDocument().createElement('div')
   portalRoot.id = PORTAL_ROOT_ID
 
   // NOTE: prepended (not appended) so portaled overlays sit BEFORE the app's
@@ -96,11 +103,11 @@ const getOrCreateDialogPortalRoot = (
     `:scope > [${DIALOG_PORTAL_ROOT_ATTRIBUTE}]`,
   )
 
-  if (existing instanceof HTMLElement) {
+  if (isHtmlElement(existing)) {
     return existing
   }
 
-  const portalRoot = document.createElement('div')
+  const portalRoot = browserDocument().createElement('div')
   portalRoot.setAttribute(DIALOG_PORTAL_ROOT_ATTRIBUTE, '')
 
   // NOTE: appended, unlike the containing root's portal root. A dialog's
@@ -117,11 +124,11 @@ const getOrCreateDialogPortalRoot = (
 // painted behind the dialog and made inert, so an element inside a dialog is
 // portaled into that dialog instead. `closest` must be read here, before the
 // element is relocated out of the mounting tree.
-const getOrCreatePortalRoot = (element: Element): HTMLElement =>
-  Option.match(Option.fromNullishOr(element.closest('dialog')), {
-    onNone: () => getOrCreateContainingRootPortalRoot(element),
-    onSome: getOrCreateDialogPortalRoot,
-  })
+const getOrCreatePortalRoot = (element: Element): HTMLElement => match (Option.fromNullishOr(element.closest('dialog'))) {
+  when Option.None:
+    ((): infer _ => getOrCreateContainingRootPortalRoot(element))();
+  when Option.Some(let optionValue1): getOrCreateDialogPortalRoot(optionValue1);
+}
 
 /** Relocates an element into a portal root and returns a cleanup function
  *  that removes it again. Inside a `<dialog>`, the portal root is a div
@@ -140,34 +147,14 @@ export const portalToContainingRoot = (element: Element): (() => void) => {
   const portalRoot = getOrCreatePortalRoot(element)
   portalRoot.appendChild(element)
 
-  return () => {
-    try {
-      element.remove()
-    } catch {
-      // NOTE: a re-render may unmount the element before this cleanup fires,
-      // so the remove() call can throw on a node that's already been removed.
-      // Swallow the error.
-    }
-
-    // NOTE: a modal overlay isolates siblings before its Mount portals the
-    // panel. An empty shared root would become inert, then receive the panel.
-    // Removing empty roots lets the next open create one after isolation.
-    // Dialog roots must also be removed so a reopened dialog appends its portal
-    // root after the newly rendered content. Occupied shared roots are retained;
-    // opening a modal overlay while one exists can still make its panel inert.
-    if (!portalRoot.hasChildNodes()) {
-      portalRoot.remove()
-    }
-  }
+  return portalElementCleanup(element, portalRoot)
 }
 
-const findWrapperInsideDialog = (element: Element): Option.Option<Element> => {
+const findWrapperInsideDialog = (element: Element): Option<Element> => {
   const dialog = element.closest('dialog')
 
-  return pipe(
-    Option.fromNullishOr(element.parentElement),
-    Option.filter(parent => dialog !== null && parent !== dialog),
-  )
+  return Option.fromNullishOr(element.parentElement)
+    .filter((parent): infer _ => dialog !== null && parent !== dialog)
 }
 
 /** Relocates a click-outside backdrop and returns a cleanup function that
@@ -190,26 +177,26 @@ const findWrapperInsideDialog = (element: Element): Option.Option<Element> => {
  *  backdrop rendered directly in the dialog goes into the dialog's portal
  *  root instead. Designed to be called from inside an `OnMount` action,
  *  like `portalToContainingRoot`. */
-export const portalBackdrop = (element: Element): (() => void) =>
-  Option.match(findWrapperInsideDialog(element), {
-    onNone: () => portalToContainingRoot(element),
-    onSome: wrapper => {
-      // NOTE: positioned elements without a z-index paint in tree order, and
-      // every non-positioned element paints before them. Placed directly
-      // before the positioned wrapper, the backdrop paints over the dialog
-      // panel and its content but under the wrapper and the trigger inside it.
-      // The dialog portal root cannot give both: appended, the backdrop would
-      // cover the trigger too, and prepended, the dialog panel would cover the
-      // backdrop. `closest` and `parentElement` must be read before the move.
-      wrapper.before(element)
-      return () => element.remove()
-    },
-  })
+export const portalBackdrop = (element: Element): (() => void) => match (findWrapperInsideDialog(element)) {
+  when Option.None: portalToContainingRoot(element);
+  when Option.Some(let wrapper): do {
+    // NOTE: positioned elements without a z-index paint in tree order, and
+    // every non-positioned element paints before them. Placed directly
+    // before the positioned wrapper, the backdrop paints over the dialog
+    // panel and its content but under the wrapper and the trigger inside it.
+    // The dialog portal root cannot give both: appended, the backdrop would
+    // cover the trigger too, and prepended, the dialog panel would cover the
+    // backdrop. `closest` and `parentElement` must be read before the move.
+    wrapper.before(element)
+    const optionResult24 = (): infer _ => element.remove()
+    optionResult24
+  };
+}
 
 const isInsideFixedContainer = (element: Element | null): boolean =>
-  element !== null &&
-  (getComputedStyle(element).position === 'fixed' ||
-    isInsideFixedContainer(element.parentElement))
+  element !== null
+  && (computedStyle(element).position === 'fixed'
+    || isInsideFixedContainer(element.parentElement))
 
 const toSide = (placement: FloatingPlacement): string =>
   pipe(placement, String.split('-'), Array.headNonEmpty)
@@ -300,11 +287,11 @@ export const anchorSetup = (
   // and document.querySelector do not pierce shadow boundaries, so a
   // document-scoped lookup returns null there and the panel never anchors.
   const root = element.getRootNode()
-  const inShadow = root instanceof ShadowRoot
-  const owner = inShadow ? root : document
+  const inShadow = isShadowRoot(root)
+  const owner = inShadow ? root : browserDocument()
 
-  if (!(element instanceof HTMLElement)) {
-    console.error(
+  if (!(isHtmlElement(element))) {
+    Console.Console.defaultValue().error(
       '[@foldkit/ui] anchorSetup requires an HTML panel. The panel will not be positioned.',
     )
     return Function.constVoid
@@ -313,14 +300,14 @@ export const anchorSetup = (
   const button = owner.getElementById(config.buttonId)
 
   if (button === null) {
-    console.error(
+    Console.Console.defaultValue().error(
       `[@foldkit/ui] anchorSetup could not find a trigger with id "${config.buttonId}". The panel will not be positioned.`,
     )
     return Function.constVoid
   }
 
-  if (!(button instanceof HTMLElement)) {
-    console.error(
+  if (!(isHtmlElement(button))) {
+    Console.Console.defaultValue().error(
       `[@foldkit/ui] anchorSetup requires an HTML trigger with id "${config.buttonId}". The panel will not be positioned.`,
     )
     return Function.constVoid
@@ -351,18 +338,16 @@ export const anchorSetup = (
   // inside the panel. The candidate is not narrowed to `HTMLElement`, since
   // Floating UI's `arrow` takes any `Element` and a triangle arrow is usually
   // an `<svg>`.
-  const maybeArrowElement = pipe(
-    Option.fromNullishOr(config.arrowId),
-    Option.flatMapNullishOr(arrowId => owner.getElementById(arrowId)),
-    Option.filter(candidate => element.contains(candidate)),
-  )
+  const maybeArrowElement = Option.fromNullishOr(config.arrowId)
+    .flatMapNullishOr((arrowId): infer _ => owner.getElementById(arrowId))
+    .filter((candidate): infer _ => element.contains(candidate))
 
-  const arrowMiddleware = Option.match(maybeArrowElement, {
-    onNone: () => [],
-    onSome: arrowElement => [
+  const arrowMiddleware = match (maybeArrowElement) {
+    when Option.None: [];
+    when Option.Some(let arrowElement): [
       arrow({ element: arrowElement, padding: config.arrowPadding ?? 0 }),
-    ],
-  })
+    ];
+  }
 
   const {
     placement,
@@ -414,7 +399,7 @@ export const anchorSetup = (
         shift({ padding: padding ?? 0 }),
         size({
           padding: padding ?? 0,
-          apply({ rects, availableHeight }) {
+          apply({ rects, availableHeight }): infer _ {
             if (!isActive) {
               return
             }
@@ -451,7 +436,7 @@ export const anchorSetup = (
 
     tick
       .then(
-        ({ x, y, placement: resolvedPlacement, middlewareData }) => {
+        ({ x, y, placement: resolvedPlacement, middlewareData }): infer _ => {
           hasWarnedFailure = false
 
           if (!isActive) {
@@ -481,7 +466,7 @@ export const anchorSetup = (
             element.style.visibility = ''
 
             if (config.focusAfterPosition ?? false) {
-              requestAnimationFrame(() => {
+              requestFrame((): infer _ => {
                 if (!isActive) {
                   return
                 }
@@ -489,7 +474,7 @@ export const anchorSetup = (
                 const target = config.focusSelector
                   ? owner.querySelector(config.focusSelector)
                   : element
-                if (target instanceof HTMLElement) {
+                if (isHtmlElement(target)) {
                   target.focus({ preventScroll: true })
                 }
               })
@@ -501,17 +486,17 @@ export const anchorSetup = (
         // once per run of consecutive failures, since `autoUpdate` would
         // otherwise repeat a persistent failure on every scroll and resize,
         // while a fresh failure after a recovery still gets its own report.
-        (error: unknown) => {
+        (error: unknown): infer _ => {
           if (!hasWarnedFailure) {
             hasWarnedFailure = true
-            console.error(
+            Console.Console.defaultValue().error(
               '[@foldkit/ui] anchorSetup could not position the panel. It keeps the visibility its caller rendered until positioning succeeds.',
               error,
             )
           }
         },
       )
-      .finally(() => {
+      .finally((): infer _ => {
         isPositioning = false
 
         if (isActive && isPositioningQueued) {
@@ -524,7 +509,7 @@ export const anchorSetup = (
   const floatingCleanup = autoUpdate(button, element, positionElement)
 
   const handleTabKey = (event: Event): void => {
-    if (event instanceof KeyboardEvent && event.key === 'Tab') {
+    if (isKeyboardEvent(event) && event.key === 'Tab') {
       button.focus()
     }
   }
@@ -534,7 +519,7 @@ export const anchorSetup = (
     element.addEventListener('keydown', handleTabKey)
   }
 
-  return () => {
+  return (): infer _ => {
     isActive = false
     isPositioningQueued = false
     floatingCleanup()

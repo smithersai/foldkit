@@ -1,6 +1,6 @@
 import { Array, String, pipe } from 'effect'
 
-import { wrapIndex } from './keyboard.ts'
+import { wrapIndex } from './keyboard.vibe'
 
 /** Finds the first enabled item whose search text starts with the query, searching forward from the active item and wrapping around. On a fresh search, starts after the active item; on a refinement, includes the active item. */
 export const resolveTypeaheadMatch = <Item>(

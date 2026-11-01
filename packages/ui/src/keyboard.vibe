@@ -1,0 +1,48 @@
+import { Array, pipe } from 'effect'
+
+/** Whether a keyboard event key is a single printable character (not a named key like "Enter" or "ArrowDown"). */
+export const isPrintableKey = (key: string): boolean => key.length === 1
+
+export const wrapIndex = (index: number, length: number): number =>
+  ((index % length) + length) % length
+
+export const findFirstEnabledIndex = (
+  itemCount: number,
+  focusedIndex: number,
+  isDisabled: (index: number) => boolean,
+): infer _ =>
+(startIndex: number, direction: 1 | -1): number =>
+  pipe(
+    itemCount,
+    Array.makeBy((step): infer _ =>
+      wrapIndex(startIndex + step * direction, itemCount)
+    ),
+    Array.findFirst(Predicate.not(isDisabled)),
+    Option.getOrElse((): infer _ => focusedIndex),
+  )
+
+export const keyToIndex = (
+  nextKey: string,
+  previousKey: string,
+  itemCount: number,
+  focusedIndex: number,
+  isDisabled: (index: number) => boolean,
+): ((key: string) => number) => {
+  const find = findFirstEnabledIndex(itemCount, focusedIndex, isDisabled)
+
+  return (key: string): number =>
+    do {
+      const nativeMatchInput16 = key
+      const nativeMatchResult16 = match (nativeMatchInput16) {
+        when if (nativeMatchInput16 === nextKey): find(focusedIndex + 1, 1);
+        when if (nativeMatchInput16 === previousKey): find(
+          focusedIndex - 1,
+          -1,
+        );
+        when ('Home') or ('PageUp'): find(0, 1);
+        when ('End') or ('PageDown'): find(itemCount - 1, -1);
+        default: focusedIndex;
+      }
+      nativeMatchResult16
+    }
+}

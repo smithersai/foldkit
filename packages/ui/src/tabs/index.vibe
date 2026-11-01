@@ -8,9 +8,9 @@ import { modifyFields } from 'foldkit/struct'
 import { type View as SubmodelView, defineView } from 'foldkit/submodel'
 
 import { idSelector } from '../internal/selectors.ts'
-import { keyToIndex } from '../keyboard.js'
+import { keyToIndex } from '../keyboard.vibe'
 
-export { wrapIndex, findFirstEnabledIndex, keyToIndex } from '../keyboard.js'
+export { wrapIndex, findFirstEnabledIndex, keyToIndex } from '../keyboard.vibe'
 
 // MODEL
 

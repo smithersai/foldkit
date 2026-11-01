@@ -3,7 +3,7 @@ import { type Update } from 'foldkit';
 import * as Command from 'foldkit/command';
 import { type ChildAttribute, type Html } from 'foldkit/html';
 import { type View as SubmodelView } from 'foldkit/submodel';
-export { wrapIndex, findFirstEnabledIndex, keyToIndex } from '../keyboard.js';
+export { wrapIndex, findFirstEnabledIndex, keyToIndex } from '../keyboard.vibe';
 /** Controls the tab list layout direction and which arrow keys navigate between tabs. */
 export declare const Orientation: Schema.Literals<readonly ["Horizontal", "Vertical"]>;
 export type Orientation = typeof Orientation.Type;

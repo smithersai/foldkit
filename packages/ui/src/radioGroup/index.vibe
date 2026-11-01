@@ -8,7 +8,7 @@ import { modifyFields } from 'foldkit/struct'
 import { type View as SubmodelView, defineView } from 'foldkit/submodel'
 
 import { idSelector } from '../internal/selectors.ts'
-import { keyToIndex } from '../keyboard.ts'
+import { keyToIndex } from '../keyboard.vibe'
 
 // MODEL
 

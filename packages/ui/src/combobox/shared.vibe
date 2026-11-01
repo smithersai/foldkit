@@ -22,7 +22,7 @@ import {
 import { groupContiguous } from '../group.vibe'
 import * as OptionExt from '../internal/optionExtensions.vibe'
 import { idSelector } from '../internal/selectors.ts'
-import { findFirstEnabledIndex, keyToIndex } from '../keyboard.ts'
+import { findFirstEnabledIndex, keyToIndex } from '../keyboard.vibe'
 
 export { groupContiguous }
 
