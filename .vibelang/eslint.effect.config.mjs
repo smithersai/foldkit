@@ -94,7 +94,34 @@ const jsPlugins = new Map(
 )
 // typescript-eslint refuses TypeScript 7, so its rules join only where it loads.
 const tseslint = await import('typescript-eslint').then(
-  ({ default: loaded }) => loaded,
+  ({ default: loaded }) => {
+    const unused = loaded.plugin.rules['no-unused-vars']
+    if (!unused?.create) return loaded
+    // Oxlint counts a typeof query as a read. typescript-eslint instead emits
+    // usedOnlyAsType, including for erased declare const unique-symbol brands.
+    // Adapt only that diagnostic; unused declarations and configured options
+    // still run through the original rule. The standalone parser is unchanged.
+    const rule = {
+      ...unused,
+      create(context) {
+        const adapted = Object.create(context)
+        Object.defineProperty(adapted, 'report', {
+          value(descriptor) {
+            if (descriptor.messageId !== 'usedOnlyAsType')
+              context.report(descriptor)
+          },
+        })
+        return unused.create(adapted)
+      },
+    }
+    return {
+      ...loaded,
+      plugin: {
+        ...loaded.plugin,
+        rules: { ...loaded.plugin.rules, 'no-unused-vars': rule },
+      },
+    }
+  },
   () => null,
 )
 const core = await import('eslint/use-at-your-own-risk').then(
@@ -206,6 +233,14 @@ export default [
   ...(correctness && tseslint
     ? tseslint.configs.recommended.map(config => ({
         ...config,
+        ...(config.plugins
+          ? {
+              plugins: {
+                ...config.plugins,
+                '@typescript-eslint': tseslint.plugin,
+              },
+            }
+          : {}),
         files: ['**/*.vibe'],
       }))
     : []),
