@@ -1,4 +1,4 @@
-import { Array, Number, Option, pipe } from 'effect'
+import { Array as Arr, Number as Num, pipe } from 'effect'
 import { Update } from 'foldkit'
 import { modifyFields } from 'foldkit/struct'
 
@@ -37,8 +37,8 @@ import {
   ItemListbox,
   ItemMultiListbox,
 } from './view/listbox.vibe'
-import { PlanRadioGroup } from './view/radioGroup'
-import { DemoTabs } from './view/tabs'
+import { PlanRadioGroup } from './view/radioGroup.ts'
+import { DemoTabs } from './view/tabs.ts'
 import { ROW_COUNT as VIRTUAL_LIST_ROW_COUNT } from './view/virtualList.vibe'
 
 const reorderColumns = (
@@ -50,33 +50,31 @@ const reorderColumns = (
 ): ReadonlyArray<DemoColumn> => {
   const maybeCard = pipe(
     columns,
-    Array.findFirst(({ id }) => id === fromContainerId),
+    Arr.findFirst(({ id }) => id === fromContainerId),
     Option.flatMap(column =>
-      Array.findFirst(column.cards, ({ id }) => id === itemId),
+      Arr.findFirst(column.cards, ({ id }) => id === itemId)
     ),
   )
 
-  return Option.match(maybeCard, {
-    onNone: () => columns,
-    onSome: card =>
-      Array.map(columns, column => {
-        const withRemoved =
-          column.id === fromContainerId
-            ? Array.filter(column.cards, ({ id }) => id !== itemId)
-            : column.cards
+  return (match (maybeCard) {
+    when Option.None: columns;
+    when Option.Some(let card): (Arr.map(columns, column => {
+      const withRemoved = column.id === fromContainerId
+        ? Arr.filter(column.cards, ({ id }) => id !== itemId)
+        : column.cards
 
-        if (column.id !== toContainerId) {
-          return modifyFields(column, { cards: () => withRemoved })
-        }
+      if (column.id !== toContainerId) {
+        return modifyFields(column, { cards: () => withRemoved })
+      }
 
-        const inserted = [
-          ...Array.take(withRemoved, toIndex),
-          card,
-          ...Array.drop(withRemoved, toIndex),
-        ]
+      const inserted = [
+        ...Arr.take(withRemoved, toIndex),
+        card,
+        ...Arr.drop(withRemoved, toIndex),
+      ]
 
-        return modifyFields(column, { cards: () => inserted })
-      }),
+      return modifyFields(column, { cards: () => inserted })
+    }));
   })
 }
 
@@ -154,13 +152,11 @@ const foldComboboxDemoOutMessage = Combobox.OutMessage.match<
   Update.Step<UiModel, UiMessage>,
   Combobox.OutMessage<City>
 >({
-  Selected:
-    ({ value }) =>
-    model => ({
-      model: modifyFields(model, {
-        maybeComboboxDemoSelectedCity: () => Option.some(value),
-      }),
+  Selected: ({ value }) => model => ({
+    model: modifyFields(model, {
+      maybeComboboxDemoSelectedCity: () => Option.some(value),
     }),
+  }),
   ClearedSelection: () => model => ({ model }),
 })
 
@@ -177,17 +173,15 @@ const foldComboboxNullableDemoOutMessage = Combobox.OutMessage.match<
   Update.Step<UiModel, UiMessage>,
   Combobox.OutMessage<City>
 >({
-  Selected:
-    ({ value }) =>
-    model => ({
-      model: modifyFields(model, {
-        maybeComboboxNullableDemoSelectedCity:
-          maybeComboboxNullableDemoSelectedCity =>
-            Option.contains(maybeComboboxNullableDemoSelectedCity, value)
-              ? Option.none()
-              : Option.some(value),
-      }),
+  Selected: ({ value }) => model => ({
+    model: modifyFields(model, {
+      maybeComboboxNullableDemoSelectedCity:
+        maybeComboboxNullableDemoSelectedCity =>
+          Option.contains(maybeComboboxNullableDemoSelectedCity, value)
+            ? Option.none()
+            : Option.some(value),
     }),
+  }),
   ClearedSelection: () => model => ({
     model: modifyFields(model, {
       maybeComboboxNullableDemoSelectedCity: () => Option.none(),
@@ -211,19 +205,17 @@ const foldComboboxMultiDemoOutMessage = Combobox.OutMessage.match<
   Update.Step<UiModel, UiMessage>,
   Combobox.OutMessage<City>
 >({
-  Selected:
-    ({ value }) =>
-    model => ({
-      model: modifyFields(model, {
-        comboboxMultiDemoSelectedCities: comboboxMultiDemoSelectedCities =>
-          Array.contains(comboboxMultiDemoSelectedCities, value)
-            ? Array.filter(
-                comboboxMultiDemoSelectedCities,
-                city => city !== value,
-              )
-            : Array.append(comboboxMultiDemoSelectedCities, value),
-      }),
+  Selected: ({ value }) => model => ({
+    model: modifyFields(model, {
+      comboboxMultiDemoSelectedCities: comboboxMultiDemoSelectedCities =>
+        Arr.contains(comboboxMultiDemoSelectedCities, value)
+          ? Arr.filter(
+            comboboxMultiDemoSelectedCities,
+            city => city !== value,
+          )
+          : Arr.append(comboboxMultiDemoSelectedCities, value),
     }),
+  }),
   ClearedSelection: () => model => ({ model }),
 })
 
@@ -241,13 +233,11 @@ const foldComboboxPlacementLockDemoOutMessage = Combobox.OutMessage.match<
   Update.Step<UiModel, UiMessage>,
   Combobox.OutMessage<City>
 >({
-  Selected:
-    ({ value }) =>
-    model => ({
-      model: modifyFields(model, {
-        maybeComboboxPlacementLockDemoSelectedCity: () => Option.some(value),
-      }),
+  Selected: ({ value }) => model => ({
+    model: modifyFields(model, {
+      maybeComboboxPlacementLockDemoSelectedCity: () => Option.some(value),
     }),
+  }),
   ClearedSelection: () => model => ({ model }),
 })
 
@@ -267,13 +257,11 @@ const foldComboboxSelectOnFocusDemoOutMessage = Combobox.OutMessage.match<
   Update.Step<UiModel, UiMessage>,
   Combobox.OutMessage<City>
 >({
-  Selected:
-    ({ value }) =>
-    model => ({
-      model: modifyFields(model, {
-        maybeComboboxSelectOnFocusDemoSelectedCity: () => Option.some(value),
-      }),
+  Selected: ({ value }) => model => ({
+    model: modifyFields(model, {
+      maybeComboboxSelectOnFocusDemoSelectedCity: () => Option.some(value),
     }),
+  }),
   ClearedSelection: () => model => ({ model }),
 })
 
@@ -351,13 +339,11 @@ const foldOverlayComboboxDemoOutMessage = Combobox.OutMessage.match<
   Update.Step<UiModel, UiMessage>,
   Combobox.OutMessage<City>
 >({
-  Selected:
-    ({ value }) =>
-    model => ({
-      model: modifyFields(model, {
-        maybeOverlayComboboxDemoSelectedCity: () => Option.some(value),
-      }),
+  Selected: ({ value }) => model => ({
+    model: modifyFields(model, {
+      maybeOverlayComboboxDemoSelectedCity: () => Option.some(value),
     }),
+  }),
   ClearedSelection: () => model => ({ model }),
 })
 
@@ -422,13 +408,11 @@ const foldNestedDialogChildDemoOpen = Update.foldChildStep({
 const foldCalendarBasicDemoOutMessage = Calendar.OutMessage.match<
   Update.Step<UiModel, UiMessage>
 >({
-  SelectedDate:
-    ({ date }) =>
-    model => ({
-      model: modifyFields(model, {
-        maybeCalendarBasicDemoSelectedDate: () => Option.some(date),
-      }),
+  SelectedDate: ({ date }) => model => ({
+    model: modifyFields(model, {
+      maybeCalendarBasicDemoSelectedDate: () => Option.some(date),
     }),
+  }),
   ChangedViewMonth: () => model => ({ model }),
 })
 
@@ -445,13 +429,11 @@ const foldCalendarBasicDemo = Update.foldChild({
 const foldDatePickerBasicDemoOutMessage = DatePicker.OutMessage.match<
   Update.Step<UiModel, UiMessage>
 >({
-  SelectedDate:
-    ({ date }) =>
-    model => ({
-      model: modifyFields(model, {
-        maybeDatePickerBasicDemoSelectedDate: () => Option.some(date),
-      }),
+  SelectedDate: ({ date }) => model => ({
+    model: modifyFields(model, {
+      maybeDatePickerBasicDemoSelectedDate: () => Option.some(date),
     }),
+  }),
   ClearedDate: () => model => ({
     model: modifyFields(model, {
       maybeDatePickerBasicDemoSelectedDate: () => Option.none(),
@@ -474,8 +456,7 @@ const foldDragAndDropDemoOutMessage = DragAndDrop.OutMessage.match<
   Update.Step<UiModel, UiMessage>
 >({
   Reordered:
-    ({ itemId, fromContainerId, toContainerId, toIndex }) =>
-    model => ({
+    ({ itemId, fromContainerId, toContainerId, toIndex }) => model => ({
       model: modifyFields(model, {
         dragAndDropDemoColumns: dragAndDropDemoColumns =>
           reorderColumns(
@@ -502,13 +483,11 @@ const foldDragAndDropDemo = Update.foldChild({
 const foldFileDropBasicDemoOutMessage = FileDrop.OutMessage.match<
   Update.Step<UiModel, UiMessage>
 >({
-  ReceivedFiles:
-    ({ files }) =>
-    model => ({
-      model: modifyFields(model, {
-        fileDropBasicDemoFiles: Array.appendAll(files),
-      }),
+  ReceivedFiles: ({ files }) => model => ({
+    model: modifyFields(model, {
+      fileDropBasicDemoFiles: Arr.appendAll(files),
     }),
+  }),
   RejectedNonFiles: () => model => ({ model }),
 })
 
@@ -526,13 +505,11 @@ const foldListboxDemoOutMessage = Listbox.OutMessage.match<
   Update.Step<UiModel, UiMessage>,
   Listbox.OutMessage<ListboxItem>
 >({
-  Selected:
-    ({ value }) =>
-    model => ({
-      model: modifyFields(model, {
-        maybeListboxDemoSelectedItem: () => Option.some(value),
-      }),
+  Selected: ({ value }) => model => ({
+    model: modifyFields(model, {
+      maybeListboxDemoSelectedItem: () => Option.some(value),
     }),
+  }),
 })
 
 const foldListboxDemo = Update.foldChild({
@@ -548,19 +525,17 @@ const foldListboxMultiDemoOutMessage = Listbox.OutMessage.match<
   Update.Step<UiModel, UiMessage>,
   Listbox.OutMessage<ListboxItem>
 >({
-  Selected:
-    ({ value }) =>
-    model => ({
-      model: modifyFields(model, {
-        listboxMultiDemoSelectedItems: listboxMultiDemoSelectedItems =>
-          Array.contains(listboxMultiDemoSelectedItems, value)
-            ? Array.filter(
-                listboxMultiDemoSelectedItems,
-                item => item !== value,
-              )
-            : Array.append(listboxMultiDemoSelectedItems, value),
-      }),
+  Selected: ({ value }) => model => ({
+    model: modifyFields(model, {
+      listboxMultiDemoSelectedItems: listboxMultiDemoSelectedItems =>
+        Arr.contains(listboxMultiDemoSelectedItems, value)
+          ? Arr.filter(
+            listboxMultiDemoSelectedItems,
+            item => item !== value,
+          )
+          : Arr.append(listboxMultiDemoSelectedItems, value),
     }),
+  }),
 })
 
 const foldListboxMultiDemo = Update.foldChild({
@@ -575,13 +550,11 @@ const foldListboxMultiDemo = Update.foldChild({
 const foldListboxGroupedDemoOutMessage = Listbox.OutMessage.match<
   Update.Step<UiModel, UiMessage>
 >({
-  Selected:
-    ({ value }) =>
-    model => ({
-      model: modifyFields(model, {
-        maybeListboxGroupedDemoSelectedItem: () => Option.some(value),
-      }),
+  Selected: ({ value }) => model => ({
+    model: modifyFields(model, {
+      maybeListboxGroupedDemoSelectedItem: () => Option.some(value),
     }),
+  }),
 })
 
 const foldListboxGroupedDemo = Update.foldChild({
@@ -659,13 +632,11 @@ const foldVerticalRadioGroupDemoOutMessage = RadioGroup.OutMessage.match<
   Update.Step<UiModel, UiMessage>,
   RadioGroup.OutMessage<Plan>
 >({
-  Selected:
-    ({ value }) =>
-    model => ({
-      model: modifyFields(model, {
-        verticalRadioGroupDemoValue: () => Option.some(value),
-      }),
+  Selected: ({ value }) => model => ({
+    model: modifyFields(model, {
+      verticalRadioGroupDemoValue: () => Option.some(value),
     }),
+  }),
 })
 
 const foldVerticalRadioGroupDemo = Update.foldChild({
@@ -684,13 +655,11 @@ const foldHorizontalRadioGroupDemoOutMessage = RadioGroup.OutMessage.match<
   Update.Step<UiModel, UiMessage>,
   RadioGroup.OutMessage<Plan>
 >({
-  Selected:
-    ({ value }) =>
-    model => ({
-      model: modifyFields(model, {
-        horizontalRadioGroupDemoValue: () => Option.some(value),
-      }),
+  Selected: ({ value }) => model => ({
+    model: modifyFields(model, {
+      horizontalRadioGroupDemoValue: () => Option.some(value),
     }),
+  }),
 })
 
 const foldHorizontalRadioGroupDemo = Update.foldChild({
@@ -708,11 +677,9 @@ const foldHorizontalRadioGroupDemo = Update.foldChild({
 const foldSliderRatingDemoOutMessage = Slider.OutMessage.match<
   Update.Step<UiModel, UiMessage>
 >({
-  ChangedValue:
-    ({ value }) =>
-    model => ({
-      model: modifyFields(model, { sliderRatingValue: () => value }),
-    }),
+  ChangedValue: ({ value }) => model => ({
+    model: modifyFields(model, { sliderRatingValue: () => value }),
+  }),
 })
 
 const foldSliderRatingDemo = Update.foldChild({
@@ -727,11 +694,9 @@ const foldSliderRatingDemo = Update.foldChild({
 const foldSliderVolumeDemoOutMessage = Slider.OutMessage.match<
   Update.Step<UiModel, UiMessage>
 >({
-  ChangedValue:
-    ({ value }) =>
-    model => ({
-      model: modifyFields(model, { sliderVolumeValue: () => value }),
-    }),
+  ChangedValue: ({ value }) => model => ({
+    model: modifyFields(model, { sliderVolumeValue: () => value }),
+  }),
 })
 
 const foldSliderVolumeDemo = Update.foldChild({
@@ -747,11 +712,9 @@ const foldHorizontalTabsDemoOutMessage = Tabs.OutMessage.match<
   Update.Step<UiModel, UiMessage>,
   Tabs.OutMessage<DemoTab>
 >({
-  Selected:
-    ({ value }) =>
-    model => ({
-      model: modifyFields(model, { horizontalTabsDemoTab: () => value }),
-    }),
+  Selected: ({ value }) => model => ({
+    model: modifyFields(model, { horizontalTabsDemoTab: () => value }),
+  }),
 })
 
 const foldHorizontalTabsDemo = Update.foldChild({
@@ -768,11 +731,9 @@ const foldVerticalTabsDemoOutMessage = Tabs.OutMessage.match<
   Update.Step<UiModel, UiMessage>,
   Tabs.OutMessage<DemoTab>
 >({
-  Selected:
-    ({ value }) =>
-    model => ({
-      model: modifyFields(model, { verticalTabsDemoTab: () => value }),
-    }),
+  Selected: ({ value }) => model => ({
+    model: modifyFields(model, { verticalTabsDemoTab: () => value }),
+  }),
 })
 
 const foldVerticalTabsDemo = Update.foldChild({
@@ -916,7 +877,7 @@ const foldVirtualListVariableDemoScrollToIndex = Update.foldChild({
     UiMessage.GotVirtualListVariableDemoMessage({ message }),
 })
 
-export const uiUpdate = (model: UiModel, message: UiMessage) =>
+export const uiUpdate = (model: UiModel, message: UiMessage): infer _ =>
   UiMessage.match<Update.Return<UiModel, UiMessage>>(message, {
     GotMobileMenuDialogMessage: ({ message }) =>
       foldMobileMenuDialog(model, message),
@@ -949,7 +910,7 @@ export const uiUpdate = (model: UiModel, message: UiMessage) =>
 
     ClickedButtonDemo: () => ({
       model: modifyFields(model, {
-        buttonClickCount: Number.increment,
+        buttonClickCount: Num.increment,
       }),
     }),
 
@@ -1052,7 +1013,7 @@ export const uiUpdate = (model: UiModel, message: UiMessage) =>
     ClickedRemoveFileDropDemoFile: ({ fileIndex }) => ({
       model: modifyFields(model, {
         fileDropBasicDemoFiles: () =>
-          Array.remove(model.fileDropBasicDemoFiles, fileIndex),
+          Arr.remove(model.fileDropBasicDemoFiles, fileIndex),
       }),
     }),
 
@@ -1194,8 +1155,8 @@ export const uiUpdate = (model: UiModel, message: UiMessage) =>
       ),
   })
 
-export const openMobileMenu = (model: UiModel) =>
+export const openMobileMenu = (model: UiModel): infer _ =>
   foldMobileMenuDialogOpen(model)
 
-export const closeMobileMenu = (model: UiModel) =>
+export const closeMobileMenu = (model: UiModel): infer _ =>
   foldMobileMenuDialogClose(model)

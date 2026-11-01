@@ -23,7 +23,7 @@ import { uiInit } from './ui/init.vibe'
 import { Message as UiMessage } from './ui/message.vibe'
 import { UiModel } from './ui/model.vibe'
 import * as UiSubscriptions from './ui/subscriptions.vibe'
-import { closeMobileMenu, openMobileMenu, uiUpdate } from './ui/update.ts'
+import { closeMobileMenu, openMobileMenu, uiUpdate } from './ui/update.vibe'
 import * as View from './ui/view/index.ts'
 
 // ROUTE
