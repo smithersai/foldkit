@@ -19,7 +19,7 @@ import { DragAndDrop } from '@foldkit/ui'
 
 import { FocusAddCardInput, GenerateCardId, SaveBoard } from './command.vibe'
 import type { Card } from './domain/card.vibe'
-import type { Column } from './domain/column'
+import type { Column } from './domain/column.vibe'
 import { Message } from './message.vibe'
 import type { Model } from './model.vibe'
 import { update } from './update.vibe'

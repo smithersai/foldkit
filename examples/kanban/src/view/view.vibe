@@ -6,7 +6,7 @@ import { DragAndDrop } from '@foldkit/ui'
 import { Message } from '../message.vibe'
 import type { Model } from '../model.vibe'
 import { ghostCardView } from './card.vibe'
-import { columnView } from './column.ts'
+import { columnView } from './column.vibe'
 
 const findDraggedCard = (model: Model): infer _ =>
   pipe(

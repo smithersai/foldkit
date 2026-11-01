@@ -1,2 +1,2 @@
 export * as Card from './card.vibe'
-export * as Column from './column'
+export * as Column from './column.vibe'

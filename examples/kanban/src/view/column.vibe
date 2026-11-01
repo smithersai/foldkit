@@ -1,11 +1,11 @@
 import clsx from 'clsx'
-import { Array, Equal, Option, flow, pipe } from 'effect'
+import { Array as Arr, flow, pipe } from 'effect'
 import { Html, HtmlBuilder } from 'foldkit/html'
 
 import { Button, DragAndDrop, Input } from '@foldkit/ui'
 
-import { ADD_CARD_INPUT_ID } from '../constant'
-import { Card, Column } from '../domain'
+import { ADD_CARD_INPUT_ID } from '../constant.ts'
+import { Card, Column } from '../domain/index.ts'
 import { Message } from '../message.vibe'
 import type { Model } from '../model.vibe'
 import { cardView } from './card.vibe'
@@ -125,11 +125,11 @@ const dropPlaceholder = (h: HtmlBuilder<Message>): Html =>
 const findDraggedCard = (
   model: Model,
   draggedId: string,
-): Option.Option<Card.Card> =>
+): Option<Card.Card> =>
   pipe(
     model.columns,
-    Array.flatMap(({ cards }) => cards),
-    Array.findFirst(({ id }) => id === draggedId),
+    Arr.flatMap(({ cards }) => cards),
+    Arr.findFirst(({ id }) => id === draggedId),
   )
 
 const defaultCardElements = (
@@ -138,7 +138,7 @@ const defaultCardElements = (
   toParentMessage: (message: Message) => Message,
   h: HtmlBuilder<Message>,
 ): ReadonlyArray<Html> =>
-  Array.map(column.cards, (card, index) =>
+  Arr.map(column.cards, (card, index) =>
     cardView(
       model,
       card,
@@ -146,8 +146,7 @@ const defaultCardElements = (
       index,
       message => toParentMessage(Message.GotDragAndDropMessage({ message })),
       h,
-    ),
-  )
+    ))
 
 const previewCardElements = (
   model: Model,
@@ -159,64 +158,63 @@ const previewCardElements = (
     return defaultCardElements(model, column, toParentMessage, h)
   }
 
-  return Option.match(DragAndDrop.maybeDraggedItemId(model.dragAndDrop), {
-    onNone: () => defaultCardElements(model, column, toParentMessage, h),
-    onSome: draggedId => {
-      const maybeTarget = DragAndDrop.maybeDropTarget(model.dragAndDrop)
-      const visibleCards = Array.filter(
-        column.cards,
-        ({ id }) => id !== draggedId,
-      )
-      const cardElements = Array.map(visibleCards, (card, index) =>
-        cardView(
+  if (
+    DragAndDrop.maybeDraggedItemId(model.dragAndDrop) is Option.Some(let draggedId)
+  ) {
+    const maybeTarget = DragAndDrop.maybeDropTarget(model.dragAndDrop)
+    const visibleCards = Arr.filter(
+      column.cards,
+      ({ id }) => id !== draggedId,
+    )
+    const cardElements = Arr.map(visibleCards, (card, index) =>
+      cardView(
+        model,
+        card,
+        column.id,
+        index,
+        message => toParentMessage(Message.GotDragAndDropMessage({ message })),
+        h,
+      ))
+
+    const isTargetColumn = Option.exists(
+      maybeTarget,
+      target => target.containerId === column.id,
+    )
+
+    if (!isTargetColumn) {
+      return cardElements
+    }
+
+    const targetIndex = match (maybeTarget) {
+      when Option.None: (visibleCards.length);
+      when Option.Some(let target):
+        (Math.min(target.index, visibleCards.length));
+    }
+
+    const isPointerDrag = model.dragAndDrop.dragState._tag === 'Dragging'
+    const insertElement = isPointerDrag
+      ? dropPlaceholder(h)
+      : match (findDraggedCard(model, draggedId)) {
+        when Option.None: (dropPlaceholder(h));
+        when Option.Some(let card): (cardView(
           model,
           card,
           column.id,
-          index,
+          targetIndex,
           message =>
             toParentMessage(Message.GotDragAndDropMessage({ message })),
           h,
-        ),
-      )
-
-      const isTargetColumn = Option.exists(
-        maybeTarget,
-        target => target.containerId === column.id,
-      )
-
-      if (!isTargetColumn) {
-        return cardElements
+        ));
       }
 
-      const targetIndex = Option.match(maybeTarget, {
-        onNone: () => visibleCards.length,
-        onSome: target => Math.min(target.index, visibleCards.length),
-      })
-
-      const isPointerDrag = model.dragAndDrop.dragState._tag === 'Dragging'
-      const insertElement = isPointerDrag
-        ? dropPlaceholder(h)
-        : Option.match(findDraggedCard(model, draggedId), {
-            onNone: () => dropPlaceholder(h),
-            onSome: card =>
-              cardView(
-                model,
-                card,
-                column.id,
-                targetIndex,
-                message =>
-                  toParentMessage(Message.GotDragAndDropMessage({ message })),
-                h,
-              ),
-          })
-
-      return pipe(
-        cardElements,
-        Array.insertAt(targetIndex, insertElement),
-        Option.getOrElse(() => [...cardElements, insertElement]),
-      )
-    },
-  })
+    return pipe(
+      cardElements,
+      Arr.insertAt(targetIndex, insertElement),
+      Option.getOrElse(() => [...cardElements, insertElement]),
+    )
+  } else {
+    return defaultCardElements(model, column, toParentMessage, h)
+  }
 }
 
 export const columnView = (
@@ -226,9 +224,8 @@ export const columnView = (
   h: HtmlBuilder<Message>,
 ): Html => {
   const maybeCurrentDropTarget = DragAndDrop.maybeDropTarget(model.dragAndDrop)
-  const isDropTarget =
-    DragAndDrop.isDragging(model.dragAndDrop) &&
-    Option.exists(
+  const isDropTarget = DragAndDrop.isDragging(model.dragAndDrop)
+    && Option.exists(
       maybeCurrentDropTarget,
       target => target.containerId === column.id,
     )
