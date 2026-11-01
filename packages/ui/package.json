@@ -146,7 +146,7 @@
   },
   "dependencies": {
     "@floating-ui/dom": "^1.8.0",
-    "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-52300ffd054c.tgz"
+    "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-7461dd0df1ce.tgz"
   },
   "devDependencies": {
     "@effect/vitest": "4.1.0",
@@ -157,8 +157,8 @@
     "rimraf": "^6.1.3",
     "typescript": "7.1.0-dev.20261031.1",
     "vitest": "^5.0.2",
-    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-079434a148d1.tgz",
-    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-f8e51b377e05.tgz",
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-43acc36bf08f.tgz",
+    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-6f2666fdf1ab.tgz",
     "fast-check": "^4.10.2"
   },
   "keywords": [

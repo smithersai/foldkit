@@ -41,7 +41,7 @@
     "rimraf": "^6.1.3",
     "rolldown": "^1.2.11",
     "typescript": "^7.0.2",
-    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-079434a148d1.tgz",
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-43acc36bf08f.tgz",
     "vibelang-unplugin": "file:../../.vibelang-toolchain/vibelang-unplugin-0.0.11-7e3b05c3f55f.tgz",
     "vite": "^8.3.1",
     "vitest": "^4.1.11"
