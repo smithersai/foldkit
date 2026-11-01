@@ -6,9 +6,9 @@ import { Button, DragAndDrop, Input } from '@foldkit/ui'
 
 import { ADD_CARD_INPUT_ID } from '../constant'
 import { Card, Column } from '../domain'
-import { Message } from '../message'
-import type { Model } from '../model'
-import { cardView } from './card'
+import { Message } from '../message.vibe'
+import type { Model } from '../model.vibe'
+import { cardView } from './card.vibe'
 
 const addCardForm = (
   model: Model,

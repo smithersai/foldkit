@@ -2,8 +2,8 @@ import { Array, Match, Option, Schema, pipe } from 'effect'
 import { modifyFields } from 'foldkit/struct'
 import { generateKeyBetween } from 'fractional-indexing'
 
-import type { Card } from './card'
-import { Card as CardSchema } from './card'
+import type { Card } from './card.vibe'
+import { Card as CardSchema } from './card.vibe'
 
 export const Column = Schema.Struct({
   id: Schema.String,

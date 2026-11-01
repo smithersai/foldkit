@@ -1,0 +1,53 @@
+import { Command, Dom } from 'foldkit'
+
+import { BrowserCrypto, BrowserKeyValueStore } from '@effect/platform-browser'
+
+import { ADD_CARD_INPUT_ID, STORAGE_KEY } from './constant.ts'
+import { Column } from './domain/index.ts'
+import { Message } from './message.vibe'
+import { SavedBoardJsonString } from './model.vibe'
+
+export const GenerateCardId = Command.define('GenerateCardId', {
+  args: { columnId: Schema.String, title: Schema.String },
+  messages: [Message.CompletedGenerateCardId],
+  execute: (
+    { columnId, title },
+  ): ReturnType<typeof Message.CompletedGenerateCardId>!! =>
+    effect {
+      provide BrowserCrypto.layerSecureRandom {
+        const secureRandom = SecureRandom.SecureRandom()
+        const cardId = try secureRandom.uuidV4()
+        return Message.CompletedGenerateCardId({ cardId, columnId, title })
+      }
+    },
+})
+
+export const SaveBoard = Command.define('SaveBoard', {
+  args: { columns: Schema.Array(Column.Column) },
+  messages: [Message.CompletedSaveBoard],
+  execute: ({ columns }): ReturnType<typeof Message.CompletedSaveBoard>!! =>
+    effect {
+      provide BrowserKeyValueStore.layerLocalStorage {
+        return (effect {
+          const store = KeyValueStore.KeyValueStore()
+          const encodedBoard = try Schema.encodeEffect(SavedBoardJsonString)({
+            columns,
+          })
+          try store.set(STORAGE_KEY, encodedBoard)
+          return Message.CompletedSaveBoard()
+        }) catch () => Message.CompletedSaveBoard()
+      }
+    },
+})
+
+export const FocusAddCardInput = Command.define('FocusAddCardInput', {
+  messages: [Message.CompletedFocusAddCardInput],
+  execute: do {
+    const selector = `#${ADD_CARD_INPUT_ID}`
+    const completed = Message.CompletedFocusAddCardInput()
+    effect {
+      Dom.focus(selector) catch () => undefined
+      return completed
+    }
+  },
+})

@@ -1,41 +1,39 @@
-import { Array, Option, pipe } from 'effect'
+import { Array as Arr, pipe } from 'effect'
 import { type Document, HtmlBuilder } from 'foldkit/html'
 
 import { DragAndDrop } from '@foldkit/ui'
 
-import { Message } from '../message'
-import type { Model } from '../model'
-import { ghostCardView } from './card'
-import { columnView } from './column'
+import { Message } from '../message.vibe'
+import type { Model } from '../model.vibe'
+import { ghostCardView } from './card.vibe'
+import { columnView } from './column.ts'
 
-const findDraggedCard = (model: Model) =>
+const findDraggedCard = (model: Model): infer _ =>
   pipe(
     model.dragAndDrop,
     DragAndDrop.maybeDraggedItemId,
     Option.flatMap(cardId =>
       pipe(
         model.columns,
-        Array.flatMap(({ cards }) => cards),
-        Array.findFirst(({ id }) => id === cardId),
-      ),
+        Arr.flatMap(({ cards }) => cards),
+        Arr.findFirst(({ id }) => id === cardId),
+      )
     ),
   )
 
-const ghostElement = (model: Model, h: HtmlBuilder<Message>) =>
-  pipe(
-    DragAndDrop.ghostStyle(model.dragAndDrop),
-    Option.flatMap(ghostStyle =>
-      Option.map(findDraggedCard(model), card => ({ ghostStyle, card })),
-    ),
-    Option.match({
+const ghostElement = (model: Model, h: HtmlBuilder<Message>): infer _ =>
+  DragAndDrop.ghostStyle(model.dragAndDrop)
+    .flatMap(ghostStyle =>
+      Option.map(findDraggedCard(model), card => ({ ghostStyle, card }))
+    )
+    .match({
       onNone: () => h.empty,
       onSome: ({ ghostStyle, card }) =>
         h.div(
           [h.Style(ghostStyle), h.Class('w-64'), h.AriaHidden(true)],
           [ghostCardView(card, h)],
         ),
-    }),
-  )
+    })
 
 export const view = (model: Model, h: HtmlBuilder<Message>): Document => ({
   title: 'Kanban Board',
@@ -57,8 +55,9 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => ({
             'flex-1 p-6 grid grid-cols-[repeat(auto-fit,minmax(16rem,1fr))] gap-6 items-start',
           ),
         ],
-        Array.map(model.columns, column =>
-          columnView(model, column, message => message, h),
+        Arr.map(
+          model.columns,
+          column => columnView(model, column, message => message, h),
         ),
       ),
       ghostElement(model, h),

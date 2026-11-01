@@ -1,0 +1,6 @@
+export schema Card {
+  id: string
+  title: string
+  description: string
+  sortKey: string
+}

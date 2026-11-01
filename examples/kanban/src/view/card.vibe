@@ -1,25 +1,25 @@
 import clsx from 'clsx'
-import { Option, String } from 'effect'
+import { String as Str } from 'effect'
 import { Html, HtmlBuilder } from 'foldkit/html'
 
 import { DragAndDrop } from '@foldkit/ui'
 
-import { Card } from '../domain'
-import type { Message } from '../message'
-import type { Model } from '../model'
+import { Card } from '../domain/index.ts'
+import type { Message } from '../message.vibe'
+import type { Model } from '../model.vibe'
 
 const cardContent = (
   card: Card.Card,
   h: HtmlBuilder<Message>,
 ): ReadonlyArray<Html> => [
   h.span([h.Class('text-sm font-medium text-gray-900')], [card.title]),
-  ...(String.isNonEmpty(card.description)
+  ...(Str.isNonEmpty(card.description)
     ? [
-        h.div(
-          [h.Class('mt-1 text-xs text-gray-500 line-clamp-2')],
-          [card.description],
-        ),
-      ]
+      h.div(
+        [h.Class('mt-1 text-xs text-gray-500 line-clamp-2')],
+        [card.description],
+      ),
+    ]
     : []),
 ]
 
@@ -35,11 +35,11 @@ export const cardView = (
     DragAndDrop.maybeDraggedItemId(model.dragAndDrop),
     id => id === card.id,
   )
-  const isPointerDragged =
-    model.dragAndDrop.dragState._tag === 'Dragging' && isThisCardBeingDragged
+  const isPointerDragged = model.dragAndDrop.dragState._tag === 'Dragging'
+    && isThisCardBeingDragged
   const isKeyboardDragged =
-    model.dragAndDrop.dragState._tag === 'KeyboardDragging' &&
-    isThisCardBeingDragged
+    model.dragAndDrop.dragState._tag === 'KeyboardDragging'
+    && isThisCardBeingDragged
 
   return h.keyed('li')(
     card.id,

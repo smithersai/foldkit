@@ -1,14 +1,10 @@
-import { Schema } from 'effect'
-
 import { DragAndDrop } from '@foldkit/ui'
 
-import { Column } from './domain'
+import { Column } from './domain/index.ts'
 
-export const SavedBoard = Schema.Struct({
-  columns: Schema.Array(Column.Column),
-})
-
-export type SavedBoard = typeof SavedBoard.Type
+export schema SavedBoard {
+  columns: ReadonlyArray<Column.Column>
+}
 
 export const SavedBoardJsonString = Schema.fromJsonString(
   Schema.toCodecJson(SavedBoard),

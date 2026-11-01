@@ -1,10 +1,9 @@
-import { Option } from 'effect'
 import { Subscription } from 'foldkit'
 
 import { DragAndDrop } from '@foldkit/ui'
 
-import { Message } from './message'
-import type { Model } from './model'
+import { Message } from './message.vibe'
+import type { Model } from './model.vibe'
 
 export const subscriptions = Subscription.lift({
   dragPointer: DragAndDrop.subscriptions.documentPointer,

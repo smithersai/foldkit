@@ -1,0 +1,52 @@
+import { Runtime } from 'foldkit'
+
+import { BrowserKeyValueStore } from '@effect/platform-browser'
+import { DragAndDrop } from '@foldkit/ui'
+
+import { DEFAULT_COLUMNS, STORAGE_KEY } from './constant.ts'
+import { Message } from './message.vibe'
+import { Model, SavedBoard, SavedBoardJsonString } from './model.vibe'
+import { subscriptions } from './subscription.vibe'
+import { update } from './update.vibe'
+import { view } from './view/index.ts'
+
+// FLAGS
+
+export const Flags = Schema.Struct({
+  maybeSavedBoard: Schema.Option(SavedBoard),
+})
+export type Flags = typeof Flags.Type
+
+export const flags: Flags!! = effect {
+  provide BrowserKeyValueStore.layerLocalStorage {
+    return (effect {
+      const store = KeyValueStore.KeyValueStore()
+      const json = try Effect.fromOption(
+        Option.fromNullishOr(try store.get(STORAGE_KEY)),
+      )
+      const decoded = try Schema.decodeEffect(SavedBoardJsonString)(json)
+      return Flags.make({ maybeSavedBoard: Option.some(decoded) })
+    }) catch () => Flags.make({ maybeSavedBoard: Option.none() })
+  }
+}
+
+// INIT
+
+export const init: Runtime.ApplicationInit<Model, Message, Flags> = flags => {
+  const columns = flags.maybeSavedBoard.match({
+    onNone: () => DEFAULT_COLUMNS,
+    onSome: ({ columns }) => columns,
+  })
+
+  return {
+    model: {
+      columns,
+      dragAndDrop: DragAndDrop.init({ id: 'kanban' }),
+      maybeNewCardColumnId: Option.none(),
+      newCardTitle: '',
+      announcement: '',
+    },
+  }
+}
+
+export { Message, Model, subscriptions, update, view }
