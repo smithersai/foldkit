@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 import { Toast as UiToast } from '@foldkit/ui';
 /** Payload shape for the showcase's toast stack. Consumer decides what goes
  *  in each entry; the Toast component owns only lifecycle and a11y. */
@@ -382,15 +382,15 @@ export declare const Toast: {
         readonly _tag: "GotAnimationMessage";
         readonly entryId: string;
         readonly message: {
+            readonly _tag: "Hid";
+        } | {
+            readonly _tag: "Showed";
+        } | {
             readonly _tag: "CompletedWaitForPaint";
             readonly generation: number;
         } | {
             readonly _tag: "EndedAnimation";
             readonly generation: number;
-        } | {
-            readonly _tag: "Hid";
-        } | {
-            readonly _tag: "Showed";
         };
     } | {
         readonly _tag: "HoveredEntry";
@@ -511,15 +511,15 @@ export declare const Toast: {
             readonly _tag: "GotAnimationMessage";
             readonly entryId: string;
             readonly message: {
+                readonly _tag: "Hid";
+            } | {
+                readonly _tag: "Showed";
+            } | {
                 readonly _tag: "CompletedWaitForPaint";
                 readonly generation: number;
             } | {
                 readonly _tag: "EndedAnimation";
                 readonly generation: number;
-            } | {
-                readonly _tag: "Hid";
-            } | {
-                readonly _tag: "Showed";
             };
         } | {
             readonly _tag: "HoveredEntry";
@@ -698,15 +698,15 @@ export declare const Toast: {
             readonly _tag: "GotAnimationMessage";
             readonly entryId: string;
             readonly message: {
+                readonly _tag: "Hid";
+            } | {
+                readonly _tag: "Showed";
+            } | {
                 readonly _tag: "CompletedWaitForPaint";
                 readonly generation: number;
             } | {
                 readonly _tag: "EndedAnimation";
                 readonly generation: number;
-            } | {
-                readonly _tag: "Hid";
-            } | {
-                readonly _tag: "Showed";
             };
         } | {
             readonly _tag: "HoveredEntry";
@@ -877,15 +877,15 @@ export declare const Toast: {
             readonly _tag: "GotAnimationMessage";
             readonly entryId: string;
             readonly message: {
+                readonly _tag: "Hid";
+            } | {
+                readonly _tag: "Showed";
+            } | {
                 readonly _tag: "CompletedWaitForPaint";
                 readonly generation: number;
             } | {
                 readonly _tag: "EndedAnimation";
                 readonly generation: number;
-            } | {
-                readonly _tag: "Hid";
-            } | {
-                readonly _tag: "Showed";
             };
         } | {
             readonly _tag: "HoveredEntry";
@@ -1056,15 +1056,15 @@ export declare const Toast: {
             readonly _tag: "GotAnimationMessage";
             readonly entryId: string;
             readonly message: {
+                readonly _tag: "Hid";
+            } | {
+                readonly _tag: "Showed";
+            } | {
                 readonly _tag: "CompletedWaitForPaint";
                 readonly generation: number;
             } | {
                 readonly _tag: "EndedAnimation";
                 readonly generation: number;
-            } | {
-                readonly _tag: "Hid";
-            } | {
-                readonly _tag: "Showed";
             };
         } | {
             readonly _tag: "HoveredEntry";
@@ -1193,15 +1193,15 @@ export declare const Toast: {
             readonly _tag: "GotAnimationMessage";
             readonly entryId: string;
             readonly message: {
+                readonly _tag: "Hid";
+            } | {
+                readonly _tag: "Showed";
+            } | {
                 readonly _tag: "CompletedWaitForPaint";
                 readonly generation: number;
             } | {
                 readonly _tag: "EndedAnimation";
                 readonly generation: number;
-            } | {
-                readonly _tag: "Hid";
-            } | {
-                readonly _tag: "Showed";
             };
         } | {
             readonly _tag: "HoveredEntry";
@@ -1326,15 +1326,15 @@ export declare const Toast: {
             readonly _tag: "GotAnimationMessage";
             readonly entryId: string;
             readonly message: {
+                readonly _tag: "Hid";
+            } | {
+                readonly _tag: "Showed";
+            } | {
                 readonly _tag: "CompletedWaitForPaint";
                 readonly generation: number;
             } | {
                 readonly _tag: "EndedAnimation";
                 readonly generation: number;
-            } | {
-                readonly _tag: "Hid";
-            } | {
-                readonly _tag: "Showed";
             };
         } | {
             readonly _tag: "HoveredEntry";
@@ -1473,15 +1473,15 @@ export declare const Toast: {
         readonly _tag: "GotAnimationMessage";
         readonly entryId: string;
         readonly message: {
+            readonly _tag: "Hid";
+        } | {
+            readonly _tag: "Showed";
+        } | {
             readonly _tag: "CompletedWaitForPaint";
             readonly generation: number;
         } | {
             readonly _tag: "EndedAnimation";
             readonly generation: number;
-        } | {
-            readonly _tag: "Hid";
-        } | {
-            readonly _tag: "Showed";
         };
     } | {
         readonly _tag: "HoveredEntry";

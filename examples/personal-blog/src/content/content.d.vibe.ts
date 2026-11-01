@@ -1,4 +1,4 @@
-import { Option, Schema } from "effect";
+import { Option, Schema } from 'effect';
 import { MarkdownDocument } from '@foldkit/markdown';
 export declare const about: MarkdownDocument;
 export declare const Post: Schema.Struct<{

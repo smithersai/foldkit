@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import { Submodel } from 'foldkit';
 import { type CalendarDate } from 'foldkit/calendar';
 export type ViewInputs = Readonly<{

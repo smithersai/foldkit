@@ -1,4 +1,4 @@
-import { HashSet } from "effect";
+import { HashSet } from 'effect';
 import type { Html, HtmlBuilder } from 'foldkit/html';
 import { Menu, Tabs } from '@foldkit/ui';
 import { Step } from '../domain/index.js';

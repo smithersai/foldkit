@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 export declare const Point: Schema.Struct<{
     readonly x: Schema.Number;
     readonly y: Schema.Number;

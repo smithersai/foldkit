@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 export declare const Submission: import("foldkit/schema").TaggedUnion<{
     readonly NotSubmitted: {};
     readonly Submitting: {};

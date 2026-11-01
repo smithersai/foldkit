@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 import * as Direction from './direction.vibe';
 export declare const Position: Schema.Struct<{
     readonly x: Schema.Number;

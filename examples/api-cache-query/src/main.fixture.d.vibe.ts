@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import type { Post, PostDetail, Stats } from './data.vibe';
 export declare const FETCHED_AT = 1750000000000;
 export declare const fixturePosts: ReadonlyArray<Post>;

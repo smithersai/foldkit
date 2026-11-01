@@ -1,4 +1,4 @@
-import { Effect, Option, Schema } from "effect";
+import { Effect, Option, Schema } from 'effect';
 import { Command, Mount, Runtime, Update } from 'foldkit';
 import type { Document } from 'foldkit/html';
 import { HtmlBuilder } from 'foldkit/html';

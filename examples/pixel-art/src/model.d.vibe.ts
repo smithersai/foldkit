@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 export declare const PaletteIndex: Schema.Literals<readonly [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]>;
 export type PaletteIndex = typeof PaletteIndex.Type;
 export declare const HexColor: Schema.brand<Schema.String, "HexColor">;

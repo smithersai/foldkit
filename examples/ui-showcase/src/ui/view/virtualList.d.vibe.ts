@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import { Submodel } from 'foldkit';
 type Activity = Readonly<{
     id: number;

@@ -1,4 +1,4 @@
-import { Effect, Schema } from "effect";
+import { Effect, Schema } from 'effect';
 import { Command, Submodel, type Update } from 'foldkit';
 export declare const Model: Schema.Struct<{
     readonly email: Schema.Union<readonly [Schema.TaggedStruct<"NotValidated", {

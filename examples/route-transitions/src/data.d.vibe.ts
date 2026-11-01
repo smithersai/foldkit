@@ -1,4 +1,4 @@
-import { Option, Schema } from "effect";
+import { Option, Schema } from 'effect';
 export declare const Painting: Schema.Struct<{
     readonly id: Schema.Number;
     readonly title: Schema.String;

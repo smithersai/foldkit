@@ -1,4 +1,4 @@
-import { Option, Schema } from "effect";
+import { Option, Schema } from 'effect';
 import { Runtime, type Update } from 'foldkit';
 import { Document, HtmlBuilder } from 'foldkit/html';
 export { AppRoute } from './route.vibe';

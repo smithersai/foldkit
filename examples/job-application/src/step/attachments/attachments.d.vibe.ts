@@ -1,4 +1,4 @@
-import { Option, Schema } from "effect";
+import { Option, Schema } from 'effect';
 import { Update } from 'foldkit';
 export declare const Model: Schema.Struct<{
     readonly resumeDrop: Schema.Struct<{

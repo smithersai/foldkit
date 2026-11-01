@@ -1,4 +1,4 @@
-import { Effect, Schema } from "effect";
+import { Effect, Schema } from 'effect';
 import { Command, Port, Runtime, Subscription, type Update } from 'foldkit';
 import { Html, HtmlBuilder } from 'foldkit/html';
 export declare const Model: Schema.Struct<{

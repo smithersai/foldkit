@@ -1,4 +1,4 @@
-import { Effect, Schema } from "effect";
+import { Effect, Schema } from 'effect';
 export declare const Post: Schema.Struct<{
     readonly id: Schema.String;
     readonly title: Schema.String;

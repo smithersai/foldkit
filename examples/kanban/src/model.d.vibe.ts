@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 export declare const SavedBoard: Schema.Struct<{
     readonly columns: Schema.$Array<Schema.Struct<{
         readonly id: Schema.String;

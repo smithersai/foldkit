@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 import { LoggedIn, LoggedOut } from './page/index.js';
 export declare const Model: Schema.Union<readonly [import("foldkit/schema").CallableTaggedStruct<"LoggedOut", {
     route: Schema.Union<readonly [Schema.TaggedStruct<"Home", {}> & ((value?: void | {

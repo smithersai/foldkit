@@ -1,4 +1,4 @@
-import { Effect, Schema } from "effect";
+import { Effect, Schema } from 'effect';
 import { Command } from 'foldkit';
 export declare const SaveSession: Command.CommandDefinitionWithArgs<"SaveSession", {
     session: Schema.Struct<{

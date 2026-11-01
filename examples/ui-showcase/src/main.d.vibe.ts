@@ -1,4 +1,4 @@
-import { Effect, Option, Schema } from "effect";
+import { Effect, Option, Schema } from 'effect';
 import { Route, Runtime, Subscription, Update } from 'foldkit';
 import { Document, HtmlBuilder } from 'foldkit/html';
 export declare const AppRoute: Route.RouteUnion<{

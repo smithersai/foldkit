@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import { type CalendarDate } from 'foldkit/calendar';
 import { type Html } from 'foldkit/html';
 import { Calendar } from '@foldkit/ui';

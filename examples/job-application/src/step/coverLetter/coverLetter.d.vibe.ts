@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 import { Submodel, type Update } from 'foldkit';
 export declare const Model: Schema.Struct<{
     readonly content: Schema.String;

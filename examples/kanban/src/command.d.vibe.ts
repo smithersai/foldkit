@@ -1,4 +1,4 @@
-import { Effect, Schema } from "effect";
+import { Effect, Schema } from 'effect';
 import { Command } from 'foldkit';
 export declare const GenerateCardId: Command.CommandDefinitionWithArgs<"GenerateCardId", {
     columnId: Schema.String;

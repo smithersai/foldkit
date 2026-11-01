@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 import type { Direction } from './direction.vibe';
 import * as Position from './position.vibe';
 export declare const INITIAL_LENGTH = 3;

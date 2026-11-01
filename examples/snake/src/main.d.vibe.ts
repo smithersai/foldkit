@@ -1,4 +1,4 @@
-import { Effect, Schema } from "effect";
+import { Effect, Schema } from 'effect';
 import { Command, Runtime, Subscription, type Update } from 'foldkit';
 import { Document, HtmlBuilder } from 'foldkit/html';
 export declare const GameState: Schema.Literals<readonly ["NotStarted", "Playing", "Paused", "GameOver"]>;

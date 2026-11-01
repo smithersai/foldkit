@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 import { CustomElement, Runtime, type Update } from 'foldkit';
 import { Document, HtmlBuilder } from 'foldkit/html';
 import 'vanilla-colorful/hex-color-picker.js';

@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 import { Runtime, Subscription, type Update } from 'foldkit';
 import { type Document, HtmlBuilder } from 'foldkit/html';
 export declare const SlowWarningReport: Schema.Struct<{

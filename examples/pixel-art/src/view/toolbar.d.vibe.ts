@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import { type Html, type HtmlBuilder } from 'foldkit/html';
 import { Listbox, RadioGroup } from '@foldkit/ui';
 import { Message } from '../message.vibe';

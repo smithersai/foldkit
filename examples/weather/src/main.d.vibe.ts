@@ -1,5 +1,5 @@
-import { Effect, Schema } from "effect";
-import { HttpClient } from "effect/http";
+import { Effect, Schema } from 'effect';
+import { HttpClient } from 'effect/http';
 import { AsyncData, Command, Runtime, type Update } from 'foldkit';
 import { Document, HtmlBuilder } from 'foldkit/html';
 export declare const WeatherData: Schema.Struct<{

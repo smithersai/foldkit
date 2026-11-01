@@ -1,4 +1,4 @@
-import { Effect, Schema } from "effect";
+import { Effect, Schema } from 'effect';
 import { Command } from 'foldkit';
 import type { Model } from './model.vibe';
 export declare const SaveCanvas: Command.CommandDefinitionWithArgs<"SaveCanvas", {

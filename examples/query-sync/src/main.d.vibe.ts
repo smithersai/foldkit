@@ -1,4 +1,4 @@
-import { Effect, Option, Schema } from "effect";
+import { Effect, Option, Schema } from 'effect';
 import { Command, Route, Runtime, Update } from 'foldkit';
 import { Document, HtmlBuilder } from 'foldkit/html';
 export declare const Sorting: import("foldkit/schema").TaggedUnion<{

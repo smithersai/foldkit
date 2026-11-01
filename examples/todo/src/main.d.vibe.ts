@@ -1,4 +1,4 @@
-import { Effect, Schema } from "effect";
+import { Effect, Schema } from 'effect';
 import { Command, Runtime, type Update } from 'foldkit';
 import { Document, HtmlBuilder } from 'foldkit/html';
 export declare const EditingState: import("foldkit/schema").TaggedUnion<{

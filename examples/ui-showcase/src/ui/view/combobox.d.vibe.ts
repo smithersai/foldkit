@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import { Submodel } from 'foldkit';
 import { type HtmlBuilder } from 'foldkit/html';
 import { Combobox } from '@foldkit/ui';

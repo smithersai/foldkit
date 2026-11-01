@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import type { Map as MapInstance } from 'maplibre-gl';
 /** Stash a live Map instance against an id so Commands can reach it without
  *  putting the mutable, unfreezable instance in the Model. */

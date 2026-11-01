@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 import { Route } from 'foldkit';
 export declare const AppRoute: Route.RouteUnion<{
     readonly Gallery: {};

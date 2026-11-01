@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 import { Runtime } from 'foldkit';
 import { Document, HtmlBuilder } from 'foldkit/html';
 export declare const Model: Schema.Null;
