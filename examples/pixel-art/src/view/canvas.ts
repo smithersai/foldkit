@@ -3,7 +3,7 @@ import { type Html, type HtmlBuilder, createKeyedLazy } from 'foldkit/html'
 
 import { EMPTY_COLOR } from '../constant'
 import { floodFill, getMirroredPositions } from '../grid.vibe'
-import { Message } from '../message'
+import { Message } from '../message.vibe'
 import type { Cell, Grid, HexColor, Model, PaletteIndex } from '../model.vibe'
 import { type PaletteTheme, resolveColor } from '../palette.vibe'
 

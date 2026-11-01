@@ -10,7 +10,7 @@ import {
 import { Button } from '@foldkit/ui'
 
 import { isGridEmpty } from '../grid.vibe'
-import { Message } from '../message.ts'
+import { Message } from '../message.vibe'
 import type { Model } from '../model.vibe'
 import { currentPaletteTheme } from '../palette.vibe'
 import { canvasView } from './canvas.ts'

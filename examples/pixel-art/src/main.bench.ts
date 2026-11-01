@@ -5,7 +5,7 @@ import { describe, test } from 'vitest'
 import { Dialog, Listbox, RadioGroup } from '@foldkit/ui'
 
 import { createEmptyGrid } from './grid.vibe'
-import { Message } from './message'
+import { Message } from './message.vibe'
 import type { Model } from './model.vibe'
 import { update } from './update.vibe'
 

@@ -7,7 +7,7 @@ import { Dialog, Listbox, RadioGroup } from '@foldkit/ui'
 
 import { ExportPng, SaveCanvas } from './command.vibe'
 import { createEmptyGrid } from './grid.vibe'
-import { Message } from './message'
+import { Message } from './message.vibe'
 import { type Model, type PaletteIndex } from './model.vibe'
 import { update } from './update.vibe'
 

@@ -1,7 +1,7 @@
 import { Option } from "effect";
 import { type Html, type HtmlBuilder } from 'foldkit/html';
 import { Listbox, RadioGroup } from '@foldkit/ui';
-import { Message } from '../message.js';
+import { Message } from '../message.vibe';
 import { type MirrorMode, type PaletteIndex, type Tool } from '../model.vibe';
 import { type PaletteTheme } from '../palette.vibe';
 export declare const TOOL_RADIO_GROUP_ID = "tool-picker";

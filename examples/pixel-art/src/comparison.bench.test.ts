@@ -13,7 +13,7 @@ import { createEmptyGrid as createReactGrid } from '../../../comparisons/pixel-a
 import { reducer } from '../../../comparisons/pixel-art-react/src/reducer'
 import type { State } from '../../../comparisons/pixel-art-react/src/types'
 import { createEmptyGrid as createFoldkitGrid } from './grid.vibe'
-import { Message } from './message'
+import { Message } from './message.vibe'
 import type { Model } from './model.vibe'
 import { update } from './update.vibe'
 

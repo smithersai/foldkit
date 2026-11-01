@@ -15,7 +15,7 @@ import {
   pushHistory,
   setPixels,
 } from './grid.vibe'
-import { Message } from './message.ts'
+import { Message } from './message.vibe'
 import {
   type Model,
   type PaletteIndex,
