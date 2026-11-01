@@ -29,17 +29,24 @@ writeFileSync(
 
 afterAll(() => rmSync(work, { recursive: true, force: true }))
 
-type Case = Readonly<{ source: string; child: boolean; namespace: boolean }>
+type Case = Readonly<{
+  source: string
+  isChild: boolean
+  isNamespaceImport: boolean
+}>
 const check = (cases: ReadonlyArray<Case>) => {
   const file = join(work, 'entry.ts')
   const source = cases
     .map((entry, index) => {
       const name = 'Source' + index
-      const imported = entry.namespace
+      const imported = entry.isNamespaceImport
         ? '* as ' + name
         : '{ Message as ' + name + ' }'
       const callee =
-        name + (entry.namespace ? '.Message' : '') + '.ClickedLink' + index
+        name +
+        (entry.isNamespaceImport ? '.Message' : '') +
+        '.ClickedLink' +
+        index
       return (
         'import ' +
         imported +
@@ -71,7 +78,9 @@ const check = (cases: ReadonlyArray<Case>) => {
       return Number(match?.[1])
     })
     .sort((left, right) => left - right)
-  const expected = cases.flatMap((entry, index) => (entry.child ? [index] : []))
+  const expected = cases.flatMap((entry, index) =>
+    entry.isChild ? [index] : [],
+  )
   expect(actual).toEqual(expected)
 }
 
@@ -117,8 +126,8 @@ it('recognizes native root modules while retaining child ownership across paths 
             'jsx',
           ),
           prefix: fc.constantFrom('./', '../', '../../', '@/', '~/'),
-          child: fc.boolean(),
-          namespace: fc.boolean(),
+          isChild: fc.boolean(),
+          isNamespaceImport: fc.boolean(),
         }),
         { minLength: 100, maxLength: 100 },
       ),
@@ -127,12 +136,12 @@ it('recognizes native root modules while retaining child ownership across paths 
           entries.map(entry => ({
             source:
               entry.prefix +
-              (entry.child ? 'child/' : '') +
+              (entry.isChild ? 'child/' : '') +
               entry.module +
               '.' +
               entry.extension,
-            child: entry.child,
-            namespace: entry.namespace,
+            isChild: entry.isChild,
+            isNamespaceImport: entry.isNamespaceImport,
           })),
         ),
     ),
