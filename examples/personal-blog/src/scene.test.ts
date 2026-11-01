@@ -2,7 +2,7 @@ import { expect, given, role, scene, text } from 'foldkit/scene'
 import { describe, test } from 'vitest'
 
 import { Counter } from './island'
-import { AppRoute, Model, update, view } from './main.ts'
+import { AppRoute, Model, update, view } from './main.vibe'
 
 const home = Model.make({ route: AppRoute.Home(), counter: Counter.init })
 const postsIndex = Model.make({

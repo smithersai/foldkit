@@ -1,5 +1,4 @@
 import { clsx } from 'clsx'
-import { Effect, Option, Schema } from 'effect'
 import { Command, Runtime, Update } from 'foldkit'
 import { Document, Html, HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -9,8 +8,8 @@ import { Url, toString as urlToString } from 'foldkit/url'
 
 import * as Markdown from '@foldkit/markdown'
 
-import { Post, about, findPost, posts } from './content'
-import { Counter, islandAttributes } from './island'
+import { Post, about, findPost, posts } from './content/index.ts'
+import { Counter, islandAttributes } from './island/index.ts'
 import { proseView } from './prose.vibe'
 import * as Route from './route.vibe'
 
@@ -18,11 +17,10 @@ export { AppRoute } from './route.vibe'
 
 // MODEL
 
-export const Model = Schema.Struct({
-  route: Route.AppRoute,
-  counter: Counter.Model,
-})
-export type Model = typeof Model.Type
+export schema Model {
+  route: Route.AppRoute
+  counter: Counter.Model
+}
 
 // MESSAGE
 
@@ -47,15 +45,27 @@ export const init: Runtime.RoutingApplicationInit<Model, Message> = (
 const NavigateInternal = Command.define('NavigateInternal', {
   args: { url: Schema.String },
   messages: [Message.CompletedNavigateInternal],
-  execute: ({ url }) =>
-    pushUrl(url).pipe(Effect.as(Message.CompletedNavigateInternal())),
+  execute: (
+    { url },
+  ): ReturnType<typeof Message.CompletedNavigateInternal>!! => {
+    const completed = Message.CompletedNavigateInternal()
+    return effect {
+      try pushUrl(url)
+      return completed
+    }
+  },
 })
 
 const LoadExternal = Command.define('LoadExternal', {
   args: { href: Schema.String },
   messages: [Message.CompletedLoadExternal],
-  execute: ({ href }) =>
-    load(href).pipe(Effect.as(Message.CompletedLoadExternal())),
+  execute: ({ href }): ReturnType<typeof Message.CompletedLoadExternal>!! => {
+    const completed = Message.CompletedLoadExternal()
+    return effect {
+      try load(href)
+      return completed
+    }
+  },
 })
 
 // UPDATE
@@ -70,7 +80,7 @@ const foldCounter = Update.foldChild({
   toParentMessage: message => Message.GotCounterMessage({ message }),
 })
 
-export const update = (model: Model, message: Message) =>
+export const update = (model: Model, message: Message): infer _ =>
   Message.match<UpdateReturn>(message, {
     ClickedLink: ({ request }) =>
       UrlRequest.match<UpdateReturn>(request, {
@@ -258,26 +268,25 @@ const postView = (
 ): Html => {
   const maybePost = findPost(slug)
 
-  const contentKey = Option.match(maybePost, {
-    onNone: () => 'Missing',
-    onSome: post => `Post-${post.slug}`,
-  })
+  const contentKey = match (maybePost) {
+    when Option.None: ('Missing');
+    when Option.Some(let post): (`Post-${post.slug}`);
+  }
 
-  const content = Option.match(maybePost, {
-    onNone: () => missingPostView(slug, h),
-    onSome: post =>
-      h.article(
-        [],
-        [
-          h.h1([h.Class('text-3xl font-bold text-stone-900')], [post.title]),
-          h.p(
-            [h.Class('mt-2 mb-8 text-sm text-stone-500')],
-            [post.publishedOn],
-          ),
-          proseView(post.document, islandViews(model, h)),
-        ],
-      ),
-  })
+  const content = match (maybePost) {
+    when Option.None: (missingPostView(slug, h));
+    when Option.Some(let post): (h.article(
+      [],
+      [
+        h.h1([h.Class('text-3xl font-bold text-stone-900')], [post.title]),
+        h.p(
+          [h.Class('mt-2 mb-8 text-sm text-stone-500')],
+          [post.publishedOn],
+        ),
+        proseView(post.document, islandViews(model, h)),
+      ],
+    ));
+  }
 
   return h.div(
     [],
@@ -321,11 +330,12 @@ const routeTitle = (route: Route.AppRoute): string =>
   Route.AppRoute.match(route, {
     Home: () => 'Devin Jameson',
     Posts: () => 'Posts | Devin Jameson',
-    Post: ({ slug }) =>
-      Option.match(findPost(slug), {
-        onNone: () => 'Post Not Found | Devin Jameson',
-        onSome: post => `${post.title} | Devin Jameson`,
-      }),
+    Post: (
+      { slug },
+    ) => match (findPost(slug)) {
+      when Option.None: ('Post Not Found | Devin Jameson');
+      when Option.Some(let post): (`${post.title} | Devin Jameson`);
+    },
     NotFound: () => 'Not Found | Devin Jameson',
   })
 
