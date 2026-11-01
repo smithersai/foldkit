@@ -1,9 +1,9 @@
-import type { Subscriptions } from '../subscription/subscription.ts'
+import type { Subscriptions } from '../subscription/subscription.vibe'
 import {
   type ResolvedSlowPhaseConfig,
   type SlowSubscriptionDependenciesContext,
   reportSlowPhase,
-} from './slowPhase.ts'
+} from './slowPhase.vibe'
 
 /**
  * Forks one fiber per Subscription into the runtime scope. Each fiber

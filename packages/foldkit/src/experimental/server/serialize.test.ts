@@ -3,7 +3,7 @@ import { afterEach, beforeEach, expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import * as CustomElement from '../../customElement/index.js'
+import * as CustomElement from '../../customElement/index.vibe'
 import {
   type BoundaryRegistry,
   beginRender,
@@ -27,7 +27,7 @@ import { markTrustedInnerHtml } from '../../propertyProvenance.js'
 import { h as snabbdomH } from '../../snabbdom/index.js'
 import type { VNode } from '../../snabbdom/vnode.js'
 import { __patchVNode } from '../../vdom.vibe'
-import { serializeHtml } from './serialize.js'
+import { serializeHtml } from './serialize.vibe'
 
 const Message = defineMessageUnion({
   ClickedButton: {},

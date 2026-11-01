@@ -5,7 +5,7 @@ import { type Document, __htmlBuilder } from '../html/index.js'
 import { defineMessageUnion } from '../message/index.js'
 import { modifyFields } from '../struct/index.vibe'
 import type * as Update from '../update/index.js'
-import { makeApplication } from './makeApplication.js'
+import { makeApplication } from './makeApplication.vibe'
 import { run } from './start.js'
 
 const Message = defineMessageUnion({

@@ -22,7 +22,7 @@ import {
 } from '../snabbdom/index.js'
 import type { VNode } from '../vdom.vibe'
 import { Circle, Rect } from './shape.vibe'
-import { view } from './view.js'
+import { view } from './view.vibe'
 
 const patch = init([
   attributesModule,

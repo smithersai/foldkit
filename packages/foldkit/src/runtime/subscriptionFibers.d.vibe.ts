@@ -1,6 +1,6 @@
 import { Cause, Effect, Option, PubSub, Scope } from "effect";
-import type { Subscriptions } from '../subscription/subscription.js';
-import { type ResolvedSlowPhaseConfig, type SlowSubscriptionDependenciesContext } from './slowPhase.js';
+import type { Subscriptions } from '../subscription/subscription.vibe';
+import { type ResolvedSlowPhaseConfig, type SlowSubscriptionDependenciesContext } from './slowPhase.vibe';
 /**
  * Forks one fiber per Subscription into the runtime scope. Each fiber
  * derives the Subscription's dependencies from every Model, restarts its

@@ -5,7 +5,7 @@ import { Document, __htmlBuilder, __requireDispatch } from '../html/index.js'
 import { defineMessageUnion } from '../message/index.js'
 import { modifyFields } from '../struct/index.vibe'
 import type * as Update from '../update/index.js'
-import { makeApplication } from './makeApplication.js'
+import { makeApplication } from './makeApplication.vibe'
 
 /**
  * Internal dispatch-throughput benchmark. Skipped by default to keep CI

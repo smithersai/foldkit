@@ -13,8 +13,11 @@ import {
 } from 'effect'
 import { dual } from 'effect/Function'
 
-import { kebabToPascal } from '../customElement/index.js'
-import type { CustomElementSpec, EventSchema } from '../customElement/index.js'
+import { kebabToPascal } from '../customElement/index.vibe'
+import type {
+  CustomElementSpec,
+  EventSchema,
+} from '../customElement/index.vibe'
 import { serializedStylePropertyName } from '../domReflection.js'
 import type { File } from '../file/index.js'
 import type { FoldkitMountMarker } from '../html/index.js'

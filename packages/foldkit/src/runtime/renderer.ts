@@ -12,7 +12,7 @@ import {
   __flushReplayUnmountsAfterPatchFailure as flushReplayUnmountsAfterPatchFailure,
   __setRuntime as setHtmlRuntime,
 } from '../html/index.js'
-import { __hydrateVNode } from '../hydrate.js'
+import { __hydrateVNode } from '../hydrate.vibe'
 import { FOLDKIT_APP_ATTRIBUTE } from '../hydrationMarker.js'
 import { MountRuntime, MountTracker } from '../mount/index.vibe'
 import type { CommitNotifier } from '../render/commit.vibe'
@@ -32,8 +32,8 @@ import type {
   DevToolsRenderBridge,
 } from './devToolsIntegration.js'
 import { Dispatch } from './dispatch.vibe'
-import { applyDocumentMetadata } from './documentMetadata.js'
-import type { DuplicateIdScanner } from './duplicateIdScanner.js'
+import { applyDocumentMetadata } from './documentMetadata.vibe'
+import type { DuplicateIdScanner } from './duplicateIdScanner.vibe'
 import type { MessageQueue } from './messageQueue.js'
 import type { RuntimeStatus } from './runtimeStatus.js'
 import {
@@ -42,14 +42,14 @@ import {
   type SlowViewContext,
   measureSlowPhase,
   reportSlowPhase,
-} from './slowPhase.js'
+} from './slowPhase.vibe'
 import {
   type StartViewTransition,
   type ViewTransitionConfig,
   type ViewTransitionHandle,
   __decideViewTransition,
   __silenceViewTransitionRejections,
-} from './viewTransition.js'
+} from './viewTransition.vibe'
 
 /** The `viewTransition` config resolved against the running browser: the
  *  predicate, the feature-detected `startViewTransition`, and the cached

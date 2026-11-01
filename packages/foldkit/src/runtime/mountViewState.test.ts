@@ -26,10 +26,10 @@ import {
 import { defineMessageUnion } from '../message/index.js'
 import * as Mount from '../mount/index.vibe'
 import { modifyFields } from '../struct/index.vibe'
-import * as Subscription from '../subscription/subscription.js'
+import * as Subscription from '../subscription/subscription.vibe'
 import type * as Update from '../update/index.js'
-import { __setDevToolsOverlay } from './devToolsConfig.js'
-import { makeApplication } from './makeApplication.js'
+import { __setDevToolsOverlay } from './devToolsConfig.vibe'
+import { makeApplication } from './makeApplication.vibe'
 import { makeElement } from './makeElement.js'
 
 const Message = defineMessageUnion({

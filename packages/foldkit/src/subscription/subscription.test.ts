@@ -17,7 +17,7 @@ import {
   lift,
   make,
   persistentEntry,
-} from './subscription.js'
+} from './subscription.vibe'
 
 type ChildModel = Readonly<{
   isRunning: boolean

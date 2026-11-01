@@ -9,8 +9,8 @@ export {
   scrollIntoViewAfterPaint,
   scrollIntoViewIfNotVisible,
   showDialog,
-} from './dom.js'
-export type { FocusDirection } from './dom.js'
+} from './dom.vibe'
+export type { FocusDirection } from './dom.vibe'
 export { detectElementMovement } from './elementMovement.js'
 export { inertOthers, restoreInert } from './inert.js'
 export { lockScroll, unlockScroll } from './scrollLock.js'
@@ -18,20 +18,20 @@ export {
   streamFromEvent,
   streamFromEventFilterMap,
   streamFromEventFilterMapPreventDefault,
-} from './streamFromEvent.js'
+} from './streamFromEvent.vibe'
 export type {
   StreamFromEventConfig,
   StreamFromEventFilterMapConfig,
   StreamFromEventFilterMapPreventDefaultConfig,
   TypedEventTarget,
-} from './streamFromEvent.js'
-export { streamFromKeyBindings } from './streamFromKeyBindings.js'
+} from './streamFromEvent.vibe'
+export { streamFromKeyBindings } from './streamFromKeyBindings.vibe'
 export type {
   KeyBinding,
   KeySequence,
   StreamFromKeyBindingsConfig,
   WhileTyping,
-} from './streamFromKeyBindings.js'
-export { streamFromMediaQuery } from './streamFromMediaQuery.js'
-export type { StreamFromMediaQueryConfig } from './streamFromMediaQuery.js'
+} from './streamFromKeyBindings.vibe'
+export { streamFromMediaQuery } from './streamFromMediaQuery.vibe'
+export type { StreamFromMediaQueryConfig } from './streamFromMediaQuery.vibe'
 export { waitForAnimationSettled } from './waitForAnimation.js'

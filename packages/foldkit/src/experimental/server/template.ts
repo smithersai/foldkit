@@ -7,7 +7,7 @@ import {
   FOLDKIT_FLAGS_ATTRIBUTE,
 } from '../../hydrationMarker.js'
 import { type ParsedFragmentModes, parseFragmentModes } from './fragment.js'
-import { escapeAttributeValue, escapeText } from './serialize.js'
+import { escapeAttributeValue, escapeText } from './serialize.vibe'
 import {
   type RenderedApplication,
   __assertNoDeclarativeShadowRoot,

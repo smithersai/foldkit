@@ -13,7 +13,7 @@ import {
 } from 'effect'
 
 import { DialogRuntime } from '../dom/dialogRuntime.vibe'
-import { releaseDialogResources } from '../dom/dom.js'
+import { releaseDialogResources } from '../dom/dom.vibe'
 import {
   Document,
   type HtmlBuilder,
@@ -22,7 +22,7 @@ import {
 import type { ManagedResources } from '../managedResource/index.js'
 import type { Ports } from '../port/index.js'
 import { RenderCommit, createCommitNotifier } from '../render/commit.vibe'
-import type { Subscriptions } from '../subscription/subscription.js'
+import type { Subscriptions } from '../subscription/subscription.vibe'
 import type { Return as UpdateReturn } from '../update/index.js'
 import { Url, fromString as urlFromString } from '../url/index.vibe'
 import {
@@ -31,23 +31,23 @@ import {
 } from './browserListeners.js'
 import type { CrashConfig } from './crashUI.js'
 import { deepFreeze } from './deepFreeze.vibe'
-import type { DevToolsConfig } from './devToolsConfig.js'
+import type { DevToolsConfig } from './devToolsConfig.vibe'
 import { makeDevToolsIntegration } from './devToolsIntegration.js'
-import { createDuplicateIdScanner } from './duplicateIdScanner.js'
+import { createDuplicateIdScanner } from './duplicateIdScanner.vibe'
 import {
   type HostConnector,
   type PortChannelsBundle,
   makePortChannels,
   validatePorts,
-} from './hostConnector.js'
+} from './hostConnector.vibe'
 import {
   type BootMode,
   type HydrationConfig,
   resolveHydrationHandoff,
-} from './hydrationHandoff.js'
+} from './hydrationHandoff.vibe'
 import { forkManagedResourceFibers } from './managedResourceFibers.vibe'
 import { type MessageQueue, makeMessageQueue } from './messageQueue.js'
-import { preserveModel } from './modelPreservationBridge.js'
+import { preserveModel } from './modelPreservationBridge.vibe'
 import { makePreserveScheduler } from './preserveScheduler.vibe'
 import { type ResolvedViewTransition, makeRenderer } from './renderer.js'
 import { makeResourceProvider } from './resourceProvider.js'
@@ -55,19 +55,19 @@ import { makeRuntimeStatus } from './runtimeStatus.js'
 import {
   preserveScrollPosition,
   restorePreservedScrollPosition,
-} from './scrollPreservation.js'
+} from './scrollPreservation.vibe'
 import {
   type SlowConfig,
   type SlowUpdateContext,
   __resolveSlowConfig,
   measureSlowPhase,
   reportSlowPhase,
-} from './slowPhase.js'
+} from './slowPhase.vibe'
 import { forkSubscriptionFibers } from './subscriptionFibers.vibe'
 import {
   type ViewTransitionConfig,
   __resolveStartViewTransition,
-} from './viewTransition.js'
+} from './viewTransition.vibe'
 import { type Visibility, isVisible } from './visibility.vibe'
 
 type AnyCommand<T, E = never, R = never> = {

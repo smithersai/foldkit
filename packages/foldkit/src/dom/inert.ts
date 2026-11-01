@@ -1,6 +1,6 @@
 import { Array, Effect, Number, Option, Predicate, Result, pipe } from 'effect'
 
-import { afterCommit } from '../render/render.js'
+import { afterCommit } from '../render/render.vibe'
 
 const inertState = {
   originals: new Map<

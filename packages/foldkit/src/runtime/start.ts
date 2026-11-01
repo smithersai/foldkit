@@ -4,14 +4,14 @@ import { BrowserRuntime } from '@effect/platform-browser'
 
 import { buildIdOrInjected } from '../buildToken.js'
 import type { Ports } from '../port/index.js'
-import { provideBrowserScheduler } from './browserScheduler.js'
+import { provideBrowserScheduler } from './browserScheduler.vibe'
 import {
   type EmbedHandle,
   buildPortHandles,
   makeHostConnector,
-} from './hostConnector.js'
-import type { BootMode } from './hydrationHandoff.js'
-import { resolvePreservedModel } from './modelPreservationBridge.js'
+} from './hostConnector.vibe'
+import type { BootMode } from './hydrationHandoff.vibe'
+import { resolvePreservedModel } from './modelPreservationBridge.vibe'
 import { type MakeRuntimeReturn, runtimeInternals } from './runtime.js'
 
 /** Client-only startup input for an application that declares Flags. Pass it

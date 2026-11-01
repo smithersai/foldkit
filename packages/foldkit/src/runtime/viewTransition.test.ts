@@ -5,16 +5,16 @@ import * as Command from '../command/index.vibe'
 import { type DevToolsStore, INIT_INDEX } from '../devTools/store.js'
 import { __htmlBuilder } from '../html/index.js'
 import { defineMessageUnion } from '../message/index.js'
-import { afterCommit } from '../render/render.js'
-import * as Subscription from '../subscription/subscription.js'
+import { afterCommit } from '../render/render.vibe'
+import * as Subscription from '../subscription/subscription.vibe'
 import type * as Update from '../update/index.js'
-import { __setDevToolsOverlay } from './devToolsConfig.js'
+import { __setDevToolsOverlay } from './devToolsConfig.vibe'
 import { makeElement } from './makeElement.js'
 import {
   __decideViewTransition,
   __resolveStartViewTransition,
   __silenceViewTransitionRejections,
-} from './viewTransition.js'
+} from './viewTransition.vibe'
 
 describe('__silenceViewTransitionRejections', () => {
   // NOTE: the spies call through, so the real handlers are attached and the

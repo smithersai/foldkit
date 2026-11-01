@@ -3,23 +3,23 @@ import { Effect, Layer, Option, Predicate, Schema } from 'effect'
 import { Document, Html, type HtmlBuilder } from '../html/index.js'
 import type { ManagedResources } from '../managedResource/index.js'
 import type { Ports } from '../port/index.js'
-import type { Subscriptions } from '../subscription/subscription.js'
+import type { Subscriptions } from '../subscription/subscription.vibe'
 import type { Return as UpdateReturn } from '../update/index.js'
 import type {
   CrashConfig,
   CrashContext,
   ElementCrashConfig,
 } from './crashUI.js'
-import type { DevToolsConfig } from './devToolsConfig.js'
-import type { ApplicationInit } from './makeApplication.js'
+import type { DevToolsConfig } from './devToolsConfig.vibe'
+import type { ApplicationInit } from './makeApplication.vibe'
 import {
   type FlagsSchemaConfig,
   type MakeRuntimeReturn,
   type RuntimeConfig,
   makeRuntime,
 } from './runtime.js'
-import type { SlowConfig } from './slowPhase.js'
-import type { ViewTransitionConfig } from './viewTransition.js'
+import type { SlowConfig } from './slowPhase.vibe'
+import type { ViewTransitionConfig } from './viewTransition.vibe'
 
 type BaseElementConfig<
   Model,

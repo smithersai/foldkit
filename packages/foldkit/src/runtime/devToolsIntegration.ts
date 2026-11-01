@@ -29,7 +29,7 @@ import {
   resolveDevToolsKeyframeInterval,
   resolveDevToolsMaxEntries,
   resolveExcludeFromHistoryTags,
-} from './devToolsConfig.js'
+} from './devToolsConfig.vibe'
 
 /** The Mount starts and ends recorded since the last drain. */
 export type MountEvents = Readonly<{

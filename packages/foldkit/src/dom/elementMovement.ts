@@ -1,6 +1,6 @@
 import { Effect } from 'effect'
 
-import { afterCommit } from '../render/render.js'
+import { afterCommit } from '../render/render.vibe'
 
 const rectToPosition = (rect: DOMRect): string => `${rect.x},${rect.y}`
 

@@ -1,7 +1,7 @@
 import { Array, Option, Schema, pipe } from 'effect'
 import { describe, expect, expectTypeOf, test } from 'vitest'
 
-import * as CustomElement from '../customElement/index.js'
+import * as CustomElement from '../customElement/index.vibe'
 import {
   type HtmlBuilder,
   __htmlBuilder as attributeHtml,

@@ -1,6 +1,6 @@
 import { Match } from 'effect'
 
-import type { DocumentRenderer } from './document.js'
+import type { DocumentRenderer } from './document.vibe'
 import type { RenderedApplication } from './server.js'
 import {
   type InjectIntoTemplateOptions,

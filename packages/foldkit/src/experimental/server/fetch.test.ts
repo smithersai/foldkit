@@ -4,7 +4,7 @@ import { expect } from 'vitest'
 import { describe, it } from '@effect/vitest'
 
 import { Rendered, Responded } from './entry.js'
-import { handleRequest } from './fetch.js'
+import { handleRequest } from './fetch.vibe'
 
 const TEMPLATE =
   '<!doctype html><html><head><title>Old</title></head>' +

@@ -56,7 +56,7 @@ import {
   controlledValueContent,
   escapeAttributeValue,
   serializeHtml,
-} from './serialize.js'
+} from './serialize.vibe'
 
 const HTML_NAMESPACE = 'http://www.w3.org/1999/xhtml'
 

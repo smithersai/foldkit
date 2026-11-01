@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
 
-import * as CustomElement from '../../customElement/index.js'
+import * as CustomElement from '../../customElement/index.vibe'
 import type { Html, HtmlBuilder } from '../../html/index.js'
 import { defineMessageUnion } from '../../message/index.js'
 import { modifyFields } from '../../struct/index.vibe'

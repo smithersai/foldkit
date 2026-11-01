@@ -6,7 +6,7 @@ import type { Document } from '../html/index.js'
 import { __htmlBuilder } from '../html/index.js'
 import { defineMessageUnion } from '../message/index.js'
 import type * as Update from '../update/index.js'
-import { makeApplication } from './makeApplication.js'
+import { makeApplication } from './makeApplication.vibe'
 import { __startProgram, hydrate, run } from './start.js'
 
 const Message = defineMessageUnion({

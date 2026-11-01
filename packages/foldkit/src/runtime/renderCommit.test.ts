@@ -5,7 +5,7 @@ import * as Command from '../command/index.vibe'
 import { __htmlBuilder } from '../html/index.js'
 import { defineMessageUnion } from '../message/index.js'
 import { RenderCommit, createCommitNotifier } from '../render/commit.vibe'
-import { afterCommit } from '../render/render.js'
+import { afterCommit } from '../render/render.vibe'
 import type * as Update from '../update/index.js'
 import { makeElement } from './makeElement.js'
 

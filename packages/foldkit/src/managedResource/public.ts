@@ -4,7 +4,7 @@ export {
   make,
   lift,
   aggregate,
-} from './managedResource.js'
+} from './managedResource.vibe'
 
 export type {
   ManagedResource,
@@ -15,4 +15,4 @@ export type {
   ManagedResources,
   ManagedResourceConfig,
   ServicesOf,
-} from './managedResource.js'
+} from './managedResource.vibe'

@@ -12,7 +12,7 @@ import {
 import { MountTracker } from '../mount/index.vibe'
 import { VNode, __patchVNode } from '../vdom.vibe'
 import { Dispatch } from './dispatch.vibe'
-import { applyDocumentMetadata } from './documentMetadata.js'
+import { applyDocumentMetadata } from './documentMetadata.vibe'
 
 /** Context provided to crash.view and crash.report when the runtime encounters
  *  an unrecoverable error. `message` is the Message being processed when the

@@ -3,7 +3,7 @@ import { afterEach, beforeEach, expect, vi } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import { serializeHtml } from './experimental/server/serialize.js'
+import { serializeHtml } from './experimental/server/serialize.vibe'
 import {
   type BoundaryRegistry,
   beginRender,
@@ -15,7 +15,7 @@ import {
   clearRuntime,
   setRuntime,
 } from './html/runtimeSingleton.js'
-import { __elementSignature, __hydrateVNode } from './hydrate.js'
+import { __elementSignature, __hydrateVNode } from './hydrate.vibe'
 import { defineMessageUnion } from './message/index.js'
 import { type VNode, h as snabbdomH, toVNode } from './snabbdom/index.js'
 import { patch } from './vdom.vibe'

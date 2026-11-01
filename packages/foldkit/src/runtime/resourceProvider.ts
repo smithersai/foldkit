@@ -19,7 +19,7 @@ import type {
   ManagedResources,
 } from '../managedResource/index.js'
 import { __CurrentPortChannels } from '../port/index.js'
-import type { PortChannelsBundle } from './hostConnector.js'
+import type { PortChannelsBundle } from './hostConnector.vibe'
 
 /** A Managed Resource's config next to the Ref that holds its acquired value. */
 export type ManagedResourceRef<Model, Message> = Readonly<{

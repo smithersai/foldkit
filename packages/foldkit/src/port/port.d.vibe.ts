@@ -117,7 +117,7 @@ export declare const stream: <Value, Encoded>(port: Inbound<Value, Encoded>) => 
  * }))
  * ```
  */
-export declare const subscriptionEntry: <Value, Encoded, Message>(port: Inbound<Value, Encoded>, toMessage: (value: Value) => Message) => import("../subscription/subscription.js").EntryWithoutKeepAlive<unknown, Message, Record<string, never>, never>;
+export declare const subscriptionEntry: <Value, Encoded, Message>(port: Inbound<Value, Encoded>, toMessage: (value: Value) => Message) => import("../subscription/subscription.vibe").EntryWithoutKeepAlive<unknown, Message, Record<string, never>, never>;
 /**
  * Emits a value on an outbound Port. The value is encoded against the Port's
  * Schema and delivered to every host listener subscribed through the

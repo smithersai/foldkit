@@ -26,7 +26,7 @@ import {
   foldChildStep,
   refresh,
   withOutMessage,
-} from './update.js'
+} from './update.vibe'
 
 const Message = defineMessageUnion({
   IncrementedCount: {},

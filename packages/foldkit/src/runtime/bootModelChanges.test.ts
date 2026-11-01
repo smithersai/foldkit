@@ -6,7 +6,7 @@ import * as ManagedResource from '../managedResource/index.js'
 import { defineMessageUnion } from '../message/index.js'
 import * as Mount from '../mount/index.vibe'
 import { modifyFields } from '../struct/index.vibe'
-import * as Subscription from '../subscription/subscription.js'
+import * as Subscription from '../subscription/subscription.vibe'
 import type * as Update from '../update/index.js'
 import { makeElement } from './makeElement.js'
 

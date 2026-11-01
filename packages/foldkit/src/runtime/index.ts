@@ -11,7 +11,7 @@ export type {
   DevToolsMode,
   DevToolsModeConfig,
   DevToolsPosition,
-} from './devToolsConfig.js'
+} from './devToolsConfig.vibe'
 
 export { Dispatch } from './dispatch.vibe'
 
@@ -22,9 +22,9 @@ export type {
   OutboundPortHandle,
   OutboundPortHandles,
   PortHandles,
-} from './hostConnector.js'
+} from './hostConnector.vibe'
 
-export { makeApplication } from './makeApplication.js'
+export { makeApplication } from './makeApplication.vibe'
 
 export type {
   ApplicationConfig,
@@ -33,7 +33,7 @@ export type {
   RoutingApplicationConfig,
   RoutingApplicationConfigWithFlags,
   RoutingApplicationInit,
-} from './makeApplication.js'
+} from './makeApplication.vibe'
 
 export { makeElement } from './makeElement.js'
 
@@ -45,7 +45,7 @@ export type {
 
 export type { MakeRuntimeReturn } from './runtime.js'
 
-export { SlowPhase, defaultSlowCallback } from './slowPhase.js'
+export { SlowPhase, defaultSlowCallback } from './slowPhase.vibe'
 
 export type {
   SlowConfig,
@@ -55,7 +55,7 @@ export type {
   SlowThresholdOverrides,
   SlowUpdateContext,
   SlowViewContext,
-} from './slowPhase.js'
+} from './slowPhase.vibe'
 
 export { embed, hydrate, run } from './start.js'
 
@@ -65,6 +65,6 @@ export type {
   ViewTransitionConfig,
   ViewTransitionContext,
   ViewTransitionDecision,
-} from './viewTransition.js'
+} from './viewTransition.vibe'
 
 export type { Visibility } from './visibility.vibe'
