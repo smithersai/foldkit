@@ -4,10 +4,10 @@ import { describe, test } from 'vitest'
 
 import { Dialog, Listbox, RadioGroup } from '@foldkit/ui'
 
-import { createEmptyGrid } from './grid'
+import { createEmptyGrid } from './grid.vibe'
 import { Message } from './message'
-import type { Model } from './model'
-import { update } from './update'
+import type { Model } from './model.vibe'
+import { update } from './update.vibe'
 
 const GRID_SIZE = 16
 

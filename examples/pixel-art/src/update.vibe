@@ -1,11 +1,11 @@
-import { Array, Match, Option } from 'effect'
+import { Array as Arr, Option } from 'effect'
 import { Update } from 'foldkit'
 import { modifyFields } from 'foldkit/struct'
 
 import { Dialog, Listbox, RadioGroup } from '@foldkit/ui'
 
-import { ExportPng, saveCanvas } from './command'
-import { DEFAULT_COLOR_INDEX } from './constant'
+import { ExportPng, saveCanvas } from './command.vibe'
+import { DEFAULT_COLOR_INDEX } from './constant.ts'
 import {
   createEmptyGrid,
   erasePixels,
@@ -14,40 +14,41 @@ import {
   isGridEmpty,
   pushHistory,
   setPixels,
-} from './grid'
-import { Message } from './message'
+} from './grid.vibe'
+import { Message } from './message.ts'
 import {
   type Model,
   type PaletteIndex,
   type Tool,
   paletteIndexFromValue,
-} from './model'
-import { PALETTE_THEMES } from './palette'
+} from './model.vibe'
+import { PALETTE_THEMES } from './palette.vibe'
 import {
   GridSizeRadioGroup,
   PaletteRadioGroup,
   ThemeListbox,
   ToolRadioGroup,
-} from './view/toolbar'
+} from './view/toolbar.vibe'
 
 type UpdateReturn = Update.Return<Model, Message>
 
-const withUpdateReturn = Match.withReturnType<UpdateReturn>()
-
-const applyEraser = (model: Model, x: number, y: number) => {
+const applyEraser = (model: Model, x: number, y: number): infer _ => {
   const positions = getMirroredPositions(x, y, model.gridSize, model.mirrorMode)
   return erasePixels(model.grid, positions)
 }
 
-const applyBrush = (model: Model, x: number, y: number) => {
+const applyBrush = (model: Model, x: number, y: number): infer _ => {
   const positions = getMirroredPositions(x, y, model.gridSize, model.mirrorMode)
   return setPixels(model.grid, positions, model.selectedColorIndex)
 }
 
-const applyFill = (model: Model, x: number, y: number) => {
+const applyFill = (model: Model, x: number, y: number): infer _ => {
   const positions = getMirroredPositions(x, y, model.gridSize, 'None')
-  return Array.reduce(positions, model.grid, (currentGrid, [fillX, fillY]) =>
-    floodFill(currentGrid, fillX, fillY, model.selectedColorIndex),
+  return Arr.reduce(
+    positions,
+    model.grid,
+    (currentGrid, [fillX, fillY]) =>
+      floodFill(currentGrid, fillX, fillY, model.selectedColorIndex),
   )
 }
 
@@ -81,20 +82,18 @@ const foldErrorDialogOpen = Update.foldChildStep({
 const foldThemeListboxOutMessage = Listbox.OutMessage.match<
   Update.Step<Model, Message>
 >({
-  Selected:
-    ({ value }) =>
-    model => {
-      const themeIndex = Number(value)
-      const maybeNextTheme = Array.get(PALETTE_THEMES, themeIndex)
-      if (Option.isNone(maybeNextTheme)) {
-        return { model }
-      }
-      const nextModel = modifyFields(model, {
-        paletteThemeIndex: () => themeIndex,
-        selectedColorIndex: () => DEFAULT_COLOR_INDEX,
-      })
-      return { model: nextModel, commands: [saveCanvas(nextModel)] }
-    },
+  Selected: ({ value }) => model => {
+    const themeIndex = Number(value)
+    const maybeNextTheme = Arr.get(PALETTE_THEMES, themeIndex)
+    if (Option.isNone(maybeNextTheme)) {
+      return { model }
+    }
+    const nextModel = modifyFields(model, {
+      paletteThemeIndex: () => themeIndex,
+      selectedColorIndex: () => DEFAULT_COLOR_INDEX,
+    })
+    return { model: nextModel, commands: [saveCanvas(nextModel)] }
+  },
 })
 
 const foldThemeListbox = Update.foldChild({
@@ -166,10 +165,7 @@ const foldToolRadioGroupOutMessage = RadioGroup.OutMessage.match<
   Update.Step<Model, Message>,
   RadioGroup.OutMessage<Tool>
 >({
-  Selected:
-    ({ value }) =>
-    model =>
-      selectTool(model, value),
+  Selected: ({ value }) => model => selectTool(model, value),
 })
 
 const foldToolRadioGroup = Update.foldChild({
@@ -184,10 +180,7 @@ const foldToolRadioGroup = Update.foldChild({
 const foldGridSizeRadioGroupOutMessage = RadioGroup.OutMessage.match<
   Update.Step<Model, Message>
 >({
-  Selected:
-    ({ value }) =>
-    model =>
-      requestGridSizeChange(model, Number(value)),
+  Selected: ({ value }) => model => requestGridSizeChange(model, Number(value)),
 })
 
 const foldGridSizeRadioGroup = Update.foldChild({
@@ -202,13 +195,11 @@ const foldGridSizeRadioGroup = Update.foldChild({
 const foldPaletteRadioGroupOutMessage = RadioGroup.OutMessage.match<
   Update.Step<Model, Message>
 >({
-  Selected:
-    ({ value }) =>
-    model =>
-      selectColor(
-        model,
-        paletteIndexFromValue(value, model.selectedColorIndex),
-      ),
+  Selected: ({ value }) => model =>
+    selectColor(
+      model,
+      paletteIndexFromValue(value, model.selectedColorIndex),
+    ),
 })
 
 const foldPaletteRadioGroup = Update.foldChild({
@@ -220,37 +211,34 @@ const foldPaletteRadioGroup = Update.foldChild({
   foldOutMessage: foldPaletteRadioGroupOutMessage,
 })
 
-export const update = (model: Model, message: Message) =>
+export const update = (model: Model, message: Message): infer _ =>
   Message.match<UpdateReturn>(message, {
-    PressedCell: ({ x, y }) =>
-      Match.value(model.tool).pipe(
-        withUpdateReturn,
-        Match.when('Brush', () => ({
-          model: modifyFields(model, {
-            grid: () => applyBrush(model, x, y),
-            undoStack: () => pushHistory(model.undoStack, model.grid),
-            redoStack: () => [],
-            isDrawing: () => true,
-          }),
-        })),
-        Match.when('Fill', () => {
-          const nextModel = modifyFields(model, {
-            grid: () => applyFill(model, x, y),
-            undoStack: () => pushHistory(model.undoStack, model.grid),
-            redoStack: () => [],
-          })
-          return { model: nextModel, commands: [saveCanvas(nextModel)] }
+    PressedCell: ({ x, y }) => match (model.tool) {
+      when 'Brush': ({
+        model: modifyFields(model, {
+          grid: () => applyBrush(model, x, y),
+          undoStack: () => pushHistory(model.undoStack, model.grid),
+          redoStack: () => [],
+          isDrawing: () => true,
         }),
-        Match.when('Eraser', () => ({
-          model: modifyFields(model, {
-            grid: () => applyEraser(model, x, y),
-            undoStack: () => pushHistory(model.undoStack, model.grid),
-            redoStack: () => [],
-            isDrawing: () => true,
-          }),
-        })),
-        Match.exhaustive,
-      ),
+      });
+      when 'Fill': do {
+        const nextModel = modifyFields(model, {
+          grid: () => applyFill(model, x, y),
+          undoStack: () => pushHistory(model.undoStack, model.grid),
+          redoStack: () => [],
+        })
+        ;({ model: nextModel, commands: [saveCanvas(nextModel)] })
+      };
+      when 'Eraser': ({
+        model: modifyFields(model, {
+          grid: () => applyEraser(model, x, y),
+          undoStack: () => pushHistory(model.undoStack, model.grid),
+          redoStack: () => [],
+          isDrawing: () => true,
+        }),
+      });
+    },
 
     EnteredCell: ({ x, y }) => {
       const withHover = modifyFields(model, {
@@ -304,38 +292,36 @@ export const update = (model: Model, message: Message) =>
       foldPaletteRadioGroup(model, message),
 
     ToggledMirrorHorizontal: () => {
-      const nextMirrorMode = Match.value(model.mirrorMode).pipe(
-        Match.when('None', () => 'Horizontal' as const),
-        Match.when('Horizontal', () => 'None' as const),
-        Match.when('Vertical', () => 'Both' as const),
-        Match.when('Both', () => 'Vertical' as const),
-        Match.exhaustive,
-      )
+      const nextMirrorMode = match (model.mirrorMode) {
+        when 'None': 'Horizontal';
+        when 'Horizontal': 'None';
+        when 'Vertical': 'Both';
+        when 'Both': 'Vertical';
+      }
       return {
         model: modifyFields(model, { mirrorMode: () => nextMirrorMode }),
       }
     },
 
     ToggledMirrorVertical: () => {
-      const nextMirrorMode = Match.value(model.mirrorMode).pipe(
-        Match.when('None', () => 'Vertical' as const),
-        Match.when('Vertical', () => 'None' as const),
-        Match.when('Horizontal', () => 'Both' as const),
-        Match.when('Both', () => 'Horizontal' as const),
-        Match.exhaustive,
-      )
+      const nextMirrorMode = match (model.mirrorMode) {
+        when 'None': 'Vertical';
+        when 'Vertical': 'None';
+        when 'Horizontal': 'Both';
+        when 'Both': 'Horizontal';
+      }
       return {
         model: modifyFields(model, { mirrorMode: () => nextMirrorMode }),
       }
     },
 
     ClickedUndo: () =>
-      Array.match(model.undoStack, {
+      Arr.match(model.undoStack, {
         onEmpty: () => ({ model }),
         onNonEmpty: nonEmptyUndoStack => {
           const nextModel = modifyFields(model, {
-            grid: () => Array.lastNonEmpty(nonEmptyUndoStack),
-            undoStack: () => Array.initNonEmpty(nonEmptyUndoStack),
+            grid: () => Arr.lastNonEmpty(nonEmptyUndoStack),
+            undoStack: () => Arr.initNonEmpty(nonEmptyUndoStack),
             redoStack: () => [...model.redoStack, model.grid],
           })
           return { model: nextModel, commands: [saveCanvas(nextModel)] }
@@ -343,13 +329,13 @@ export const update = (model: Model, message: Message) =>
       }),
 
     ClickedRedo: () =>
-      Array.match(model.redoStack, {
+      Arr.match(model.redoStack, {
         onEmpty: () => ({ model }),
         onNonEmpty: nonEmptyRedoStack => {
           const nextModel = modifyFields(model, {
-            grid: () => Array.lastNonEmpty(nonEmptyRedoStack),
+            grid: () => Arr.lastNonEmpty(nonEmptyRedoStack),
             undoStack: () => [...model.undoStack, model.grid],
-            redoStack: () => Array.initNonEmpty(nonEmptyRedoStack),
+            redoStack: () => Arr.initNonEmpty(nonEmptyRedoStack),
           })
           return { model: nextModel, commands: [saveCanvas(nextModel)] }
         },
@@ -361,15 +347,15 @@ export const update = (model: Model, message: Message) =>
         return { model }
       }
 
-      const statesAfterTarget = Array.drop(model.undoStack, stepIndex + 1)
+      const statesAfterTarget = Arr.drop(model.undoStack, stepIndex + 1)
 
       const nextModel = modifyFields(model, {
         grid: () => targetGrid,
-        undoStack: () => Array.take(model.undoStack, stepIndex),
+        undoStack: () => Arr.take(model.undoStack, stepIndex),
         redoStack: () => [
           ...model.redoStack,
           model.grid,
-          ...Array.reverse(statesAfterTarget),
+          ...Arr.reverse(statesAfterTarget),
         ],
       })
 
@@ -382,7 +368,7 @@ export const update = (model: Model, message: Message) =>
         return { model }
       }
 
-      const statesBetweenCurrentAndTarget = Array.drop(
+      const statesBetweenCurrentAndTarget = Arr.drop(
         model.redoStack,
         stepIndex + 1,
       )
@@ -392,9 +378,9 @@ export const update = (model: Model, message: Message) =>
         undoStack: () => [
           ...model.undoStack,
           model.grid,
-          ...Array.reverse(statesBetweenCurrentAndTarget),
+          ...Arr.reverse(statesBetweenCurrentAndTarget),
         ],
-        redoStack: () => Array.take(model.redoStack, stepIndex),
+        redoStack: () => Arr.take(model.redoStack, stepIndex),
       })
 
       return { model: nextModel, commands: [saveCanvas(nextModel)] }
@@ -438,19 +424,17 @@ export const update = (model: Model, message: Message) =>
 
     GotThemeListboxMessage: ({ message }) => foldThemeListbox(model, message),
 
-    ConfirmedGridSizeChange: () =>
-      Option.match(model.maybePendingGridSize, {
-        onNone: () => ({ model }),
-        onSome: pendingSize =>
-          Update.combine(model, [
-            stepModel => applyGridSizeChange(stepModel, pendingSize),
-            foldGridSizeConfirmDialogClose,
-            stepModel => ({
-              model: stepModel,
-              commands: [saveCanvas(stepModel)],
-            }),
-          ]),
-      }),
+    ConfirmedGridSizeChange: () => match (model.maybePendingGridSize) {
+      when Option.None: ({ model });
+      when Option.Some(let pendingSize): (Update.combine(model, [
+        stepModel => applyGridSizeChange(stepModel, pendingSize),
+        foldGridSizeConfirmDialogClose,
+        stepModel => ({
+          model: stepModel,
+          commands: [saveCanvas(stepModel)],
+        }),
+      ]));
+    },
 
     GotGridSizeConfirmDialogMessage: ({ message }) =>
       foldGridSizeConfirmDialog(model, message),

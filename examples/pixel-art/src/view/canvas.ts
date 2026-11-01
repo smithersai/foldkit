@@ -2,10 +2,10 @@ import { Array, Equal, Option, pipe } from 'effect'
 import { type Html, type HtmlBuilder, createKeyedLazy } from 'foldkit/html'
 
 import { EMPTY_COLOR } from '../constant'
-import { floodFill, getMirroredPositions } from '../grid'
+import { floodFill, getMirroredPositions } from '../grid.vibe'
 import { Message } from '../message'
-import type { Cell, Grid, HexColor, Model, PaletteIndex } from '../model'
-import { type PaletteTheme, resolveColor } from '../palette'
+import type { Cell, Grid, HexColor, Model, PaletteIndex } from '../model.vibe'
+import { type PaletteTheme, resolveColor } from '../palette.vibe'
 
 const lazyRow = createKeyedLazy()
 

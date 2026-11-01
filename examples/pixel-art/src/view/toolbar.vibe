@@ -1,13 +1,13 @@
 import clsx from 'clsx'
-import { Array, Option } from 'effect'
+import { Array as Arr } from 'effect'
 import { type Html, type HtmlBuilder, childAttributes } from 'foldkit/html'
 
 import { Button, Listbox, RadioGroup, Switch } from '@foldkit/ui'
 
-import { EMPTY_COLOR, GRID_SIZE_STRINGS } from '../constant'
-import { Message } from '../message'
-import { type MirrorMode, type PaletteIndex, type Tool } from '../model'
-import { PALETTE_THEMES, type PaletteTheme } from '../palette'
+import { EMPTY_COLOR, GRID_SIZE_STRINGS } from '../constant.ts'
+import { Message } from '../message.ts'
+import { type MirrorMode, type PaletteIndex, type Tool } from '../model.vibe'
+import { PALETTE_THEMES, type PaletteTheme } from '../palette.vibe'
 
 const TOOLS: ReadonlyArray<Tool> = ['Brush', 'Fill', 'Eraser']
 
@@ -29,7 +29,7 @@ const TOOL_SHORTCUTS: Record<Tool, string> = {
   Eraser: 'E',
 }
 
-export const THEME_INDEX_STRINGS = Array.makeBy(PALETTE_THEMES.length, String)
+export const THEME_INDEX_STRINGS = Arr.makeBy(PALETTE_THEMES.length, String)
 
 export const THEME_LISTBOX_ANCHOR: Listbox.AnchorConfig = {
   placement: 'bottom-start',
@@ -178,8 +178,8 @@ const mirrorSectionView = (
   mirrorMode: MirrorMode,
   h: HtmlBuilder<Message>,
 ): Html => {
-  const isMirrorHorizontal =
-    mirrorMode === 'Horizontal' || mirrorMode === 'Both'
+  const isMirrorHorizontal = mirrorMode === 'Horizontal'
+    || mirrorMode === 'Both'
   const isMirrorVertical = mirrorMode === 'Vertical' || mirrorMode === 'Both'
 
   return h.div(
@@ -297,7 +297,7 @@ const sizeSectionView = (
                     ),
                   ],
                   [option.value],
-                ),
+                )
               ),
             ),
         },
@@ -339,8 +339,8 @@ const paletteSectionView = (
             h.div(
               [...group, h.Class('grid grid-cols-4 gap-2.5')],
               options.map(option => {
-                const hexColor =
-                  theme.colors[Number(option.value)] ?? EMPTY_COLOR
+                const hexColor = theme.colors[Number(option.value)]
+                  ?? EMPTY_COLOR
                 return h.button(
                   [
                     ...option.option,
@@ -385,8 +385,8 @@ const themeListboxView = (
       items: THEME_INDEX_STRINGS,
       maybeSelectedValue: Option.some(paletteThemeIndex.toString()),
       itemToConfig: (indexString, { isSelected }) => {
-        const themeName =
-          PALETTE_THEMES[Number(indexString)]?.name ?? indexString
+        const themeName = PALETTE_THEMES[Number(indexString)]?.name
+          ?? indexString
         return {
           className: clsx(
             'px-3 py-2 text-sm cursor-pointer transition motion-reduce:transition-none',

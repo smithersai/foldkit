@@ -3,7 +3,7 @@ import { defineMessageUnion } from 'foldkit/message'
 
 import { Dialog, Listbox, RadioGroup } from '@foldkit/ui'
 
-import { PaletteIndex, Tool } from './model'
+import { PaletteIndex, Tool } from './model.vibe'
 
 export const Message = defineMessageUnion({
   PressedCell: { x: Schema.Number, y: Schema.Number },

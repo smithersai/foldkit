@@ -1,13 +1,13 @@
 import clsx from 'clsx'
-import { Array, Option } from 'effect'
+import { Array as Arr } from 'effect'
 import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { Button } from '@foldkit/ui'
 
-import { THUMBNAIL_CELL_SIZE, VISIBLE_HISTORY_COUNT } from '../constant'
-import { Message } from '../message'
-import type { Grid } from '../model'
-import { type PaletteTheme, resolveColor } from '../palette'
+import { THUMBNAIL_CELL_SIZE, VISIBLE_HISTORY_COUNT } from '../constant.ts'
+import { Message } from '../message.ts'
+import type { Grid } from '../model.vibe'
+import { type PaletteTheme, resolveColor } from '../palette.vibe'
 
 const sectionLabel = (text: string, h: HtmlBuilder<Message>): Html =>
   h.div(
@@ -29,7 +29,7 @@ export const historyPanelView = (
 ): Html => {
   const undoCount = undoStack.length
   const redoCount = redoStack.length
-  const visibleUndoEntries = Array.takeRight(undoStack, VISIBLE_HISTORY_COUNT)
+  const visibleUndoEntries = Arr.takeRight(undoStack, VISIBLE_HISTORY_COUNT)
   const hiddenUndoCount = undoCount - visibleUndoEntries.length
 
   return h.div(
@@ -100,7 +100,7 @@ export const historyPanelView = (
       h.div(
         [h.Class('flex flex-col gap-1.5 overflow-y-auto max-h-[420px] mt-3')],
         [
-          ...Array.map(redoStack, (entryGrid, index) =>
+          ...Arr.map(redoStack, (entryGrid, index) =>
             thumbnailEntry(
               entryGrid,
               gridSize,
@@ -109,8 +109,7 @@ export const historyPanelView = (
               Option.some(Message.ClickedRedoStep({ stepIndex: index })),
               theme,
               h,
-            ),
-          ),
+            )),
           thumbnailEntry(
             grid,
             gridSize,
@@ -120,8 +119,8 @@ export const historyPanelView = (
             theme,
             h,
           ),
-          ...Array.map(
-            Array.reverse(visibleUndoEntries),
+          ...Arr.map(
+            Arr.reverse(visibleUndoEntries),
             (entryGrid, index) => {
               const stepIndex = undoCount - 1 - index
               return thumbnailEntry(
@@ -137,11 +136,11 @@ export const historyPanelView = (
           ),
           ...(hiddenUndoCount > 0
             ? [
-                h.div(
-                  [h.Class('text-[10px] text-gray-500 text-center py-1')],
-                  [`${hiddenUndoCount} more…`],
-                ),
-              ]
+              h.div(
+                [h.Class('text-[10px] text-gray-500 text-center py-1')],
+                [`${hiddenUndoCount} more…`],
+              ),
+            ]
             : []),
         ],
       ),
@@ -154,7 +153,7 @@ const thumbnailEntry = (
   gridSize: number,
   isActive: boolean,
   label: string,
-  maybeOnClick: Option.Option<Message>,
+  maybeOnClick: Option<Message>,
   theme: PaletteTheme,
   h: HtmlBuilder<Message>,
 ): Html =>
@@ -166,15 +165,14 @@ const thumbnailEntry = (
           'bg-gray-800 cursor-pointer hover:bg-gray-700': !isActive,
         }),
       ),
-      ...Array.fromOption(Option.map(maybeOnClick, h.OnClick)),
-      ...Array.fromOption(
+      ...Arr.fromOption(Option.map(maybeOnClick, h.OnClick)),
+      ...Arr.fromOption(
         Option.map(maybeOnClick, clickMessage =>
           h.OnKeyDownPreventDefault(key =>
             key === 'Enter' || key === ' '
               ? Option.some(clickMessage)
-              : Option.none(),
-          ),
-        ),
+              : Option.none()
+          )),
       ),
       ...(Option.isSome(maybeOnClick) ? [h.Role('button'), h.Tabindex(0)] : []),
     ],
@@ -184,20 +182,19 @@ const thumbnailEntry = (
           h.Class('flex-shrink-0'),
           h.Style({
             display: 'grid',
-            'grid-template-columns': `repeat(${gridSize}, ${THUMBNAIL_CELL_SIZE}px)`,
+            'grid-template-columns':
+              `repeat(${gridSize}, ${THUMBNAIL_CELL_SIZE}px)`,
           }),
         ],
-        Array.flatMap(grid, row =>
-          Array.map(row, cell =>
+        Arr.flatMap(grid, row =>
+          Arr.map(row, cell =>
             h.div([
               h.Style({
                 width: `${THUMBNAIL_CELL_SIZE}px`,
                 height: `${THUMBNAIL_CELL_SIZE}px`,
                 backgroundColor: resolveColor(cell, theme),
               }),
-            ]),
-          ),
-        ),
+            ]))),
       ),
       h.span(
         [

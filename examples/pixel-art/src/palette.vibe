@@ -1,7 +1,11 @@
-import { Array, Option, pipe } from 'effect'
+import { Array, pipe } from 'effect'
 
-import { EMPTY_COLOR } from './constant'
-import { type Cell, type HexColor, HexColor as HexColorSchema } from './model'
+import { EMPTY_COLOR } from './constant.ts'
+import {
+  type Cell,
+  type HexColor,
+  HexColor as HexColorSchema,
+} from './model.vibe'
 
 export type PaletteTheme = Readonly<{
   name: string
@@ -118,11 +122,13 @@ export const PALETTE_THEMES: Array.NonEmptyReadonlyArray<PaletteTheme> = [
   },
 ]
 
-export const resolveColor = (cell: Cell, theme: PaletteTheme): HexColor =>
-  Option.match(cell, {
-    onNone: () => EMPTY_COLOR,
-    onSome: index => theme.colors[index] ?? EMPTY_COLOR,
-  })
+export const resolveColor = (
+  cell: Cell,
+  theme: PaletteTheme,
+): HexColor => match (cell) {
+  when Option.None: EMPTY_COLOR;
+  when Option.Some(let index): (theme.colors[index] ?? EMPTY_COLOR);
+}
 
 export const currentPaletteTheme = (
   model: Readonly<{ paletteThemeIndex: number }>,

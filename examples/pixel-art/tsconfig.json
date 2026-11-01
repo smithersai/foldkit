@@ -18,5 +18,8 @@
     "dist",
     "../../packages/foldkit/src",
     "src/comparison.bench.test.ts"
-  ]
+  ],
+  "vibelang": {
+    "trustedPackages": ["foldkit", "foldkit/*"]
+  }
 }
