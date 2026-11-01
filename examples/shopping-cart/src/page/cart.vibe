@@ -1,11 +1,11 @@
-import { Array, Option } from 'effect'
+import { Array as Arr } from 'effect'
 import { Html, HtmlBuilder } from 'foldkit/html'
 
 import { Button } from '@foldkit/ui'
 
-import { Cart } from '../domain'
-import { Message } from '../main'
-import { checkoutRouter, productsRouter } from '../route'
+import { Cart } from '../domain/index.ts'
+import { Message } from '../main.ts'
+import { checkoutRouter, productsRouter } from '../route.vibe'
 
 // VIEW
 
@@ -22,7 +22,7 @@ export const view = (cart: Cart.Cart, h: HtmlBuilder<Message>): Html =>
         [
           h.div(
             [],
-            Array.match(cart, {
+            Arr.match(cart, {
               onEmpty: () => [
                 h.p(
                   [h.Class('text-gray-500 text-center py-8')],
@@ -132,7 +132,7 @@ export const view = (cart: Cart.Cart, h: HtmlBuilder<Message>): Html =>
                           ],
                         ),
                       ],
-                    ),
+                    )
                   ),
                 ),
                 h.div(
@@ -148,7 +148,13 @@ export const view = (cart: Cart.Cart, h: HtmlBuilder<Message>): Html =>
                         h.p(
                           [h.Class('text-xl font-bold text-gray-800')],
                           [
-                            `$${cart.reduce((total, item) => total + item.item.price * item.quantity, 0).toFixed(2)}`,
+                            `$${
+                              cart.reduce(
+                                (total, item) =>
+                                  total + item.item.price * item.quantity,
+                                0,
+                              ).toFixed(2)
+                            }`,
                           ],
                         ),
                       ],

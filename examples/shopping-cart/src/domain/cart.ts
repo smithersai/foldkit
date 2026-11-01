@@ -1,7 +1,7 @@
 import { Array, Number, Option, Predicate, Schema, pipe } from 'effect'
 import { modifyFields } from 'foldkit/struct'
 
-import { CartItem, Item } from './item'
+import { CartItem, Item } from './item.vibe'
 
 export const Cart = Schema.Array(CartItem)
 export type Cart = typeof Cart.Type

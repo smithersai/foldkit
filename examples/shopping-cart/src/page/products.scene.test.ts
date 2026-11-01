@@ -2,7 +2,7 @@ import { expect, given, role, scene, text, withViewInputs } from 'foldkit/scene'
 import { describe, test } from 'vitest'
 
 import { products } from '../data/products'
-import { init, update, view } from './products'
+import { init, update, view } from './products.vibe'
 
 const productsView = withViewInputs(view, { cart: [] })
 

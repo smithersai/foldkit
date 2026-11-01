@@ -1,0 +1,10 @@
+export schema Item {
+  id: string
+  name: string
+  price: number
+}
+
+export schema CartItem {
+  item: Item
+  quantity: number
+}

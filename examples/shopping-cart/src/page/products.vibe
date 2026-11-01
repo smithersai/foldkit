@@ -1,4 +1,4 @@
-import { Array, Effect, Option, Schema } from 'effect'
+import { Array as Arr, Option, Schema } from 'effect'
 import { Command, Submodel, type Update } from 'foldkit'
 import { defineMessageUnion } from 'foldkit/message'
 import { replaceUrl } from 'foldkit/navigation'
@@ -6,16 +6,15 @@ import { modifyFields } from 'foldkit/struct'
 
 import { Button, Input } from '@foldkit/ui'
 
-import { Cart, Item } from '../domain'
-import { cartRouter, productsRouter } from '../route'
+import { Cart, Item } from '../domain/index.ts'
+import { cartRouter, productsRouter } from '../route.vibe'
 
 // MODEL
 
-export const Model = Schema.Struct({
-  products: Schema.Array(Item.Item),
-  searchText: Schema.String,
-})
-export type Model = typeof Model.Type
+export schema Model {
+  products: ReadonlyArray<Item.Item>
+  searchText: string
+}
 
 // MESSAGE
 
@@ -55,13 +54,20 @@ export const init = (products: ReadonlyArray<Item.Item>): Model => ({
 export const ReplaceSearchUrl = Command.define('ReplaceSearchUrl', {
   args: { url: Schema.String },
   messages: [Message.CompletedReplaceSearchUrl],
-  execute: ({ url }) =>
-    replaceUrl(url).pipe(Effect.as(Message.CompletedReplaceSearchUrl())),
+  execute: (
+    { url },
+  ): ReturnType<typeof Message.CompletedReplaceSearchUrl>!! => {
+    const completed = Message.CompletedReplaceSearchUrl()
+    return effect {
+      try replaceUrl(url)
+      return completed
+    }
+  },
 })
 
 // UPDATE
 
-export const update = (model: Model, message: Message) =>
+export const update = (model: Model, message: Message): infer _ =>
   Message.match<Update.ReturnWithOutMessage<Model, Message, OutMessage>>(
     message,
     {
@@ -105,8 +111,8 @@ export const view = Submodel.defineView<Model, Message, ViewInputs>(
   (model, { cart }, h) => {
     const filteredProducts = model.searchText
       ? model.products.filter(product =>
-          product.name.toLowerCase().includes(model.searchText.toLowerCase()),
-        )
+        product.name.toLowerCase().includes(model.searchText.toLowerCase())
+      )
       : model.products
 
     return h.div(
@@ -164,77 +170,77 @@ export const view = Submodel.defineView<Model, Message, ViewInputs>(
                     ),
                     Cart.itemQuantity(product.id)(cart) === 0
                       ? Button.view(
-                          {
-                            onClick: Message.ClickedAddToCart({
-                              item: product,
-                            }),
-                            toView: attributes =>
-                              h.button(
-                                [
-                                  ...attributes.button,
-                                  h.Class(
-                                    'bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium',
-                                  ),
-                                ],
-                                ['Add to Cart'],
-                              ),
-                          },
-                          h,
-                        )
-                      : h.div(
-                          [h.Class('flex items-center gap-2')],
-                          [
-                            Button.view(
-                              {
-                                onClick: Message.ClickedDecrementQuantity({
-                                  itemId: product.id,
-                                }),
-                                toView: attributes =>
-                                  h.button(
-                                    [
-                                      ...attributes.button,
-                                      h.Class(
-                                        'bg-gray-200 hover:bg-gray-300 text-gray-800 w-8 h-8 rounded flex items-center justify-center',
-                                      ),
-                                    ],
-                                    ['-'],
-                                  ),
-                              },
-                              h,
-                            ),
-                            h.span(
+                        {
+                          onClick: Message.ClickedAddToCart({
+                            item: product,
+                          }),
+                          toView: attributes =>
+                            h.button(
                               [
+                                ...attributes.button,
                                 h.Class(
-                                  'px-3 py-1 font-medium min-w-[2rem] text-center font-mono',
+                                  'bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium',
                                 ),
                               ],
-                              [String(Cart.itemQuantity(product.id)(cart))],
+                              ['Add to Cart'],
                             ),
-                            Button.view(
-                              {
-                                onClick: Message.ClickedIncrementQuantity({
-                                  itemId: product.id,
-                                }),
-                                toView: attributes =>
-                                  h.button(
-                                    [
-                                      ...attributes.button,
-                                      h.Class(
-                                        'bg-gray-200 hover:bg-gray-300 text-gray-800 w-8 h-8 rounded flex items-center justify-center',
-                                      ),
-                                    ],
-                                    ['+'],
-                                  ),
-                              },
-                              h,
-                            ),
-                          ],
-                        ),
+                        },
+                        h,
+                      )
+                      : h.div(
+                        [h.Class('flex items-center gap-2')],
+                        [
+                          Button.view(
+                            {
+                              onClick: Message.ClickedDecrementQuantity({
+                                itemId: product.id,
+                              }),
+                              toView: attributes =>
+                                h.button(
+                                  [
+                                    ...attributes.button,
+                                    h.Class(
+                                      'bg-gray-200 hover:bg-gray-300 text-gray-800 w-8 h-8 rounded flex items-center justify-center',
+                                    ),
+                                  ],
+                                  ['-'],
+                                ),
+                            },
+                            h,
+                          ),
+                          h.span(
+                            [
+                              h.Class(
+                                'px-3 py-1 font-medium min-w-[2rem] text-center font-mono',
+                              ),
+                            ],
+                            [String(Cart.itemQuantity(product.id)(cart))],
+                          ),
+                          Button.view(
+                            {
+                              onClick: Message.ClickedIncrementQuantity({
+                                itemId: product.id,
+                              }),
+                              toView: attributes =>
+                                h.button(
+                                  [
+                                    ...attributes.button,
+                                    h.Class(
+                                      'bg-gray-200 hover:bg-gray-300 text-gray-800 w-8 h-8 rounded flex items-center justify-center',
+                                    ),
+                                  ],
+                                  ['+'],
+                                ),
+                            },
+                            h,
+                          ),
+                        ],
+                      ),
                   ],
-                ),
+                )
               ),
             ),
-            Array.match(cart, {
+            Arr.match(cart, {
               onEmpty: () => h.empty,
               onNonEmpty: cart =>
                 h.div(

@@ -15,7 +15,7 @@ import {
   checkoutRouter,
   productsRouter,
   urlToAppRoute,
-} from './route'
+} from './route.vibe'
 
 // MODEL
 

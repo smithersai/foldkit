@@ -1,11 +1,11 @@
-import { Array, Option } from 'effect'
+import { Array as Arr } from 'effect'
 import { Html, HtmlBuilder } from 'foldkit/html'
 
 import { Button, Textarea } from '@foldkit/ui'
 
-import { Cart } from '../domain'
-import { Message } from '../main'
-import { cartRouter, productsRouter } from '../route'
+import { Cart } from '../domain/index.ts'
+import { Message } from '../main.ts'
+import { cartRouter, productsRouter } from '../route.vibe'
 
 // VIEW
 
@@ -55,7 +55,7 @@ export const view = (
       h.h1([h.Class('text-4xl font-bold text-gray-800 mb-8')], ['Checkout']),
       h.div(
         [h.Class('bg-white rounded-lg shadow p-6')],
-        Array.match(cart, {
+        Arr.match(cart, {
           onEmpty: () => [
             h.p(
               [h.Class('text-gray-500 text-center py-8')],
@@ -111,11 +111,15 @@ export const view = (
                         h.span(
                           [h.Class('font-medium')],
                           [
-                            `$${(cartItem.item.price * cartItem.quantity).toFixed(2)}`,
+                            `$${
+                              (cartItem.item.price * cartItem.quantity).toFixed(
+                                2,
+                              )
+                            }`,
                           ],
                         ),
                       ],
-                    ),
+                    )
                   ),
                 ),
               ],
@@ -131,7 +135,10 @@ export const view = (
                 h.span(
                   [],
                   [
-                    `$${cart.reduce((total, item) => total + item.item.price * item.quantity, 0).toFixed(2)}`,
+                    `$${
+                      cart.reduce((total, item) =>
+                        total + item.item.price * item.quantity, 0).toFixed(2)
+                    }`,
                   ],
                 ),
               ],
