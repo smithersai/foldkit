@@ -3,7 +3,7 @@ import { Runtime } from 'foldkit'
 import { RadioGroup } from '@foldkit/ui'
 
 import { FetchTelemetry } from './command.vibe'
-import type { Message } from './message.ts'
+import type { Message } from './message.vibe'
 import { Model, TelemetryAsyncData } from './model.vibe'
 import {
   CHART_MODE_RADIO_GROUP_ID,

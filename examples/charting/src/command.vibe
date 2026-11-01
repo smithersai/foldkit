@@ -4,7 +4,7 @@ import { getChart } from './chartHost.vibe'
 import { ChartMode, PackageId, Period, Telemetry } from './domain.vibe'
 import { makeChartOption } from './echarts.vibe'
 import { GitHubApiLive } from './githubApi.ts'
-import { Message } from './message.ts'
+import { Message } from './message.vibe'
 import { NpmApiLive } from './npmApi.ts'
 import { fetchRawTelemetry, transformTelemetry } from './telemetry.vibe'
 

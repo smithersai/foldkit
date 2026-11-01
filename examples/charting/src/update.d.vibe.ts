@@ -1,6 +1,6 @@
 import { Option } from "effect";
 import { AsyncData, Update } from 'foldkit';
-import { Message } from './message.js';
+import { Message } from './message.vibe';
 import { type Model } from './model.vibe';
 export declare const update: (model: Model, message: Message) => Readonly<{
     model: {

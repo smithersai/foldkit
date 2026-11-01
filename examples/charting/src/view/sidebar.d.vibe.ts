@@ -2,7 +2,7 @@ import { Option } from "effect";
 import type { Html } from 'foldkit/html';
 import { HtmlBuilder } from 'foldkit/html';
 import { type Telemetry } from '../domain.vibe';
-import { Message } from '../message.js';
+import { Message } from '../message.vibe';
 import { type Model } from '../model.vibe';
 export declare const sidebarView: (model: Model, telemetry: Telemetry, maybeBanner: Option.Option<string>, h: HtmlBuilder<Message>) => Html;
 export declare const summaryGridView: (telemetry: Telemetry, h: HtmlBuilder<Message>) => Html;

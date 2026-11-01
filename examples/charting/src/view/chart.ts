@@ -7,7 +7,7 @@ import { HtmlBuilder } from 'foldkit/html'
 import { removeChart, setChart } from '../chartHost.vibe'
 import type { Telemetry } from '../domain.vibe'
 import { selectedDatumLabel } from '../echarts.vibe'
-import { Message } from '../message'
+import { Message } from '../message.vibe'
 import type { Model } from '../model.vibe'
 import { formatInteger } from './format.vibe'
 

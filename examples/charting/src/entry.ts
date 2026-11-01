@@ -2,7 +2,7 @@ import { Runtime } from 'foldkit'
 
 import { registerEcharts } from './echarts.vibe'
 import { init } from './init.vibe'
-import { Message } from './message'
+import { Message } from './message.vibe'
 import { Model } from './model.vibe'
 import { update } from './update.vibe'
 import { view } from './view/index'

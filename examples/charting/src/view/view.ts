@@ -1,7 +1,7 @@
 import type { Document } from 'foldkit/html'
 import { HtmlBuilder } from 'foldkit/html'
 
-import type { Message } from '../message'
+import type { Message } from '../message.vibe'
 import type { Model } from '../model.vibe'
 import { headerView, telemetryStateView } from './layout.vibe'
 

@@ -12,7 +12,7 @@ import {
   packageIds,
 } from './domain.vibe'
 import { loadingModel, readyModel, sampleTelemetry } from './main.fixture.vibe'
-import { Message } from './message'
+import { Message } from './message.vibe'
 import { TelemetryAsyncData } from './model.vibe'
 import { update } from './update.vibe'
 

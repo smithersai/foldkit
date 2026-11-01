@@ -6,7 +6,7 @@ import { RadioGroup } from '@foldkit/ui'
 
 import { FetchTelemetry, SyncChart } from './command.vibe'
 import type { ChartMode, PackageId, Period } from './domain.vibe'
-import { Message } from './message.ts'
+import { Message } from './message.vibe'
 import { type Model, TelemetryAsyncData } from './model.vibe'
 import {
   ChartModeRadioGroup,

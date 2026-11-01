@@ -2,7 +2,7 @@ import { Option } from "effect";
 import type { Html } from 'foldkit/html';
 import { HtmlBuilder } from 'foldkit/html';
 import type { Telemetry } from '../domain.vibe';
-import { Message } from '../message.js';
+import { Message } from '../message.vibe';
 import type { Model } from '../model.vibe';
 export declare const headerView: (model: Model, h: HtmlBuilder<Message>) => Html;
 export declare const telemetryStateView: (model: Model, h: HtmlBuilder<Message>) => Html;

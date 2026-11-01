@@ -3,7 +3,7 @@ import fc from 'fast-check'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 
 import { getChart } from './chartHost.vibe'
-import { Message } from './message.ts'
+import { Message } from './message.vibe'
 import { MountChart } from './view/chart.ts'
 
 const chartState = vi.hoisted(() => {
