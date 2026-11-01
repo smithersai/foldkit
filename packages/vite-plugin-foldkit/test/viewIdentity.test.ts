@@ -314,6 +314,58 @@ describe('eligibility', () => {
   })
 })
 
+describe('Vitest hoisted initializers', () => {
+  const HOISTED_SOURCE = `import { vi } from 'vitest'
+const shared = vi.hoisted(() => {
+  const make = () => ({ count: 0 })
+  return make()
+})
+vi.mock('node:http', () => ({ createServer: () => shared }))
+const view = () => (1)
+`
+
+  it('leaves functions inside vi.hoisted and vi.mock callbacks unbranded', () => {
+    const result = requireTransform(HOISTED_SOURCE)
+    expect(result.code).toContain(`"src/View.ts#view"`)
+    expect(result.code).not.toContain('make"')
+    expect(result.code).not.toContain('createServer"')
+    expect(countOccurrences(result.code, ALIAS)).toBe(2)
+  })
+
+  it('follows an aliased or namespace import of vitest', () => {
+    const aliased = requireTransform(`import { vi as v } from 'vitest'
+const shared = v.hoisted(() => { const make = () => 1; return make })
+const view = () => (1)
+`)
+    expect(aliased.code).not.toContain('make"')
+    expect(aliased.code).toContain(`"src/View.ts#view"`)
+    const namespaced = requireTransform(`import * as vitest from 'vitest'
+const shared = vitest.vi.hoisted(() => { const make = () => 1; return make })
+const view = () => (1)
+`)
+    expect(namespaced.code).not.toContain('make"')
+    expect(namespaced.code).toContain(`"src/View.ts#view"`)
+  })
+
+  it('keeps branding under a shadowing vi that is not vitest', () => {
+    const result = requireTransform(`const vi = { hoisted: f => f() }
+const shared = vi.hoisted(() => { const make = () => 1; return make() })
+const view = () => (1)
+`)
+    expect(result.code).toContain('make"')
+    expect(result.code).toContain(`"src/View.ts#view"`)
+  })
+
+  it('leaves nested and immediately invoked functions inside a hoisted callback alone', () => {
+    const result = requireTransform(`import { vi } from 'vitest'
+const shared = vi.hoisted(() => (() => { const inner = () => 2; return inner() })())
+const view = () => (1)
+`)
+    expect(result.code).not.toContain('inner"')
+    expect(result.code).toContain(`"src/View.ts#view"`)
+  })
+})
+
 describe('already-branded modules', () => {
   it('returns null when the module already imports foldkit/brand', () => {
     const brandedSource = `${IMPORT_LINE}

@@ -79,8 +79,12 @@ const checkNativeConfig = paths => {
       .join('\n')
     writeFileSync(
       join(directory, 'knip.config.ts'),
-      imports +
-        '\nif (Reflect.get(globalThis, "__foldkitKnipInherited") !== "kept") throw new Error("inherited NODE_OPTIONS was lost")\nexport default { entry: [' +
+      "import vibelang from 'vibelang/knip'\n" +
+        imports +
+        '\nif (Reflect.get(globalThis, "__foldkitKnipInherited") !== "kept") throw new Error("inherited NODE_OPTIONS was lost")\n' +
+        // The fixture mirrors the generated root config: vibelang compiles the
+        // .vibe configs and their declaration sidecars are its output, not files.
+        "export default { compilers: { vibe: vibelang }, ignore: ['**/*.d.vibe.ts'], entry: [" +
         files.map((_, index) => '...entry' + index).join(',') +
         '] }\n',
     )

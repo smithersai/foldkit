@@ -123,6 +123,93 @@ const isNamedValueNode = (node: AstNode): node is NamedValueNode =>
   isAstNode(node['key']) &&
   isAstNode(node['value'])
 
+// NOTE: Vitest hoists `vi.hoisted(...)` and `vi.mock(...)` above every import of
+// the test module and runs their callbacks first, so a function branded inside one
+// would call the brand helper before its import is initialized (foldkit-101). Those
+// callbacks stay as written; only `vi` bound by an import of `vitest` counts, under
+// its local name, through a namespace import, or not at all when shadowed.
+const VITEST_MODULE = 'vitest'
+const VITEST_HOISTED_METHODS: ReadonlySet<string> = new Set(['hoisted', 'mock'])
+
+type VitestBindings = Readonly<{
+  viNames: ReadonlySet<string>
+  namespaceNames: ReadonlySet<string>
+}>
+
+const vitestBindings = (program: AstNode): VitestBindings => {
+  const viNames = new Set<string>()
+  const namespaceNames = new Set<string>()
+  const body = program['body']
+  if (!Array.isArray(body)) {
+    return { viNames, namespaceNames }
+  }
+  for (const statement of body) {
+    if (
+      !isAstNode(statement) ||
+      statement.type !== 'ImportDeclaration' ||
+      !isAstNode(statement['source']) ||
+      !isLiteral(statement['source']) ||
+      statement['source'].value !== VITEST_MODULE
+    ) {
+      continue
+    }
+    const specifiers = statement['specifiers']
+    if (!Array.isArray(specifiers)) {
+      continue
+    }
+    for (const specifier of specifiers) {
+      if (!isAstNode(specifier) || !isAstNode(specifier['local'])) {
+        continue
+      }
+      const local = specifier['local']
+      if (!isIdentifier(local)) {
+        continue
+      }
+      if (specifier.type === 'ImportNamespaceSpecifier') {
+        namespaceNames.add(local.name)
+      } else if (
+        specifier.type === 'ImportSpecifier' &&
+        isAstNode(specifier['imported']) &&
+        namedKeyText(specifier['imported']) === 'vi'
+      ) {
+        viNames.add(local.name)
+      }
+    }
+  }
+  return { viNames, namespaceNames }
+}
+
+const isVitestObject = (node: AstNode, bindings: VitestBindings): boolean => {
+  if (isIdentifier(node)) {
+    return bindings.viNames.has(node.name)
+  }
+  return (
+    isMemberExpression(node) &&
+    !node.computed &&
+    isIdentifier(node.object) &&
+    bindings.namespaceNames.has(node.object.name) &&
+    isIdentifier(node.property) &&
+    node.property.name === 'vi'
+  )
+}
+
+const isVitestHoistedCall = (
+  node: AstNode,
+  bindings: VitestBindings,
+): boolean => {
+  if (node.type !== 'CallExpression' || !isAstNode(node['callee'])) {
+    return false
+  }
+  const callee = node['callee']
+  return (
+    isMemberExpression(callee) &&
+    !callee.computed &&
+    isIdentifier(callee.property) &&
+    VITEST_HOISTED_METHODS.has(callee.property.name) &&
+    isVitestObject(callee.object, bindings)
+  )
+}
+
 const walkChildNodes = (
   node: AstNode,
   visitChild: (child: AstNode) => void,
@@ -261,7 +348,11 @@ type FunctionCollection = Readonly<{
 const collectFunctionNodes = (program: AstNode): FunctionCollection => {
   const functionNodes: Array<FunctionNode> = []
   const parentByNode = new Map<AstNode, AstNode>()
+  const bindings = vitestBindings(program)
   const visitNode = (node: AstNode): void => {
+    if (isVitestHoistedCall(node, bindings)) {
+      return
+    }
     if (isFunctionNode(node)) {
       functionNodes.push(node)
     }
