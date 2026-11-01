@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Array, Effect, Match, Option, Schema, pipe } from 'effect'
+import { Array as Arr, pipe } from 'effect'
 import {
   Calendar,
   Command,
@@ -18,13 +18,13 @@ import { Url, toString as urlToString } from 'foldkit/url'
 
 import { Dialog, Nav } from '@foldkit/ui'
 
-import * as Icon from './icon'
+import * as Icon from './icon.ts'
 import { uiInit } from './ui/init.vibe'
-import { Message as UiMessage } from './ui/message'
+import { Message as UiMessage } from './ui/message.vibe'
 import { UiModel } from './ui/model.vibe'
 import * as UiSubscriptions from './ui/subscriptions.vibe'
-import { closeMobileMenu, openMobileMenu, uiUpdate } from './ui/update'
-import * as View from './ui/view'
+import { closeMobileMenu, openMobileMenu, uiUpdate } from './ui/update.ts'
+import * as View from './ui/view/index.ts'
 
 // ROUTE
 
@@ -150,12 +150,10 @@ const urlToAppRoute = Route.parseUrlWithFallback(routeParser, AppRoute.NotFound)
 
 // MODEL
 
-export const Model = Schema.Struct({
-  route: AppRoute,
-  uiModel: UiModel,
-})
-
-export type Model = typeof Model.Type
+export schema Model {
+  route: AppRoute
+  uiModel: UiModel
+}
 
 // MESSAGE
 
@@ -175,29 +173,39 @@ export type Message = typeof Message.Type
 const NavigateInternal = Command.define('NavigateInternal', {
   args: { url: Schema.String },
   messages: [Message.CompletedNavigateInternal],
-  execute: ({ url }) =>
-    pushUrl(url).pipe(Effect.as(Message.CompletedNavigateInternal())),
+  execute: (
+    { url },
+  ): ReturnType<typeof Message.CompletedNavigateInternal>!! => {
+    const completed = Message.CompletedNavigateInternal()
+    return effect {
+      try pushUrl(url)
+      return completed
+    }
+  },
 })
 
 const LoadExternal = Command.define('LoadExternal', {
   args: { href: Schema.String },
   messages: [Message.CompletedLoadExternal],
-  execute: ({ href }) =>
-    load(href).pipe(Effect.as(Message.CompletedLoadExternal())),
+  execute: ({ href }): ReturnType<typeof Message.CompletedLoadExternal>!! => {
+    const completed = Message.CompletedLoadExternal()
+    return effect {
+      try load(href)
+      return completed
+    }
+  },
 })
 
 // INIT
 
-export const Flags = Schema.Struct({
-  today: Calendar.CalendarDate,
-})
+export schema Flags {
+  today: Calendar.CalendarDate
+}
 
-export type Flags = typeof Flags.Type
-
-export const flags: Effect.Effect<Flags> = Effect.gen(function* () {
-  const today = yield* Calendar.today.local
+export const flags: Flags!! = () => {
+  const today = Calendar.today.local()
   return { today }
-})
+}
 
 export const init: Runtime.RoutingApplicationInit<Model, Message, Flags> = (
   flags: Flags,
@@ -240,7 +248,7 @@ const foldUiCloseMobileMenu = Update.foldChildStep({
 
 type UpdateReturn = Update.Return<Model, Message>
 
-export const update = (model: Model, message: Message) =>
+export const update = (model: Model, message: Message): infer _ =>
   Message.match<UpdateReturn>(message, {
     CompletedNavigateInternal: () => ({ model }),
     CompletedLoadExternal: () => ({ model }),
@@ -320,7 +328,7 @@ const NAV_ITEMS: ReadonlyArray<NavItem> = [
   },
 ]
 
-const NAV_ROUTE_TAGS: ReadonlyArray<string> = Array.map(
+const NAV_ROUTE_TAGS: ReadonlyArray<string> = Arr.map(
   NAV_ITEMS,
   navItem => navItem.routeTag,
 )
@@ -328,7 +336,7 @@ const NAV_ROUTE_TAGS: ReadonlyArray<string> = Array.map(
 const navItemHref = (index: number): string =>
   pipe(
     NAV_ITEMS,
-    Array.get(index),
+    Arr.get(index),
     Option.map(navItem => navItem.href),
     Option.getOrElse(() => homeRouter()),
   )
@@ -354,8 +362,8 @@ const navListView = <Message>(
     [h.Class('flex flex-col gap-0.5')],
     pipe(
       NAV_ITEMS,
-      Array.zip(items),
-      Array.map(([navItem, item]) =>
+      Arr.zip(items),
+      Arr.map(([navItem, item]) =>
         h.li(
           [],
           [
@@ -364,7 +372,7 @@ const navListView = <Message>(
               [navItem.label],
             ),
           ],
-        ),
+        )
       ),
     ),
   )
@@ -538,15 +546,15 @@ const mobileMenuDialogView = Submodel.defineView<
       [...dialog, h.Class('md:hidden')],
       isVisible
         ? [
-            h.div([...backdrop, h.Class('fixed inset-0 z-[59]')]),
-            h.div(
-              [
-                ...panel,
-                h.Class('fixed inset-0 z-[60] bg-white flex flex-col'),
-              ],
-              [mobileMenuContent(currentRoute, closeButton, h)],
-            ),
-          ]
+          h.div([...backdrop, h.Class('fixed inset-0 z-[59]')]),
+          h.div(
+            [
+              ...panel,
+              h.Class('fixed inset-0 z-[60] bg-white flex flex-col'),
+            ],
+            [mobileMenuContent(currentRoute, closeButton, h)],
+          ),
+        ]
         : [],
     )
 
@@ -655,11 +663,13 @@ const contentView = (model: Model, h: HtmlBuilder<Message>): Html => {
   })
 }
 
-const routeTitle = (route: Model['route']): string =>
-  Match.value(route).pipe(
-    Match.tag('Home', () => 'Foldkit UI Showcase'),
-    Match.orElse(({ _tag }) => `${_tag} | Foldkit UI Showcase`),
-  )
+const routeTitle = (route: Model['route']): string => match (route) {
+  when { _tag: 'Home' }: 'Foldkit UI Showcase';
+  when let rest: do {
+    const { _tag } = rest
+    ;`${_tag} | Foldkit UI Showcase`
+  };
+}
 
 export const view = (model: Model, h: HtmlBuilder<Message>): Document => ({
   title: routeTitle(model.route),

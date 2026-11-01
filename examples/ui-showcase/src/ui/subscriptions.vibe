@@ -2,7 +2,7 @@ import { Subscription } from 'foldkit'
 
 import { DragAndDrop, Slider } from '@foldkit/ui'
 
-import { Message as UiMessage } from './message.ts'
+import { Message as UiMessage } from './message.vibe'
 import type { UiModel } from './model.vibe'
 import { Toast } from './toast.vibe'
 

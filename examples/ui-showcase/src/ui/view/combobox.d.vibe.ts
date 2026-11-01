@@ -3,7 +3,7 @@ import { Submodel } from 'foldkit';
 import { type HtmlBuilder } from 'foldkit/html';
 import { Combobox } from '@foldkit/ui';
 import type { AnchorConfig } from '@foldkit/ui/combobox';
-import { Message as UiMessage } from '../message.js';
+import { Message as UiMessage } from '../message.vibe';
 import type { City } from '../model.vibe';
 export declare const CityCombobox: Readonly<{
     view: Submodel.View<{

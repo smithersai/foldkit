@@ -4,7 +4,7 @@ import type { Html } from 'foldkit/html'
 import { Select } from '@foldkit/ui'
 
 import * as Icon from '../../icon'
-import { Message as UiMessage } from '../message'
+import { Message as UiMessage } from '../message.vibe'
 import type { UiModel } from '../model.vibe'
 
 const selectClassName =

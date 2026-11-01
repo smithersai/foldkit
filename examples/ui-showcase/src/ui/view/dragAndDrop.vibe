@@ -5,7 +5,7 @@ import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { DragAndDrop } from '@foldkit/ui'
 
-import { Message as UiMessage } from '../message.ts'
+import { Message as UiMessage } from '../message.vibe'
 import type { DemoCard, DemoColumn, UiModel } from '../model.vibe'
 
 const cardClassName =

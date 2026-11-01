@@ -4,7 +4,7 @@ import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { Switch } from '@foldkit/ui'
 
-import { Message as UiMessage } from '../message'
+import { Message as UiMessage } from '../message.vibe'
 import type { UiModel } from '../model.vibe'
 
 const SWITCH_DEMO_ID = 'switch-demo'

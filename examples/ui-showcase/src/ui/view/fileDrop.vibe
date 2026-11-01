@@ -4,7 +4,7 @@ import type { Html } from 'foldkit/html'
 
 import { FileDrop } from '@foldkit/ui'
 
-import { Message as UiMessage } from '../message.ts'
+import { Message as UiMessage } from '../message.vibe'
 import type { UiModel } from '../model.vibe'
 
 const dropZoneClassName =

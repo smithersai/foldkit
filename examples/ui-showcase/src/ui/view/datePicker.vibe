@@ -5,7 +5,7 @@ import { Calendar, DatePicker } from '@foldkit/ui'
 import type { AnchorConfig } from '@foldkit/ui/popover'
 
 import * as Icon from '../../icon.ts'
-import { Message as UiMessage } from '../message.ts'
+import { Message as UiMessage } from '../message.vibe'
 import type { UiModel } from '../model.vibe'
 
 const triggerClassName =

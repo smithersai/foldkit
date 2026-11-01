@@ -21,7 +21,7 @@ import {
   VirtualList,
 } from '@foldkit/ui'
 
-import { Message as UiMessage } from './message'
+import { Message as UiMessage } from './message.vibe'
 import type {
   City,
   DemoColumn,

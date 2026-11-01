@@ -3,7 +3,7 @@ import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { Combobox, Dialog } from '@foldkit/ui'
 
-import { Message as UiMessage } from '../message.ts'
+import { Message as UiMessage } from '../message.vibe'
 import type { City, UiModel } from '../model.vibe'
 import { CityCombobox, comboboxInputs } from './combobox.vibe'
 

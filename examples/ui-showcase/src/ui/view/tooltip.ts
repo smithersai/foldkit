@@ -4,7 +4,7 @@ import type { Html } from 'foldkit/html'
 import { Tooltip } from '@foldkit/ui'
 import type { AnchorConfig } from '@foldkit/ui/tooltip'
 
-import { Message as UiMessage } from '../message'
+import { Message as UiMessage } from '../message.vibe'
 import type { UiModel } from '../model.vibe'
 
 const triggerClassName =

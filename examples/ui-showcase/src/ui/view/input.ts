@@ -3,7 +3,7 @@ import type { Html } from 'foldkit/html'
 
 import { Input } from '@foldkit/ui'
 
-import { Message as UiMessage } from '../message'
+import { Message as UiMessage } from '../message.vibe'
 import type { UiModel } from '../model.vibe'
 
 const inputClassName =
