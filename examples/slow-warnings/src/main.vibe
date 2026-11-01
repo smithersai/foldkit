@@ -5,6 +5,8 @@ import { type Document, type Html, HtmlBuilder, createLazy } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
 
+import { createSlowWarningTarget } from './slowWarningTarget.ts'
+
 const UPDATE_WORK_MS = 10
 const VIEW_WORK_MS = 24
 const SUBSCRIPTION_DEPENDENCIES_WORK_MS = 8
@@ -60,7 +62,7 @@ export type Message = typeof Message.Type
 
 const slowWarningTarget: Dom.TypedEventTarget<{
   [SLOW_WARNING_EVENT]: CustomEvent<SlowWarningReport>
-}> = new EventTarget()
+}> = createSlowWarningTarget()
 
 // Retain synchronous CPU work using the standard Clock service.
 const clock = runSync(effect {
