@@ -122,7 +122,7 @@
     "fast-check": "^4.10.2"
   },
   "simple-git-hooks": {
-    "commit-msg": "if grep -q 'Co-Authored-By.*[Cc]laude' \"$1\"; then echo '\\n\u274c Commit message contains a Claude Co-Authored-By line. Remove it and try again.' && exit 1; fi",
+    "commit-msg": "if grep -q 'Co-Authored-By.*[Cc]laude' \"$1\"; then echo '\\n❌ Commit message contains a Claude Co-Authored-By line. Remove it and try again.' && exit 1; fi",
     "pre-push": "bash scripts/run-pre-push.sh"
   },
   "engines": {
