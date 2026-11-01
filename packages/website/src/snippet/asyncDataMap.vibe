@@ -3,19 +3,18 @@ import { AsyncData } from 'foldkit'
 import { modifyFields } from 'foldkit/struct'
 import { Model } from './model'
 
-export const prependNewNote = (note: Note) => (model: Model): Model =>
-  Option.match(note.maybeNotebookId, {
-    onNone: () =>
-      modifyFields(model, {
-        allNotes: allNotes =>
-          AsyncData.map(allNotes, noteList =>
-            EffectArray.prepend(noteList, note)),
-      }),
-    onSome: notebookId =>
-      modifyFields(model, {
-        notesByNotebook: notesByNotebook =>
-          HashMap.modify(notesByNotebook, notebookId, notes =>
-            AsyncData.map(notes, noteList =>
-              EffectArray.prepend(noteList, note))),
-      }),
-  })
+export const prependNewNote = (note: Note) => (model: Model): Model => match (note.maybeNotebookId) {
+  when { _tag: "None" }: modifyFields(model, {
+    allNotes: allNotes =>
+      AsyncData.map(allNotes, noteList => EffectArray.prepend(noteList, note)),
+  });
+  when { _tag: "Some", value: let notebookId }: modifyFields(model, {
+    notesByNotebook: notesByNotebook =>
+      HashMap.modify(
+        notesByNotebook,
+        notebookId,
+        notes =>
+          AsyncData.map(notes, noteList => EffectArray.prepend(noteList, note)),
+      ),
+  });
+}

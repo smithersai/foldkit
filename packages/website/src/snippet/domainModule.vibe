@@ -13,14 +13,16 @@ export const addItem = (item: Item) => (cart: Cart): Cart => {
     cartItem => cartItem.item.id === item.id,
   )
 
-  return Option.match(existing, {
-    onNone: () => [...cart, { item, quantity: 1 }],
-    onSome: () =>
+  return match (existing) {
+    when { _tag: "None" }: [...cart, { item, quantity: 1 }];
+    when { _tag: "Some", value: let optionValue1 }: do {
+      void optionValue1
       EffectArray.map(cart, cartItem =>
         cartItem.item.id === item.id
           ? modifyFields(cartItem, { quantity: quantity => quantity + 1 })
-          : cartItem),
-  })
+          : cartItem)
+    };
+  }
 }
 
 export const removeItem = (itemId: string) => (cart: Cart): Cart =>

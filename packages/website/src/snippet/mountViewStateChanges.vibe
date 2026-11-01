@@ -12,12 +12,12 @@ const MountEditor = Mount.define('MountEditor', {
   execute: effect ({ element, viewStateChanges }) => {
     const editor = try Effect.acquireRelease(
       sync(element => new Editor({ element }), element),
-      mountedEditor =>
-        sync(mountedEditor => mountedEditor.destroy(), mountedEditor),
+      effect mountedEditor =>
+        try sync(mountedEditor => mountedEditor.destroy(), mountedEditor),
     )
 
     try Effect.forkScoped(effect {
-      for (const viewState of viewStateChanges) {
+      for try (const viewState of viewStateChanges) {
         try sync(
           (editor, viewState) => editor.setEditable(viewState === 'Live'),
           editor,
