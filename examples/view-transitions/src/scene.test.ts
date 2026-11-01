@@ -10,7 +10,7 @@ import {
   update,
   view,
   viewTransition,
-} from './main.ts'
+} from './main.vibe'
 
 const gallery = Model.make({ route: AppRoute.Gallery(), filterText: '' })
 const artworkDetail = (artworkId: number) =>

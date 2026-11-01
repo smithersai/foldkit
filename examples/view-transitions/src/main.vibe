@@ -1,4 +1,4 @@
-import { Array, Effect, Option, Schema, String } from 'effect'
+import { Array as Arr, String as Str } from 'effect'
 import { Command, Runtime, type Update } from 'foldkit'
 import { Document, Html, HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -19,11 +19,10 @@ export { AppRoute } from './route.vibe'
 
 // MODEL
 
-export const Model = Schema.Struct({
-  route: AppRoute,
-  filterText: Schema.String,
-})
-export type Model = typeof Model.Type
+export schema Model {
+  route: AppRoute
+  filterText: string
+}
 
 // MESSAGE
 
@@ -48,22 +47,34 @@ export const init: Runtime.RoutingApplicationInit<Model, Message> = (
 const NavigateInternal = Command.define('NavigateInternal', {
   args: { url: Schema.String },
   messages: [Message.CompletedNavigateInternal],
-  execute: ({ url }) =>
-    pushUrl(url).pipe(Effect.as(Message.CompletedNavigateInternal())),
+  execute: (
+    { url },
+  ): ReturnType<typeof Message.CompletedNavigateInternal>!! => {
+    const completed = Message.CompletedNavigateInternal()
+    return effect {
+      try pushUrl(url)
+      return completed
+    }
+  },
 })
 
 const LoadExternal = Command.define('LoadExternal', {
   args: { href: Schema.String },
   messages: [Message.CompletedLoadExternal],
-  execute: ({ href }) =>
-    load(href).pipe(Effect.as(Message.CompletedLoadExternal())),
+  execute: ({ href }): ReturnType<typeof Message.CompletedLoadExternal>!! => {
+    const completed = Message.CompletedLoadExternal()
+    return effect {
+      try load(href)
+      return completed
+    }
+  },
 })
 
 // UPDATE
 
 type UpdateReturn = Update.Return<Model, Message>
 
-export const update = (model: Model, message: Message) =>
+export const update = (model: Model, message: Message): infer _ =>
   Message.match<UpdateReturn>(message, {
     CompletedNavigateInternal: () => ({ model }),
     CompletedLoadExternal: () => ({ model }),
@@ -104,14 +115,16 @@ export const viewTransition: Runtime.ViewTransitionConfig<Model, Message> = ({
 
   const transition = Transition.make(previousModel.route, model.route)
 
-  return Option.match(Transition.enteredAny(transition), {
-    onNone: () => true,
-    onSome: AppRoute.match<Runtime.ViewTransitionDecision>({
-      Artwork: () => ({ types: ['to-artwork-detail'] }),
-      Gallery: () => ({ types: ['to-gallery'] }),
-      NotFound: () => true,
-    }),
+  const enteredRoute = Transition.enteredAny(transition)
+  const decideEnteredRoute = AppRoute.match<Runtime.ViewTransitionDecision>({
+    Artwork: () => ({ types: ['to-artwork-detail'] }),
+    Gallery: () => ({ types: ['to-gallery'] }),
+    NotFound: () => true,
   })
+  return match (enteredRoute) {
+    when Option.None: true;
+    when Option.Some(let route): decideEnteredRoute(route);
+  }
 }
 
 // VIEW
@@ -121,7 +134,7 @@ const transitionNameFor = (artworkId: number): string => `artwork-${artworkId}`
 // NOTE: names have to be unique per snapshot, so each artwork carries its own.
 // The shared class is what lets `styles.css` reach all of them with one rule,
 // since a per-artwork name cannot be written as a selector ahead of time.
-const artworkTransitionStyle = (artworkId: number) => ({
+const artworkTransitionStyle = (artworkId: number): infer _ => ({
   viewTransitionName: transitionNameFor(artworkId),
   viewTransitionClass: 'artwork',
 })
@@ -129,14 +142,13 @@ const artworkTransitionStyle = (artworkId: number) => ({
 const filteredArtworks = (filterText: string): ReadonlyArray<Artwork> => {
   const normalizedFilter = filterText.trim().toLowerCase()
 
-  if (String.isEmpty(normalizedFilter)) {
+  if (Str.isEmpty(normalizedFilter)) {
     return artworks
   } else {
-    return Array.filter(artworks, artwork =>
-      String.includes(normalizedFilter)(
+    return Arr.filter(artworks, artwork =>
+      Str.includes(normalizedFilter)(
         `${artwork.title} ${artwork.medium}`.toLowerCase(),
-      ),
-    )
+      ))
   }
 }
 
@@ -165,7 +177,7 @@ const artworkGridView = (
 ): Html =>
   h.div(
     [h.Class('grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4')],
-    Array.map(matchedArtworks, artwork => artworkCardView(artwork, h)),
+    Arr.map(matchedArtworks, artwork => artworkCardView(artwork, h)),
   )
 
 const galleryView = (filterText: string, h: HtmlBuilder<Message>): Html =>
@@ -181,7 +193,7 @@ const galleryView = (filterText: string, h: HtmlBuilder<Message>): Html =>
           'mb-8 w-full max-w-md rounded-lg border border-gray-300 bg-white px-4 py-2 focus:ring-2 focus:ring-gray-400 focus:outline-none',
         ),
       ]),
-      Array.match(filteredArtworks(filterText), {
+      Arr.match(filteredArtworks(filterText), {
         onEmpty: () => emptyGalleryView(h),
         onNonEmpty: matchedArtworks => artworkGridView(matchedArtworks, h),
       }),
@@ -262,10 +274,10 @@ const artworkDetailView = (artworkId: number, h: HtmlBuilder<Message>): Html =>
   h.div(
     [h.Class('mx-auto max-w-5xl px-6')],
     [
-      Option.match(findArtwork(artworkId), {
-        onNone: () => missingArtworkView(artworkId, h),
-        onSome: artwork => foundArtworkView(artwork, h),
-      }),
+      match (findArtwork(artworkId)) {
+        when Option.None: (missingArtworkView(artworkId, h));
+        when Option.Some(let artwork): (foundArtworkView(artwork, h));
+      },
     ],
   )
 
@@ -291,11 +303,12 @@ const notFoundView = (path: string, h: HtmlBuilder<Message>): Html =>
 const routeTitle = (route: AppRoute): string =>
   AppRoute.match(route, {
     Gallery: () => 'View Transitions',
-    Artwork: ({ artworkId }) =>
-      Option.match(findArtwork(artworkId), {
-        onNone: () => 'Artwork Not Found | View Transitions',
-        onSome: artwork => `${artwork.title} | View Transitions`,
-      }),
+    Artwork: (
+      { artworkId },
+    ) => match (findArtwork(artworkId)) {
+      when Option.None: ('Artwork Not Found | View Transitions');
+      when Option.Some(let artwork): (`${artwork.title} | View Transitions`);
+    },
     NotFound: () => 'Page Not Found | View Transitions',
   })
 
