@@ -1,4 +1,4 @@
-import { Array, Match, Option, Schema, pipe } from 'effect'
+import { Array, pipe } from 'effect'
 import { taggedStruct } from 'foldkit/schema'
 
 export type File = typeof File.Type
@@ -55,33 +55,30 @@ export const fileTree: ReadonlyArray<FileTreeEntry> = [
 const findDirectoryEntries = (
   entries: ReadonlyArray<FileTreeEntry>,
   name: string,
-): Option.Option<ReadonlyArray<FileTreeEntry>> =>
-  pipe(
-    Array.findFirst(entries, entry => entry.name === name),
-    Option.flatMap(entry =>
-      Match.value(entry).pipe(
-        Match.tagsExhaustive({
-          File: () => Option.none(),
-          Directory: directory => Option.some(directory.entries),
-        }),
-      ),
-    ),
-  )
+): Option<ReadonlyArray<FileTreeEntry>> =>
+  Array.findFirst(entries, entry => entry.name === name)
+    .flatMap(entry => match (entry) {
+      when { _tag: 'File' }: Option.none();
+      when { _tag: 'Directory', entries: let children }: Option.some(children);
+    })
 
 export const findEntry = (
   path: Array.NonEmptyReadonlyArray<string>,
-): Option.Option<FileTreeEntry> => {
+): Option<FileTreeEntry> => {
   const [parentSegments, entryName] = Array.unappend(path)
 
   return pipe(
     parentSegments,
-    Array.reduce(Option.some(fileTree), (maybeEntries, segment) =>
-      Option.flatMap(maybeEntries, entries =>
-        findDirectoryEntries(entries, segment),
-      ),
+    Array.reduce(
+      Option.some(fileTree),
+      (maybeEntries, segment) =>
+        Option.flatMap(
+          maybeEntries,
+          entries => findDirectoryEntries(entries, segment),
+        ),
     ),
     Option.flatMap(entries =>
-      Array.findFirst(entries, entry => entry.name === entryName),
+      Array.findFirst(entries, entry => entry.name === entryName)
     ),
   )
 }

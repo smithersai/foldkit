@@ -13,7 +13,7 @@ import {
   fileTree,
   findEntry,
   formatFileSize,
-} from './fileTree'
+} from './fileTree.vibe'
 import { People } from './page'
 import {
   AppRoute,
@@ -23,9 +23,9 @@ import {
   nestedRouter,
   peopleRouter,
   urlToAppRoute,
-} from './route'
+} from './route.vibe'
 
-export { AppRoute } from './route'
+export { AppRoute } from './route.vibe'
 
 // MODEL
 

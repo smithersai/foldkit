@@ -1,4 +1,4 @@
-import { Array, Duration, Effect, Option, Schema, String, pipe } from 'effect'
+import { Array as Arr, Duration, Option, Schema, String as Str } from 'effect'
 import { Command, Submodel, type Update } from 'foldkit'
 import { Html, HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -13,16 +13,15 @@ import {
   type PeopleRoute,
   peopleRouter,
   personRouter,
-} from '../route'
+} from '../route.vibe'
 
 // DOMAIN
 
-const Person = Schema.Struct({
-  id: Schema.Number,
-  name: Schema.String,
-  role: Schema.String,
-})
-type Person = typeof Person.Type
+schema Person {
+  id: number
+  name: string
+  role: string
+}
 
 const people: ReadonlyArray<Person> = [
   { id: 1, name: 'Alice Johnson', role: 'Designer' },
@@ -38,38 +37,35 @@ const SEARCH_LATENCY = Duration.millis(300)
 const matchesQuery = (person: Person, query: string): boolean => {
   const lowerQuery = query.toLowerCase()
   return (
-    person.name.toLowerCase().includes(lowerQuery) ||
-    person.role.toLowerCase().includes(lowerQuery)
+    person.name.toLowerCase().includes(lowerQuery)
+    || person.role.toLowerCase().includes(lowerQuery)
   )
 }
 
-export const searchPeople = (searchText: string): ReadonlyArray<Person> =>
-  pipe(
-    searchText,
-    Option.liftPredicate(String.isNonEmpty),
-    Option.match({
-      onNone: () => people,
-      onSome: query =>
-        Array.filter(people, person => matchesQuery(person, query)),
-    }),
-  )
+export const searchPeople = (searchText: string): ReadonlyArray<Person> => match (Option.liftPredicate(searchText, Str.isNonEmpty)) {
+  when Option.None: people;
+  when Option.Some(let query): Arr.filter(
+    people,
+    person => matchesQuery(person, query),
+  );
+}
 
 const addSearchToHistory = (
   history: ReadonlyArray<string>,
   value: string,
 ): ReadonlyArray<string> => {
-  if (String.isEmpty(value)) {
+  if (Str.isEmpty(value)) {
     return history
   }
 
-  return Array.take(Array.dedupe([value, ...history]), SEARCH_HISTORY_LIMIT)
+  return Arr.take(Arr.dedupe([value, ...history]), SEARCH_HISTORY_LIMIT)
 }
 
 const routeSearchText = (route: PeopleRoute): string =>
   Option.getOrElse(route.searchText, () => '')
 
-export const findPerson = (id: number) =>
-  Array.findFirst(people, person => person.id === id)
+export const findPerson = (id: number): infer _ =>
+  Arr.findFirst(people, person => person.id === id)
 
 // MODEL
 
@@ -79,12 +75,11 @@ export const SearchResults = defineTaggedUnion({
 })
 export type SearchResults = typeof SearchResults.Type
 
-export const Model = Schema.Struct({
-  searchInput: Schema.String,
-  searchHistory: Schema.Array(Schema.String),
-  results: SearchResults,
-})
-export type Model = typeof Model.Type
+export schema Model {
+  searchInput: string
+  searchHistory: ReadonlyArray<string>
+  results: SearchResults
+}
 
 // MESSAGE
 
@@ -122,31 +117,40 @@ export const init = (route: PeopleRoute): InitReturn => {
 export const PushSearchUrl = Command.define('PushSearchUrl', {
   args: { searchText: Schema.Option(Schema.String) },
   messages: [Message.CompletedPushSearchUrl],
-  execute: ({ searchText }) =>
-    pushUrl(peopleRouter({ searchText })).pipe(
-      Effect.as(Message.CompletedPushSearchUrl()),
-    ),
+  execute: (
+    { searchText },
+  ): ReturnType<typeof Message.CompletedPushSearchUrl>!! => {
+    const target = peopleRouter({ searchText })
+    const completed = Message.CompletedPushSearchUrl()
+    return effect {
+      try pushUrl(target)
+      return completed
+    }
+  },
 })
 
 export const FetchPeople = Command.define('FetchPeople', {
   args: { searchText: Schema.String },
   messages: [Message.SucceededFetchPeople],
-  execute: ({ searchText }) =>
-    Effect.sleep(SEARCH_LATENCY).pipe(
-      Effect.as(
-        Message.SucceededFetchPeople({
-          query: searchText,
-          people: searchPeople(searchText),
-        }),
-      ),
-    ),
+  execute: (
+    { searchText },
+  ): ReturnType<typeof Message.SucceededFetchPeople>!! => {
+    const completed = Message.SucceededFetchPeople({
+      query: searchText,
+      people: searchPeople(searchText),
+    })
+    return effect {
+      try sleep(SEARCH_LATENCY)
+      return completed
+    }
+  },
 })
 
 // UPDATE
 
 export type UpdateReturn = Update.Return<Model, Message>
 
-export const update = (model: Model, message: Message) =>
+export const update = (model: Model, message: Message): infer _ =>
   Message.match<UpdateReturn>(message, {
     ChangedSearchInput: ({ value }) => ({
       model: modifyFields(model, { searchInput: () => value }),
@@ -188,7 +192,7 @@ export const update = (model: Model, message: Message) =>
  *  route and returns the refetch Command. The parent calls this from its
  *  `ChangedUrl` handler. Contrast a `reflect*` setter, which writes a field the
  *  Submodel owns from an external value, with no derivation and no Command. */
-export const informRouteChanged = (model: Model, route: PeopleRoute) =>
+export const informRouteChanged = (model: Model, route: PeopleRoute): infer _ =>
   update(model, Message.ChangedRoute({ route }))
 
 // VIEW
@@ -197,11 +201,11 @@ const statusText = (results: SearchResults): string =>
   SearchResults.match<string>(results, {
     Loading: () => 'Searching…',
     Loaded: ({ query, people: found }) => {
-      if (String.isEmpty(query)) {
+      if (Str.isEmpty(query)) {
         return 'Click on any person to view their details:'
       }
 
-      const count = Array.length(found)
+      const count = Arr.length(found)
       const noun = count === 1 ? 'result' : 'results'
       return `${count} ${noun} for “${query}”`
     },
@@ -215,13 +219,12 @@ const recentSearchesView = (
     [h.Class('mb-6 text-sm text-gray-600 flex flex-wrap gap-2')],
     [
       h.span([h.Class('font-medium')], ['Recent searches:']),
-      ...Array.map(history, term =>
+      ...Arr.map(history, term =>
         h.keyed('span')(
           term,
           [h.Class('px-2 py-1 bg-gray-200 rounded font-mono text-gray-800')],
           [term],
-        ),
-      ),
+        )),
     ],
   )
 
@@ -308,7 +311,7 @@ export const view = Submodel.defineView<Model, Message>((model, h): Html =>
         ],
       ),
 
-      Array.match(model.searchHistory, {
+      Arr.match(model.searchHistory, {
         onEmpty: () => h.empty,
         onNonEmpty: history => recentSearchesView(history, h),
       }),
@@ -323,9 +326,9 @@ export const view = Submodel.defineView<Model, Message>((model, h): Html =>
         Loaded: ({ people: results }) =>
           h.ul(
             [h.Class('space-y-3')],
-            Array.map(results, person => personListItemView(person, h)),
+            Arr.map(results, person => personListItemView(person, h)),
           ),
       }),
     ],
-  ),
+  )
 )

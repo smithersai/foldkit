@@ -10,7 +10,7 @@ import {
   homeRouter,
   nestedRouter,
   peopleRouter,
-} from './route'
+} from './route.vibe'
 
 const peoplePageWith = (searchInput: string) =>
   People.Model.make({

@@ -2,7 +2,7 @@ import { Array, String } from 'effect'
 import { expect, given, role, scene, text } from 'foldkit/scene'
 import { describe, test } from 'vitest'
 
-import { Model, SearchResults, searchPeople, update, view } from './people'
+import { Model, SearchResults, searchPeople, update, view } from './people.vibe'
 
 const loaded = (searchInput: string) =>
   Model.make({
