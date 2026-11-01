@@ -1,6 +1,6 @@
 import { Update } from 'foldkit';
-import { Message } from './message.js';
-import { Model } from './model.js';
+import { Message } from './message.ts';
+import { Model } from './model.ts';
 export declare const update: (model: Model, message: Message) => Readonly<{
     model: {
         readonly _tag: "LoggedOut";

@@ -1,6 +1,6 @@
 import { Effect, Schema } from 'effect';
 import { Command, Submodel, type Update } from 'foldkit';
-import { Cart, Item } from '../domain/index.js';
+import { Cart, Item } from '../domain/index.ts';
 export declare const Model: Schema.Struct<{
     readonly products: Schema.$Array<Schema.Struct<{
         readonly id: Schema.String;

@@ -7,7 +7,7 @@ export declare const Message: import("foldkit/message").MessageUnion<{
     readonly ClickedCrash: {};
 }>;
 export type Message = typeof Message.Type;
-export { update } from './crashUpdate.js';
+export { update } from './crashUpdate.ts';
 export declare const init: Runtime.ApplicationInit<Model, Message>;
 export declare const view: (_model: Model, h: HtmlBuilder<Message>) => Document;
 export declare const crashView: ({ error }: Runtime.CrashContext<Model, Message>, h: HtmlBuilder<never>) => Document;

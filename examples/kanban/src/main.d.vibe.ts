@@ -4,7 +4,7 @@ import { Message } from './message.vibe';
 import { Model } from './model.vibe';
 import { subscriptions } from './subscription.vibe';
 import { update } from './update.vibe';
-import { view } from './view/index.js';
+import { view } from './view/index.ts';
 export declare const Flags: Schema.Struct<{
     readonly maybeSavedBoard: Schema.Option<Schema.Struct<{
         readonly columns: Schema.$Array<Schema.Struct<{

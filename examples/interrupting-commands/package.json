@@ -13,7 +13,7 @@
     "clsx": "^2.1.1",
     "effect": "4.1.0",
     "foldkit": "workspace:*",
-    "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-22e46b61b67d.tgz"
+    "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-6d17132a0845.tgz"
   },
   "devDependencies": {
     "@foldkit/devtools": "workspace:*",
@@ -24,7 +24,7 @@
     "typescript": "^7.0.2",
     "vite": "^8.3.1",
     "vitest": "^5.0.2",
-    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-77d824d4b61a.tgz",
-    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-6f2666fdf1ab.tgz"
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz",
+    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz"
   }
 }
