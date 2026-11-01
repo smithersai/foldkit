@@ -136,7 +136,7 @@
     "clean": "rimraf dist *.tsbuildinfo",
     "build": "pnpm run clean && vibelang -b tsconfig.build.json && node scripts/brand-dist.mjs",
     "watch": "vibelang -b tsconfig.build.json --watch",
-    "lint": "(pnpm --filter @foldkit/oxlint-plugin build && oxlint src) && eslint --config ../../.vibelang/eslint.config.mjs \"**/*.vibe\" --no-error-on-unmatched-pattern",
+    "lint": "(pnpm --filter @foldkit/oxlint-plugin build && oxlint src) && eslint --config ../../.vibelang/eslint.config.mjs src --no-error-on-unmatched-pattern",
     "typecheck": "vibelang -p tsconfig.json --noEmit",
     "test": "vitest run"
   },
