@@ -162,6 +162,32 @@ export const stripQuery = (id: string): string => {
   return pathWithoutQuery ?? id
 }
 
+// NOTE: a query another loader owns requests the file as text or as an asset
+// (`?raw`, `?url`, `?worker`, the website's `?highlighted`), so the code Vite
+// hands this transform is not the module's code and must not be branded: it
+// stays with its loader. Module requests carrying Vite's cache and import
+// markers (`?v=`, `?t=`, `?import`) keep their view identity.
+const ASSET_QUERY_KEYS: ReadonlySet<string> = new Set([
+  'raw',
+  'highlighted',
+  'url',
+  'inline',
+  'no-inline',
+  'worker',
+  'sharedworker',
+  'init',
+])
+
+export const hasAssetQuery = (id: string): boolean => {
+  const queryStart = id.indexOf('?')
+  if (queryStart === -1) {
+    return false
+  }
+  return Array.from(new URLSearchParams(id.slice(queryStart + 1)).keys()).some(
+    key => ASSET_QUERY_KEYS.has(key),
+  )
+}
+
 export const toPosixPath = (filePath: string): string =>
   filePath.split(sep).join('/')
 
@@ -199,7 +225,7 @@ const isEligibleModuleId = (
   id: string,
   isFoldkitCoreResolved: boolean,
 ): boolean => {
-  if (id.startsWith(VIRTUAL_MODULE_PREFIX)) {
+  if (id.startsWith(VIRTUAL_MODULE_PREFIX) || hasAssetQuery(id)) {
     return false
   }
   const strippedId = stripQuery(id)

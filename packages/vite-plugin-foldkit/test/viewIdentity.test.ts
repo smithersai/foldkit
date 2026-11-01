@@ -270,6 +270,33 @@ describe('eligibility', () => {
     expect(result.code).toContain(`"src/View.ts#view"`)
   })
 
+  it('leaves a text or asset request of a module to its loader', () => {
+    for (const query of [
+      '?raw',
+      '?highlighted',
+      '?url',
+      '?worker',
+      '?raw&import',
+    ]) {
+      expect(
+        transformViewIdentity(
+          FUNCTION_SOURCE,
+          `/app/src/View.ts${query}`,
+          ROOT,
+        ),
+      ).toBeNull()
+      expect(
+        transformViewIdentity(
+          FUNCTION_SOURCE,
+          `/app/src/View.vibe${query}`,
+          ROOT,
+        ),
+      ).toBeNull()
+    }
+    const result = requireTransform(FUNCTION_SOURCE, '/app/src/View.ts?import')
+    expect(result.code).toContain(`"src/View.ts#view"`)
+  })
+
   it('skips only whole node_modules path segments', () => {
     expect(
       transformViewIdentity(

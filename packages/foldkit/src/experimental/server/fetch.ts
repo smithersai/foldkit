@@ -1,4 +1,6 @@
-import { type EntryResult, toResponse } from './entry.ts'
+import { Predicate } from 'effect'
+
+import { type EntryResult, toResponse } from './entry.js'
 import {
   HOST_METHOD_ANSWERS,
   acceptsHtml,
@@ -7,41 +9,39 @@ import {
   resolvesToIndexHtml,
   varyWith,
   varyWithAccept,
-} from './host.ts'
-import type { RenderedApplication } from './server.ts'
-import type { InjectIntoTemplateOptions } from './template.ts'
-import { invariant } from '../../invariant.ts'
+} from './host.js'
+import type { RenderedApplication } from './server.js'
+import type { InjectIntoTemplateOptions } from './template.js'
 
 /** How {@link handleRequest} renders a page request.
  *
  * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
  */
-export type HandleRequestOptions =
-  & Readonly<{
-    /**
-     * The application's server entry. One Web `Request` in, one delivery
-     * result out.
-     */
-    renderPage: (request: Request) => Promise<EntryResult>
-  }>
-  & (
+export type HandleRequestOptions = Readonly<{
+  /**
+   * The application's server entry. One Web `Request` in, one delivery
+   * result out.
+   */
+  renderPage: (request: Request) => Promise<EntryResult>
+}> &
+  (
     | Readonly<{
-      /** Produces the complete HTML document for a rendered application. */
-      renderDocument: (application: RenderedApplication) => string
-      template?: never
-      containerId?: never
-    }>
+        /** Produces the complete HTML document for a rendered application. */
+        renderDocument: (application: RenderedApplication) => string
+        template?: never
+        containerId?: never
+      }>
     | Readonly<{
-      /** The unfilled HTML shell owned by a custom host. */
-      template: string
-      /** The empty container replaced by the application. Defaults to `'root'`. */
-      containerId?: string
-      renderDocument?: never
-    }>
+        /** The unfilled HTML shell owned by a custom host. */
+        template: string
+        /** The empty container replaced by the application. Defaults to `'root'`. */
+        containerId?: string
+        renderDocument?: never
+      }>
   )
 
 const withNegotiatedVary = (response: Response): Response => {
-  const headers = new globalThis.Headers(response.headers)
+  const headers = new Headers(response.headers)
   headers.set(
     'vary',
     varyWith(
@@ -49,7 +49,7 @@ const withNegotiatedVary = (response: Response): Response => {
       'Sec-Fetch-Dest',
     ),
   )
-  return new globalThis.Response(response.body, {
+  return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,
     headers,
@@ -58,9 +58,9 @@ const withNegotiatedVary = (response: Response): Response => {
 
 const emptyResponse = (status: number, headers?: HeadersInit): Response => {
   if (headers === undefined) {
-    return new globalThis.Response(null, { status })
+    return new Response(null, { status })
   }
-  return new globalThis.Response(null, { status, headers })
+  return new Response(null, { status, headers })
 }
 
 const injectOptions = (
@@ -78,7 +78,7 @@ const documentFrom = (
   } else if (Predicate.isString(template) && renderDocument === undefined) {
     return template
   } else {
-    invariant(
+    throw new Error(
       '[foldkit] handleRequest requires exactly one document source: a renderDocument function or an HTML template string.',
     )
   }
