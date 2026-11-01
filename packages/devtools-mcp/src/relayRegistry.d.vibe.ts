@@ -1,7 +1,7 @@
 import { Effect, FileSystem, HashSet, Path, Ref } from 'effect';
 import type { ChildProcessSpawner } from 'effect/process';
 import { RelayRecord } from 'foldkit/devtools-protocol';
-import { type RelayRegistryTrust } from './relayRegistryTrust.js';
+import { type RelayRegistryTrust } from './relayRegistryTrust.vibe';
 export type RelayRegistryServices = FileSystem.FileSystem | Path.Path;
 export type RelayRegistryReader = Readonly<{
     trust: RelayRegistryTrust;
