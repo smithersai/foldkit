@@ -16,7 +16,7 @@ overrides:
 
 patchedDependencies:
   effect-oxlint@0.3.4: 5ae1feddd491062272373f775b503eba796f277697b34a9a65faf2f92dd72e20
-  knip@6.38.0: 59a2cb72475b6b1f14d44c990f0ffb0acd538a79a613be5fdca45a47ea39dc98
+  knip@6.38.0: e6383dad5c49dd2ad320b00e2b5a52e0932217aea0fc51a725af6a2e559bc2fe
 
 importers:
 
@@ -54,7 +54,7 @@ importers:
         version: link:packages/foldkit
       knip:
         specifier: ^6.38.0
-        version: 6.38.0(patch_hash=59a2cb72475b6b1f14d44c990f0ffb0acd538a79a613be5fdca45a47ea39dc98)
+        version: 6.38.0(patch_hash=e6383dad5c49dd2ad320b00e2b5a52e0932217aea0fc51a725af6a2e559bc2fe)
       madge:
         specifier: ^8.0.0
         version: 8.0.0(@typescript/typescript6@6.0.2)
@@ -9988,7 +9988,7 @@ snapshots:
     dependencies:
       '@keyv/serialize': 1.1.1
 
-  knip@6.38.0(patch_hash=59a2cb72475b6b1f14d44c990f0ffb0acd538a79a613be5fdca45a47ea39dc98):
+  knip@6.38.0(patch_hash=e6383dad5c49dd2ad320b00e2b5a52e0932217aea0fc51a725af6a2e559bc2fe):
     dependencies:
       fdir: 6.5.0(picomatch@4.0.7)
       formatly: 0.7.1

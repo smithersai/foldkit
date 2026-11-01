@@ -29,3 +29,16 @@ sidecars. Run it with `node --test scripts/knip-native-source-map.test.mjs`.
 The package Knip check also detects a genuinely unused native rule when
 its product import is removed. Refresh with `pnpm patch knip@6.38.0` and
 `pnpm patch-commit`; keep the regression passing.
+
+A type-only relative `.js` re-export must also find its sibling `.vibe`
+source when the native compiler is registered. The resolver patch adds
+that fallback after ordinary JavaScript, TypeScript, JSX and declaration
+files, and leaves unregistered resolution unchanged. The UI compiler
+base configuration (`packages/ui/tsconfig.base.json`) prefers ordinary
+source before native declaration sidecars. Both the build and TypeDoc
+configurations inherit it and retain the original public spelling.
+
+`scripts/knip-native-reexport.test.mjs` covers the unchanged Foldkit
+re-export, its raw declaration, the real Knip CLI and 1,000 generated
+resolver cases with nested Unicode paths, ordinary alternatives and
+compiler registration controls.

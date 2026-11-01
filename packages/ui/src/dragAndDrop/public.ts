@@ -15,7 +15,7 @@ export {
   OutMessage,
   FocusItem,
   ResolveKeyboardMove,
-} from './index.js'
+} from './index.vibe'
 
 export * as test from './test.js'
 
