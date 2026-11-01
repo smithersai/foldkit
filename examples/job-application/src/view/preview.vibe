@@ -1,9 +1,9 @@
-import { Array, Equal, Option, Order, Record, String, pipe } from 'effect'
+import { Array as Arr, String as Str, pipe } from 'effect'
 import { type Html, inertHtml as ih } from 'foldkit/html'
 
 import type { Model } from '../model.vibe'
-import type { Education, Skills, WorkHistory } from '../step'
-import { employmentRange } from './format'
+import type { Education, Skills, WorkHistory } from '../step/index.ts'
+import { employmentRange } from './format.vibe'
 
 const COVER_LETTER_PREVIEW_MAX_CHARS = 200
 
@@ -27,21 +27,21 @@ const headerSection = (
   phone: string,
   portfolio: string,
 ): Html => {
-  const contacts = Array.filter([email, phone, portfolio], String.isNonEmpty)
+  const contacts = Arr.filter([email, phone, portfolio], Str.isNonEmpty)
   return ih.div(
     [ih.Class('text-center mb-4 pb-4 border-b border-gray-200')],
     [
       ih.h2([ih.Class('text-xl font-bold text-gray-900')], [fullName]),
-      ...(String.isNonEmpty(pronounLabel)
+      ...(Str.isNonEmpty(pronounLabel)
         ? [ih.p([ih.Class('text-xs text-gray-500 italic')], [pronounLabel])]
         : []),
-      ...(Array.isReadonlyArrayNonEmpty(contacts)
+      ...(Arr.isReadonlyArrayNonEmpty(contacts)
         ? [
-            ih.p(
-              [ih.Class('text-xs text-gray-500 mt-1 break-words')],
-              [contacts.join(' · ')],
-            ),
-          ]
+          ih.p(
+            [ih.Class('text-xs text-gray-500 mt-1 break-words')],
+            [contacts.join(' · ')],
+          ),
+        ]
         : []),
     ],
   )
@@ -52,20 +52,20 @@ const workEntryView = (entry: WorkHistory.Entry.Model): Html =>
     `work-${entry.id}`,
     [ih.Class('mb-3')],
     [
-      ...(String.isNonEmpty(entry.title.value)
+      ...(Str.isNonEmpty(entry.title.value)
         ? [
-            ih.strong(
-              [ih.Class('block text-sm text-gray-900')],
-              [entry.title.value],
-            ),
-          ]
+          ih.strong(
+            [ih.Class('block text-sm text-gray-900')],
+            [entry.title.value],
+          ),
+        ]
         : []),
-      ...(String.isNonEmpty(entry.company.value)
+      ...(Str.isNonEmpty(entry.company.value)
         ? [ih.p([ih.Class('text-xs text-gray-600')], [entry.company.value])]
         : []),
-      ...Option.match(entry.maybeStartDate, {
-        onNone: () => [],
-        onSome: start => [
+      ...match (entry.maybeStartDate) {
+        when Option.None: [];
+        when Option.Some(let start): [
           ih.p(
             [ih.Class('text-xs text-gray-400 mt-0.5')],
             [
@@ -76,9 +76,9 @@ const workEntryView = (entry: WorkHistory.Entry.Model): Html =>
               ),
             ],
           ),
-        ],
-      }),
-      ...(String.isNonEmpty(entry.description)
+        ];
+      },
+      ...(Str.isNonEmpty(entry.description)
         ? [ih.p([ih.Class('text-xs text-gray-600 mt-1')], [entry.description])]
         : []),
     ],
@@ -89,11 +89,11 @@ const experienceSection = (workHistory: WorkHistory.Model): Html =>
     [ih.Class('mb-4')],
     [
       sectionHeading('Experience'),
-      ...Array.filter(
+      ...Arr.filter(
         workHistory.entries,
         entry =>
-          String.isNonEmpty(entry.company.value) ||
-          String.isNonEmpty(entry.title.value),
+          Str.isNonEmpty(entry.company.value)
+          || Str.isNonEmpty(entry.title.value),
       ).map(entry => workEntryView(entry)),
     ],
   )
@@ -106,30 +106,30 @@ const educationTimelineLine = (
       ih.p([ih.Class('text-xs text-gray-400 mt-0.5')], ['Currently enrolled']),
     ]
   }
-  return Option.match(entry.maybeGraduationYear, {
-    onNone: () => [],
-    onSome: graduationYear => [
+  return (match (entry.maybeGraduationYear) {
+    when Option.None: [];
+    when Option.Some(let graduationYear): [
       ih.p(
         [ih.Class('text-xs text-gray-400 mt-0.5')],
         [`Class of ${graduationYear}`],
       ),
-    ],
+    ];
   })
 }
 
 const educationEntryView = (entry: Education.Entry.Model): Html => {
-  const degreeLine = Array.filter(
+  const degreeLine = Arr.filter(
     [entry.degree.value, entry.fieldOfStudy.value],
-    String.isNonEmpty,
+    Str.isNonEmpty,
   ).join(', ')
   return ih.keyed('div')(
     `education-${entry.id}`,
     [ih.Class('mb-3')],
     [
-      ...(String.isNonEmpty(degreeLine)
+      ...(Str.isNonEmpty(degreeLine)
         ? [ih.strong([ih.Class('block text-sm text-gray-900')], [degreeLine])]
         : []),
-      ...(String.isNonEmpty(entry.school.value)
+      ...(Str.isNonEmpty(entry.school.value)
         ? [ih.p([ih.Class('text-xs text-gray-600')], [entry.school.value])]
         : []),
       ...educationTimelineLine(entry),
@@ -142,9 +142,10 @@ const educationSection = (education: Education.Model): Html =>
     [ih.Class('mb-4')],
     [
       sectionHeading('Education'),
-      ...Array.filter(education.entries, entry =>
-        String.isNonEmpty(entry.school.value),
-      ).map(entry => educationEntryView(entry)),
+      ...Arr.filter(education.entries, entry =>
+        Str.isNonEmpty(entry.school.value)).map(entry =>
+          educationEntryView(entry)
+        ),
     ],
   )
 
@@ -157,7 +158,7 @@ const PROFICIENCY_ORDER = ['Expert', 'Advanced', 'Intermediate', 'Beginner']
 const proficiencyRank = (level: string): number =>
   pipe(
     PROFICIENCY_ORDER,
-    Array.findFirstIndex(Equal.equals(level)),
+    Arr.findFirstIndex(Equal.equals(level)),
     Option.getOrElse(() => PROFICIENCY_ORDER.length),
   )
 
@@ -171,13 +172,13 @@ const groupSkillsByProficiency = (
 ): SkillsByProficiency =>
   pipe(
     entries,
-    Array.filter(entry => String.isNonEmpty(entry.name.value)),
-    Array.groupBy<Skills.Entry.Model, string>(entry => entry.proficiency),
+    Arr.filter(entry => Str.isNonEmpty(entry.name.value)),
+    Arr.groupBy<Skills.Entry.Model, string>(entry => entry.proficiency),
     Record.toEntries,
-    Array.sort(proficiencyOrder),
-    Array.map(([level, grouped]) => ({
+    Arr.sort(proficiencyOrder),
+    Arr.map(([level, grouped]) => ({
       level,
-      names: Array.map(grouped, entry => entry.name.value),
+      names: Arr.map(grouped, entry => entry.name.value),
     })),
   )
 
@@ -227,27 +228,28 @@ export const preview = ({
   skills,
   coverLetter,
 }: Model): Html => {
-  const fullName =
-    String.isNonEmpty(firstName) || String.isNonEmpty(lastName)
-      ? `${firstName} ${lastName}`.trim()
-      : 'Your Name'
+  const fullName = Str.isNonEmpty(firstName) || Str.isNonEmpty(lastName)
+    ? `${firstName} ${lastName}`.trim()
+    : 'Your Name'
 
-  const pronounLabel = Option.match(maybeSelectedPronoun, {
-    onNone: () => '',
-    onSome: value => (value === 'Other' ? customPronouns : value),
-  })
+  const pronounLabel = match (maybeSelectedPronoun) {
+    when Option.None: ('');
+    when Option.Some(let value): (value === 'Other' ? customPronouns : value);
+  }
 
-  const hasExperience = Array.some(
+  const hasExperience = Arr.some(
     workHistory.entries,
     entry =>
-      String.isNonEmpty(entry.company.value) ||
-      String.isNonEmpty(entry.title.value),
+      Str.isNonEmpty(entry.company.value)
+      || Str.isNonEmpty(entry.title.value),
   )
-  const hasEducation = Array.some(education.entries, entry =>
-    String.isNonEmpty(entry.school.value),
+  const hasEducation = Arr.some(
+    education.entries,
+    entry => Str.isNonEmpty(entry.school.value),
   )
-  const hasSkills = Array.some(skills.entries, entry =>
-    String.isNonEmpty(entry.name.value),
+  const hasSkills = Arr.some(
+    skills.entries,
+    entry => Str.isNonEmpty(entry.name.value),
   )
 
   return ih.div(
@@ -257,7 +259,7 @@ export const preview = ({
       ...(hasExperience ? [experienceSection(workHistory)] : []),
       ...(hasEducation ? [educationSection(education)] : []),
       ...(hasSkills ? [skillsSection(skills)] : []),
-      ...(String.isNonEmpty(coverLetter.content)
+      ...(Str.isNonEmpty(coverLetter.content)
         ? [coverLetterSection(coverLetter.content)]
         : []),
     ],

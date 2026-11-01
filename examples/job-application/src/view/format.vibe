@@ -1,4 +1,3 @@
-import { Option } from 'effect'
 import { type CalendarDate } from 'foldkit/calendar'
 
 const MONTH_NAMES = [
@@ -22,7 +21,9 @@ export const yearMonth = (date: CalendarDate): string =>
 
 /** Formats a CalendarDate as `2026-04-16` (zero-padded ISO-style). */
 export const fullDate = (date: CalendarDate): string =>
-  `${date.year}-${String(date.month).padStart(2, '0')}-${String(date.day).padStart(2, '0')}`
+  `${date.year}-${String(date.month).padStart(2, '0')}-${
+    String(date.day).padStart(2, '0')
+  }`
 
 /** Formats a work-history date range for display. When the user is
  *  currently employed, shows `start – Present`. When they have an end date,
@@ -30,15 +31,15 @@ export const fullDate = (date: CalendarDate): string =>
 export const employmentRange = (
   start: CalendarDate,
   isCurrentlyEmployed: boolean,
-  maybeEnd: Option.Option<CalendarDate>,
+  maybeEnd: Option<CalendarDate>,
 ): string => {
   const startText = yearMonth(start)
   if (isCurrentlyEmployed) {
     return `${startText} \u2013 Present`
   }
-  return Option.match(maybeEnd, {
-    onNone: () => startText,
-    onSome: end => `${startText} \u2013 ${yearMonth(end)}`,
+  return (match (maybeEnd) {
+    when Option.None: startText;
+    when Option.Some(let end): (`${startText} \u2013 ${yearMonth(end)}`);
   })
 }
 

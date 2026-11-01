@@ -1,14 +1,14 @@
-import { Array, Option, pipe } from 'effect'
+import { Array as Arr, pipe } from 'effect'
 import { File } from 'foldkit'
 import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { Button } from '@foldkit/ui'
 
-import { Step } from '../domain'
+import { Step } from '../domain/index.ts'
 import { Message } from '../message.vibe'
 import { type Model, Submission } from '../model.vibe'
-import { Education, PersonalInfo, Skills, WorkHistory } from '../step'
-import { employmentRange, pluralize } from './format'
+import { Education, PersonalInfo, Skills, WorkHistory } from '../step/index.ts'
+import { employmentRange, pluralize } from './format.vibe'
 
 const reviewSection = (
   title: string,
@@ -30,12 +30,12 @@ const fieldRow = (
 ): Html =>
   value
     ? h.div(
-        [h.Class('flex justify-between py-1')],
-        [
-          h.span([h.Class('text-sm text-gray-500')], [label]),
-          h.span([h.Class('text-sm text-gray-900')], [value]),
-        ],
-      )
+      [h.Class('flex justify-between py-1')],
+      [
+        h.span([h.Class('text-sm text-gray-500')], [label]),
+        h.span([h.Class('text-sm text-gray-900')], [value]),
+      ],
+    )
     : h.empty
 
 const personalInfoSection = (
@@ -50,7 +50,8 @@ const personalInfoSection = (
       [
         fieldRow(
           'Name',
-          `${personalInfo.firstName.value} ${personalInfo.lastName.value}`.trim(),
+          `${personalInfo.firstName.value} ${personalInfo.lastName.value}`
+            .trim(),
           h,
         ),
         fieldRow('Email', personalInfo.email.value, h),
@@ -75,9 +76,9 @@ const workEntryReview = (
     [h.Class('py-1')],
     [
       h.strong([h.Class('text-sm text-gray-900')], [title]),
-      ...Option.match(entry.maybeStartDate, {
-        onNone: () => [],
-        onSome: start => [
+      ...match (entry.maybeStartDate) {
+        when Option.None: [];
+        when Option.Some(let start): [
           h.p(
             [h.Class('text-xs text-gray-500')],
             [
@@ -88,8 +89,8 @@ const workEntryReview = (
               ),
             ],
           ),
-        ],
-      }),
+        ];
+      },
     ],
   )
 }
@@ -99,7 +100,9 @@ const workHistorySection = (
   h: HtmlBuilder<Message>,
 ): Html =>
   reviewSection(
-    `Work History (${pluralize(workHistory.entries.length, 'position', 'positions')})`,
+    `Work History (${
+      pluralize(workHistory.entries.length, 'position', 'positions')
+    })`,
     h.div(
       [h.Class('space-y-2')],
       workHistory.entries.map(entry => workEntryReview(entry, h)),
@@ -111,9 +114,9 @@ const educationTimeline = (entry: Education.Entry.Model): string => {
   if (entry.isCurrentlyEnrolled) {
     return ' (Currently enrolled)'
   }
-  return Option.match(entry.maybeGraduationYear, {
-    onNone: () => '',
-    onSome: graduationYear => ` – ${graduationYear}`,
+  return (match (entry.maybeGraduationYear) {
+    when Option.None: ('');
+    when Option.Some(let graduationYear): (` – ${graduationYear}`);
   })
 }
 
@@ -170,7 +173,7 @@ const skillsSection = (
               ),
             ],
             [entry.name.value],
-          ),
+          )
         ),
     ),
     h,
@@ -184,13 +187,13 @@ const coverLetterSection = (
     'Cover Letter',
     coverLetter.content
       ? h.p(
-          [h.Class('text-sm text-gray-700 whitespace-pre-wrap')],
-          [coverLetter.content],
-        )
+        [h.Class('text-sm text-gray-700 whitespace-pre-wrap')],
+        [coverLetter.content],
+      )
       : h.p(
-          [h.Class('text-sm text-gray-400 italic')],
-          ['No cover letter provided'],
-        ),
+        [h.Class('text-sm text-gray-400 italic')],
+        ['No cover letter provided'],
+      ),
     h,
   )
 
@@ -203,21 +206,19 @@ const attachmentsSection = (
     h.div(
       [h.Class('space-y-1')],
       [
-        Option.match(attachments.maybeResume, {
-          onNone: () =>
-            h.p(
-              [h.Class('text-sm text-gray-400 italic')],
-              ['No resume uploaded'],
-            ),
-          onSome: resume =>
-            h.div(
-              [h.Class('flex items-center gap-2')],
-              [
-                h.span([], ['📄']),
-                h.span([h.Class('text-sm text-gray-700')], [File.name(resume)]),
-              ],
-            ),
-        }),
+        match (attachments.maybeResume) {
+          when Option.None: (h.p(
+            [h.Class('text-sm text-gray-400 italic')],
+            ['No resume uploaded'],
+          ));
+          when Option.Some(let resume): (h.div(
+            [h.Class('flex items-center gap-2')],
+            [
+              h.span([], ['📄']),
+              h.span([h.Class('text-sm text-gray-700')], [File.name(resume)]),
+            ],
+          ));
+        },
         ...attachments.additionalFiles.map(file =>
           h.div(
             [h.Class('flex items-center gap-2')],
@@ -225,7 +226,7 @@ const attachmentsSection = (
               h.span([], ['📎']),
               h.span([h.Class('text-sm text-gray-700')], [File.name(file)]),
             ],
-          ),
+          )
         ),
       ],
     ),
@@ -236,10 +237,12 @@ const submitButtonClass =
   'w-full rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-700 transition cursor-pointer'
 
 const blockedNoticeText = (attentionSteps: ReadonlyArray<Step.Step>): string =>
-  Array.match(attentionSteps, {
+  Arr.match(attentionSteps, {
     onEmpty: () => 'Review the required fields before submitting.',
     onNonEmpty: steps =>
-      `Review ${pipe(steps, Array.map(Step.show), Array.join(', '))} before submitting.`,
+      `Review ${
+        pipe(steps, Arr.map(Step.show), Arr.join(', '))
+      } before submitting.`,
   })
 
 const blockedNotice = (
@@ -354,17 +357,16 @@ export const review = (
   attentionSteps: ReadonlyArray<Step.Step>,
   h: HtmlBuilder<Message>,
 ): Html => {
-  const pronounLabel = Option.match(model.personalInfo.maybeSelectedPronoun, {
-    onNone: () => '',
-    onSome: value =>
-      value === 'Other' ? model.personalInfo.customPronouns : value,
-  })
+  const pronounLabel = match (model.personalInfo.maybeSelectedPronoun) {
+    when Option.None: ('');
+    when Option.Some(let value):
+      (value === 'Other' ? model.personalInfo.customPronouns : value);
+  }
 
-  const isApplicationComplete =
-    PersonalInfo.isComplete(model.personalInfo) &&
-    WorkHistory.isComplete(model.workHistory) &&
-    Education.isComplete(model.education) &&
-    Skills.isComplete(model.skills)
+  const isApplicationComplete = PersonalInfo.isComplete(model.personalInfo)
+    && WorkHistory.isComplete(model.workHistory)
+    && Education.isComplete(model.education)
+    && Skills.isComplete(model.skills)
 
   return h.div(
     [h.Class('space-y-4')],

@@ -15,8 +15,8 @@ import {
   Skills,
   WorkHistory,
 } from '../step/index.ts'
-import { preview } from './preview.ts'
-import { review } from './review.ts'
+import { preview } from './preview.vibe'
+import { review } from './review.vibe'
 import { stepMenu, stepTabButton } from './stepNav.vibe'
 
 const StepTabs = Tabs.create<Step.Step>()
