@@ -2394,6 +2394,9 @@ importers:
 
   packages/ui:
     dependencies:
+      '@effect/platform-browser':
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)
       '@floating-ui/dom':
         specifier: ^1.8.0
         version: 1.8.0

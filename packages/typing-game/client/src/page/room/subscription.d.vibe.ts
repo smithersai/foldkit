@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import { Subscription } from 'foldkit';
 import { RoomsClient } from '../../rpc.vibe';
 export declare const subscriptions: {

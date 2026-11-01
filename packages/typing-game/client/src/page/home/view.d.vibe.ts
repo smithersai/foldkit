@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import { Submodel } from 'foldkit';
 export declare const view: Submodel.View<{
     readonly homeStep: {

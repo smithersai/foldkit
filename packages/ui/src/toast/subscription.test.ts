@@ -5,7 +5,7 @@ import { expect, vi } from 'vitest'
 import { describe, it } from '@effect/vitest'
 
 import * as Animation from '../animation/index.vibe'
-import { Message, SwipeState, make } from './index.js'
+import { Message, SwipeState, make } from './index.vibe'
 
 const TestPayload = Schema.Struct({ body: Schema.String })
 const Toast = make(TestPayload)

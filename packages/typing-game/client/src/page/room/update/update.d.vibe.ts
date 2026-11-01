@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import { AsyncData, type Update } from 'foldkit';
 import * as Shared from '@typing-game/shared';
 import { RoomsClient } from '../../../rpc.vibe';

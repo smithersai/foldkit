@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 export declare const HomeAction: Schema.Literals<readonly ["CreateRoom", "JoinRoom", "ChangeUsername"]>;
 export type HomeAction = typeof HomeAction.Type;
 export declare const HOME_ACTIONS: ReadonlyArray<HomeAction>;

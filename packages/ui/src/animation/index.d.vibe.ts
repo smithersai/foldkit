@@ -1,7 +1,7 @@
 import type { ChildAttribute, Html, TagName } from 'foldkit/html';
-import { Message, Model, OutMessage, TransitionState, init } from './schema.js';
-import { WaitForAnimationSettled, WaitForPaint, defaultLeaveCommand, hide, show, toggle, update } from './update.js';
-export type { Hid, InitConfig, Showed } from './schema.js';
+import { Message, Model, OutMessage, TransitionState, init } from './schema.vibe';
+import { WaitForAnimationSettled, WaitForPaint, defaultLeaveCommand, hide, show, toggle, update } from './update.vibe';
+export type { Hid, InitConfig, Showed } from './schema.vibe';
 export { init, Message, Model, OutMessage, TransitionState };
 export { WaitForAnimationSettled, WaitForPaint, defaultLeaveCommand, hide, show, toggle, update, };
 /** Per-render view inputs passed to `view` via `h.submodel`'s `viewInputs` field. */

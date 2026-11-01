@@ -19,7 +19,7 @@ import { modifyFields } from 'foldkit/struct'
 import * as Subscription from 'foldkit/subscription'
 import * as Update from 'foldkit/update'
 
-import { documentDragStyles } from '../internal/documentDragStyles.js'
+import { documentDragStyles } from '../internal/documentDragStyles.vibe'
 import { attributeSelector } from '../internal/selectors.js'
 
 // MODEL

@@ -1,6 +1,6 @@
-import { Effect, Option, SubscriptionRef } from "effect";
-import { SecureRandom } from "effect/crypto";
-import { Rpc } from "effect/rpc";
+import { Effect, Option, SubscriptionRef } from 'effect';
+import { SecureRandom } from 'effect/crypto';
+import { Rpc } from 'effect/rpc';
 import * as Shared from '@typing-game/shared';
 export declare const createRoom: (roomByIdRef: SubscriptionRef.SubscriptionRef<Shared.RoomById>) => (payload: Rpc.Payload<typeof Shared.createRoomRpc>) => Effect.Effect<{
     player: {

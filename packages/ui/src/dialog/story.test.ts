@@ -29,7 +29,7 @@ import {
   titleId,
   update,
   view,
-} from './index.js'
+} from './index.vibe'
 
 const acknowledgeAcquireResources = Scene.Mount.resolve(
   AcquireResources,

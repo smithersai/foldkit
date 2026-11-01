@@ -1,7 +1,13 @@
 import type { ChildAttribute, Html, TagName } from 'foldkit/html'
 import { defineView } from 'foldkit/submodel'
 
-import { Message, Model, OutMessage, TransitionState, init } from './schema.ts'
+import {
+  Message,
+  Model,
+  OutMessage,
+  TransitionState,
+  init,
+} from './schema.vibe'
 import {
   WaitForAnimationSettled,
   WaitForPaint,
@@ -10,9 +16,9 @@ import {
   show,
   toggle,
   update,
-} from './update.ts'
+} from './update.vibe'
 
-export type { Hid, InitConfig, Showed } from './schema.ts'
+export type { Hid, InitConfig, Showed } from './schema.vibe'
 export { init, Message, Model, OutMessage, TransitionState }
 
 export {

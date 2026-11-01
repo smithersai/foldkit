@@ -5,7 +5,7 @@ import { modifyFields } from 'foldkit/struct'
 import { defineView } from 'foldkit/submodel'
 import * as Update from 'foldkit/update'
 
-import { Message, OutMessage } from './message.ts'
+import { Message, OutMessage } from './message.vibe'
 
 // MODEL
 

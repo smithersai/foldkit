@@ -1,5 +1,5 @@
-import { Effect, HashMap, SubscriptionRef } from "effect";
-import { Rpc } from "effect/rpc";
+import { Effect, HashMap, SubscriptionRef } from 'effect';
+import { Rpc } from 'effect/rpc';
 import { SecureRandom } from 'effect/crypto/SecureRandom';
 import * as Shared from '@typing-game/shared';
 type ProgressByGamePlayer = HashMap.HashMap<Shared.GamePlayer, Shared.PlayerProgress>;

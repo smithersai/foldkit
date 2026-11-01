@@ -1,4 +1,4 @@
-import { Effect, Option, Schema } from "effect";
+import { Effect, Option, Schema } from 'effect';
 import { Command } from 'foldkit';
 import { RoomsClient } from '../../rpc.vibe';
 export declare const FetchRoom: Command.CommandDefinitionWithArgs<"FetchRoom", {

@@ -23,9 +23,9 @@ import {
   ScrollIntoView,
   UnlockScroll,
   buttonId,
-} from './shared.js'
-import { create, init, update } from './single.js'
-import type { Model, ViewInputs } from './single.js'
+} from './shared.vibe'
+import { create, init, update } from './single.vibe'
+import type { Model, ViewInputs } from './single.vibe'
 
 const TestListbox = create<string>()
 const view = TestListbox.view

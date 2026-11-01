@@ -13,7 +13,7 @@ import {
   WaitForSwipeSettled,
   make,
   test as toastTest,
-} from './index.js'
+} from './index.vibe'
 
 const TestPayload = Schema.Struct({ body: Schema.String })
 type TestPayload = typeof TestPayload.Type

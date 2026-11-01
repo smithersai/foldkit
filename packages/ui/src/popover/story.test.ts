@@ -17,7 +17,7 @@ import {
   UnlockScroll,
   init,
   update,
-} from './index.js'
+} from './index.vibe'
 
 const animationEndMessage = (generation: number) =>
   Message.GotAnimationMessage({

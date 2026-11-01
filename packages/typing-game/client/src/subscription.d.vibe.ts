@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import { Subscription } from 'foldkit';
 export declare const subscriptions: {
     readonly homeKeyboard: Subscription.Subscription<{

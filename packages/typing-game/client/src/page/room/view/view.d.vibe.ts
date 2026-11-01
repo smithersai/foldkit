@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import { AsyncData, Submodel } from 'foldkit';
 export type ViewInputs = Readonly<{
     roomId: string;

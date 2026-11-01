@@ -1,4 +1,4 @@
-export { Message, OutMessage } from './message.js'
+export { Message, OutMessage } from './message.vibe'
 export type {
   BlurredPanel,
   BlurredTrigger,
@@ -13,5 +13,5 @@ export type {
   LeftTrigger,
   Opened,
   PressedEscape,
-} from './message.js'
+} from './message.vibe'
 export * from './hoverIntent.vibe'

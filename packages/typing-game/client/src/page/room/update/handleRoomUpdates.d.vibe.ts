@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import * as Shared from '@typing-game/shared';
 import { Model } from '../model.vibe';
 import type { UpdateReturn } from './update.vibe';

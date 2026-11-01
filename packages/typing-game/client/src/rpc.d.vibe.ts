@@ -1,5 +1,5 @@
-import { Context, Layer } from "effect";
-import { RpcClient, RpcClientError } from "effect/rpc";
+import { Context, Layer } from 'effect';
+import { RpcClient, RpcClientError } from 'effect/rpc';
 import { RoomRpcs } from '@typing-game/shared';
 type RoomsRpcClient = RpcClient.FromGroup<typeof RoomRpcs, RpcClientError.RpcClientError>;
 declare const RoomsClient_base: Context.ServiceClass<RoomsClient, "RoomsClient", {

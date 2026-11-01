@@ -22,9 +22,9 @@ import {
   ScrollIntoView,
   UnlockScroll,
   inputId,
-} from './shared.js'
-import { create, init, update } from './single.js'
-import type { Model, ViewInputs } from './single.js'
+} from './shared.vibe'
+import { create, init, update } from './single.vibe'
+import type { Model, ViewInputs } from './single.vibe'
 
 const TestCombobox = create<string>()
 const view = TestCombobox.view

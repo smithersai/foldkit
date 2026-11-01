@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 export declare const Model: Schema.Struct<{
     readonly route: import("foldkit/route").RouteUnion<{
         readonly Home: {};

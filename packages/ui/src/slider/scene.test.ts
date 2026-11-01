@@ -4,8 +4,8 @@ import * as Scene from 'foldkit/scene'
 
 import { describe, it } from '@effect/vitest'
 
-import type { SliderAttributes } from './index.js'
-import { Message, init, update, view } from './index.js'
+import type { SliderAttributes } from './index.vibe'
+import { Message, init, update, view } from './index.vibe'
 
 const testToView = (attributes: SliderAttributes) =>
   ih.div(

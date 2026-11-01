@@ -2,7 +2,7 @@ import { Duration, Effect, Option, Schema } from 'effect';
 import * as Command from 'foldkit/command';
 import { type ChildAttribute, type Html } from 'foldkit/html';
 import * as Update from 'foldkit/update';
-import { Message, OutMessage } from './message.js';
+import { Message, OutMessage } from './message.vibe';
 /** Schema for HoverIntent state. It tracks pointer and focus engagement over a trigger and its panel, visibility, delay timers, and Escape dismissal. */
 export declare const Model: Schema.Struct<{
     readonly isOpen: Schema.Boolean;

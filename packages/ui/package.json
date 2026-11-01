@@ -145,6 +145,7 @@
     "foldkit": ">=0.167.0"
   },
   "dependencies": {
+    "@effect/platform-browser": "4.1.0",
     "@floating-ui/dom": "^1.8.0",
     "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-22e46b61b67d.tgz"
   },

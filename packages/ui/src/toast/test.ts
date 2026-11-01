@@ -1,8 +1,8 @@
 import * as Story from 'foldkit/story'
 
 import * as Animation from '../animation/index.vibe'
-import { Message } from './schema.js'
-import { WaitBeforeDismissal } from './update.js'
+import { Message } from './schema.vibe'
+import { WaitBeforeDismissal } from './update.vibe'
 
 /** Input for {@link drainEntry}. `entryId` selects the entry whose lifecycle
  *  to drain. `version` is the auto-dismiss timer version echoed back by

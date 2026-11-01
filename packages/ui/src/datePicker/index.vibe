@@ -8,9 +8,9 @@ import { type Reflect, defineView } from 'foldkit/submodel'
 import * as Update from 'foldkit/update'
 
 import type { AnchorConfig } from '../anchor/index.ts'
-import * as UiCalendar from '../calendar/index.ts'
+import * as UiCalendar from '../calendar/index.vibe'
 import { idSelector } from '../internal/selectors.ts'
-import * as Popover from '../popover/index.ts'
+import * as Popover from '../popover/index.vibe'
 
 // MODEL
 

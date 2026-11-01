@@ -5,8 +5,8 @@ import * as Scene from 'foldkit/scene'
 
 import { describe, it } from '@effect/vitest'
 
-import type { CalendarAttributes } from './index.js'
-import { FocusGrid, Message, init, update, view } from './index.js'
+import type { CalendarAttributes } from './index.vibe'
+import { FocusGrid, Message, init, update, view } from './index.vibe'
 
 const resolveFocusGrid = Scene.Command.resolve(
   FocusGrid,

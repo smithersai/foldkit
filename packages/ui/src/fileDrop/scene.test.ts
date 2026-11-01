@@ -3,8 +3,8 @@ import * as Scene from 'foldkit/scene'
 
 import { describe, it } from '@effect/vitest'
 
-import type { Model, ViewInputs } from './index.js'
-import { Message, init, update, view } from './index.js'
+import type { Model, ViewInputs } from './index.vibe'
+import { Message, init, update, view } from './index.vibe'
 
 const sceneView =
   (overrides: Omit<Partial<ViewInputs>, 'toView'> = {}) =>

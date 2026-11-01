@@ -1,4 +1,4 @@
-import { Stream } from "effect";
+import { Stream } from 'effect';
 import * as Shared from '@typing-game/shared';
 export declare const COUNTDOWN_SECONDS = 3;
 export declare const PLAYING_SECONDS = 30;

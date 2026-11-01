@@ -1,4 +1,4 @@
-import { Option, Schema } from "effect";
+import { Option, Schema } from 'effect';
 import { AsyncData } from 'foldkit';
 export declare const RoomPlayerSession: Schema.Struct<{
     readonly roomId: Schema.String;

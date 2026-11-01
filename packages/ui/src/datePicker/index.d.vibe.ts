@@ -5,7 +5,7 @@ import type { ChildAttribute, Html } from 'foldkit/html';
 import { type Reflect } from 'foldkit/submodel';
 import * as Update from 'foldkit/update';
 import type { AnchorConfig } from '../anchor/index.js';
-import * as UiCalendar from '../calendar/index.js';
+import * as UiCalendar from '../calendar/index.vibe';
 /** Schema for the date picker component's private interaction state. The
  * selected date is owned by the parent and passed in via
  * `ViewInputs.maybeSelectedDate`. This holds the embedded Calendar submodel

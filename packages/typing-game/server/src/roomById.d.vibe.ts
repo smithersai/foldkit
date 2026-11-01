@@ -1,4 +1,4 @@
-import { Effect, Option, SubscriptionRef } from "effect";
+import { Effect, Option, SubscriptionRef } from 'effect';
 import * as Shared from '@typing-game/shared';
 export declare const getById: (roomById: Shared.RoomById, id: string) => Effect.Effect<{
     readonly id: string;

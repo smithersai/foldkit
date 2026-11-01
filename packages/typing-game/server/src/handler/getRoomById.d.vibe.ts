@@ -1,5 +1,5 @@
-import { Effect, SubscriptionRef } from "effect";
-import { Rpc } from "effect/rpc";
+import { Effect, SubscriptionRef } from 'effect';
+import { Rpc } from 'effect/rpc';
 import * as Shared from '@typing-game/shared';
 export declare const getRoomById: (roomByIdRef: SubscriptionRef.SubscriptionRef<Shared.RoomById>) => (payload: Rpc.Payload<typeof Shared.getRoomByIdRpc>) => Effect.Effect<{
     readonly id: string;
