@@ -15,10 +15,10 @@ import {
   clamp,
   fractionOfValue,
   percentageFromFraction,
-} from '../internal/range.ts'
+} from '../internal/range.js'
 import { attributeSelector, idSelector } from '../internal/selectors.ts'
 
-export { fractionOfValue } from '../internal/range.ts'
+export { fractionOfValue } from '../internal/range.js'
 
 // MODEL
 

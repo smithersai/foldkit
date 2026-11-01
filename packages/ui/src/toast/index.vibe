@@ -23,7 +23,7 @@ export type {
 } from './schema.vibe'
 export type { ShowInput } from './update.vibe'
 
-export * as test from './test.ts'
+export * as test from './test.js'
 
 export {
   Message,
