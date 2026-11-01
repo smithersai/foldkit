@@ -16,7 +16,7 @@
   },
   "scripts": {
     "clean": "rimraf dist recommended.json all.json *.tsbuildinfo",
-    "build": "pnpm run clean && rolldown -c rolldown.config.ts && vibelang -b tsconfig.build.json && node scripts/generate-presets.mjs",
+    "build": "pnpm run clean && vibelang -p tsconfig.build.json --emitDeclarationOnly false --declaration false --declarationMap false --composite false --incremental false --rootDir . --outDir dist/native && rolldown -c rolldown.config.ts && vibelang -b tsconfig.build.json && node scripts/generate-presets.mjs",
     "test": "pnpm run typecheck:real-oxlint-fixtures && vitest run",
     "typecheck:real-oxlint-fixtures": "node scripts/typecheck-real-oxlint-fixtures.mjs",
     "typecheck": "vibelang --noEmit"
@@ -61,5 +61,11 @@
   },
   "engines": {
     "node": ">=20.19.0 || >=22.12.0"
+  },
+  "imports": {
+    "#native/rules/*": {
+      "types": "./src/rules/*.vibe",
+      "default": "./dist/native/src/rules/*.js"
+    }
   }
 }
