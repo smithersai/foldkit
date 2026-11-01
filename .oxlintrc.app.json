@@ -36,12 +36,6 @@
       "rules": {
         "foldkit/no-impure-call-at-decision-time": "off"
       }
-    },
-    {
-      "files": ["packages/website/src/subscription/viewportWidth.ts"],
-      "rules": {
-        "foldkit/no-child-message-construction-in-root": "off"
-      }
     }
   ],
   "ignorePatterns": [
