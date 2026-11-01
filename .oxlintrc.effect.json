@@ -26,11 +26,12 @@
   "overrides": [
     {
       "files": [
-        "packages/foldkit/src/command/index.ts",
+        "packages/foldkit/src/command/index.vibe",
         "packages/foldkit/src/html/index.ts",
         "packages/foldkit/src/route/parser.ts",
-        "packages/foldkit/src/runtime/hydrationHandoff.ts",
-        "packages/foldkit/src/runtime/managedResourceFibers.ts"
+        "packages/foldkit/src/runtime/hydrationHandoff.vibe",
+        "packages/foldkit/src/runtime/hydrationHandoff.platform.ts",
+        "packages/foldkit/src/runtime/managedResourceFibers.vibe"
       ],
       "rules": {
         "effecttsgo/any-unknown-in-error-context": "off"
@@ -43,7 +44,7 @@
       }
     },
     {
-      "files": ["examples/ssr/scripts/serve.ts", "packages/node/src/node.ts"],
+      "files": ["examples/ssr/scripts/serve.vibe", "packages/node/src/node.ts"],
       "rules": {
         "effecttsgo/return-effect-in-gen": "off"
       }

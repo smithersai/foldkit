@@ -15,6 +15,9 @@ export type ShowDialogOptions = Readonly<{
   allowedOutsideSelectors?: ReadonlyArray<string>
 }>
 
+export const asHtmlElement = (element: Element | null): HTMLElement | null =>
+  element instanceof HTMLElement ? element : null
+
 export const queryElement = (selector: string): Element | null =>
   document.querySelector(selector)
 

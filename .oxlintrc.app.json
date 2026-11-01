@@ -32,7 +32,7 @@
   },
   "overrides": [
     {
-      "files": ["examples/slow-warnings/src/main.ts"],
+      "files": ["examples/slow-warnings/src/main.vibe"],
       "rules": {
         "foldkit/no-impure-call-at-decision-time": "off"
       }

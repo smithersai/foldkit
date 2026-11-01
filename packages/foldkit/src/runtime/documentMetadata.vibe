@@ -1,4 +1,7 @@
-import { getDocument } from './documentMetadata.platform.ts'
+import {
+  createMutationObserver,
+  getDocument,
+} from './documentMetadata.platform.ts'
 import { Array as EffectArray } from 'effect'
 
 import { Document, textDirectionToAttribute } from '../html/index.ts'
@@ -87,7 +90,7 @@ const getOrCreateDocumentMetadataState = (): DocumentMetadataState => {
   }
 
   const invalidation: DocumentMetadataInvalidation = { isInvalidated: true }
-  const observer = new MutationObserver((): infer _ => {
+  const observer = createMutationObserver((): void => {
     invalidation.isInvalidated = true
   })
   const metadataState: DocumentMetadataState = {

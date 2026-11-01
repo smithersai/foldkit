@@ -1,4 +1,4 @@
-import { Effect, Option } from "effect";
+import { Effect, Option } from 'effect';
 import type { ChildProcessSpawner } from 'effect/process';
 import { type RelayRegistryReader, type RelayRegistryServices } from './relayRegistry.vibe';
 export type Settings = Readonly<{

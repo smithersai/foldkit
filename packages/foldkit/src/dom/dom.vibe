@@ -3,6 +3,7 @@ import { afterCommit, afterPaint } from '../render/render.vibe'
 import { DialogRuntime } from './dialogRuntime.vibe'
 import {
   advanceFocusFrom,
+  asHtmlElement,
   closeDialogElement,
   queryElement,
   releaseDialogHygieneById,
@@ -20,8 +21,9 @@ const queryHTMLElement = effect (
   selector: string,
 ): HTMLElement!ElementNotFound => {
   const element = try sync((selector) => queryElement(selector), selector)
-  if (element instanceof HTMLElement) {
-    return element
+  const htmlElement = try sync((element) => asHtmlElement(element), element)
+  if (htmlElement !== null) {
+    return htmlElement
   }
   throw new ElementNotFound({ selector })
 }

@@ -1,4 +1,4 @@
-import { Effect } from "effect";
+import { Effect } from 'effect';
 import { type RelayClient } from './relayClient.js';
 type ToolResult = Readonly<{
     content: ReadonlyArray<Readonly<{
