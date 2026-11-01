@@ -18,7 +18,7 @@ import {
 import { Message } from './message.vibe'
 import { Model } from './model.vibe'
 import { subscriptions } from './subscription.vibe'
-import { update } from './update.ts'
+import { update } from './update.vibe'
 import { view } from './view.vibe'
 
 export const init: Runtime.ApplicationInit<Model, Message> = () => ({

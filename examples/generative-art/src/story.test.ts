@@ -20,7 +20,7 @@ import {
 } from './constant'
 import { Message } from './message.vibe'
 import { type Model, type Particle } from './model.vibe'
-import { update } from './update'
+import { update } from './update.vibe'
 
 const initialModel: Model = {
   particles: [],

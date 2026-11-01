@@ -16,7 +16,7 @@ import {
   NOISE_SCALE_STEP,
 } from './constant'
 import { type Model, type Particle } from './model.vibe'
-import { update } from './update'
+import { update } from './update.vibe'
 import { view } from './view.vibe'
 
 const initialModel: Model = {
