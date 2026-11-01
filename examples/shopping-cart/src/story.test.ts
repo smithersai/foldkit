@@ -5,7 +5,7 @@ import { fromString } from 'foldkit/url'
 import { describe, expect, test } from 'vitest'
 
 import { products } from './data/products'
-import { Message, type Model, update } from './main'
+import { Message, type Model, update } from './main.vibe'
 import { Products } from './page'
 import { AppRoute } from './route.vibe'
 

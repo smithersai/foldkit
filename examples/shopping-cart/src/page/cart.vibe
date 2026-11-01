@@ -4,7 +4,7 @@ import { Html, HtmlBuilder } from 'foldkit/html'
 import { Button } from '@foldkit/ui'
 
 import { Cart } from '../domain/index.ts'
-import { Message } from '../main.ts'
+import { Message } from '../main.vibe'
 import { checkoutRouter, productsRouter } from '../route.vibe'
 
 // VIEW

@@ -4,7 +4,7 @@ import { modifyFields } from 'foldkit/struct'
 import { describe, test } from 'vitest'
 
 import { products } from './data/products'
-import { type Model, update, view } from './main'
+import { type Model, update, view } from './main.vibe'
 import { Products } from './page'
 import { AppRoute } from './route.vibe'
 

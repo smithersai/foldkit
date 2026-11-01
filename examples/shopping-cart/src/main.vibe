@@ -1,4 +1,3 @@
-import { Effect, Match, Option, Schema } from 'effect'
 import { Command, Runtime, Update } from 'foldkit'
 import { Document, Html, HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -6,9 +5,9 @@ import { UrlRequest, load, pushUrl } from 'foldkit/navigation'
 import { modifyFields } from 'foldkit/struct'
 import { Url, toString as urlToString } from 'foldkit/url'
 
-import { products } from './data/products'
-import { Cart } from './domain'
-import { Cart as CartPage, Checkout, Products } from './page'
+import { products } from './data/products.ts'
+import { Cart } from './domain/index.ts'
+import { Cart as CartPage, Checkout, Products } from './page/index.ts'
 import {
   AppRoute,
   cartRouter,
@@ -19,14 +18,13 @@ import {
 
 // MODEL
 
-export const Model = Schema.Struct({
-  route: AppRoute,
-  cart: Cart.Cart,
-  deliveryInstructions: Schema.String,
-  orderPlaced: Schema.Boolean,
-  productsPage: Products.Model,
-})
-export type Model = typeof Model.Type
+export schema Model {
+  route: AppRoute
+  cart: Cart.Cart
+  deliveryInstructions: string
+  orderPlaced: boolean
+  productsPage: Products.Model
+}
 
 // MESSAGE
 
@@ -67,15 +65,27 @@ export const init: Runtime.RoutingApplicationInit<Model, Message> = (
 const NavigateInternal = Command.define('NavigateInternal', {
   args: { url: Schema.String },
   messages: [Message.CompletedNavigateInternal],
-  execute: ({ url }) =>
-    pushUrl(url).pipe(Effect.as(Message.CompletedNavigateInternal())),
+  execute: (
+    { url },
+  ): ReturnType<typeof Message.CompletedNavigateInternal>!! => {
+    const completed = Message.CompletedNavigateInternal()
+    return effect {
+      try pushUrl(url)
+      return completed
+    }
+  },
 })
 
 const LoadExternal = Command.define('LoadExternal', {
   args: { href: Schema.String },
   messages: [Message.CompletedLoadExternal],
-  execute: ({ href }) =>
-    load(href).pipe(Effect.as(Message.CompletedLoadExternal())),
+  execute: ({ href }): ReturnType<typeof Message.CompletedLoadExternal>!! => {
+    const completed = Message.CompletedLoadExternal()
+    return effect {
+      try load(href)
+      return completed
+    }
+  },
 })
 
 // UPDATE
@@ -85,19 +95,15 @@ type UpdateReturn = Update.Return<Model, Message>
 const foldProductsOutMessage = Products.OutMessage.match<
   Update.Step<Model, Message>
 >({
-  AddedToCart:
-    ({ item }) =>
-    model => ({ model: modifyFields(model, { cart: Cart.addItem(item) }) }),
-  IncrementedQuantity:
-    ({ itemId }) =>
-    model => ({
-      model: modifyFields(model, { cart: Cart.incrementQuantity(itemId) }),
-    }),
-  DecrementedQuantity:
-    ({ itemId }) =>
-    model => ({
-      model: modifyFields(model, { cart: Cart.decrementQuantity(itemId) }),
-    }),
+  AddedToCart: ({ item }) => model => ({
+    model: modifyFields(model, { cart: Cart.addItem(item) }),
+  }),
+  IncrementedQuantity: ({ itemId }) => model => ({
+    model: modifyFields(model, { cart: Cart.incrementQuantity(itemId) }),
+  }),
+  DecrementedQuantity: ({ itemId }) => model => ({
+    model: modifyFields(model, { cart: Cart.decrementQuantity(itemId) }),
+  }),
 })
 
 const foldProducts = Update.foldChild({
@@ -109,7 +115,7 @@ const foldProducts = Update.foldChild({
   foldOutMessage: foldProductsOutMessage,
 })
 
-export const update = (model: Model, message: Message) =>
+export const update = (model: Model, message: Message): infer _ =>
   Message.match<UpdateReturn>(message, {
     CompletedNavigateInternal: () => ({ model }),
     CompletedLoadExternal: () => ({ model }),
@@ -181,8 +187,10 @@ const navigationView = (
   cartCount: number,
   h: HtmlBuilder<Message>,
 ): Html => {
-  const navLinkClassName = (isActive: boolean) =>
-    `hover:bg-blue-600 font-medium px-3 py-1 rounded transition ${isActive ? 'bg-blue-700 bg-opacity-50' : ''}`
+  const navLinkClassName = (isActive: boolean): string =>
+    `hover:bg-blue-600 font-medium px-3 py-1 rounded transition ${
+      isActive ? 'bg-blue-700 bg-opacity-50' : ''
+    }`
 
   return h.nav(
     [h.Class('bg-blue-500 text-white p-4 mb-6')],
@@ -269,11 +277,13 @@ const notFoundView = (path: string, h: HtmlBuilder<Message>): Html =>
     ],
   )
 
-const routeTitle = (route: Model['route']): string =>
-  Match.value(route).pipe(
-    Match.tag('Products', () => 'Shopping Cart'),
-    Match.orElse(({ _tag }) => `${_tag} | Shopping Cart`),
-  )
+const routeTitle = (route: Model['route']): string => match (route) {
+  when { _tag: 'Products' }: 'Shopping Cart';
+  when let rest: do {
+    const { _tag } = rest
+    ;`${_tag} | Shopping Cart`
+  };
+}
 
 export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
   const routeContent = AppRoute.match(model.route, {
