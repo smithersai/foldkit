@@ -19,7 +19,7 @@ import {
   type Bridge,
   type CreateDevToolsStoreOptions,
   createDevToolsStore,
-} from './store.js'
+} from './store.vibe'
 import {
   EVENT_CHANNEL,
   dispatchRequest,

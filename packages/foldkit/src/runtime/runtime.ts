@@ -29,7 +29,7 @@ import {
   type RoutingConfig,
   addNavigationEventListeners,
 } from './browserListeners.js'
-import type { CrashConfig } from './crashUI.js'
+import type { CrashConfig } from './crashUI.vibe'
 import { deepFreeze } from './deepFreeze.vibe'
 import type { DevToolsConfig } from './devToolsConfig.vibe'
 import { makeDevToolsIntegration } from './devToolsIntegration.js'

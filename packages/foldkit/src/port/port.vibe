@@ -1,4 +1,3 @@
-import { Context, Effect, Option, Schema, Stream } from 'effect'
 import { persistentEntry } from '../subscription/subscription.vibe'
 
 /** Type-level brand for inbound Port values. */
@@ -105,10 +104,10 @@ export type __InboundChannel = Readonly<{
  *  `Port.emit`. Internal to the runtime. */
 export type __PortChannels = Readonly<{
   isConfigured: boolean
-  lookupInbound: (port: Inbound<any, any>) => Option.Option<__InboundChannel>
+  lookupInbound: (port: Inbound<any, any>) => Option<__InboundChannel>
   lookupOutbound: (
     port: Outbound<any, any>,
-  ) => Option.Option<(encodedValue: unknown) => void>
+  ) => Option<(encodedValue: unknown) => void>
 }>
 
 const defaultPortChannels: __PortChannels = {
@@ -129,7 +128,7 @@ export const __CurrentPortChannels = Context.Reference<__PortChannels>(
 /** Creates the channel for one inbound Port. Internal to the runtime. */
 export const __makeInboundChannel = (): __InboundChannel => {
   const subscribers = new Set<(value: unknown) => void>()
-  let maybeBacklog: Option.Option<Array<unknown>> = Option.some([])
+  let maybeBacklog: Option<Array<unknown>> = Option.some([])
 
   const deliver = (value: unknown): void => {
     if (subscribers.size > 0) {
@@ -175,7 +174,7 @@ const unknownPortMessage = (functionName: string): string =>
  */
 export const stream = <Value, Encoded>(
   port: Inbound<Value, Encoded>,
-): Stream.Stream<Value> =>
+): Stream<Value> =>
   Stream.unwrap(effect {
     const channels: __PortChannels = __CurrentPortChannels()
     if (!channels.isConfigured) {
@@ -187,12 +186,12 @@ export const stream = <Value, Encoded>(
     }
     return Stream.callback<Value>(effect (queue) => {
       try Effect.acquireRelease(
-        Effect.sync(() =>
-          channel.attach((value): void => {
+        effect {
+          return channel.attach((value): void => {
             /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
             Queue.offerUnsafe(queue, value as Value)
           })
-        ),
+        },
         detach => Effect.sync(detach),
       )
       return try Effect.never

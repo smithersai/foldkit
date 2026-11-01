@@ -1,5 +1,5 @@
 import { Effect, Option, Schema, Scope } from 'effect';
-import type { DevToolsStore } from '../devTools/store.js';
+import type { DevToolsStore } from '../devTools/store.vibe';
 import { type Visibility } from './visibility.vibe';
 /** Position of the DevTools badge and panel on screen. */
 export type DevToolsPosition = 'BottomRight' | 'BottomLeft' | 'TopRight' | 'TopLeft';

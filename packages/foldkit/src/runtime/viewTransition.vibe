@@ -1,4 +1,3 @@
-import { Option } from 'effect'
 import { resolveStartViewTransition } from './viewTransition.platform.ts'
 
 /** Context passed to the `viewTransition` predicate before each live render.

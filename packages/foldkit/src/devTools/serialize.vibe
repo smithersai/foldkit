@@ -5,8 +5,9 @@ import type {
   SerializedEntry,
   SerializedMount,
 } from './protocol.vibe'
-import type { CommandRecord, HistoryEntry, MountRecord } from './store.ts'
+import type { CommandRecord, HistoryEntry, MountRecord } from './store.vibe'
 import { extractSubmodelInfo } from './submodelPath.vibe'
+import { isBlobValue, isFileValue } from './serialize.platform.ts'
 
 const inspectableCache = new WeakMap<object, unknown>()
 
@@ -14,7 +15,7 @@ const computeInspectableValue = (value: unknown): unknown => {
   if (Redacted.isRedacted(value)) {
     return globalThis.String(value)
   }
-  if (value instanceof File) {
+  if (isFileValue(value)) {
     return {
       name: value.name,
       size: value.size,
@@ -22,7 +23,7 @@ const computeInspectableValue = (value: unknown): unknown => {
       lastModified: value.lastModified,
     }
   }
-  if (value instanceof Blob) {
+  if (isBlobValue(value)) {
     return { size: value.size, type: value.type }
   }
   if (value instanceof Date) {

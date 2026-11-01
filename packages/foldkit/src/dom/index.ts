@@ -11,9 +11,9 @@ export {
   showDialog,
 } from './dom.vibe'
 export type { FocusDirection } from './dom.vibe'
-export { detectElementMovement } from './elementMovement.js'
+export { detectElementMovement } from './elementMovement.vibe'
 export { inertOthers, restoreInert } from './inert.js'
-export { lockScroll, unlockScroll } from './scrollLock.js'
+export { lockScroll, unlockScroll } from './scrollLock.vibe'
 export {
   streamFromEvent,
   streamFromEventFilterMap,
@@ -34,4 +34,4 @@ export type {
 } from './streamFromKeyBindings.vibe'
 export { streamFromMediaQuery } from './streamFromMediaQuery.vibe'
 export type { StreamFromMediaQueryConfig } from './streamFromMediaQuery.vibe'
-export { waitForAnimationSettled } from './waitForAnimation.js'
+export { waitForAnimationSettled } from './waitForAnimation.vibe'

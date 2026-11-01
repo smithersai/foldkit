@@ -8,6 +8,7 @@ import {
 import { h } from '../snabbdom/index.ts'
 import type { Classes, On, VNodeData } from '../snabbdom/index.ts'
 import { paintScene } from './paint.vibe'
+import { isCanvasElement } from './view.platform.ts'
 import type { Point, Shape } from './shape.vibe'
 
 /**
@@ -100,7 +101,7 @@ export const view = <Message>(
     (toMessage: (point: Point) => Message): infer _ =>
     (event: PointerEvent): void => {
       const target = event.currentTarget
-      if (target instanceof HTMLCanvasElement) {
+      if (isCanvasElement(target)) {
         dispatchSync(toMessage(toCanvasPoint(target, event)))
       }
     }
@@ -125,7 +126,7 @@ export const view = <Message>(
     }),
     hook: {
       insert: (vnode): infer _ => {
-        if (!(vnode.elm instanceof HTMLCanvasElement)) {
+        if (!(isCanvasElement(vnode.elm))) {
           return
         }
         const canvas = vnode.elm
@@ -137,7 +138,7 @@ export const view = <Message>(
         paintScene(context, width, height, shapes)
       },
       postpatch: (_oldVnode, vnode): infer _ => {
-        if (!(vnode.elm instanceof HTMLCanvasElement)) {
+        if (!(isCanvasElement(vnode.elm))) {
           return
         }
         const context = contextStore.get(vnode.elm)
@@ -147,7 +148,7 @@ export const view = <Message>(
         paintScene(context, width, height, shapes)
       },
       destroy: (vnode): infer _ => {
-        if (vnode.elm instanceof HTMLCanvasElement) {
+        if (isCanvasElement(vnode.elm)) {
           contextStore.delete(vnode.elm)
         }
       },

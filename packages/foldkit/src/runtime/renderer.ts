@@ -26,7 +26,7 @@ import {
   type VNodeSlot,
   noOpDispatch,
   renderCrashView,
-} from './crashUI.js'
+} from './crashUI.vibe'
 import type {
   DevToolsIntegration,
   DevToolsRenderBridge,

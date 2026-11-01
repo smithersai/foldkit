@@ -1,10 +1,4 @@
-import {
-  Array,
-  Function as EffectFunction,
-  Option,
-  Predicate,
-  Schema,
-} from 'effect'
+import { Array, Function as EffectFunction } from 'effect'
 
 import { CommandDefinitionTypeId, brandAsDefinition } from './brand.ts'
 import * as Interruptible from './interruptible/index.ts'

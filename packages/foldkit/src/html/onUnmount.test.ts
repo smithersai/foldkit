@@ -8,7 +8,7 @@ import type { MountAction } from '../mount/index.vibe'
 import { MountTracker } from '../mount/index.vibe'
 import { onUnmountModule } from '../onUnmountModule.js'
 import { propsModule } from '../propsModule.js'
-import { noOpDispatch } from '../runtime/crashUI.js'
+import { noOpDispatch } from '../runtime/crashUI.vibe'
 import { Dispatch } from '../runtime/index.js'
 import {
   attributesModule,

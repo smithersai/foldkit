@@ -1,11 +1,4 @@
-import {
-  Context,
-  Effect,
-  Array as EffectArray,
-  Fiber,
-  Option,
-  Schema,
-} from 'effect'
+import { Array as EffectArray } from 'effect'
 
 import { defineTaggedUnion } from '../../schema/index.ts'
 import { CommandDefinitionTypeId, brandAsDefinition } from '../brand.ts'
@@ -32,9 +25,9 @@ export type Outcome = typeof Outcome.Type
  *  under their key for the duration of their Effect; Interrupt Commands look
  *  the key up and interrupt every holder. Internal to the runtime. */
 export type __Registry = Readonly<{
-  lookup: (key: string) => ReadonlyArray<Fiber.Fiber<unknown, unknown>>
-  register: (key: string, fiber: Fiber.Fiber<unknown, unknown>) => void
-  release: (key: string, fiber: Fiber.Fiber<unknown, unknown>) => void
+  lookup: (key: string) => ReadonlyArray<Fiber<unknown, unknown>>
+  register: (key: string, fiber: Fiber<unknown, unknown>) => void
+  release: (key: string, fiber: Fiber<unknown, unknown>) => void
   interrupt: (key: string) => Outcome!!
 }>
 
@@ -42,17 +35,30 @@ export type __Registry = Readonly<{
  *  instance and provides it through {@link __CurrentRegistry}. Internal to
  *  the runtime. */
 export const __makeRegistry = (): __Registry => {
-  const holders = new Map<string, Set<Fiber.Fiber<unknown, unknown>>>()
+  const holders = new Map<string, Set<Fiber<unknown, unknown>>>()
 
-  const lookup = (key: string): ReadonlyArray<Fiber.Fiber<unknown, unknown>> =>
-    Option.match(Option.fromNullishOr(holders.get(key)), {
-      onNone: () => [],
-      onSome: fibers => EffectArray.fromIterable(fibers),
-    })
+  const lookup = (key: string): ReadonlyArray<Fiber<unknown, unknown>> =>
+    do {
+      const $optionSubject = Option.fromNullishOr(holders.get(key))
+      const $optionHandlers: {
+        onNone: () => never[]
+        onSome: (
+          fibers: Set<Fiber<unknown, unknown>>,
+        ) => Fiber<unknown, unknown>[]
+      } = {
+        onNone: () => [],
+        onSome: fibers => EffectArray.fromIterable(fibers),
+      }
+      const { onNone: $optionNone, onSome: $optionSome } = $optionHandlers
+      match ($optionSubject) {
+        when Option.Some(let $optionValue): $optionSome($optionValue);
+        default: $optionNone();
+      }
+    }
 
   const register = (
     key: string,
-    fiber: Fiber.Fiber<unknown, unknown>,
+    fiber: Fiber<unknown, unknown>,
   ): void => {
     Option.match(Option.fromNullishOr(holders.get(key)), {
       onNone: () => {
@@ -64,7 +70,7 @@ export const __makeRegistry = (): __Registry => {
     })
   }
 
-  const release = (key: string, fiber: Fiber.Fiber<unknown, unknown>): void => {
+  const release = (key: string, fiber: Fiber<unknown, unknown>): void => {
     const maybeFibers = Option.fromNullishOr(holders.get(key))
     if (Option.isSome(maybeFibers)) {
       maybeFibers.value.delete(fiber)
@@ -114,11 +120,13 @@ export const __registerKeyWhileRunning = effect <A, E, R>(
   return try Effect.withFiber(effect (fiber) => {
     const registry: __Registry = __CurrentRegistry()
     return try Effect.acquireUseRelease(
-      Effect.sync(() => registry.register(key, fiber)),
+      effect {
+        return registry.register(key, fiber)
+      },
       effect () => {
         return try effect
       },
-      () => Effect.sync(() => registry.release(key, fiber)),
+      effect () => registry.release(key, fiber),
     )
   })
 }
@@ -129,7 +137,7 @@ const makeInterruptEffect = effect <ToMessage>(
 ): ToMessage!! => {
   const registry: __Registry = __CurrentRegistry()
   const outcome = try registry.interrupt(key)
-  return try Effect.sync(() => toMessage(outcome))
+  return toMessage(outcome)
 }
 
 /** An Interrupt Command definition derived from an interruptible Command

@@ -837,9 +837,20 @@ export const settle: {
     Result.match(result, {
       onSuccess: data => Success({ data }),
       onFailure: error =>
-        Option.match(getData(self), {
-          onNone: () => Failure({ error }),
-          onSome: data => Stale({ error, data }),
-        }),
+        do {
+          const $optionSubject = getData(self)
+          const $optionHandlers: {
+            onNone: () => AsyncData<never, E>
+            onSome: (data: A) => AsyncData<A, E>
+          } = {
+            onNone: () => Failure({ error }),
+            onSome: data => Stale({ error, data }),
+          }
+          const { onNone: $optionNone, onSome: $optionSome } = $optionHandlers
+          match ($optionSubject) {
+            when Option.Some(let $optionValue): $optionSome($optionValue);
+            default: $optionNone();
+          }
+        },
     }),
 )

@@ -14,8 +14,8 @@ import {
 } from 'effect'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { DevToolsStore } from '../devTools/store.js'
-import { INIT_INDEX, latestEntryIndex } from '../devTools/store.js'
+import type { DevToolsStore } from '../devTools/store.vibe'
+import { INIT_INDEX, latestEntryIndex } from '../devTools/store.vibe'
 import {
   type Html,
   Prop,
@@ -30,7 +30,7 @@ import * as Subscription from '../subscription/subscription.vibe'
 import type * as Update from '../update/index.js'
 import { __setDevToolsOverlay } from './devToolsConfig.vibe'
 import { makeApplication } from './makeApplication.vibe'
-import { makeElement } from './makeElement.js'
+import { makeElement } from './makeElement.vibe'
 
 const Message = defineMessageUnion({
   CompletedMountEditor: {},

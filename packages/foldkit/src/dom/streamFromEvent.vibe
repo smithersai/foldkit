@@ -1,4 +1,3 @@
-import { Effect, Option, Queue, Stream } from 'effect'
 import { invariant } from '../invariant.ts'
 
 declare const EventMapMarker: unique symbol
@@ -171,14 +170,14 @@ export type StreamFromEventFilterMapConfig<
 > = Readonly<{
   target: Target | (() => Target)
   type: Type
-  filterMapEvent: (event: EventOf<Target, Type>) => Option.Option<Output>
+  filterMapEvent: (event: EventOf<Target, Type>) => Option<Output>
   options?: AddEventListenerOptions
 }>
 
 type ListenerConfig<EventType extends Event, Output> = Readonly<{
   target: EventTarget | (() => EventTarget)
   type: string
-  filterMapEvent: (event: EventType) => Option.Option<Output>
+  filterMapEvent: (event: EventType) => Option<Output>
   options?: AddEventListenerOptions
 }>
 
@@ -188,7 +187,7 @@ const resolveTarget = (
 
 const listen = <EventType extends Event, Output>(
   config: ListenerConfig<EventType, Output>,
-): Stream.Stream<Output> =>
+): Stream<Output> =>
   Stream.callback<Output>(effect (queue) => {
     try Effect.acquireRelease(
       sync(
@@ -257,7 +256,7 @@ export type StreamFromEventFilterMapPreventDefaultConfig<
 > = Readonly<{
   target: Target | (() => Target)
   type: Type
-  filterMapEvent: (event: EventOf<Target, Type>) => Option.Option<Output>
+  filterMapEvent: (event: EventOf<Target, Type>) => Option<Output>
   options?: PreventDefaultEventListenerOptions
 }>
 
@@ -331,7 +330,7 @@ export const streamFromEventFilterMap = <
   Output,
 >(
   config: StreamFromEventFilterMapConfig<Target, Type, Output>,
-): Stream.Stream<Output> => listen<EventOf<Target, Type>, Output>(config)
+): Stream<Output> => listen<EventOf<Target, Type>, Output>(config)
 
 /**
  * Build a Stream that emits a value for every dispatch of a DOM event,
@@ -390,7 +389,7 @@ export const streamFromEvent = <
   Output,
 >(
   config: StreamFromEventConfig<Target, Type, Output>,
-): Stream.Stream<Output> =>
+): Stream<Output> =>
   listen<EventOf<Target, Type>, Output>({
     ...config,
     filterMapEvent: event => Option.some(config.mapEvent(event)),
@@ -461,7 +460,7 @@ export const streamFromEventFilterMapPreventDefault = <
   Output,
 >(
   config: StreamFromEventFilterMapPreventDefaultConfig<Target, Type, Output>,
-): Stream.Stream<Output> => {
+): Stream<Output> => {
   const options: AddEventListenerOptions | undefined = config.options
 
   if (options?.passive === true) {

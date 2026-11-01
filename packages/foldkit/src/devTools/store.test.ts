@@ -19,7 +19,7 @@ import {
   type DevToolsStore,
   computeDiff,
   createDevToolsStore,
-} from './store.js'
+} from './store.vibe'
 
 const hasPath = (paths: HashSet.HashSet<string>, path: string) =>
   HashSet.has(paths, path)

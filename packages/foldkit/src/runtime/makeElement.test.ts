@@ -7,7 +7,7 @@ import { modifyFields } from '../struct/index.vibe'
 import type * as Update from '../update/index.js'
 import { __setDevToolsOverlay } from './devToolsConfig.vibe'
 import { makeApplication } from './makeApplication.vibe'
-import { makeElement } from './makeElement.js'
+import { makeElement } from './makeElement.vibe'
 
 const Message = defineMessageUnion({
   Rendered: {},

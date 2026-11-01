@@ -1,4 +1,3 @@
-import { Schema } from 'effect'
 import { escapeAttributeValue } from './serialize.vibe'
 import type { RenderedApplication } from './server.ts'
 import { injectIntoTemplate } from './template.ts'

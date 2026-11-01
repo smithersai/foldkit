@@ -1,15 +1,13 @@
-import { Effect, Layer, Option, Predicate, Schema } from 'effect'
-
-import { Document, Html, type HtmlBuilder } from '../html/index.js'
-import type { ManagedResources } from '../managedResource/index.js'
-import type { Ports } from '../port/index.js'
+import { Document, Html, type HtmlBuilder } from '../html/index.ts'
+import type { ManagedResources } from '../managedResource/index.ts'
+import type { Ports } from '../port/index.ts'
 import type { Subscriptions } from '../subscription/subscription.vibe'
-import type { Return as UpdateReturn } from '../update/index.js'
+import type { Return as UpdateReturn } from '../update/index.ts'
 import type {
   CrashConfig,
   CrashContext,
   ElementCrashConfig,
-} from './crashUI.js'
+} from './crashUI.vibe'
 import type { DevToolsConfig } from './devToolsConfig.vibe'
 import type { ApplicationInit } from './makeApplication.vibe'
 import {
@@ -17,9 +15,10 @@ import {
   type MakeRuntimeReturn,
   type RuntimeConfig,
   makeRuntime,
-} from './runtime.js'
+} from './runtime.ts'
 import type { SlowConfig } from './slowPhase.vibe'
 import type { ViewTransitionConfig } from './viewTransition.vibe'
+import { invariant } from '../invariant.ts'
 
 type BaseElementConfig<
   Model,
@@ -45,7 +44,7 @@ type BaseElementConfig<
   slow?: SlowConfig<Model, Message>
   viewTransition?: ViewTransitionConfig<Model, Message>
   freezeModel?: boolean
-  resources?: Layer.Layer<Resources>
+  resources?: Layer<Resources>
   managedResources?: ManagedResources<Model, Message, ManagedResourceServices>
   devTools?: DevToolsConfig
 }>
@@ -58,9 +57,10 @@ export type ElementConfigWithFlags<
   Resources = never,
   ManagedResourceServices = never,
   P extends Ports | undefined = undefined,
-> = BaseElementConfig<Model, Message, Resources, ManagedResourceServices, P> &
-  FlagsSchemaConfig<Flags> &
-  Readonly<{
+> =
+  & BaseElementConfig<Model, Message, Resources, ManagedResourceServices, P>
+  & FlagsSchemaConfig<Flags>
+  & Readonly<{
     /**
      * Resolves the Flags once at startup, before `init` runs. Services this
      * Effect requires are provided from the `resources` Layer, which the
@@ -69,7 +69,7 @@ export type ElementConfigWithFlags<
      * own failures with `Effect.catch`, the same contract a Command's Effect
      * has.
      */
-    flags: Effect.Effect<Flags, never, NoInfer<Resources>>
+    flags: Flags!never!NoInfer<Resources>
     init: (
       flags: Flags,
     ) => UpdateReturn<Model, Message, Resources | ManagedResourceServices>
@@ -82,8 +82,9 @@ export type ElementConfig<
   Resources = never,
   ManagedResourceServices = never,
   P extends Ports | undefined = undefined,
-> = BaseElementConfig<Model, Message, Resources, ManagedResourceServices, P> &
-  Readonly<{
+> =
+  & BaseElementConfig<Model, Message, Resources, ManagedResourceServices, P>
+  & Readonly<{
     init: () => UpdateReturn<
       Model,
       Message,
@@ -178,21 +179,21 @@ export function makeElement<
 >(
   config:
     | ElementConfigWithFlags<
-        Model,
-        Message,
-        Flags,
-        Resources,
-        ManagedResourceServices,
-        P
-      >
+      Model,
+      Message,
+      Flags,
+      Resources,
+      ManagedResourceServices,
+      P
+    >
     | ElementConfig<Model, Message, Resources, ManagedResourceServices, P>,
 ): MakeRuntimeReturn<P, void, Resources, 'Element'> {
   const { container } = config
   if (container === null) {
-    throw new Error(
-      '[foldkit] Container is null. Make sure the element exists in the DOM ' +
-        'before calling makeElement (e.g. that your <div id="root"></div> has ' +
-        'rendered, and your script runs after it).',
+    invariant(
+      '[foldkit] Container is null. Make sure the element exists in the DOM '
+        + 'before calling makeElement (e.g. that your <div id="root"></div> has '
+        + 'rendered, and your script runs after it).',
     )
   }
 

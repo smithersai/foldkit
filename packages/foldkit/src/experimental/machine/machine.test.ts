@@ -27,7 +27,7 @@ import {
   otherwise,
   to,
   when,
-} from './machine.js'
+} from './machine.vibe'
 
 // REMOTE DATA
 

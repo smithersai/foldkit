@@ -18,7 +18,7 @@ import {
   INIT_INDEX,
   type StoreState,
   latestEntryIndex,
-} from './store.js'
+} from './store.vibe'
 
 const makeEntry = (
   tag: string,

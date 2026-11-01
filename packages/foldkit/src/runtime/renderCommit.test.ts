@@ -7,7 +7,7 @@ import { defineMessageUnion } from '../message/index.js'
 import { RenderCommit, createCommitNotifier } from '../render/commit.vibe'
 import { afterCommit } from '../render/render.vibe'
 import type * as Update from '../update/index.js'
-import { makeElement } from './makeElement.js'
+import { makeElement } from './makeElement.vibe'
 
 describe('afterCommit', () => {
   it('resumes on a commit that lands after it registered', async () => {

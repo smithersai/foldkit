@@ -1,5 +1,11 @@
 import { HYDRATION_BUILD_ATTRIBUTE } from './buildToken.ts'
-import { warnHydrationMismatch } from './hydrate.platform.ts'
+import {
+  isCommentNode,
+  isElementNode,
+  isSelectElement,
+  isStyleDeclaration,
+  isTextNode,
+} from './hydrate.platform.ts'
 import { controlledStatePropertyNames } from './controlledDomState.ts'
 import {
   BOOLEAN_PROPERTIES,
@@ -69,7 +75,7 @@ const classListOf = (element: Element): Record<string, boolean> => {
 
 const inlineStyleOf = (element: Element): Record<string, string> => {
   const style: Record<string, string> = {}
-  if ('style' in element && element.style instanceof CSSStyleDeclaration) {
+  if ('style' in element && isStyleDeclaration(element.style)) {
     const inlineStyle = element.style
     for (let index = 0; index < inlineStyle.length; index += 1) {
       const property = inlineStyle.item(index)
@@ -127,7 +133,7 @@ const seedStyle = (
     ),
   )
   const style = Reflect.get(element, 'style')
-  if (!(style instanceof CSSStyleDeclaration)) {
+  if (!(isStyleDeclaration(style))) {
     return {}
   }
   const seeded: Record<string, string> = isCustomElement
@@ -250,7 +256,7 @@ const registerControlledSelectState = (
   const properties = vnode.data?.props
   const authoredValue = properties?.['value']
   if (
-    !(element instanceof HTMLSelectElement)
+    !(isSelectElement(element))
     || typeof authoredValue !== 'string'
     || isClientOnlyProperty(properties, 'value')
   ) {
@@ -503,7 +509,7 @@ const detectMismatch = (status: HydrationStatus): void => {
 
 const reportMismatch = (status: HydrationStatus): void => {
   if (import.meta.hot && status.isMismatchDetected) {
-    warnHydrationMismatch(
+    Console.defaultValue().warn(
       '[foldkit] The server DOM did not match the first client view during '
         + 'hydration. Foldkit reconciled the mismatching subtree. Ensure Flags, '
         + 'init, and view produce deterministic initial markup.',
@@ -511,13 +517,11 @@ const reportMismatch = (status: HydrationStatus): void => {
   }
 }
 
-const isText = (node: Node): node is Text => node.nodeType === Node.TEXT_NODE
+const isText = (node: Node): node is Text => isTextNode(node)
 
-const isComment = (node: Node): node is Comment =>
-  node.nodeType === Node.COMMENT_NODE
+const isComment = (node: Node): node is Comment => isCommentNode(node)
 
-const isElement = (node: Node): node is Element =>
-  node.nodeType === Node.ELEMENT_NODE
+const isElement = (node: Node): node is Element => isElementNode(node)
 
 const hasOnlyTextContent = (element: Element): boolean => {
   const firstChild = element.firstChild

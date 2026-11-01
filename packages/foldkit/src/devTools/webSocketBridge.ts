@@ -56,7 +56,7 @@ import {
   computeDiff,
   latestEntryIndex,
   nextEntryIndex,
-} from './store.js'
+} from './store.vibe'
 import {
   type PathResolution,
   formatPathNotFound,

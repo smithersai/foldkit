@@ -1,5 +1,4 @@
 import { subscribeMediaQuery } from './streamFromMediaQuery.platform.ts'
-import { Effect, Queue, Stream } from 'effect'
 
 /**
  * Options for `streamFromMediaQuery`.
@@ -58,7 +57,7 @@ export type StreamFromMediaQueryConfig<Output> = Readonly<{
  */
 export const streamFromMediaQuery = <Output>(
   config: StreamFromMediaQueryConfig<Output>,
-): Stream.Stream<Output> =>
+): Stream<Output> =>
   Stream.callback<Output>(effect queue => {
     try Effect.acquireRelease(
       effect {

@@ -1,4 +1,4 @@
-import { Array as EffectArray, Option } from 'effect'
+import { Array as EffectArray } from 'effect'
 
 import type { File } from './file.vibe'
 import { openFilePicker } from './select.platform.ts'
@@ -45,8 +45,7 @@ const openPicker = ({
  */
 export const select = (
   accept: ReadonlyArray<string>,
-): Option.Option<File>!! =>
-  EffectArray.head(openPicker({ accept, multiple: false }))
+): Option<File>!! => EffectArray.head(openPicker({ accept, multiple: false }))
 
 /**
  * Opens the native file picker allowing multiple files to be selected at

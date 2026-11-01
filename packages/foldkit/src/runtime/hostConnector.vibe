@@ -1,11 +1,4 @@
-import {
-  Cause,
-  Function as EffectFunction,
-  Exit,
-  Option,
-  Predicate,
-  Schema,
-} from 'effect'
+import { Function as EffectFunction } from 'effect'
 import { reportPortError, scheduleMicrotask } from './hostConnector.platform.ts'
 
 import {
@@ -24,7 +17,7 @@ import { invariant } from '../invariant.ts'
  *  app, the failure is logged, and the returned `Exit` carries the
  *  `SchemaError`. Sends after `dispose` are no-ops. */
 export type InboundPortHandle<Encoded> = Readonly<{
-  send: (value: Encoded) => Exit.Exit<void, Schema.SchemaError>
+  send: (value: Encoded) => Exit<void, Schema.SchemaError>
 }>
 
 /** Host-side handle for one outbound Port. `subscribe` registers a listener
@@ -85,7 +78,7 @@ export type HostConnector = Readonly<{
     portName: string,
     port: Inbound<any, any>,
     value: unknown,
-  ) => Exit.Exit<void, Schema.SchemaError>
+  ) => Exit<void, Schema.SchemaError>
   addListener: (
     port: Outbound<any, any>,
     listener: (encodedValue: unknown) => void,
@@ -100,7 +93,7 @@ export type HostConnector = Readonly<{
 
 export const makeHostConnector = (): HostConnector => {
   let isDisposed = false
-  let maybeDeliverInbound: Option.Option<
+  let maybeDeliverInbound: Option<
     (port: Inbound<any, any>, value: unknown) => void
   > = Option.none()
   const pendingInboundSends: Array<{
@@ -116,7 +109,7 @@ export const makeHostConnector = (): HostConnector => {
     portName: string,
     port: Inbound<any, any>,
     value: unknown,
-  ): Exit.Exit<void, Schema.SchemaError> => {
+  ): Exit<void, Schema.SchemaError> => {
     if (isDisposed) {
       return Exit.void
     }
@@ -215,7 +208,7 @@ export type PortChannelsBundle = Readonly<{
 
 export const makePortChannels = (
   ports: Ports,
-  maybeConnector: Option.Option<HostConnector>,
+  maybeConnector: Option<HostConnector>,
 ): PortChannelsBundle => {
   const inboundChannelsByPort = new Map<Inbound<any, any>, __InboundChannel>()
   Object.values(ports.inbound ?? {}).forEach(port => {

@@ -1,6 +1,16 @@
-// console.warn is platform code that a .vibe module does not use directly (VIP-33); the
-// hydration mismatch report is a synchronous dev-only warning, so the raw call lives here.
+// Host constructor and Node-kind checks keep their original lookup phase.
+export const isStyleDeclaration = (
+  value: unknown,
+): value is CSSStyleDeclaration => value instanceof CSSStyleDeclaration
 
-export const warnHydrationMismatch = (message: string): void => {
-  console.warn(message)
-}
+export const isSelectElement = (value: unknown): value is HTMLSelectElement =>
+  value instanceof HTMLSelectElement
+
+export const isTextNode = (node: Node): node is Text =>
+  node.nodeType === Node.TEXT_NODE
+
+export const isCommentNode = (node: Node): node is Comment =>
+  node.nodeType === Node.COMMENT_NODE
+
+export const isElementNode = (node: Node): node is Element =>
+  node.nodeType === Node.ELEMENT_NODE

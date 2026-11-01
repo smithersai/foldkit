@@ -1,5 +1,4 @@
-import { Effect } from 'effect'
-
+import { Effect } from 'effect';
 /**
  * Waits for all CSS animations on the element matching the selector to settle.
  * Covers both CSS transitions and CSS keyframe animations via the Web Animations
@@ -14,18 +13,4 @@ import { Effect } from 'effect'
  * Dom.waitForAnimationSettled('#menu-items')
  * ```
  */
-export const waitForAnimationSettled = (
-  selector: string,
-): Effect.Effect<void> =>
-  Effect.callback<void>(resume => {
-    requestAnimationFrame(async () => {
-      const element = document.querySelector(selector)
-
-      const animations =
-        element instanceof HTMLElement ? element.getAnimations() : []
-
-      await Promise.allSettled(animations.map(({ finished }) => finished))
-
-      resume(Effect.void)
-    })
-  })
+export declare const waitForAnimationSettled: (selector: string) => Effect.Effect<void>;

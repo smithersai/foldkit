@@ -1,4 +1,3 @@
-import { Layer, Schema } from 'effect'
 import { Document, type HtmlBuilder } from '../html/index.ts'
 import { currentDocument, locationHref } from './makeApplication.platform.ts'
 import type { ManagedResources } from '../managedResource/index.ts'
@@ -7,7 +6,7 @@ import type { Subscriptions } from '../subscription/subscription.vibe'
 import type { Return as UpdateReturn } from '../update/index.ts'
 import { Url, fromString as urlFromString } from '../url/index.vibe'
 import type { RoutingConfig } from './browserListeners.ts'
-import type { CrashConfig } from './crashUI.ts'
+import type { CrashConfig } from './crashUI.vibe'
 import type { DevToolsConfig } from './devToolsConfig.vibe'
 import {
   containRefusedPage,
@@ -49,7 +48,7 @@ type BaseApplicationConfig<
   viewTransition?: ViewTransitionConfig<Model, Message>
   freezeModel?: boolean
   preserveScroll?: boolean
-  resources?: Layer.Layer<Resources>
+  resources?: Layer<Resources>
   managedResources?: ManagedResources<Model, Message, ManagedResourceServices>
   devTools?: DevToolsConfig
 }>

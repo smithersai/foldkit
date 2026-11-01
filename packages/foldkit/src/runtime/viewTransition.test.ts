@@ -2,14 +2,14 @@ import { Effect, Fiber, Option, PubSub, Queue, Schema, Stream } from 'effect'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import * as Command from '../command/index.vibe'
-import { type DevToolsStore, INIT_INDEX } from '../devTools/store.js'
+import { type DevToolsStore, INIT_INDEX } from '../devTools/store.vibe'
 import { __htmlBuilder } from '../html/index.js'
 import { defineMessageUnion } from '../message/index.js'
 import { afterCommit } from '../render/render.vibe'
 import * as Subscription from '../subscription/subscription.vibe'
 import type * as Update from '../update/index.js'
 import { __setDevToolsOverlay } from './devToolsConfig.vibe'
-import { makeElement } from './makeElement.js'
+import { makeElement } from './makeElement.vibe'
 import {
   __decideViewTransition,
   __resolveStartViewTransition,

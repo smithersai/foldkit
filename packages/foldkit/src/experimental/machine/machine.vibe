@@ -1,18 +1,8 @@
-import {
-  Array,
-  Function,
-  HashMap,
-  HashSet,
-  Match,
-  Option,
-  Predicate,
-  Record,
-  Schema,
-  pipe,
-} from 'effect'
+import { Array, Function as EffectFunction, pipe } from 'effect'
 
 import type { Command } from '../../command/index.vibe'
-import type * as Update from '../../update/index.js'
+import type * as Update from '../../update/index.ts'
+import { invariant } from '../../invariant.ts'
 
 // STATE
 
@@ -34,31 +24,23 @@ type NoMachineContext = typeof NoMachineContextTypeId
 type IsAny<Value> = 0 extends 1 & Value ? true : false
 type IsNever<Value> = [Value] extends [never] ? true : false
 
-type HasMachineContext<Context> =
-  IsAny<Context> extends true
-    ? true
-    : [Context] extends [never]
-      ? true
-      : [Context] extends [NoMachineContext]
-        ? false
-        : true
+type HasMachineContext<Context> = IsAny<Context> extends true ? true
+  : [Context] extends [never] ? true
+  : [Context] extends [NoMachineContext] ? false
+  : true
 
-type ContextArguments<Context> =
-  HasMachineContext<Context> extends true ? [context: Context] : []
+type ContextArguments<Context> = HasMachineContext<Context> extends true
+  ? [context: Context]
+  : []
 
-type MachineContextArgument<Context> =
-  IsAny<Context> extends true
-    ? Context
-    : IsNever<Context> extends true
-      ? Context
-      : undefined extends Context
-        ? Exclude<Context, void | undefined> | undefined
-        : Context
+type MachineContextArgument<Context> = IsAny<Context> extends true ? Context
+  : IsNever<Context> extends true ? Context
+  : undefined extends Context ? Exclude<Context, void | undefined> | undefined
+  : Context
 
-type MachineContextArguments<Context> =
-  HasMachineContext<Context> extends true
-    ? [context: MachineContextArgument<Context>]
-    : []
+type MachineContextArguments<Context> = HasMachineContext<Context> extends true
+  ? [context: MachineContextArgument<Context>]
+  : []
 
 // EDGE
 
@@ -74,19 +56,17 @@ export type EdgeInput<
   TriggerMessage extends Tagged,
   GuardValue = void,
   Context = NoMachineContext,
-> =
-  HasMachineContext<Context> extends true
-    ? Readonly<{
-        state: SourceState
-        message: TriggerMessage
-        guardValue: GuardValue
-        context: Context
-      }>
-    : Readonly<{
-        state: SourceState
-        message: TriggerMessage
-        guardValue: GuardValue
-      }>
+> = HasMachineContext<Context> extends true ? Readonly<{
+    state: SourceState
+    message: TriggerMessage
+    guardValue: GuardValue
+    context: Context
+  }>
+  : Readonly<{
+    state: SourceState
+    message: TriggerMessage
+    guardValue: GuardValue
+  }>
 
 /**
  * A single transition edge. The target state tag is a literal value, so the
@@ -132,7 +112,7 @@ export type When<
     state: SourceState,
     message: TriggerMessage,
     ...context: ContextArguments<Context>
-  ) => Option.Option<unknown>
+  ) => Option<unknown>
   edge: Edge<
     State,
     Message,
@@ -174,11 +154,10 @@ export type GuardedEdge<
   | Otherwise<State, Message, SourceState, TriggerMessage, R, Context>
   | Ignore
 
-type OptionValue<MaybeValue> =
-  MaybeValue extends Option.Option<infer Value> ? Value : never
+type OptionValue<MaybeValue> = MaybeValue extends Option<infer Value> ? Value
+  : never
 
-type GuardValueOf<GuardResult> = [GuardResult] extends [boolean]
-  ? void
+type GuardValueOf<GuardResult> = [GuardResult] extends [boolean] ? void
   : OptionValue<GuardResult>
 
 /**
@@ -195,32 +174,36 @@ export type TransitionTable<
   Message extends Tagged,
   R = never,
   Context = NoMachineContext,
-> = Readonly<{
-  [SourceTag in TagOf<State>]?: Readonly<{
-    on: Readonly<{
-      [MessageTag in TagOf<Message>]?:
-        | Edge<
-            State,
-            Message,
-            Variant<State, SourceTag>,
-            Variant<Message, MessageTag>,
-            void,
-            R,
-            Context
-          >
-        | ReadonlyArray<
-            GuardedEdge<
+> = Readonly<
+  {
+    [SourceTag in TagOf<State>]?: Readonly<{
+      on: Readonly<
+        {
+          [MessageTag in TagOf<Message>]?:
+            | Edge<
               State,
               Message,
               Variant<State, SourceTag>,
               Variant<Message, MessageTag>,
+              void,
               R,
               Context
             >
-          >
+            | ReadonlyArray<
+              GuardedEdge<
+                State,
+                Message,
+                Variant<State, SourceTag>,
+                Variant<Message, MessageTag>,
+                R,
+                Context
+              >
+            >
+        }
+      >
     }>
-  }>
-}>
+  }
+>
 
 const ForStatesTypeId: unique symbol = Symbol('foldkit/Machine/ForStates')
 declare const ForStatesVarianceTypeId: unique symbol
@@ -250,9 +233,10 @@ type SharedTransitionMap<
   SourceState extends State,
   R,
   Context,
-> = Readonly<{
-  [MessageTag in TagOf<Message>]?:
-    | Edge<
+> = Readonly<
+  {
+    [MessageTag in TagOf<Message>]?:
+      | Edge<
         State,
         Message,
         SourceState,
@@ -261,7 +245,7 @@ type SharedTransitionMap<
         R,
         Context
       >
-    | ReadonlyArray<
+      | ReadonlyArray<
         GuardedEdge<
           State,
           Message,
@@ -271,54 +255,52 @@ type SharedTransitionMap<
           Context
         >
       >
-}>
+  }
+>
 
-type RequirementsOfGuarded<Value> =
-  Value extends When<any, any, any, any, any, infer R, any>
-    ? R
-    : Value extends Otherwise<any, any, any, any, infer R, any>
-      ? R
-      : never
+type RequirementsOfGuarded<Value> = Value extends
+  When<any, any, any, any, any, infer R, any> ? R
+  : Value extends Otherwise<any, any, any, any, infer R, any> ? R
+  : never
 
-type RequirementsOfTransition<Value> =
-  Value extends Edge<any, any, any, any, any, infer R, any>
-    ? R
-    : Value extends ReadonlyArray<infer GuardedEdge>
-      ? RequirementsOfGuarded<GuardedEdge>
-      : never
+type RequirementsOfTransition<Value> = Value extends
+  Edge<any, any, any, any, any, infer R, any> ? R
+  : Value extends ReadonlyArray<infer GuardedEdge>
+    ? RequirementsOfGuarded<GuardedEdge>
+  : never
 
 type RequirementsOfTransitionMap<Transitions> = RequirementsOfTransition<
   NonNullable<Transitions[keyof Transitions]>
 >
 
-type ForStatesBuilder<SourceTags extends Array.NonEmptyReadonlyArray<string>> =
-  Readonly<{
-    on: <
-      State extends Tagged,
-      Message extends Tagged,
-      Context,
-      R,
-      const Transitions extends SharedTransitionMap<
-        State,
-        Message,
-        Variant<State, Extract<SourceTags[number], TagOf<State>>>,
-        R,
-        Context
-      >,
-    >(
-      transitions: Exclude<SourceTags[number], TagOf<State>> extends never
-        ? Exclude<keyof Transitions, TagOf<Message>> extends never
-          ? Transitions
-          : never
-        : never,
-    ) => ForStatesFragment<
+type ForStatesBuilder<
+  SourceTags extends Array.NonEmptyReadonlyArray<string>,
+> = Readonly<{
+  on: <
+    State extends Tagged,
+    Message extends Tagged,
+    Context,
+    R,
+    const Transitions extends SharedTransitionMap<
       State,
       Message,
-      RequirementsOfTransitionMap<Transitions>,
-      Context,
-      SourceTags
-    >
-  }>
+      Variant<State, Extract<SourceTags[number], TagOf<State>>>,
+      R,
+      Context
+    >,
+  >(
+    transitions: Exclude<SourceTags[number], TagOf<State>> extends never
+      ? Exclude<keyof Transitions, TagOf<Message>> extends never ? Transitions
+      : never
+      : never,
+  ) => ForStatesFragment<
+    State,
+    Message,
+    RequirementsOfTransitionMap<Transitions>,
+    Context,
+    SourceTags
+  >
+}>
 
 /** Selects source state tags for a shared transition map. The `on` handler's
  * `state` is narrowed to the union of the selected variants, and its `message`
@@ -470,7 +452,7 @@ export const when = <
   Message extends Tagged,
   SourceState extends State,
   TriggerMessage extends Message,
-  GuardResult extends Option.Option<unknown> | boolean,
+  GuardResult extends Option<unknown> | boolean,
   const TargetTag extends TagOf<State>,
   R = never,
   Context = NoMachineContext,
@@ -499,7 +481,7 @@ export const when = <
     state: SourceState,
     message: TriggerMessage,
     ...context: ContextArguments<Context>
-  ): Option.Option<unknown> => {
+  ): Option<unknown> => {
     const result = guard(state, message, ...context)
 
     if (Predicate.isBoolean(result)) {
@@ -721,14 +703,13 @@ export type Machine<
   toMermaid: () => string
 }>
 
-type FoldContextField<ParentModel, Context> =
-  HasMachineContext<Context> extends true
-    ? Readonly<{
-        context: (
-          model: NoInfer<ParentModel>,
-        ) => NoInfer<MachineContextArgument<Context>>
-      }>
-    : Readonly<{ context?: never }>
+type FoldContextField<ParentModel, Context> = HasMachineContext<Context> extends
+  true ? Readonly<{
+    context: (
+      model: NoInfer<ParentModel>,
+    ) => NoInfer<MachineContextArgument<Context>>
+  }>
+  : Readonly<{ context?: never }>
 
 /** The capabilities needed to fold a Machine state field into its enclosing
  * Model. `read` returns an `Option` because the field may be absent in the
@@ -741,16 +722,17 @@ export type FoldConfig<
   Message extends Tagged,
   R = never,
   Context = NoMachineContext,
-> = Readonly<{
-  machine: Machine<State, Message, R, Context>
-  read: (model: ParentModel) => Option.Option<State>
-  write: (model: ParentModel, nextState: State) => ParentModel
-}> &
-  FoldContextField<ParentModel, Context>
+> =
+  & Readonly<{
+    machine: Machine<State, Message, R, Context>
+    read: (model: ParentModel) => Option<State>
+    write: (model: ParentModel, nextState: State) => ParentModel
+  }>
+  & FoldContextField<ParentModel, Context>
 
 type AnyFoldConfig = Readonly<{
   machine: any
-  read: (model: any) => Option.Option<any>
+  read: (model: any) => Option<any>
   write: (model: any, nextState: any) => any
   context?: (model: any) => any
 }>
@@ -806,7 +788,7 @@ export const fold: {
     config: FoldConfig<ParentModel, State, Message, R, Context>,
   ): Update.Fold<ParentModel, Message, Message, R>
 } = (config: AnyFoldConfig) =>
-  Function.dual(2, (model: any, message: any) => {
+  EffectFunction.dual(2, (model: any, message: any) => {
     const maybeState = config.read(model)
 
     if (Option.isNone(maybeState)) {
@@ -837,8 +819,9 @@ type MachineSchemaFields<
   State extends Tagged,
   Message extends Tagged,
 > = Readonly<{
-  state: Schema.Top &
-    Readonly<{ Type: State; members: ReadonlyArray<Schema.Top> }>
+  state:
+    & Schema.Top
+    & Readonly<{ Type: State; members: ReadonlyArray<Schema.Top> }>
   message: Schema.Top & Readonly<{ Type: Message }>
 }>
 
@@ -851,9 +834,9 @@ export type MachineSchemas<
   State extends Tagged,
   Message extends Tagged,
   ContextSchema extends Schema.Top | undefined = undefined,
-> = MachineSchemaFields<State, Message> &
-  ([ContextSchema] extends [Schema.Top]
-    ? Readonly<{ context: ContextSchema }>
+> =
+  & MachineSchemaFields<State, Message>
+  & ([ContextSchema] extends [Schema.Top] ? Readonly<{ context: ContextSchema }>
     : Readonly<{ context?: never }>)
 
 /** The Machine definition: the initial state, shared transition defaults, and
@@ -890,18 +873,18 @@ type LooseEdge<State extends Tagged, Message extends Tagged, R> = Readonly<{
 
 type LooseGuardedEdge<State extends Tagged, Message extends Tagged, R> =
   | Readonly<{
-      _tag: 'When'
-      guard: (
-        state: State,
-        message: Message,
-        context?: unknown,
-      ) => Option.Option<unknown>
-      edge: LooseEdge<State, Message, R>
-    }>
+    _tag: 'When'
+    guard: (
+      state: State,
+      message: Message,
+      context?: unknown,
+    ) => Option<unknown>
+    edge: LooseEdge<State, Message, R>
+  }>
   | Readonly<{
-      _tag: 'Otherwise'
-      edge: LooseEdge<State, Message, R>
-    }>
+    _tag: 'Otherwise'
+    edge: LooseEdge<State, Message, R>
+  }>
   | Ignore
 
 type SelectedEdge<State extends Tagged, Message extends Tagged, R> = Readonly<{
@@ -959,9 +942,9 @@ type ExpandedSharedTransitions<
   R,
 > = Readonly<{
   states: LooseTable<State, Message, R>
-  messageTagsByState: HashMap.HashMap<
+  messageTagsByState: HashMap<
     TagOf<State>,
-    HashSet.HashSet<TagOf<Message>>
+    HashSet<TagOf<Message>>
   >
 }>
 
@@ -979,13 +962,11 @@ const addSharedTransition = <State extends Tagged, Message extends Tagged, R>(
   messageTag: TagOf<Message>,
   transition: LooseTransition<State, Message, R>,
 ): ExpandedSharedTransitions<State, Message, R> => {
-  const sharedMessageTags = pipe(
-    HashMap.get(expanded.messageTagsByState, sourceTag),
-    Option.getOrElse(() => HashSet.empty<TagOf<Message>>()),
-  )
+  const sharedMessageTags = HashMap.get(expanded.messageTagsByState, sourceTag)
+    .getOrElse(() => HashSet.empty<TagOf<Message>>())
 
   if (HashSet.has(sharedMessageTags, messageTag)) {
-    throw new Error(
+    invariant(
       `Machine.define: shared transitions overlap for state "${sourceTag}" and Message "${messageTag}"`,
     )
   }
@@ -994,10 +975,8 @@ const addSharedTransition = <State extends Tagged, Message extends Tagged, R>(
     expanded.messageTagsByState,
     HashMap.set(sourceTag, HashSet.add(sharedMessageTags, messageTag)),
   )
-  const isStateLocal = pipe(
-    Record.get(explicitStates, sourceTag),
-    Option.exists(stateEntry => Record.has(stateEntry.on, messageTag)),
-  )
+  const isStateLocal = Record.get(explicitStates, sourceTag)
+    .exists(stateEntry => Record.has(stateEntry.on, messageTag))
 
   if (isStateLocal) {
     return {
@@ -1006,15 +985,16 @@ const addSharedTransition = <State extends Tagged, Message extends Tagged, R>(
     }
   }
 
-  const stateEntry: LooseStateTransitions<State, Message, R> = pipe(
-    Record.get(expanded.states, sourceTag),
-    Option.getOrElse(() => ({
+  const stateEntry: LooseStateTransitions<State, Message, R> = Record.get(
+    expanded.states,
+    sourceTag,
+  )
+    .getOrElse(() => ({
       on: emptyLooseRecord<
         TagOf<Message>,
         LooseTransition<State, Message, R>
       >(),
-    })),
-  )
+    }))
 
   return {
     states: pipe(
@@ -1062,8 +1042,7 @@ const expandSharedTransitions = <
                     transition,
                   ),
               ),
-            ),
-          ),
+            )),
         ),
     ),
     result => result.states,
@@ -1076,10 +1055,10 @@ const isGuardList = <State extends Tagged, Message extends Tagged, R>(
 ): edgeOrGuardedEdges is ReadonlyArray<LooseGuardedEdge<State, Message, R>> =>
   Array.isArray(edgeOrGuardedEdges)
 
-const extractLiteralTag = (tagField: unknown): Option.Option<string> => {
+const extractLiteralTag = (tagField: unknown): Option<string> => {
   if (
-    Predicate.hasProperty(tagField, 'literal') &&
-    Predicate.isString(tagField.literal)
+    Predicate.hasProperty(tagField, 'literal')
+    && Predicate.isString(tagField.literal)
   ) {
     return Option.some(tagField.literal)
   } else if (Predicate.hasProperty(tagField, 'schema')) {
@@ -1089,22 +1068,20 @@ const extractLiteralTag = (tagField: unknown): Option.Option<string> => {
   }
 }
 
-const extractMemberTag = (member: unknown): Option.Option<string> =>
-  pipe(
-    Option.some(member),
-    Option.filter(Predicate.hasProperty('fields')),
-    Option.map(struct => struct.fields),
-    Option.filter(Predicate.hasProperty('_tag')),
-    Option.flatMap(fields => extractLiteralTag(fields._tag)),
-  )
+const extractMemberTag = (member: unknown): Option<string> =>
+  Option.some(member)
+    .filter(Predicate.hasProperty('fields'))
+    .map(struct => struct.fields)
+    .filter(Predicate.hasProperty('_tag'))
+    .flatMap(fields => extractLiteralTag(fields._tag))
 
 const flattenUnionMembers = (
   members: ReadonlyArray<unknown>,
 ): ReadonlyArray<unknown> =>
   Array.flatMap(members, member => {
     if (
-      Predicate.hasProperty(member, 'members') &&
-      Array.isArray(member.members)
+      Predicate.hasProperty(member, 'members')
+      && Array.isArray(member.members)
     ) {
       return flattenUnionMembers(member.members)
     } else {
@@ -1195,8 +1172,9 @@ export function define<State extends Tagged, Message extends Tagged>(
   definition: MachineDefinition<State, Message, R>,
 ) => Machine<State, Message, R>
 export function define(
-  schemas: MachineSchemaFields<Tagged, Tagged> &
-    Readonly<{ context?: Schema.Top }>,
+  schemas:
+    & MachineSchemaFields<Tagged, Tagged>
+    & Readonly<{ context?: Schema.Top }>,
 ): unknown {
   return defineImplementation(schemas)
 }
@@ -1206,8 +1184,9 @@ function defineImplementation<
   Message extends Tagged,
   Context = NoMachineContext,
 >(
-  schemas: MachineSchemaFields<State, Message> &
-    Readonly<{ context?: Schema.Top }>,
+  schemas:
+    & MachineSchemaFields<State, Message>
+    & Readonly<{ context?: Schema.Top }>,
 ): <R = never>(
   definition: MachineDefinition<State, Message, R, Context>,
 ) => Machine<State, Message, R, Context> {
@@ -1239,7 +1218,7 @@ function defineImplementation<
             new Error(
               'Machine.define: every member of the state union Schema must be a Struct with a literal _tag field',
             ),
-        ),
+        )
       ),
       /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
       tags => tags as ReadonlyArray<TagOf<State>>,
@@ -1260,38 +1239,37 @@ function defineImplementation<
         | ReadonlyArray<LooseGuardedEdge<State, Message, R>>,
     ): ReadonlyArray<EdgeSummary<State, Message>> =>
       isGuardList(edgeOrGuardedEdges)
-        ? Array.flatMap(edgeOrGuardedEdges, (guardedEdge, position) =>
-            Match.value(guardedEdge).pipe(
-              Match.withReturnType<
-                ReadonlyArray<EdgeSummary<State, Message>>
-              >(),
-              Match.tagsExhaustive({
-                When: guardedWhen => [
-                  makeEdgeSummary(from, messageTag, guardedWhen.edge.target, {
-                    _tag: 'When',
-                    position,
-                  }),
-                ],
-                Otherwise: guardedOtherwise => [
-                  makeEdgeSummary(
-                    from,
-                    messageTag,
-                    guardedOtherwise.edge.target,
-                    {
-                      _tag: 'Otherwise',
-                      position,
-                    },
-                  ),
-                ],
-                Ignore: () => [],
+        ? Array.flatMap(
+          edgeOrGuardedEdges,
+          (
+            guardedEdge,
+            position,
+          ): ReadonlyArray<EdgeSummary<State, Message>> => match (guardedEdge) {
+            when { _tag: "When" } and let guardedWhen: [
+              makeEdgeSummary(from, messageTag, guardedWhen.edge.target, {
+                _tag: 'When',
+                position,
               }),
-            ),
-          )
+            ];
+            when { _tag: "Otherwise" } and let guardedOtherwise: [
+              makeEdgeSummary(
+                from,
+                messageTag,
+                guardedOtherwise.edge.target,
+                {
+                  _tag: 'Otherwise',
+                  position,
+                },
+              ),
+            ];
+            when { _tag: "Ignore" }: [];
+          },
+        )
         : [
-            makeEdgeSummary(from, messageTag, edgeOrGuardedEdges.target, {
-              _tag: 'Unguarded',
-            }),
-          ]
+          makeEdgeSummary(from, messageTag, edgeOrGuardedEdges.target, {
+            _tag: 'Unguarded',
+          }),
+        ]
 
     const edges: ReadonlyArray<EdgeSummary<State, Message>> = pipe(
       Record.toEntries(looseStates),
@@ -1299,13 +1277,13 @@ function defineImplementation<
         pipe(
           Record.toEntries(stateEntry.on),
           Array.flatMap(([messageTag, edgeOrGuardedEdges]) =>
-            summarizeEntry(sourceTag, messageTag, edgeOrGuardedEdges),
+            summarizeEntry(sourceTag, messageTag, edgeOrGuardedEdges)
           ),
-        ),
+        )
       ),
     )
 
-    const messageAlphabet: HashSet.HashSet<TagOf<Message>> = pipe(
+    const messageAlphabet: HashSet<TagOf<Message>> = pipe(
       Record.values(looseStates),
       Array.flatMap(stateEntry => Record.keys(stateEntry.on)),
       HashSet.fromIterable,
@@ -1319,7 +1297,7 @@ function defineImplementation<
       state: State,
       message: Message,
       context?: Context,
-    ): Option.Option<unknown> => {
+    ): Option<unknown> => {
       if (hasContext) {
         return guardedEdge.guard(state, message, context)
       } else {
@@ -1338,39 +1316,32 @@ function defineImplementation<
           _tag: 'IgnoredEdge',
           reason: 'GuardsFellThrough',
         }),
-        onNonEmpty: (guardedEdge, rest) =>
-          Match.value(guardedEdge).pipe(
-            Match.withReturnType<EdgeSelection<State, Message, R>>(),
-            Match.tagsExhaustive({
-              When: guardedWhen => {
-                const maybeGuardValue = runGuard(
-                  guardedWhen,
-                  state,
-                  message,
-                  context,
-                )
-
-                if (Option.isSome(maybeGuardValue)) {
-                  return {
-                    _tag: 'SelectedEdge',
-                    edge: guardedWhen.edge,
-                    guardValue: maybeGuardValue.value,
-                  }
-                } else {
-                  return selectFromGuardList(rest, state, message, context)
-                }
-              },
-              Otherwise: guardedOtherwise => ({
+        onNonEmpty: (guardedEdge, rest): EdgeSelection<State, Message, R> => match (guardedEdge) {
+          when { _tag: 'When' } and let guardedWhen: do {
+            const maybeGuardValue = runGuard(
+              guardedWhen,
+              state,
+              message,
+              context,
+            )
+            Option.isSome(maybeGuardValue)
+              ? {
                 _tag: 'SelectedEdge',
-                edge: guardedOtherwise.edge,
-                guardValue: undefined,
-              }),
-              Ignore: () => ({
-                _tag: 'IgnoredEdge',
-                reason: 'ExplicitlyIgnored',
-              }),
-            }),
-          ),
+                edge: guardedWhen.edge,
+                guardValue: maybeGuardValue.value,
+              }
+              : selectFromGuardList(rest, state, message, context)
+          };
+          when { _tag: 'Otherwise' } and let guardedOtherwise: ({
+            _tag: 'SelectedEdge',
+            edge: guardedOtherwise.edge,
+            guardValue: undefined,
+          });
+          when { _tag: 'Ignore' }: ({
+            _tag: 'IgnoredEdge',
+            reason: 'ExplicitlyIgnored',
+          });
+        },
       })
 
     const chooseEdge = (
@@ -1384,10 +1355,10 @@ function defineImplementation<
       isGuardList(edgeOrGuardedEdges)
         ? selectFromGuardList(edgeOrGuardedEdges, state, message, context)
         : {
-            _tag: 'SelectedEdge',
-            edge: edgeOrGuardedEdges,
-            guardValue: undefined,
-          }
+          _tag: 'SelectedEdge',
+          edge: edgeOrGuardedEdges,
+          guardValue: undefined,
+        }
 
     const makeRuntimeEdgeInput = (
       state: State,
@@ -1444,12 +1415,15 @@ function defineImplementation<
       message: Message,
       ...contextArguments: [context?: Context]
     ): TransitionResult<State, Message, R> => {
-      const context = pipe(contextArguments, Array.head, Option.getOrUndefined)
+      const context = pipe(
+        contextArguments,
+        Array.head,
+        Option.getOrUndefined,
+      )
 
-      return pipe(
-        Record.get(looseStates, state._tag),
-        Option.flatMap(stateEntry => Record.get(stateEntry.on, message._tag)),
-        Option.match({
+      return Record.get(looseStates, state._tag)
+        .flatMap(stateEntry => Record.get(stateEntry.on, message._tag))
+        .match({
           onNone: () =>
             makeIgnored(
               state,
@@ -1458,7 +1432,7 @@ function defineImplementation<
                 ? 'NotApplicable'
                 : 'OutOfAlphabet',
             ),
-          onSome: edgeOrGuardedEdges => {
+          onSome: (edgeOrGuardedEdges): TransitionResult<State, Message, R> => {
             const selection = chooseEdge(
               edgeOrGuardedEdges,
               state,
@@ -1466,18 +1440,17 @@ function defineImplementation<
               context,
             )
 
-            return Match.value(selection).pipe(
-              Match.withReturnType<TransitionResult<State, Message, R>>(),
-              Match.tagsExhaustive({
-                SelectedEdge: selectedEdge =>
-                  makeTransitioned(state, message, selectedEdge, context),
-                IgnoredEdge: ignoredEdge =>
-                  makeIgnored(state, message, ignoredEdge.reason),
-              }),
-            )
+            return match (selection) {
+              when { _tag: "SelectedEdge" } and let selectedEdge:
+                makeTransitioned(state, message, selectedEdge, context);
+              when { _tag: "IgnoredEdge" } and let ignoredEdge: makeIgnored(
+                state,
+                message,
+                ignoredEdge.reason,
+              );
+            }
           },
-        }),
-      )
+        })
     }
 
     const transition = (
@@ -1487,16 +1460,13 @@ function defineImplementation<
     ): Update.Return<State, Message, R> => {
       const result = step(state, message, ...contextArguments)
 
-      return Match.value(result).pipe(
-        Match.withReturnType<Update.Return<State, Message, R>>(),
-        Match.tagsExhaustive({
-          Transitioned: transitioned => ({
-            model: transitioned.state,
-            commands: transitioned.commands,
-          }),
-          Ignored: ignored => ({ model: ignored.state }),
-        }),
-      )
+      return match (result) {
+        when { _tag: "Transitioned" } and let transitioned: ({
+          model: transitioned.state,
+          commands: transitioned.commands,
+        });
+        when { _tag: "Ignored" } and let ignored: ({ model: ignored.state });
+      }
     }
 
     const makeDeadTransition = (
@@ -1532,23 +1502,16 @@ function defineImplementation<
 
     const fallbackToShadowingReason = (
       fallback: LooseGuardListFallback,
-    ): ShadowingReason =>
-      Match.value(fallback).pipe(
-        Match.withReturnType<ShadowingReason>(),
-        Match.tagsExhaustive({
-          Otherwise: () => 'ShadowedByOtherwise',
-          Ignore: () => 'ShadowedByIgnore',
-        }),
-      )
+    ): ShadowingReason => match (fallback) {
+      when { _tag: "Otherwise" }: 'ShadowedByOtherwise';
+      when { _tag: "Ignore" }: 'ShadowedByIgnore';
+    }
 
     const maybeGuardPosition = (
       edgeSummary: EdgeSummary<State, Message>,
-    ): Option.Option<number> =>
-      pipe(
-        edgeSummary.guard,
-        Option.liftPredicate(isPositionedEdgeGuard),
-        Option.map(guard => guard.position),
-      )
+    ): Option<number> =>
+      Option.liftPredicate(edgeSummary.guard, isPositionedEdgeGuard)
+        .map(guard => guard.position)
 
     const groupEdgesByMessageTag = (
       edgesFromState: EdgeGroup,
@@ -1565,26 +1528,24 @@ function defineImplementation<
       edgeGroup: EdgeGroup,
       guardPosition: number,
     ): EdgeGroup =>
-      Array.filter(edgeGroup, edgeSummary =>
-        pipe(
-          maybeGuardPosition(edgeSummary),
-          Option.exists(position => position > guardPosition),
-        ),
+      Array.filter(
+        edgeGroup,
+        edgeSummary =>
+          maybeGuardPosition(edgeSummary)
+            .exists(position => position > guardPosition),
       )
 
     const guardListAt = (
       from: TagOf<State>,
       messageTag: TagOf<Message>,
-    ): Option.Option<ReadonlyArray<LooseGuardedEdge<State, Message, R>>> =>
-      pipe(
-        Record.get(looseStates, from),
-        Option.flatMap(stateEntry => Record.get(stateEntry.on, messageTag)),
-        Option.flatMap(Option.liftPredicate(isGuardList)),
-      )
+    ): Option<ReadonlyArray<LooseGuardedEdge<State, Message, R>>> =>
+      Record.get(looseStates, from)
+        .flatMap(stateEntry => Record.get(stateEntry.on, messageTag))
+        .flatMap(Option.liftPredicate(isGuardList))
 
     const firstGuardListFallback = (
       guardedEdges: ReadonlyArray<LooseGuardedEdge<State, Message, R>>,
-    ): Option.Option<GuardListFallback> =>
+    ): Option<GuardListFallback> =>
       pipe(
         guardedEdges,
         Array.findFirstWithIndex(isGuardListFallback),
@@ -1596,12 +1557,12 @@ function defineImplementation<
 
     const firstFallbackInEdgeGroup = (
       edgeGroup: EdgeGroup,
-    ): Option.Option<GuardListFallback> =>
+    ): Option<GuardListFallback> =>
       pipe(
         edgeGroup,
         Array.head,
         Option.flatMap(edgeSummary =>
-          guardListAt(edgeSummary.from, edgeSummary.messageTag),
+          guardListAt(edgeSummary.from, edgeSummary.messageTag)
         ),
         Option.flatMap(firstGuardListFallback),
       )
@@ -1609,19 +1570,17 @@ function defineImplementation<
     const shadowedTransitionsInGroup = (
       edgeGroup: EdgeGroup,
     ): ReadonlyArray<DeadTransition<State, Message>> =>
-      pipe(
-        firstFallbackInEdgeGroup(edgeGroup),
-        Option.match({
+      firstFallbackInEdgeGroup(edgeGroup)
+        .match({
           onNone: () => [],
           onSome: fallback =>
             pipe(
               edgesAfterGuardPosition(edgeGroup, fallback.position),
               Array.map(edgeSummary =>
-                makeDeadTransition(edgeSummary, fallback.reason),
+                makeDeadTransition(edgeSummary, fallback.reason)
               ),
             ),
-        }),
-      )
+        })
 
     const edgeGroups = pipe(
       edges,
@@ -1666,9 +1625,9 @@ function defineImplementation<
             visited.has(head)
               ? visit(tail, visited)
               : visit(
-                  [...tail, ...targetsFrom(head)],
-                  new Set([...visited, head]),
-                ),
+                [...tail, ...targetsFrom(head)],
+                new Set([...visited, head]),
+              ),
         })
 
       return visit(roots, new Set())
@@ -1693,7 +1652,7 @@ function defineImplementation<
         selectableEdges,
         Array.filter(edgeSummary => !reachable.has(edgeSummary.from)),
         Array.map(edgeSummary =>
-          makeDeadTransition(edgeSummary, 'UnreachableSource'),
+          makeDeadTransition(edgeSummary, 'UnreachableSource')
         ),
       )
 
@@ -1701,21 +1660,20 @@ function defineImplementation<
     }
 
     const toMermaid = (): string => {
-      const guardLabel = (guard: EdgeGuard): string =>
-        Match.value(guard).pipe(
-          Match.tagsExhaustive({
-            Unguarded: () => '',
-            When: ({ position }) => ` [when ${position + 1}]`,
-            Otherwise: () => ' [otherwise]',
-          }),
-        )
+      const guardLabel = (guard: EdgeGuard): string => match (guard) {
+        when { _tag: "Unguarded" }: '';
+        when { _tag: "When", let position }: ` [when ${position + 1}]`;
+        when { _tag: "Otherwise" }: ' [otherwise]';
+      }
 
       const stateLines = Array.map(stateTags, stateTag => `  ${stateTag}`)
 
       const transitionLines = Array.map(
         edges,
         edgeSummary =>
-          `  ${edgeSummary.from} --> ${edgeSummary.target}: ${edgeSummary.messageTag}${guardLabel(edgeSummary.guard)}`,
+          `  ${edgeSummary.from} --> ${edgeSummary.target}: ${edgeSummary.messageTag}${
+            guardLabel(edgeSummary.guard)
+          }`,
       )
 
       return Array.join(

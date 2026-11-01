@@ -14,7 +14,7 @@ import {
   type DevToolsStore,
   type MountRecord,
   createDevToolsStore,
-} from '../devTools/store.js'
+} from '../devTools/store.vibe'
 import { extractSubmodelInfo, isTagged } from '../devTools/submodelPath.vibe'
 import { startWebSocketBridge } from '../devTools/webSocketBridge.js'
 import {

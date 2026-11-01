@@ -6,7 +6,7 @@ import type { Subscriptions } from '../subscription/subscription.vibe';
 import type { Return as UpdateReturn } from '../update/index.js';
 import { Url } from '../url/index.vibe';
 import type { RoutingConfig } from './browserListeners.js';
-import type { CrashConfig } from './crashUI.js';
+import type { CrashConfig } from './crashUI.vibe';
 import type { DevToolsConfig } from './devToolsConfig.vibe';
 import { type FlagsSchemaConfig, type MakeRuntimeReturn } from './runtime.js';
 import type { SlowConfig } from './slowPhase.vibe';

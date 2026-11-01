@@ -2151,6 +2151,9 @@ importers:
       effect:
         specifier: 4.1.0
         version: 4.1.0
+      fast-check:
+        specifier: ^4.10.2
+        version: 4.10.2
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5

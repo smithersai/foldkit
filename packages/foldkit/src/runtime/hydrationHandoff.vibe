@@ -1,4 +1,4 @@
-import { Effect, Array as EffectArray, Option, Schema, pipe } from 'effect'
+import { Array as EffectArray, pipe } from 'effect'
 import { currentDocument, queryAll } from './hydrationHandoff.platform.ts'
 
 import { HYDRATION_BUILD_ATTRIBUTE } from '../buildToken.ts'
@@ -331,10 +331,21 @@ export const findDocumentHydration = (
       `[${FOLDKIT_APP_ATTRIBUTE}]`,
     )
     if (container.hasAttribute(FOLDKIT_APP_ATTRIBUTE)) {
-      const isDocumentRoot = Option.match(EffectArray.head(stampedRoots), {
-        onNone: () => false,
-        onSome: root => root === container,
-      })
+      const isDocumentRoot = do {
+        const $optionSubject = EffectArray.head(stampedRoots)
+        const $optionHandlers: {
+          onNone: () => boolean
+          onSome: (root: HTMLElement) => boolean
+        } = {
+          onNone: () => false,
+          onSome: root => root === container,
+        }
+        const { onNone: $optionNone, onSome: $optionSome } = $optionHandlers
+        match ($optionSubject) {
+          when Option.Some(let $optionValue): $optionSome($optionValue);
+          default: $optionNone();
+        }
+      }
       if (!isDocumentRoot) {
         containRefusedPage(container.ownerDocument)
         invariant(
@@ -373,10 +384,30 @@ export const findDocumentHydration = (
       },
     })
   }
-  return Option.match(EffectArray.head(stampedRoots), {
-    onNone: () => undefined,
-    onSome: root => hydrationForRoot(root, isFlagsRequired),
-  })
+  return do {
+    const $optionSubject = EffectArray.head(stampedRoots)
+    const $optionHandlers: {
+      onNone: () => undefined
+      onSome: (
+        root: HTMLElement,
+      ) => Readonly<
+        {
+          root: HTMLElement
+          runtimeId: string
+          flagsScripts: readonly HTMLScriptElement[]
+          isFlagsRequired: boolean
+        }
+      >
+    } = {
+      onNone: () => undefined,
+      onSome: root => hydrationForRoot(root, isFlagsRequired),
+    }
+    const { onNone: $optionNone, onSome: $optionSome } = $optionHandlers
+    match ($optionSubject) {
+      when Option.Some(let $optionValue): $optionSome($optionValue);
+      default: $optionNone();
+    }
+  }
 }
 
 /** What the boot takes from the handoff: the server-rendered root the first

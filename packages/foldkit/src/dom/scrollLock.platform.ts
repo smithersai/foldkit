@@ -1,5 +1,6 @@
-import { Effect, Number } from 'effect'
-
+// The document element's style, the touchmove listener and the iOS detection are platform code
+// that a .vibe module does not use directly (VIP-33), and Effect has no DOM service, so the raw
+// code lives here unchanged.
 const scrollLockState = {
   count: 0,
   overflow: '',
@@ -43,20 +44,7 @@ const handleTouchMove = (event: TouchEvent): void => {
   }
 }
 
-/**
- * Locks page scroll by setting `overflow: hidden` on the document element.
- * Compensates for scrollbar width with padding to prevent layout shift.
- * On iOS Safari, intercepts `touchmove` events to prevent page scroll
- * while allowing scrolling within overflow containers.
- * Uses reference counting so nested locks are safe. The page only unlocks
- * when every lock has been released.
- *
- * @example
- * ```typescript
- * Dom.lockScroll
- * ```
- */
-export const lockScroll: Effect.Effect<void> = Effect.sync(() => {
+export const lockScroll = (): void => {
   const {
     documentElement,
     documentElement: { style },
@@ -80,20 +68,10 @@ export const lockScroll: Effect.Effect<void> = Effect.sync(() => {
   }
 
   scrollLockState.count++
-})
+}
 
-/**
- * Releases one scroll lock. When the last lock is released, restores the
- * original `overflow` and `padding-right` on the document element.
- * On iOS Safari, removes the `touchmove` listener.
- *
- * @example
- * ```typescript
- * Dom.unlockScroll
- * ```
- */
-export const unlockScroll: Effect.Effect<void> = Effect.sync(() => {
-  scrollLockState.count = Math.max(0, Number.decrement(scrollLockState.count))
+export const unlockScroll = (): void => {
+  scrollLockState.count = Math.max(0, scrollLockState.count - 1)
 
   if (scrollLockState.count === 0) {
     const {
@@ -103,4 +81,4 @@ export const unlockScroll: Effect.Effect<void> = Effect.sync(() => {
     style.paddingRight = scrollLockState.paddingRight
     document.removeEventListener('touchmove', handleTouchMove)
   }
-})
+}

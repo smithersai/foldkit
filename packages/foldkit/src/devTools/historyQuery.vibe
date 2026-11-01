@@ -7,7 +7,7 @@ import {
   INIT_INDEX,
   type StoreState,
   latestEntryIndex,
-} from './store.ts'
+} from './store.vibe'
 import { resolvePath, summarizeValue } from './summarize.vibe'
 
 const ROOT = 'root'
@@ -58,12 +58,23 @@ const entryMatchesPatterns = (
   entry: HistoryEntry,
   maybePatterns: Option<Array.NonEmptyReadonlyArray<string>>,
 ): boolean =>
-  Option.match(maybePatterns, {
-    onNone: () => true,
-    onSome: patterns =>
-      HashSet.some(entry.diff.changedPaths, path =>
-        matchesAnyPathPattern(path, patterns)),
-  })
+  do {
+    const $optionSubject = maybePatterns
+    const $optionHandlers: {
+      onNone: () => boolean
+      onSome: (patterns: readonly [string, ...string[]]) => boolean
+    } = {
+      onNone: () => true,
+      onSome: patterns =>
+        HashSet.some(entry.diff.changedPaths, path =>
+          matchesAnyPathPattern(path, patterns)),
+    }
+    const { onNone: $optionNone, onSome: $optionSome } = $optionHandlers
+    match ($optionSubject) {
+      when Option.Some(let $optionValue): $optionSome($optionValue);
+      default: $optionNone();
+    }
+  }
 
 /** A retained history entry paired with its absolute history index. */
 export type IndexedEntry = Readonly<{
@@ -216,13 +227,24 @@ export const pathOrder: Order<string> = Order.make((self, that) => {
       ([selfSegment, thatSegment]) => selfSegment !== thatSegment,
     ),
   )
-  return Option.match(maybeFirstDifference, {
-    onNone: () => Order.Number(selfSegments.length, thatSegments.length),
-    onSome: ([selfSegment, thatSegment]) =>
-      isArrayIndexSegment(selfSegment) && isArrayIndexSegment(thatSegment)
-        ? Order.Number(Number(selfSegment), Number(thatSegment))
-        : Order.String(selfSegment, thatSegment),
-  })
+  return do {
+    const $optionSubject = maybeFirstDifference
+    const $optionHandlers: {
+      onNone: () => Ordering
+      onSome: ([selfSegment, thatSegment]: [string, string]) => Ordering
+    } = {
+      onNone: () => Order.Number(selfSegments.length, thatSegments.length),
+      onSome: ([selfSegment, thatSegment]) =>
+        isArrayIndexSegment(selfSegment) && isArrayIndexSegment(thatSegment)
+          ? Order.Number(Number(selfSegment), Number(thatSegment))
+          : Order.String(selfSegment, thatSegment),
+    }
+    const { onNone: $optionNone, onSome: $optionSome } = $optionHandlers
+    match ($optionSubject) {
+      when Option.Some(let $optionValue): $optionSome($optionValue);
+      default: $optionNone();
+    }
+  }
 })
 
 /**

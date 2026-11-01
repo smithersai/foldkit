@@ -8,7 +8,7 @@ import { make } from '../managedResource/managedResource.vibe'
 import { defineMessageUnion } from '../message/index.js'
 import { modifyFields } from '../struct/index.vibe'
 import type * as Update from '../update/index.js'
-import { makeElement } from './makeElement.js'
+import { makeElement } from './makeElement.vibe'
 
 type EngineShape = Readonly<{ id: string }>
 

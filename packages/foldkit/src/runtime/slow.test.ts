@@ -6,7 +6,7 @@ import { defineMessageUnion } from '../message/index.js'
 import { modifyFields } from '../struct/index.vibe'
 import * as Subscription from '../subscription/subscription.vibe'
 import type * as Update from '../update/index.js'
-import { makeElement } from './makeElement.js'
+import { makeElement } from './makeElement.vibe'
 import {
   type SlowContext,
   type SlowSubscriptionDependenciesContext,

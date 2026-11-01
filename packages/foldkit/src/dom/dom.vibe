@@ -1,17 +1,16 @@
-import { Effect } from 'effect'
 import { afterCommit, afterPaint } from '../render/render.vibe'
 import { DialogRuntime } from './dialogRuntime.vibe'
 import {
   advanceFocusFrom,
-  asHtmlElement,
   closeDialogElement,
   queryElement,
   releaseDialogHygieneById,
   scrollElementIntoViewIfNotVisible,
   showDialogElement,
 } from './dom.platform.ts'
+import { asDialogElement, asHtmlElement } from './domPredicates.platform.ts'
 import { ElementNotFound } from './error.vibe'
-import { unlockScroll } from './scrollLock.ts'
+import { unlockScroll } from './scrollLock.vibe'
 
 // NOTE: The dialog machinery, focus management and scrolling are DOM code, so
 // they live unchanged in dom.platform.ts (VIP-33); this module keeps the public
@@ -135,9 +134,12 @@ export const showDialog = effect (
 ): boolean!ElementNotFound => {
   try afterCommit
 
-  const element = try sync((selector) => queryElement(selector), selector)
+  const element = try sync(
+    (selector) => asDialogElement(queryElement(selector)),
+    selector,
+  )
 
-  if (!(element instanceof HTMLDialogElement)) {
+  if (element === null) {
     throw new ElementNotFound({ selector })
   }
 
@@ -173,8 +175,11 @@ export const showDialog = effect (
 export const closeDialog = effect (
   selector: string,
 ): boolean!ElementNotFound => {
-  const element = try sync((selector) => queryElement(selector), selector)
-  if (element instanceof HTMLDialogElement) {
+  const element = try sync(
+    (selector) => asDialogElement(queryElement(selector)),
+    selector,
+  )
+  if (element !== null) {
     return try sync((element) => closeDialogElement(element), element)
   }
   throw new ElementNotFound({ selector })

@@ -1,9 +1,7 @@
 import {
   Array,
-  Duration,
   Number as EffectNumber,
   String as EffectString,
-  Stream,
   pipe,
 } from 'effect'
 import {
@@ -892,8 +890,10 @@ const keyBindingStream = <Message>(
     }
 
     return Effect.acquireRelease(
-      Effect.sync(() => acquireKeyBindingListener(config, emitMessage)),
-      listener => Effect.sync(() => releaseKeyBindingListener(listener)),
+      effect {
+        return acquireKeyBindingListener(config, emitMessage)
+      },
+      effect listener => releaseKeyBindingListener(listener),
     )
   })
 

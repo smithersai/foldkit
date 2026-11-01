@@ -4,7 +4,7 @@ export type {
   CrashConfig,
   CrashContext,
   ElementCrashConfig,
-} from './crashUI.js'
+} from './crashUI.vibe'
 
 export type {
   DevToolsConfig,
@@ -35,13 +35,13 @@ export type {
   RoutingApplicationInit,
 } from './makeApplication.vibe'
 
-export { makeElement } from './makeElement.js'
+export { makeElement } from './makeElement.vibe'
 
 export type {
   ElementConfig,
   ElementConfigWithFlags,
   ElementInit,
-} from './makeElement.js'
+} from './makeElement.vibe'
 
 export type { MakeRuntimeReturn } from './runtime.js'
 

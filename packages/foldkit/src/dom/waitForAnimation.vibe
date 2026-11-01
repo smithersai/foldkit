@@ -1,0 +1,56 @@
+import { Experimental } from 'vibelang-runtime'
+import {
+  ExperimentalBrowserAnimations,
+  ExperimentalBrowserWindow,
+} from 'vibelang-runtime/experimental/platform-browser'
+
+import { asHtmlElement } from './domPredicates.platform.ts'
+
+/**
+ * Waits for all CSS animations on the element matching the selector to settle.
+ * Covers both CSS transitions and CSS keyframe animations via the Web Animations
+ * API. Falls back to completing immediately if the element is missing or has no
+ * active animations.
+ *
+ * Leave animations must be finite. `animation-iteration-count: infinite` will
+ * keep the underlying `.finished` promise pending and hang the caller.
+ *
+ * @example
+ * ```typescript
+ * Dom.waitForAnimationSettled('#menu-items')
+ * ```
+ */
+export const waitForAnimationSettled = effect (selector: string): void!! => {
+  provide Layer.mergeAll(
+    ExperimentalBrowserAnimations.layer,
+    ExperimentalBrowserWindow.layer,
+  ) {
+    const animations = Experimental.Animations.Animations()
+    const windows = Experimental.Window.Window()
+    const window = try windows.current
+    try callback(
+      (
+        animations: Experimental.Animations.Animations,
+        window: Window,
+        selector: string,
+        resume: Resume<void, never>,
+      ) => {
+        // callback's body is plain TypeScript. The original frame registration is
+        // not cancelled on interruption; retain that lifetime and its async read.
+        animations.onNextFrame(async () => {
+          const element = asHtmlElement(window.document.querySelector(selector))
+          const activeAnimations = element === null
+            ? []
+            : element.getAnimations()
+          await Promise.allSettled(
+            activeAnimations.map(({ finished }) => finished),
+          )
+          resume(undefined)
+        })
+      },
+      animations,
+      window,
+      selector,
+    )
+  }
+}

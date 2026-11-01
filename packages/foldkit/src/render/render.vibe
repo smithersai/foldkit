@@ -1,4 +1,3 @@
-import { Effect } from 'effect'
 import { RenderCommit } from './commit.vibe'
 import { requestFrame } from './render.platform.ts'
 

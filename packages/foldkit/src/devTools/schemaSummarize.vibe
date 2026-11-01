@@ -139,13 +139,33 @@ const collapseUnionsInValue = (value: unknown): unknown => {
     return value
   }
   if (isDiscriminatedUnion(value)) {
-    return Option.match(anyOfOf(value), {
-      onNone: () => value,
-      onSome: members => ({
-        _summary: 'union' as const,
-        variants: indexEntriesOf(members),
-      }),
-    })
+    return do {
+      const $optionSubject = anyOfOf(value)
+      const $optionHandlers: {
+        onNone: () => Readonly<Record<string, unknown>>
+        onSome: (
+          members: readonly unknown[],
+        ) => {
+          _summary: 'union'
+          variants: readonly {
+            readonly tag: string
+            readonly payloadFields: readonly string[]
+            readonly unionFields: readonly string[]
+          }[]
+        }
+      } = {
+        onNone: () => value,
+        onSome: members => ({
+          _summary: 'union' as const,
+          variants: indexEntriesOf(members),
+        }),
+      }
+      const { onNone: $optionNone, onSome: $optionSome } = $optionHandlers
+      match ($optionSubject) {
+        when Option.Some(let $optionValue): $optionSome($optionValue);
+        default: $optionNone();
+      }
+    }
   }
   return Record.map(value, child => collapseUnionsInValue(child))
 }

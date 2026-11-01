@@ -58,7 +58,7 @@ export const forkSubscriptionFibers = effect <Model, Message, Services>({
       const start = Option.isSome(maybeSlowSubscriptionDependencies)
         ? try Clock.monotonicTimeNanos
         : undefined
-      const dependencies = try Effect.sync(() => modelToDependencies(model))
+      const dependencies = modelToDependencies(model)
       const duration = start === undefined
         ? Option.none()
         : Option.some(
@@ -71,18 +71,16 @@ export const forkSubscriptionFibers = effect <Model, Message, Services>({
       model: Model,
       duration: Option<number>,
     ): void!! => {
-      try Effect.sync(() =>
-        reportSlowPhase<SlowSubscriptionDependenciesContext<Model>>(
-          maybeSlowSubscriptionDependencies,
-          duration,
-          (durationMs, thresholdMs) => ({
-            _tag: 'SubscriptionDependencies',
-            subscriptionKey: key,
-            model,
-            durationMs,
-            thresholdMs,
-          }),
-        )
+      reportSlowPhase<SlowSubscriptionDependenciesContext<Model>>(
+        maybeSlowSubscriptionDependencies,
+        duration,
+        (durationMs, thresholdMs) => ({
+          _tag: 'SubscriptionDependencies',
+          subscriptionKey: key,
+          model,
+          durationMs,
+          thresholdMs,
+        }),
       )
     }
 

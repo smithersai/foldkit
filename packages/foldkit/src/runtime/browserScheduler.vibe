@@ -7,7 +7,6 @@
 // op-budget suspension, or a Stream step) would take an extra 4-16ms
 // round-trip before
 // its result Message lands.
-import { Layer, Scheduler } from 'effect'
 import { microtaskSetImmediate } from './browserScheduler.platform.ts'
 const browserScheduler = new Scheduler.MixedScheduler(
   'async',

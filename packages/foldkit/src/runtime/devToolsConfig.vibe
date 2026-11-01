@@ -1,5 +1,4 @@
-import { Option, Schema, Scope } from 'effect'
-import type { DevToolsStore } from '../devTools/store.ts'
+import type { DevToolsStore } from '../devTools/store.vibe'
 import { isEmbeddedInFrame } from './devToolsConfig.platform.ts'
 import { type Visibility, isVisible } from './visibility.vibe'
 
@@ -41,7 +40,7 @@ export type DevToolsOverlay = (
   position: DevToolsPosition,
   mode: DevToolsMode,
   maybeBanner: Option<string>,
-) => void!never!Scope.Scope
+) => void!never!Scope
 
 /**
  * DevTools configuration.

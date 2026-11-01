@@ -219,10 +219,21 @@ const messageTag = (rawMessage: unknown): string =>
     })
 
 const optionMessageTrigger = (maybeMessage: Option<unknown>): string =>
-  Option.match(maybeMessage, {
-    onNone: (): infer _ => 'init',
-    onSome: messageTag,
-  })
+  do {
+    const $optionSubject = maybeMessage
+    const $optionHandlers: {
+      onNone: () => string
+      onSome: (rawMessage: unknown) => string
+    } = {
+      onNone: (): infer _ => 'init',
+      onSome: messageTag,
+    }
+    const { onNone: $optionNone, onSome: $optionSome } = $optionHandlers
+    match ($optionSubject) {
+      when Option.Some(let $optionValue): $optionSome($optionValue);
+      default: $optionNone();
+    }
+  }
 
 const TUNING_HINT =
   'Set slow.thresholdOverrides to change budgets or pass slow: false to disable warnings.'

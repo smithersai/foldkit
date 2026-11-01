@@ -2,14 +2,14 @@ export { DEVTOOLS_HOST_ID } from '../html/index.js'
 export { __setDevToolsOverlay } from '../runtime/devToolsConfig.vibe'
 export type { DevToolsOverlay } from '../runtime/devToolsConfig.vibe'
 
-export { INIT_INDEX, latestEntryIndex } from './store.js'
+export { INIT_INDEX, latestEntryIndex } from './store.vibe'
 
 export type {
   CommandRecord,
   DevToolsStore,
   MountRecord,
   StoreState,
-} from './store.js'
+} from './store.vibe'
 
 export { toInspectableValue } from './serialize.vibe'
 

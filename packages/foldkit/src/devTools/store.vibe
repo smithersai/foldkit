@@ -1,16 +1,4 @@
-import {
-  Array,
-  Effect,
-  HashMap,
-  HashSet,
-  Match,
-  Option,
-  Predicate,
-  Record,
-  String,
-  SubscriptionRef,
-  pipe,
-} from 'effect'
+import { Array as EffectArray, String as EffectString, pipe } from 'effect'
 
 import { modifyFields } from '../struct/index.vibe'
 
@@ -21,8 +9,8 @@ const DEFAULT_MAX_ENTRIES = 100
 // DIFF
 
 export type DiffResult = Readonly<{
-  changedPaths: HashSet.HashSet<string>
-  affectedPaths: HashSet.HashSet<string>
+  changedPaths: HashSet<string>
+  affectedPaths: HashSet<string>
 }>
 
 export const emptyDiff: DiffResult = {
@@ -48,7 +36,7 @@ export const computeDiff = (
       return
     }
 
-    if (Array.isArray(curr) && Array.isArray(prev)) {
+    if (EffectArray.isArray(curr) && EffectArray.isArray(prev)) {
       walkArray(prev, curr, path)
     } else if (Predicate.isObject(curr) && Predicate.isObject(prev)) {
       walkObject(prev, curr, path)
@@ -65,7 +53,7 @@ export const computeDiff = (
     pipe(
       curr,
       Record.keys,
-      Array.forEach(key => {
+      EffectArray.forEach((key): infer _ => {
         const childPath = `${path}.${key}`
         if (Record.has(prev, key)) {
           walk(prev[key], curr[key], childPath)
@@ -77,7 +65,7 @@ export const computeDiff = (
     pipe(
       prev,
       Record.keys,
-      Array.forEach(key => {
+      EffectArray.forEach((key): infer _ => {
         if (!Record.has(curr, key)) {
           changed.add(`${path}.${key}`)
         }
@@ -90,7 +78,7 @@ export const computeDiff = (
     curr: ReadonlyArray<unknown>,
     path: string,
   ): void => {
-    curr.forEach((item, index) => {
+    curr.forEach((item, index): infer _ => {
       const childPath = `${path}.${index}`
       if (index < prev.length) {
         walk(prev[index], item, childPath)
@@ -100,8 +88,10 @@ export const computeDiff = (
     })
     if (prev.length > curr.length) {
       pipe(
-        Array.range(curr.length, prev.length - 1),
-        Array.forEach(index => changed.add(`${path}.${index}`)),
+        EffectArray.range(curr.length, prev.length - 1),
+        EffectArray.forEach((index): infer _ =>
+          changed.add(`${path}.${index}`)
+        ),
       )
     }
   }
@@ -112,10 +102,10 @@ export const computeDiff = (
   const addAncestors = (path: string): void => {
     pipe(
       path,
-      String.lastIndexOf('.'),
-      Option.map(lastDot => path.substring(0, lastDot)),
-      Option.filter(parent => !affected.has(parent)),
-      Option.map(parent => {
+      EffectString.lastIndexOf('.'),
+      Option.map((lastDot): infer _ => path.substring(0, lastDot)),
+      Option.filter((parent): infer _ => !affected.has(parent)),
+      Option.map((parent): infer _ => {
         affected.add(parent)
         addAncestors(parent)
       }),
@@ -135,7 +125,7 @@ export type CommandRecord = Readonly<{
   id: number
   name: string
   args?: Record<string, unknown>
-  maybeSubmodelPath: Option.Option<ReadonlyArray<string>>
+  maybeSubmodelPath: Option<ReadonlyArray<string>>
 }>
 
 export type MountRecord = Readonly<{
@@ -156,20 +146,20 @@ export type HistoryEntry = Readonly<{
 
 export type StoreState = Readonly<{
   entries: ReadonlyArray<HistoryEntry>
-  keyframes: HashMap.HashMap<number, unknown>
-  maybeInitModel: Option.Option<unknown>
+  keyframes: HashMap<number, unknown>
+  maybeInitModel: Option<unknown>
   initCommands: ReadonlyArray<CommandRecord>
   initMountStarts: ReadonlyArray<MountRecord>
   startIndex: number
   isPaused: boolean
   pausedAtIndex: number
-  maybeLatestModel: Option.Option<unknown>
+  maybeLatestModel: Option<unknown>
 }>
 
 export type Bridge = Readonly<{
   replay: (model: unknown, message: unknown) => unknown
-  render: (model: unknown) => Effect.Effect<void>
-  markRenderPending: Effect.Effect<void>
+  render: (model: unknown) => void!!
+  markRenderPending: void!!
 }>
 
 const emptyState: StoreState = {
@@ -189,9 +179,9 @@ const emptyState: StoreState = {
  * when no Messages have been recorded yet.
  */
 export const latestEntryIndex = (state: StoreState): number =>
-  Array.match(state.entries, {
-    onEmpty: () => INIT_INDEX,
-    onNonEmpty: entries => state.startIndex + entries.length - 1,
+  EffectArray.match(state.entries, {
+    onEmpty: (): infer _ => INIT_INDEX,
+    onNonEmpty: (entries): infer _ => state.startIndex + entries.length - 1,
   })
 
 /**
@@ -216,12 +206,12 @@ export type CreateDevToolsStoreOptions = Readonly<{
 export const createDevToolsStore = (
   bridge: Bridge,
   options: CreateDevToolsStoreOptions = {},
-): Effect.Effect<DevToolsStore> =>
-  Effect.gen(function* () {
+): DevToolsStore!! =>
+  effect {
     const maxEntries = options.maxEntries ?? DEFAULT_MAX_ENTRIES
-    const keyframeInterval =
-      options.keyframeInterval ?? DEFAULT_KEYFRAME_INTERVAL
-    const stateRef = yield* SubscriptionRef.make(emptyState)
+    const keyframeInterval = options.keyframeInterval
+      ?? DEFAULT_KEYFRAME_INTERVAL
+    const stateRef = try SubscriptionRef.make(emptyState)
 
     const replayToIndex = (state: StoreState, index: number): unknown => {
       // NOTE: the keyframe stored at `index + 1` represents the model
@@ -236,8 +226,8 @@ export const createDevToolsStore = (
         return directSnapshot.value
       }
 
-      const segmentStart =
-        Math.floor(index / keyframeInterval) * keyframeInterval
+      const segmentStart = Math.floor(index / keyframeInterval)
+        * keyframeInterval
 
       const keyframeIndex = HashMap.has(state.keyframes, segmentStart)
         ? segmentStart
@@ -249,37 +239,37 @@ export const createDevToolsStore = (
         Option.map(keyframeModel =>
           pipe(
             state.entries,
-            Array.drop(keyframeIndex - state.startIndex),
-            Array.take(index - keyframeIndex + 1),
-            Array.reduce(keyframeModel, (model, entry) =>
-              bridge.replay(model, entry.message),
+            EffectArray.drop(keyframeIndex - state.startIndex),
+            EffectArray.take(index - keyframeIndex + 1),
+            EffectArray.reduce(
+              keyframeModel,
+              (model, entry) => bridge.replay(model, entry.message),
             ),
-          ),
+          )
         ),
         Option.getOrThrow,
       )
     }
 
     const addKeyframeIfNeeded =
-      (nextAbsoluteIndex: number, modelAfterUpdate: unknown) =>
+      (nextAbsoluteIndex: number, modelAfterUpdate: unknown): infer _ =>
       (
-        keyframes: HashMap.HashMap<number, unknown>,
-      ): HashMap.HashMap<number, unknown> =>
+        keyframes: HashMap<number, unknown>,
+      ): HashMap<number, unknown> =>
         nextAbsoluteIndex % keyframeInterval === 0
           ? HashMap.set(keyframes, nextAbsoluteIndex, modelAfterUpdate)
           : keyframes
 
     const evictOldestSegment = (state: StoreState): StoreState => {
       const nextStartIndex = state.startIndex + keyframeInterval
-      const isPausedAtRetainedIndex =
-        state.pausedAtIndex >= nextStartIndex ||
-        state.pausedAtIndex === INIT_INDEX
+      const isPausedAtRetainedIndex = state.pausedAtIndex >= nextStartIndex
+        || state.pausedAtIndex === INIT_INDEX
 
       return modifyFields(state, {
-        entries: Array.drop(keyframeInterval),
+        entries: EffectArray.drop(keyframeInterval),
         keyframes: HashMap.remove(state.startIndex),
-        startIndex: () => nextStartIndex,
-        isPaused: isPaused => isPaused && isPausedAtRetainedIndex,
+        startIndex: (): infer _ => nextStartIndex,
+        isPaused: (isPaused): infer _ => isPaused && isPausedAtRetainedIndex,
       })
     }
 
@@ -288,15 +278,14 @@ export const createDevToolsStore = (
       commands: ReadonlyArray<CommandRecord>,
       mountStarts: ReadonlyArray<MountRecord> = [],
     ) =>
-      SubscriptionRef.update(stateRef, state =>
+      SubscriptionRef.update(stateRef, (state): infer _ =>
         modifyFields(state, {
-          maybeInitModel: () => Option.some(model),
-          initCommands: () => commands,
-          initMountStarts: () => mountStarts,
+          maybeInitModel: (): infer _ => Option.some(model),
+          initCommands: (): infer _ => commands,
+          initMountStarts: (): infer _ => mountStarts,
           keyframes: HashMap.set(0, model),
-          maybeLatestModel: () => Option.some(model),
-        }),
-      )
+          maybeLatestModel: (): infer _ => Option.some(model),
+        }))
 
     const recordMessage = (
       message: Readonly<{ _tag: string }>,
@@ -304,9 +293,11 @@ export const createDevToolsStore = (
       modelAfterUpdate: unknown,
       commands: ReadonlyArray<CommandRecord>,
       isModelChanged: boolean,
-    ) =>
-      Effect.gen(function* () {
-        const didAutoResume = yield* SubscriptionRef.modify(stateRef, state => {
+    ) => {
+      const clock = Clock()
+      const didAutoResume = SubscriptionRef.modify(
+        stateRef,
+        (state): infer _ => {
           const absoluteIndex = nextEntryIndex(state)
 
           const diff = isModelChanged
@@ -316,83 +307,88 @@ export const createDevToolsStore = (
           const hasChangedFields = HashSet.size(diff.changedPaths) > 0
 
           const nextState = modifyFields(state, {
-            entries: Array.append({
+            entries: EffectArray.append({
               tag: message._tag,
               message,
               commands,
               mountStarts: [],
               mountEnds: [],
-              timestamp: performance.now(),
+              timestamp: Number(clock.monotonicTimeNanosUnsafe()) / 1_000_000,
               isModelChanged: hasChangedFields,
               diff,
             }),
             keyframes: addKeyframeIfNeeded(absoluteIndex + 1, modelAfterUpdate),
-            maybeLatestModel: () => Option.some(modelAfterUpdate),
+            maybeLatestModel: (): infer _ => Option.some(modelAfterUpdate),
           })
 
-          const recordedState =
-            nextState.entries.length > maxEntries
-              ? evictOldestSegment(nextState)
-              : nextState
+          const recordedState = nextState.entries.length > maxEntries
+            ? evictOldestSegment(nextState)
+            : nextState
 
           return [state.isPaused && !recordedState.isPaused, recordedState]
-        })
+        },
+      )
 
-        if (didAutoResume) {
-          yield* bridge.markRenderPending
-        }
-      })
+      if (didAutoResume) {
+        bridge.markRenderPending()
+      }
+    }
 
     const recordResolvedCommand = (
       id: number,
       submodelPath: ReadonlyArray<string>,
     ) =>
-      SubscriptionRef.update(stateRef, state => {
+      SubscriptionRef.update(stateRef, (state): infer _ => {
         const updateCommands = (
           commands: ReadonlyArray<CommandRecord>,
-        ): Option.Option<ReadonlyArray<CommandRecord>> =>
+        ): Option<ReadonlyArray<CommandRecord>> =>
           pipe(
             commands,
-            Array.findFirstIndex(command => command.id === id),
-            Option.flatMap(index =>
-              Array.modify(commands, index, command =>
+            EffectArray.findFirstIndex((command): infer _ => command.id === id),
+            Option.flatMap((index): infer _ =>
+              EffectArray.modify(commands, index, (command): infer _ =>
                 modifyFields(command, {
-                  maybeSubmodelPath: () => Option.some(submodelPath),
-                }),
-              ),
+                  maybeSubmodelPath: (): infer _ => Option.some(submodelPath),
+                }))
             ),
           )
 
         const maybeInitCommands = updateCommands(state.initCommands)
         if (Option.isSome(maybeInitCommands)) {
           return modifyFields(state, {
-            initCommands: () => maybeInitCommands.value,
+            initCommands: (): infer _ => maybeInitCommands.value,
           })
         }
 
-        const maybeEntryIndex = Array.findFirstIndex(state.entries, entry =>
-          Array.some(entry.commands, command => command.id === id),
+        const maybeEntryIndex = EffectArray.findFirstIndex(
+          state.entries,
+          (entry): infer _ =>
+            EffectArray.some(
+              entry.commands,
+              (command): infer _ => command.id === id,
+            ),
         )
         if (Option.isNone(maybeEntryIndex)) {
           return state
         }
 
-        const maybeEntries = Array.modify(
+        const maybeEntries = EffectArray.modify(
           state.entries,
           maybeEntryIndex.value,
-          entry =>
-            Option.match(updateCommands(entry.commands), {
-              onNone: () => entry,
-              onSome: nextCommands =>
-                modifyFields(entry, { commands: () => nextCommands }),
-            }),
+          (entry): infer _ => match (updateCommands(entry.commands)) {
+            when Option.None: entry;
+            when Option.Some(let nextCommands): modifyFields(entry, {
+              commands: (): infer _ => nextCommands,
+            });
+          },
         )
 
-        return Option.match(maybeEntries, {
-          onNone: () => state,
-          onSome: nextEntries =>
-            modifyFields(state, { entries: () => nextEntries }),
-        })
+        return match (maybeEntries) {
+          when Option.None: state;
+          when Option.Some(let nextEntries): modifyFields(state, {
+            entries: (): infer _ => nextEntries,
+          });
+        }
       })
 
     /** Attaches Mount lifecycle events from the most recent render to the
@@ -409,28 +405,27 @@ export const createDevToolsStore = (
       mountStarts: ReadonlyArray<MountRecord>,
       mountEnds: ReadonlyArray<MountRecord>,
     ) =>
-      SubscriptionRef.update(stateRef, state => {
+      SubscriptionRef.update(stateRef, (state): infer _ => {
         if (
-          Array.isReadonlyArrayEmpty(mountStarts) &&
-          Array.isReadonlyArrayEmpty(mountEnds)
+          EffectArray.isReadonlyArrayEmpty(mountStarts)
+          && EffectArray.isReadonlyArrayEmpty(mountEnds)
         ) {
           return state
         }
 
-        return Array.match(state.entries, {
-          onEmpty: () =>
+        return EffectArray.match(state.entries, {
+          onEmpty: (): infer _ =>
             modifyFields(state, {
-              initMountStarts: Array.appendAll(mountStarts),
+              initMountStarts: EffectArray.appendAll(mountStarts),
             }),
-          onNonEmpty: entries =>
+          onNonEmpty: (entries): infer _ =>
             modifyFields(state, {
-              entries: () =>
-                Array.modifyLastNonEmpty(entries, last =>
+              entries: (): infer _ =>
+                EffectArray.modifyLastNonEmpty(entries, (last): infer _ =>
                   modifyFields(last, {
-                    mountStarts: Array.appendAll(mountStarts),
-                    mountEnds: Array.appendAll(mountEnds),
-                  }),
-                ),
+                    mountStarts: EffectArray.appendAll(mountStarts),
+                    mountEnds: EffectArray.appendAll(mountEnds),
+                  })),
             }),
         })
       })
@@ -438,14 +433,15 @@ export const createDevToolsStore = (
     // NOTE: maybeLatestModel must be stamped atomically with the entries
     // append in recordMessage. The follow-latest fast-path below depends on
     // that invariant.
-    const resolveModel = (state: StoreState, index: number): unknown =>
-      Match.value(index).pipe(
-        Match.when(INIT_INDEX, () => Option.getOrThrow(state.maybeInitModel)),
-        Match.when(latestEntryIndex(state), () =>
-          Option.getOrThrow(state.maybeLatestModel),
-        ),
-        Match.orElse(() => replayToIndex(state, index)),
-      )
+    const resolveModel = (state: StoreState, index: number): unknown => {
+      if (index === INIT_INDEX) {
+        return Option.getOrThrow(state.maybeInitModel)
+      }
+      if (index === latestEntryIndex(state)) {
+        return Option.getOrThrow(state.maybeLatestModel)
+      }
+      return replayToIndex(state, index)
+    }
 
     const getModelAtIndex = (index: number) =>
       pipe(
@@ -454,111 +450,109 @@ export const createDevToolsStore = (
         Effect.map(state => resolveModel(state, index)),
       )
 
-    const getMessageAtIndex = (index: number) =>
-      Effect.gen(function* () {
-        if (index === INIT_INDEX) {
-          return Option.none()
-        }
+    const getMessageAtIndex = (index: number) => {
+      if (index === INIT_INDEX) {
+        return Option.none()
+      }
 
-        const state = yield* SubscriptionRef.get(stateRef)
+      const state = SubscriptionRef.get(stateRef)
 
-        return pipe(
-          state.entries,
-          Array.get(index - state.startIndex),
-          Option.map(({ message }) => message),
-        )
-      })
-
-    const jumpTo = (index: number) =>
-      Effect.gen(function* () {
-        const state = yield* SubscriptionRef.get(stateRef)
-        const model = resolveModel(state, index)
-        yield* bridge.render(model)
-        const wasTargetEvicted = yield* SubscriptionRef.modify(
-          stateRef,
-          currentState => {
-            const isTargetRetained =
-              index === INIT_INDEX ||
-              (index >= currentState.startIndex &&
-                index <= latestEntryIndex(currentState))
-
-            return isTargetRetained
-              ? [
-                  false,
-                  modifyFields(currentState, {
-                    isPaused: () => true,
-                    pausedAtIndex: () => index,
-                  }),
-                ]
-              : [
-                  true,
-                  modifyFields(currentState, {
-                    isPaused: () => false,
-                  }),
-                ]
-          },
-        )
-        if (wasTargetEvicted) {
-          yield* bridge.markRenderPending
-        }
-        return model
-      })
-
-    const resume = Effect.gen(function* () {
-      yield* SubscriptionRef.update(stateRef, state =>
-        modifyFields(state, {
-          isPaused: () => false,
-        }),
+      return pipe(
+        state.entries,
+        EffectArray.get(index - state.startIndex),
+        Option.map(({ message }) => message),
       )
-      yield* bridge.markRenderPending
-    })
+    }
+
+    const jumpTo = (index: number) => {
+      const state = SubscriptionRef.get(stateRef)
+      const model = resolveModel(state, index)
+      bridge.render(model)
+      const wasTargetEvicted = SubscriptionRef.modify(
+        stateRef,
+        (currentState): infer _ => {
+          const isTargetRetained = index === INIT_INDEX
+            || (index >= currentState.startIndex
+              && index <= latestEntryIndex(currentState))
+
+          return isTargetRetained
+            ? [
+              false,
+              modifyFields(currentState, {
+                isPaused: (): infer _ => true,
+                pausedAtIndex: (): infer _ => index,
+              }),
+            ]
+            : [
+              true,
+              modifyFields(currentState, {
+                isPaused: (): infer _ => false,
+              }),
+            ]
+        },
+      )
+      if (wasTargetEvicted) {
+        bridge.markRenderPending()
+      }
+      return model
+    }
+
+    const resume = effect {
+      try SubscriptionRef.update(stateRef, (state): infer _ =>
+        modifyFields(state, {
+          isPaused: (): infer _ =>
+            false,
+        }))
+      try bridge.markRenderPending
+    }
 
     // NOTE: the paused snapshot is replayed off the entries array, so wiping
     // entries while paused strands the runtime on a historical state with no
     // path back to live. Refuse the write until resume.
-    const clear = SubscriptionRef.update(stateRef, state => {
-      if (state.isPaused) {
-        return state
-      } else {
-        return modifyFields(state, {
-          entries: () => [],
-          startIndex: () => 0,
-          pausedAtIndex: () => 0,
-          keyframes: () =>
-            Option.match(state.maybeInitModel, {
-              onNone: () => HashMap.empty(),
-              onSome: model => HashMap.make([0, model]),
-            }),
-          maybeLatestModel: () => state.maybeInitModel,
-        })
-      }
-    })
-
-    const getDiffAtIndex = (index: number) =>
-      Effect.gen(function* () {
-        if (index === INIT_INDEX) {
-          return emptyDiff
+    const clear: void!! = effect {
+      try SubscriptionRef.update(stateRef, (state): infer _ => {
+        if (state.isPaused) {
+          return state
+        } else {
+          return modifyFields(state, {
+            entries: (): infer _ => [],
+            startIndex: (): infer _ =>
+              0,
+            pausedAtIndex: (): infer _ => 0,
+            keyframes: (): infer _ => match (state.maybeInitModel) {
+              when Option.None: HashMap.empty();
+              when Option.Some(let model): HashMap.make([0, model]);
+            },
+            maybeLatestModel: (): infer _ => state.maybeInitModel,
+          })
         }
-
-        const state = yield* SubscriptionRef.get(stateRef)
-
-        return pipe(
-          state.entries,
-          Array.get(index - state.startIndex),
-          Option.match({
-            onNone: () => emptyDiff,
-            onSome: ({ diff }) => diff,
-          }),
-        )
       })
+    }
+
+    const getDiffAtIndex = (index: number) => {
+      if (index === INIT_INDEX) {
+        return emptyDiff
+      }
+
+      const state = SubscriptionRef.get(stateRef)
+
+      return pipe(
+        state.entries,
+        EffectArray.get(index - state.startIndex),
+        Option.match({
+          onNone: (): infer _ => emptyDiff,
+          onSome: ({ diff }): infer _ => diff,
+        }),
+      )
+    }
 
     const updateLatestModel = (model: unknown) =>
       SubscriptionRef.update(
         stateRef,
-        modifyFields({ maybeLatestModel: () => Option.some(model) }),
+        modifyFields({ maybeLatestModel: (): infer _ => Option.some(model) }),
       )
 
-    return {
+    const store: DevToolsStore = {
       recordInit,
       recordMessage,
       recordResolvedCommand,
@@ -572,35 +566,36 @@ export const createDevToolsStore = (
       clear,
       stateRef,
     }
-  })
+    return store
+  }
 
 export type DevToolsStore = Readonly<{
   recordInit: (
     model: unknown,
     commands: ReadonlyArray<CommandRecord>,
     mountStarts?: ReadonlyArray<MountRecord>,
-  ) => Effect.Effect<void>
+  ) => void!!
   recordMessage: (
     message: Readonly<{ _tag: string }>,
     modelBeforeUpdate: unknown,
     modelAfterUpdate: unknown,
     commands: ReadonlyArray<CommandRecord>,
     isModelChanged: boolean,
-  ) => Effect.Effect<void>
+  ) => void!!
   recordResolvedCommand: (
     id: number,
     submodelPath: ReadonlyArray<string>,
-  ) => Effect.Effect<void>
-  updateLatestModel: (model: unknown) => Effect.Effect<void>
+  ) => void!!
+  updateLatestModel: (model: unknown) => void!!
   attachRenderedMounts: (
     mountStarts: ReadonlyArray<MountRecord>,
     mountEnds: ReadonlyArray<MountRecord>,
-  ) => Effect.Effect<void>
-  getModelAtIndex: (index: number) => Effect.Effect<unknown>
-  getMessageAtIndex: (index: number) => Effect.Effect<Option.Option<unknown>>
-  getDiffAtIndex: (index: number) => Effect.Effect<DiffResult>
-  jumpTo: (index: number) => Effect.Effect<unknown>
-  resume: Effect.Effect<void>
-  clear: Effect.Effect<void>
-  stateRef: SubscriptionRef.SubscriptionRef<StoreState>
+  ) => void!!
+  getModelAtIndex: (index: number) => unknown!!
+  getMessageAtIndex: (index: number) => Option<unknown>!!
+  getDiffAtIndex: (index: number) => DiffResult!!
+  jumpTo: (index: number) => unknown!!
+  resume: void!!
+  clear: void!!
+  stateRef: SubscriptionRef<StoreState>
 }>
