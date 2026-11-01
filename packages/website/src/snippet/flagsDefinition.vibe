@@ -1,0 +1,31 @@
+import { KeyValueStore } from 'effect/persistence'
+
+import { BrowserKeyValueStore } from '@effect/platform-browser'
+
+const Todo = Schema.Struct({
+  id: Schema.String,
+  text: Schema.String,
+  completed: Schema.Boolean,
+})
+
+const Todos = Schema.Array(Todo)
+
+const TodosJsonString = Schema.fromJsonString(Schema.toCodecJson(Todos))
+
+const Flags = Schema.Struct({
+  todos: Schema.Option(Todos),
+})
+type Flags = typeof Flags.Type
+
+const flags: Flags!! = (effect {
+  provide BrowserKeyValueStore.layerLocalStorage {
+    const store = KeyValueStore.KeyValueStore()
+    const stored = try store.get('todos')
+    const todosJson = try Effect.fromOption(Option.fromNullishOr(stored))
+
+    const decodeTodos = Schema.decodeEffect(TodosJsonString)
+    const todos = try decodeTodos(todosJson)
+
+    return Flags.make({ todos: Option.some(todos) })
+  }
+}) catch () => Flags.make({ todos: Option.none() })

@@ -1,0 +1,11 @@
+import { Command, Dom } from 'foldkit'
+
+const FocusEmailInput = Command.define('FocusEmailInput', {
+  messages: [Focused],
+  execute: effect {
+    try {
+      try Dom.focus('#email-input')
+    } catch {}
+    return Focused()
+  },
+})

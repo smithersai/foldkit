@@ -1,0 +1,17 @@
+import { Command, File } from 'foldkit'
+
+const describeFile = (file: File.File): string =>
+  `${File.name(file)} (${File.mimeType(file)}, ${File.size(file)} bytes)`
+
+const ReadAvatarPreview = Command.define('ReadAvatarPreview', {
+  args: { file: File.File },
+  messages: [SucceededReadAvatarPreview, FailedReadAvatarPreview],
+  execute: effect ({ file }) => {
+    try {
+      const dataUrl = try File.readAsDataUrl(file)
+      return SucceededReadAvatarPreview({ dataUrl })
+    } catch (error) {
+      return FailedReadAvatarPreview({ reason: error.reason })
+    }
+  },
+})

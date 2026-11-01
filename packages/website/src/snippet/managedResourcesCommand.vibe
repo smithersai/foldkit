@@ -1,0 +1,27 @@
+import { Array as EffectArray } from 'effect'
+import { Command, ManagedResource } from 'foldkit'
+
+const CameraStream = ManagedResource.tag<MediaStream>()('CameraStream')
+
+error NoVideoTrack { message: string }
+
+const TakePhoto = Command.define('TakePhoto', {
+  messages: [SucceededTakePhoto, CameraUnavailable],
+  execute: (effect {
+    const stream = try CameraStream.get
+
+    const tracks = try sync(stream => stream.getVideoTracks(), stream)
+    const maybeTrack = EffectArray.head(tracks)
+    const bitmap = match (maybeTrack) {
+      when Option.None: throw new NoVideoTrack({
+        message: 'No video track available',
+      });
+      when Option.Some(let track): do {
+        const imageCapture = new ImageCapture(track)
+        try Effect.tryPromise(() => imageCapture.grabFrame())
+      };
+    }
+
+    return SucceededTakePhoto({ width: bitmap.width, height: bitmap.height })
+  }) catch () => CameraUnavailable(),
+})

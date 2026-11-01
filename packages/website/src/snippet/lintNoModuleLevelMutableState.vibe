@@ -1,0 +1,7 @@
+// ❌ Bad
+let requestCount = 0
+
+// ✅ Good
+export schema Model {
+  requestCount: number
+}

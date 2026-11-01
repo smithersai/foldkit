@@ -1,0 +1,13 @@
+import { modifyFields } from 'foldkit/struct'
+
+schema Model {
+  count: number
+  status: 'Idle' | 'Counting'
+}
+
+const model: Model = { count: 0, status: 'Idle' }
+
+const nextModel = modifyFields(model, {
+  count: count => count + 1,
+  status: () => 'Counting',
+})

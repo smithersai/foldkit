@@ -1,0 +1,24 @@
+import { Command, Render } from 'foldkit'
+
+const MeasurePanel = Command.define('MeasurePanel', {
+  messages: [MeasuredPanel],
+  execute: effect {
+    try Render.afterCommit
+    // sync's argument is plain TypeScript: the layout read is a DOM call.
+    const width = try sync(() => {
+      const element = document.getElementById('panel')
+      return element instanceof HTMLElement
+        ? element.getBoundingClientRect().width
+        : 0
+    })
+    return MeasuredPanel({ width })
+  },
+})
+
+const StartTransition = Command.define('StartTransition', {
+  messages: [StartedTransition],
+  execute: effect {
+    try Render.afterPaint
+    return StartedTransition()
+  },
+})

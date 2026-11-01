@@ -1,0 +1,21 @@
+import { Array as EffectArray } from 'effect'
+import { AsyncData } from 'foldkit'
+import { modifyFields } from 'foldkit/struct'
+import { Model } from './model'
+
+export const prependNewNote = (note: Note) => (model: Model): Model =>
+  Option.match(note.maybeNotebookId, {
+    onNone: () =>
+      modifyFields(model, {
+        allNotes: allNotes =>
+          AsyncData.map(allNotes, noteList =>
+            EffectArray.prepend(noteList, note)),
+      }),
+    onSome: notebookId =>
+      modifyFields(model, {
+        notesByNotebook: notesByNotebook =>
+          HashMap.modify(notesByNotebook, notebookId, notes =>
+            AsyncData.map(notes, noteList =>
+              EffectArray.prepend(noteList, note))),
+      }),
+  })

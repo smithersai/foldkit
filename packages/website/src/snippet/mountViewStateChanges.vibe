@@ -1,0 +1,31 @@
+import { Mount } from 'foldkit'
+import { defineMessageUnion } from 'foldkit/message'
+
+import { Editor } from '@tiptap/core'
+
+const Message = defineMessageUnion({
+  CompletedMountEditor: {},
+})
+
+const MountEditor = Mount.define('MountEditor', {
+  messages: [Message.CompletedMountEditor],
+  execute: effect ({ element, viewStateChanges }) => {
+    const editor = try Effect.acquireRelease(
+      sync(element => new Editor({ element }), element),
+      mountedEditor =>
+        sync(mountedEditor => mountedEditor.destroy(), mountedEditor),
+    )
+
+    try Effect.forkScoped(effect {
+      for (const viewState of viewStateChanges) {
+        try sync(
+          (editor, viewState) => editor.setEditable(viewState === 'Live'),
+          editor,
+          viewState,
+        )
+      }
+    })
+
+    return Message.CompletedMountEditor()
+  },
+})

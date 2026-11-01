@@ -1,0 +1,7 @@
+// When the counter gains auto-counting,
+// the Model grows to hold new state:
+
+schema Model {
+  count: number
+  isAutoCounting: boolean
+}

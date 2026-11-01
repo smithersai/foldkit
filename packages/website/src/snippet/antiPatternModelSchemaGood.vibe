@@ -1,0 +1,10 @@
+// ✅ Good: the TypeScript type comes from the Schema.
+
+const Session = Schema.Struct({
+  userId: Schema.String,
+  displayName: Schema.String,
+})
+
+schema Model {
+  session: Session
+}

@@ -1,0 +1,25 @@
+import { Command, Runtime } from 'foldkit'
+import { Model } from './model'
+
+service ApiClientService: ApiClient {
+  static readonly Default = Layer.effect(ApiClientService, makeApiClient)
+}
+
+const LoadUser = Command.define('LoadUser', {
+  args: { userId: Schema.String },
+  messages: [CompletedLoadUser],
+  execute: effect ({ userId }) => {
+    const apiClient = try ApiClientService
+    const user = try apiClient.getUser(userId)
+    return CompletedLoadUser({ user })
+  },
+})
+
+const application = Runtime.makeApplication({
+  Model,
+  init,
+  update,
+  view,
+  container: document.getElementById('root'),
+  resources: ApiClientService.Default,
+})

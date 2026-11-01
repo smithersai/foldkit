@@ -16,6 +16,11 @@ declare module '*.ts?highlighted' {
   export default html
 }
 
+declare module '*.vibe?highlighted' {
+  const html: string
+  export default html
+}
+
 declare module '*.tsx?raw' {
   const content: string
   export default content
