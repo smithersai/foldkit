@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import * as echarts from 'echarts/core';
 import type { EChartsOption } from 'echarts/types/dist/shared';
 import { type ChartMode, type PackageId, type Period, type Telemetry } from './domain.vibe';

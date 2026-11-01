@@ -4,7 +4,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 
 import { getChart } from './chartHost.vibe'
 import { Message } from './message.vibe'
-import { MountChart } from './view/chart.ts'
+import { MountChart } from './view/chart.vibe'
 
 const chartState = vi.hoisted(() => {
   let handler: ((event: unknown) => void) | undefined

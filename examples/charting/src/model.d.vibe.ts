@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 import { AsyncData } from 'foldkit';
 export declare const TelemetryAsyncData: Readonly<{
     schema: Schema.Codec<AsyncData.AsyncData<{

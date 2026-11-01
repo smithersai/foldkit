@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 export declare const sampleTelemetry: {
     readonly fetchedAt: number;
     readonly repository: {

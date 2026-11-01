@@ -11,7 +11,7 @@ import {
   chartModes,
   packageIds,
 } from './domain.vibe'
-import { loadingModel, readyModel, sampleTelemetry } from './main.fixture.vibe'
+import { loadingModel, readyModel, sampleTelemetry } from './main.fixture'
 import { Message } from './message.vibe'
 import { TelemetryAsyncData } from './model.vibe'
 import { update } from './update.vibe'

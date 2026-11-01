@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import type { Html } from 'foldkit/html';
 import { HtmlBuilder } from 'foldkit/html';
 import type { Telemetry } from '../domain.vibe';

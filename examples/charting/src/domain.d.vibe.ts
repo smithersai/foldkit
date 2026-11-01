@@ -1,4 +1,4 @@
-import { Option, Schema } from "effect";
+import { Option, Schema } from 'effect';
 export declare const ChartMode: Schema.Literals<readonly ["Adoption", "Velocity", "Ecosystem"]>;
 export type ChartMode = typeof ChartMode.Type;
 export declare const chartModes: ReadonlyArray<ChartMode>;

@@ -1,5 +1,5 @@
-import { Context, DateTime, Effect, Layer, Option, Schema } from "effect";
-import { HttpClient } from "effect/http";
+import { Context, DateTime, Effect, Layer, Option, Schema } from 'effect';
+import { HttpClient } from 'effect/http';
 export declare const GitHubRepositoryResponse: Schema.Struct<{
     readonly stargazers_count: Schema.Number;
     readonly forks_count: Schema.Number;

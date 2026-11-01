@@ -1,4 +1,4 @@
-import { Effect, Option, Schema } from "effect";
+import { Effect, Option, Schema } from 'effect';
 import { Command } from 'foldkit';
 export declare const FetchTelemetry: Command.CommandDefinitionNoArgs<"FetchTelemetry", Effect.Effect<{
     readonly _tag: "FailedFetchTelemetry";

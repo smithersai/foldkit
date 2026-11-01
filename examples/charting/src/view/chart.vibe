@@ -1,0 +1,234 @@
+import * as echarts from 'echarts/core'
+import { BrowserStream } from '@effect/platform-browser'
+import { Mount } from 'foldkit'
+import type { Html } from 'foldkit/html'
+import { HtmlBuilder } from 'foldkit/html'
+
+import { removeChart, setChart } from '../chartHost.vibe'
+import type { Telemetry } from '../domain.vibe'
+import { selectedDatumLabel } from '../echarts.vibe'
+import { Message } from '../message.vibe'
+import type { Model } from '../model.vibe'
+import { formatInteger } from './format.vibe'
+import {
+  createChartResizeObserver,
+  disconnectChartResize,
+  htmlElementOrUndefined,
+  observeChartResize,
+} from './chartPlatform.ts'
+
+export const CHART_HOST_ID = 'charting-chart'
+
+type MountChartMessage =
+  | typeof Message.SucceededMountChart.Type
+  | typeof Message.FailedMountChart.Type
+  | typeof Message.ClickedChartDatum.Type
+
+const toChartMountError = (error: unknown): Error =>
+  error instanceof Error ? error : new Error(`Failed to mount chart: ${error}`)
+
+const ChartClickEvent = Schema.Struct({
+  data: Schema.OptionFromOptional(Schema.Struct({ id: Schema.String })),
+})
+
+const datumIdFromChartClickEvent = (event: unknown): Option<string> =>
+  Schema.decodeUnknownOption(ChartClickEvent)(event)
+    .flatMap(({ data }) => data)
+    .map(({ id }) => id)
+
+const observeChartResizeAndClickEvents = effect (
+  element: HTMLElement,
+  chart: ReturnType<typeof echarts.init>,
+  queue: Queue.Enqueue<MountChartMessage>,
+) => {
+  const observer = try Effect.acquireRelease(
+    Effect.try({
+      try: () => createChartResizeObserver(chart),
+      catch: toChartMountError,
+    }),
+    effect (observer) => {
+      try sync((observer) => disconnectChartResize(observer), observer)
+    },
+  )
+  const onClick = (event: unknown): void => {
+    const maybeDatumId = datumIdFromChartClickEvent(event)
+    if (maybeDatumId is Option.Some(let datumId)) {
+      Queue.offerUnsafe(queue, Message.ClickedChartDatum({ datumId }))
+    }
+  }
+  return (effect {
+    try Effect.try({
+      try: () => observeChartResize(observer, element),
+      catch: toChartMountError,
+    })
+    const windowEvents = try Stream.toPull(
+      BrowserStream.fromEventListenerWindow('resize'),
+    )
+    try Effect.forkScoped(effect {
+      while (true) {
+        const events = try windowEvents
+        for (let index = 0; index < events.length; index++) {
+          try sync((chart) => chart.resize(), chart)
+        }
+      }
+    })
+    try Effect.acquireRelease(
+      Effect.try({
+        try: () => {
+          chart.on('click', onClick)
+          return onClick
+        },
+        catch: toChartMountError,
+      }),
+      effect (onClick) => {
+        try sync(
+          (chart, onClick) => chart.off('click', onClick),
+          chart,
+          onClick,
+        )
+      },
+    )
+  }) catch effect (error) => {
+    // Match the original rollback when setup partially registers a click handler.
+    try sync((chart, onClick) => chart.off('click', onClick), chart, onClick)
+    throw error
+  }
+}
+
+const mountChart = (
+  element: Element,
+  hostId: string,
+): Stream<MountChartMessage> =>
+  Stream.callback(effect (queue) => {
+    return (effect {
+      const host = try sync(
+        (element) => htmlElementOrUndefined(element),
+        element,
+      )
+      if (host === undefined) {
+        try sync(
+          (queue, make) =>
+            Queue.offerUnsafe(
+              queue,
+              make({ reason: 'Chart host is not an HTMLElement.' }),
+            ),
+          queue,
+          Message.FailedMountChart,
+        )
+        return try Effect.never
+      }
+      const chart = try Effect.acquireRelease(
+        Effect.try({
+          try: () => echarts.init(host, undefined, { renderer: 'canvas' }),
+          catch: toChartMountError,
+        }),
+        effect (chart) => {
+          try sync(
+            (hostId, chart) => removeChart(hostId, chart),
+            hostId,
+            chart,
+          )
+        },
+      )
+      setChart(hostId, chart)
+      try observeChartResizeAndClickEvents(host, chart, queue)
+      try sync(
+        (queue, make, hostId) => Queue.offerUnsafe(queue, make({ hostId })),
+        queue,
+        Message.SucceededMountChart,
+        hostId,
+      )
+      return try Effect.never
+    }) catch effect (error) => {
+      try sync(
+        (queue, make, reason) => Queue.offerUnsafe(queue, make({ reason })),
+        queue,
+        Message.FailedMountChart,
+        error.message,
+      )
+    }
+  })
+
+export const MountChart = Mount.defineStream('MountChart', {
+  args: { hostId: Schema.String },
+  messages: [
+    Message.SucceededMountChart,
+    Message.FailedMountChart,
+    Message.ClickedChartDatum,
+  ],
+  execute: ({ element, hostId }): Stream<MountChartMessage> =>
+    mountChart(element, hostId),
+})
+
+export const chartPanelView = (
+  model: Model,
+  telemetry: Telemetry,
+  h: HtmlBuilder<Message>,
+): Html =>
+  h.section(
+    [
+      h.Class(
+        'grid min-h-[32rem] self-start grid-rows-[minmax(0,1fr)_auto] rounded-md border border-zinc-200 bg-white',
+      ),
+    ],
+    [
+      h.div([
+        h.Class('min-h-[26rem] w-full'),
+        h.AriaLabel('Adoption chart'),
+        h.OnMount(MountChart({ hostId: CHART_HOST_ID })),
+      ]),
+      chartFooterView(model, telemetry, h),
+    ],
+  )
+
+export const chartFooterView = (
+  model: Model,
+  telemetry: Telemetry,
+  h: HtmlBuilder<Message>,
+): Html =>
+  h.div(
+    [
+      h.Class(
+        'flex flex-col gap-3 border-t border-zinc-200 px-4 py-3 text-sm md:flex-row md:items-center md:justify-between',
+      ),
+    ],
+    [
+      h.div(
+        [],
+        [
+          h.div(
+            [h.Class('font-medium text-zinc-900')],
+            [chartFooterLabel(model, telemetry)],
+          ),
+          h.div(
+            [h.Class('text-xs text-zinc-500')],
+            [`Default branch: ${telemetry.repository.defaultBranch}`],
+          ),
+        ],
+      ),
+      chartStatusView(model, h),
+    ],
+  )
+
+export const chartFooterLabel = (model: Model, telemetry: Telemetry): string =>
+  Option.getOrElse(
+    selectedDatumLabel(telemetry, model.maybeSelectedDatumId),
+    () =>
+      `${formatInteger(telemetry.repository.openIssues)} open issues, ${
+        formatInteger(
+          telemetry.repository.openPullRequests,
+        )
+      } open pull requests`,
+  )
+
+export const chartStatusView = (
+  model: Model,
+  h: HtmlBuilder<Message>,
+): Html => match (model.maybeChartError) {
+  when Option.None: h.div([h.Class('text-xs font-medium text-emerald-700')], [
+    'Chart ready',
+  ]);
+  when Option.Some(let error): h.div([
+    h.Class('max-w-md text-xs font-medium text-rose-700'),
+  ], [error]);
+}

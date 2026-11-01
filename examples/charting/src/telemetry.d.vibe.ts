@@ -1,4 +1,4 @@
-import { Effect, Option } from "effect";
+import { Effect, Option } from 'effect';
 import { ContributorSummary, DependencyEdge, PackageSnapshot, Telemetry, WeeklyTelemetry } from './domain.vibe';
 import type { PackageId, PackageSpec } from './domain.vibe';
 import type { GitHubCommitActivityResponse, GitHubContributorResponse, GitHubIssueResponse, GitHubPullRequestResponse, GitHubReleaseResponse, GitHubRepositoryResponse, GitHubStarHistoryResponse, GitHubStatResult } from './githubApi.vibe';

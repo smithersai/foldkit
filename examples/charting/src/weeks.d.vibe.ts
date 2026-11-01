@@ -1,4 +1,4 @@
-import { DateTime, Option } from "effect";
+import { DateTime, Option } from 'effect';
 export declare const LAST_YEAR_WEEKS = 52;
 export type WeeklyCount = Readonly<{
     weekStart: string;

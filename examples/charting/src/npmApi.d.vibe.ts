@@ -1,5 +1,5 @@
-import { Context, Effect, Layer, Schema } from "effect";
-import { HttpClient } from "effect/http";
+import { Context, Effect, Layer, Schema } from 'effect';
+import { HttpClient } from 'effect/http';
 import type { PackageSpec } from './domain.vibe';
 export declare const NpmDownloadDay: Schema.Struct<{
     readonly day: Schema.String;
