@@ -46,12 +46,12 @@ const postEntry = (post: BlogPost, isFirstEntry: boolean): Html =>
           ih.Class('group block'),
         ],
         [
-          ...Option.match(maybePostCover(post.frontmatter), {
-            onNone: (): infer _ => [],
-            onSome: (
-              cover,
-            ): infer _ => [entryCoverImageView(cover, isFirstEntry)],
-          }),
+          ...match (maybePostCover(post.frontmatter)) {
+            when { _tag: "None" }: [];
+            when { _tag: "Some", value: let cover }: [
+              entryCoverImageView(cover, isFirstEntry),
+            ];
+          },
           ih.h2(
             [
               ih.Class(

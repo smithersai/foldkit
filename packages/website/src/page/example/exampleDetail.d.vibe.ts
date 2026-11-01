@@ -1,4 +1,4 @@
-import { Effect, Option, Schema } from "effect";
+import { Effect, Option, Schema } from 'effect';
 import { AsyncData, Command, Submodel, Update } from 'foldkit';
 import { CodeBlock } from '../../component/index.js';
 import type { TableOfContentsEntry } from '../../tableOfContentsEntry.js';

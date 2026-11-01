@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import { Update } from 'foldkit';
 import { Message } from './message.vibe';
 import { type ApiData, type Model } from './model.vibe';

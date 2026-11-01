@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 export declare const Message: import("foldkit/message").MessageUnion<{
     readonly RequestedApiData: {};
     readonly SucceededLoadApiData: {

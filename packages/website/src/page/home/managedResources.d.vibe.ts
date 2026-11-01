@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import { ManagedResource } from 'foldkit';
 export declare const managedResources: {
     readonly audioContext: ManagedResource.Entry<{

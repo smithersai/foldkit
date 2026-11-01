@@ -91,17 +91,16 @@ export const mobileView = (
       onSome: ({ text }): infer _ => text,
     })
 
-  const activeSectionText = Option.match(maybeActiveSectionId, {
-    onNone: (): infer _ => firstEntryText,
-    onSome: (activeSectionId): infer _ =>
-      Option.match(
-        Arr.findFirst(entries, ({ id }): infer _ => id === activeSectionId),
-        {
-          onNone: (): infer _ => firstEntryText,
-          onSome: ({ text }): infer _ => text,
-        },
-      ),
-  })
+  const activeSectionText = match (maybeActiveSectionId) {
+    when { _tag: "None" }: firstEntryText;
+    when { _tag: "Some", value: let activeSectionId }: match (Arr.findFirst(entries, ({ id }): infer _ => id === activeSectionId)) {
+      when { _tag: "None" }: firstEntryText;
+      when { _tag: "Some", value: let optionValue1 }: do {
+        const { text } = optionValue1
+        text
+      };
+    };
+  }
 
   return h.details(
     [
@@ -158,10 +157,11 @@ export const mobileView = (
           h.ul(
             [h.Class('text-sm divide-y divide-gray-200 dark:divide-gray-800')],
             Arr.map(entries, ({ level, id, text }): infer _ => {
-              const isActive = Option.match(maybeActiveSectionId, {
-                onNone: (): infer _ => false,
-                onSome: (activeSectionId): infer _ => activeSectionId === id,
-              })
+              const isActive = match (maybeActiveSectionId) {
+                when { _tag: "None" }: false;
+                when { _tag: "Some", value: let activeSectionId }:
+                  activeSectionId === id;
+              }
 
               return h.keyed('li')(
                 id,

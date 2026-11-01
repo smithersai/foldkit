@@ -1,4 +1,4 @@
-import { Effect, FileSystem as FileSystem_1 } from "effect";
+import { Effect, FileSystem as FileSystem_1 } from 'effect';
 import { type Browser } from 'playwright';
 import { type AppRoute } from '../src/route.vibe';
 import { type ApiModuleNameResolver } from './metadata.vibe';

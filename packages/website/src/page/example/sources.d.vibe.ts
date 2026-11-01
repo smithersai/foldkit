@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 export declare const ExampleSourceFile: Schema.Struct<{
     readonly path: Schema.String;
     readonly highlightedHtml: Schema.String;

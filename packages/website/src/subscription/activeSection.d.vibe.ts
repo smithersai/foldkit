@@ -1,4 +1,4 @@
-import { HashSet, Option } from "effect";
+import { HashSet, Option } from 'effect';
 import { AsyncData, Subscription } from 'foldkit';
 export declare const subscriptions: {
     readonly activeSection: Subscription.EntryWithoutKeepAlive<{

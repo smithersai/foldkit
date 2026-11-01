@@ -531,11 +531,11 @@ const escapeXml = (text: string): string =>
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
 
-const toRfc822Date = (date: string): string =>
-  Option.match(DateTime.make(date), {
-    onNone: (): infer _ => date,
-    onSome: (dateTime): infer _ => DateTime.toDateUtc(dateTime).toUTCString(),
-  })
+const toRfc822Date = (date: string): string => match (DateTime.make(date)) {
+  when { _tag: "None" }: date;
+  when { _tag: "Some", value: let dateTime }: DateTime.toDateUtc(dateTime)
+    .toUTCString();
+}
 
 /**
  * Extracts a prerendered blog post page's `article` element, the cover, the
@@ -582,20 +582,19 @@ const blogPostRssItem = (
   maybeArticleHtml: Option<string>,
 ): string => {
   const postUrl = `${SITE_URL}${blogPostRouter({ postSlug: entry.slug })}`
-  const enclosure = Option.match(entry.maybeCoverAsset, {
-    onNone: (): infer _ => '',
-    onSome: (cover): infer _ =>
-      `\n  <enclosure url="${
-        escapeXml(`${SITE_URL}${cover.src}`)
-      }" length="${cover.byteLength}" type="${cover.mimeType}" />`,
-  })
-  const contentEncoded = Option.match(maybeArticleHtml, {
-    onNone: (): infer _ => '',
-    onSome: (articleHtml): infer _ =>
+  const enclosure = match (entry.maybeCoverAsset) {
+    when { _tag: "None" }: '';
+    when { _tag: "Some", value: let cover }: `\n  <enclosure url="${
+      escapeXml(`${SITE_URL}${cover.src}`)
+    }" length="${cover.byteLength}" type="${cover.mimeType}" />`;
+  }
+  const contentEncoded = match (maybeArticleHtml) {
+    when { _tag: "None" }: '';
+    when { _tag: "Some", value: let articleHtml }:
       `\n  <content:encoded><![CDATA[${
         escapeCdataContent(articleHtml)
-      }]]></content:encoded>`,
-  })
+      }]]></content:encoded>`;
+  }
   return `<item>
   <title>${escapeXml(entry.frontmatter.title)}</title>
   <link>${escapeXml(postUrl)}</link>
@@ -616,13 +615,12 @@ const rssChannelHeader = (posts: ReadonlyArray<BlogPostEntry>): string => {
 <atom:link href="${SITE_URL}${BLOG_RSS_PATH}" rel="self" type="application/rss+xml" />
 <description>${escapeXml(BLOG_DESCRIPTION)}</description>`
 
-  return Option.match(EffectArray.head(posts), {
-    onNone: (): infer _ => channel,
-    onSome: (newest): infer _ =>
-      `${channel}\n<lastBuildDate>${
-        toRfc822Date(newest.frontmatter.date)
-      }</lastBuildDate>`,
-  })
+  return match (EffectArray.head(posts)) {
+    when { _tag: "None" }: channel;
+    when { _tag: "Some", value: let newest }: `${channel}\n<lastBuildDate>${
+      toRfc822Date(newest.frontmatter.date)
+    }</lastBuildDate>`;
+  }
 }
 
 export const buildBlogRssFeed = (

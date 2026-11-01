@@ -55,16 +55,13 @@ export const collectDemoLabels = (
           maybeHeadingId: Option.fromNullishOr(idByHeading.get(heading)),
           entries: walk.entries,
         });
-        when { _tag: 'Island' } and let island: Option.match(
-          demoLabelEntry(island, walk.maybeHeadingId),
-          {
-            onNone: (): infer _ => walk,
-            onSome: (entry): infer _ => ({
-              maybeHeadingId: walk.maybeHeadingId,
-              entries: Arr.append(walk.entries, entry),
-            }),
-          },
-        );
+        when { _tag: 'Island' } and let island: match (demoLabelEntry(island, walk.maybeHeadingId)) {
+          when { _tag: "None" }: walk;
+          when { _tag: "Some", value: let entry }: ({
+            maybeHeadingId: walk.maybeHeadingId,
+            entries: Arr.append(walk.entries, entry),
+          });
+        };
         default: walk;
       },
     ).entries,

@@ -1,4 +1,4 @@
-import { Effect, FileSystem as FileSystem_1, Option } from "effect";
+import { Effect, FileSystem as FileSystem_1, Option } from 'effect';
 import type { PlatformError } from 'effect/PlatformError';
 import { AppRoute } from '../src/route.vibe';
 import { type BlogPostEntry } from './blogPosts.vibe';

@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import { PostFrontmatter } from './frontmatter.vibe';
 /**
  * A blog post: its slug, its decoded frontmatter, and its compiled markdown

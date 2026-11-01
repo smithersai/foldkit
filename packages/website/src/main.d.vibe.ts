@@ -1,4 +1,4 @@
-import { Effect, Layer, Option, Schema } from "effect";
+import { Effect, Layer, Option, Schema } from 'effect';
 import { Command, ManagedResource, Runtime, Subscription, Update } from 'foldkit';
 import { Message } from './message.vibe';
 import { Model } from './model.vibe';

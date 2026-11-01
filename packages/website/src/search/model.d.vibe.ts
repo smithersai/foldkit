@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 import { SearchResult } from './message.vibe';
 export declare const SearchState: import("foldkit/schema").TaggedUnion<{
     readonly Idle: {};

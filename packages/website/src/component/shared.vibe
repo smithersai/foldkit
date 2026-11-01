@@ -90,10 +90,12 @@ export const githubStarBadge = (
       ],
     )
 
-  return Option.match(maybeGitHubStarCount, {
-    onNone: (): infer _ => ih.empty,
-    onSome: (count): infer _ => badge(ih.span([], [formatStarCount(count)])),
-  })
+  return match (maybeGitHubStarCount) {
+    when { _tag: "None" }: ih.empty;
+    when { _tag: "Some", value: let count }: badge(
+      ih.span([], [formatStarCount(count)]),
+    );
+  }
 }
 
 export const skipNavLink: Html = ih.a(

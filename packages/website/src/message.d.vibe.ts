@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 export declare const ThemePreference: Schema.Literals<readonly ["Dark", "Light", "System"]>;
 export type ThemePreference = typeof ThemePreference.Type;
 export { ResolvedTheme } from './colorScheme.vibe';

@@ -1,4 +1,4 @@
-import { Option, Schema } from "effect";
+import { Option, Schema } from 'effect';
 /**
  * Frontmatter schema for blog posts. One schema drives both halves of the
  * pipeline: the markdown Vite plugin validates every post's frontmatter

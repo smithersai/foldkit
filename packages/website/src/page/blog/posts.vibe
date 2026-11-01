@@ -61,9 +61,10 @@ export const findPostBySlug = (slug: string): Option<BlogPost> =>
   Arr.findFirst(posts, (post): infer _ => post.slug === slug)
 
 /** Formats a post's `YYYY-MM-DD` date for display, e.g. `August 1, 2026`. */
-export const formatPostDate = (date: string): string =>
-  Option.match(DateTime.make(date), {
-    onNone: (): infer _ => date,
-    onSome: (dateTime): infer _ =>
-      DateTime.formatUtc(dateTime, { dateStyle: 'long', locale: 'en-US' }),
-  })
+export const formatPostDate = (date: string): string => match (DateTime.make(date)) {
+  when { _tag: "None" }: date;
+  when { _tag: "Some", value: let dateTime }: DateTime.formatUtc(dateTime, {
+    dateStyle: 'long',
+    locale: 'en-US',
+  });
+}

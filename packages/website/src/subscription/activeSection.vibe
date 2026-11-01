@@ -76,15 +76,15 @@ export const subscriptions = Subscription.make<Model, Message>()((
           when { _tag: "ToolingLinting" }: ToolingLinting.tableOfContents;
           when { _tag: "ApiModule" }: do {
             const { moduleSlug } = model.route
-            Option.match(AsyncData.getData(model.apiReference.apiData), {
-              onSome: (data): infer _ =>
-                ApiReference.resolveModule(data.parsedApi, moduleSlug)
-                  .match({
-                    onNone: (): infer _ => [],
-                    onSome: ApiReference.toModuleTableOfContents,
-                  }),
-              onNone: (): infer _ => [],
-            })
+            match (AsyncData.getData(model.apiReference.apiData)) {
+              when { _tag: "None" }: [];
+              when { _tag: "Some", value: let data }: ApiReference
+                .resolveModule(data.parsedApi, moduleSlug)
+                .match({
+                  onNone: (): infer _ => [],
+                  onSome: ApiReference.toModuleTableOfContents,
+                });
+            }
           };
           when { _tag: "CoreArchitecture" }: Core.Architecture.tableOfContents;
           when { _tag: "CoreCounterExample" }:

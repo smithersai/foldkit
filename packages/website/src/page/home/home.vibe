@@ -131,10 +131,12 @@ const playgroundMenuView = (
       items: slugs,
       itemToConfig: (slug): infer _ => ({
         className: playgroundItemClassName,
-        content: Option.match(findBySlug(slug), {
-          onNone: (): infer _ => h.span([], [slug]),
-          onSome: playgroundItemContent,
-        }),
+        content: match (findBySlug(slug)) {
+          when { _tag: "None" }: h.span([], [slug]);
+          when { _tag: "Some", value: let optionValue1 }: playgroundItemContent(
+            optionValue1,
+          );
+        },
       }),
       isItemDisabled: (): infer _ => false,
       itemGroupKey: (): infer _ => 'examples',

@@ -75,20 +75,20 @@ export const view = (
 ): Html => {
   const content = match (blogRoute) {
     when { _tag: "Blog" }: Blog.BlogIndex.view();
-    when { _tag: "BlogPost", let postSlug }: Option.match(
-      Blog.findPostBySlug(postSlug),
-      {
-        onNone: (): infer _ => NotFound.view(postSlug, homeRouter()),
-        onSome: (post): infer _ =>
-          lazyPostView(post.slug, postView, [
-            post,
-            model.snippetCopy,
-            model.snippetDisclosure,
-            model.uiPages,
-            h,
-          ]),
-      },
-    );
+    when { _tag: "BlogPost", let postSlug }: match (Blog.findPostBySlug(postSlug)) {
+      when { _tag: "None" }: NotFound.view(postSlug, homeRouter());
+      when { _tag: "Some", value: let post }: lazyPostView(
+        post.slug,
+        postView,
+        [
+          post,
+          model.snippetCopy,
+          model.snippetDisclosure,
+          model.uiPages,
+          h,
+        ],
+      );
+    };
   }
 
   const contentKey = match (blogRoute) {

@@ -54,9 +54,9 @@ export const demo = (
             ),
           ],
         ),
-        ...Option.match(entry.payload.maybeDescription, {
-          onNone: (): infer _ => [],
-          onSome: (description): infer _ => [
+        ...match (entry.payload.maybeDescription) {
+          when { _tag: "None" }: [];
+          when { _tag: "Some", value: let description }: [
             h.p(
               [h.Class('text-sm opacity-80 mt-0.5')],
               [
@@ -66,8 +66,8 @@ export const demo = (
                 ),
               ],
             ),
-          ],
-        }),
+          ];
+        },
         h.button(
           [
             ...handlers.dismiss,
@@ -118,22 +118,22 @@ export const demo = (
         ),
       ],
     ),
-    ...Option.match(maybeLastDismissedTitle, {
-      onNone: (): infer _ => [
+    ...match (maybeLastDismissedTitle) {
+      when { _tag: "None" }: [
         h.p(
           [h.Class('text-sm text-gray-600 dark:text-gray-500 mt-3')],
           ['No toasts dismissed yet'],
         ),
-      ],
-      onSome: (title): infer _ => [
+      ];
+      when { _tag: "Some", value: let title }: [
         h.p(
           [h.Class('text-sm text-gray-700 dark:text-gray-400 mt-3')],
           [
             `Last dismissed: "${title}" (lifted from DismissedToast OutMessage)`,
           ],
         ),
-      ],
-    }),
+      ];
+    },
     h.submodel({
       slotId: toastModel.id,
       model: toastModel,

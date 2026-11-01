@@ -63,10 +63,11 @@ const reorderColumns = (
     ),
   )
 
-  return Option.match(maybeCard, {
-    onNone: (): infer _ => columns,
-    onSome: (card): infer _ =>
-      Arr.map(columns, (column): infer _ => {
+  return match (maybeCard) {
+    when { _tag: "None" }: columns;
+    when { _tag: "Some", value: let card }: Arr.map(
+      columns,
+      (column): infer _ => {
         const withRemoved = column.id === fromContainerId
           ? Arr.filter(column.cards, ({ id }): infer _ => id !== itemId)
           : column.cards
@@ -82,8 +83,9 @@ const reorderColumns = (
         ])
 
         return modifyFields(column, { cards: (): infer _ => inserted })
-      }),
-  })
+      },
+    );
+  }
 }
 
 const findDragAndDropDemoCardLabel = (
@@ -94,10 +96,10 @@ const findDragAndDropDemoCardLabel = (
     columns,
     Arr.flatMap((column): infer _ => column.cards),
     Arr.findFirst((card): infer _ => card.id === itemId),
-    Option.match({
-      onNone: (): infer _ => itemId,
-      onSome: (card): infer _ => card.label,
-    }),
+    (optionValue4): infer _ => match (optionValue4) {
+      when { _tag: "None" }: itemId;
+      when { _tag: "Some", value: let card }: card.label;
+    },
   )
 
 const findDragAndDropDemoColumnLabel = (
@@ -107,10 +109,10 @@ const findDragAndDropDemoColumnLabel = (
   pipe(
     columns,
     Arr.findFirst((column): infer _ => column.id === containerId),
-    Option.match({
-      onNone: (): infer _ => containerId,
-      onSome: (column): infer _ => column.label,
-    }),
+    (optionValue3): infer _ => match (optionValue3) {
+      when { _tag: "None" }: containerId;
+      when { _tag: "Some", value: let column }: column.label;
+    },
   )
 
 const DragAndDropDemoAnnouncement = defineTaggedUnion({
@@ -1045,14 +1047,14 @@ const foldDragAndDropDemo = Update.foldChild({
   write: (model, nextDragAndDropDemo): infer _ =>
     modifyFields(model, {
       dragAndDropDemo: (): infer _ => nextDragAndDropDemo,
-      dragAndDropDemoAnnouncement: (dragAndDropDemoAnnouncement): infer _ =>
-        Option.match(
-          maybeDragAndDropDemoKeyboardAnnouncement(model, nextDragAndDropDemo),
-          {
-            onNone: (): infer _ => dragAndDropDemoAnnouncement,
-            onSome: dragAndDropDemoAnnouncementToText,
-          },
-        ),
+      dragAndDropDemoAnnouncement: (dragAndDropDemoAnnouncement): infer _ => match (maybeDragAndDropDemoKeyboardAnnouncement(
+          model,
+          nextDragAndDropDemo,
+        )) {
+        when { _tag: "None" }: dragAndDropDemoAnnouncement;
+        when { _tag: "Some", value: let optionValue2 }:
+          dragAndDropDemoAnnouncementToText(optionValue2);
+      },
     }),
   toParentMessage: (message): infer _ =>
     Message.GotDragAndDropDemoMessage({ message }),
@@ -1159,10 +1161,10 @@ const prependVirtualListChatMessages = (model: Model): infer _ => {
   const firstId = pipe(
     model.virtualListChatMessages,
     Arr.head,
-    Option.match({
-      onNone: (): infer _ => model.virtualListChatNextId,
-      onSome: (message): infer _ => message.id,
-    }),
+    (optionValue1): infer _ => match (optionValue1) {
+      when { _tag: "None" }: model.virtualListChatNextId;
+      when { _tag: "Some", value: let message }: message.id;
+    },
   )
   const olderMessages = Arr.makeBy(
     VIRTUAL_LIST_CHAT_HISTORY_BATCH_SIZE,

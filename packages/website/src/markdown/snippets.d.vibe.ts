@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 /**
  * One compiled snippet: `raw` is the verbatim source for the copy button,
  * `highlighted` is the build-time Shiki HTML rendered through `h.InnerHTML`.

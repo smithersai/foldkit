@@ -1,4 +1,4 @@
-import { Deferred, Effect, FiberMap, Option, Schema } from "effect";
+import { Deferred, Effect, FiberMap, Option, Schema } from 'effect';
 import { Command, ManagedResource, Mount, Submodel, Update } from 'foldkit';
 export declare const Model: Schema.Struct<{
     readonly slug: Schema.String;

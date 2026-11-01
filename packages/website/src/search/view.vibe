@@ -90,13 +90,14 @@ const resultLabelText = (
     ),
   ])
 
-const resultLabel = (result: typeof SearchResult.Type): ReadonlyArray<Html> =>
-  Option.match(resultLabelText(result), {
-    onSome: (
-      text,
-    ): infer _ => [ih.span([ih.Class(labelPillClassName)], [text])],
-    onNone: (): infer _ => [],
-  })
+const resultLabel = (
+  result: typeof SearchResult.Type,
+): ReadonlyArray<Html> => match (resultLabelText(result)) {
+  when { _tag: "None" }: [];
+  when { _tag: "Some", value: let text }: [
+    ih.span([ih.Class(labelPillClassName)], [text]),
+  ];
+}
 
 const resultItemView = (
   result: typeof SearchResult.Type,

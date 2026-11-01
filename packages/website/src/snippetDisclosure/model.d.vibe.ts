@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 export declare const SnippetSize: import("foldkit/schema").TaggedUnion<{
     readonly Fits: {};
     readonly Overflows: {};

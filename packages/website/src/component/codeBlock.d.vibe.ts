@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import { Html } from 'foldkit/html';
 export type RenderCopyButton = (config: Readonly<{
     id: string;

@@ -1,4 +1,4 @@
-import { Option, Schema } from "effect";
+import { Option, Schema } from 'effect';
 import { AsyncData } from 'foldkit';
 export declare const ApiData: Schema.Struct<{
     readonly parsedApi: Schema.Struct<{

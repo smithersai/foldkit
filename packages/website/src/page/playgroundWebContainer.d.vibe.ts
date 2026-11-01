@@ -1,4 +1,4 @@
-import { Deferred, Effect, Fiber, FiberMap, Ref } from "effect";
+import { Deferred, Effect, Fiber, FiberMap, Ref } from 'effect';
 import type { WebContainer, WebContainerProcess } from '@webcontainer/api';
 declare const WebContainerError_base: new <A extends Record<string, any> = {}>(args: import("effect/Types").VoidIfEmpty<{ readonly [P in keyof A as P extends "_tag" ? never : P]: A[P]; }>) => import("effect/Cause").YieldableError & {
     readonly _tag: "WebContainerError";

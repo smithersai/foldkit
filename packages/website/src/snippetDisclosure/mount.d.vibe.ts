@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 import { Mount } from 'foldkit';
 export declare const COLLAPSED_PREVIEW_HEIGHT_PX = 300;
 export declare const MINIMUM_EXPANSION_HEIGHT_PX = 48;

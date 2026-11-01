@@ -1,4 +1,4 @@
-import { HashSet } from "effect";
+import { HashSet } from 'effect';
 import { Submodel } from 'foldkit';
 export type ViewInputs = Readonly<{
     snippetId: string;

@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 import { Toast as UiToast } from '@foldkit/ui';
 /** Payload shape for the website's toast demo. Consumer decides what goes in
  *  each entry; the Toast component owns only lifecycle and a11y. */

@@ -122,11 +122,16 @@ const columnView = (
 
   const insertElement = isPointerDragging
     ? dropPlaceholder
-    : Option.match(findDraggedCard(columns, maybeItemId), {
-      onNone: (): infer _ => dropPlaceholder,
-      onSome: (card): infer _ =>
-        cardView(card, targetIndex, column.id, dragAndDropModel, h),
-    })
+    : match (findDraggedCard(columns, maybeItemId)) {
+      when { _tag: "None" }: dropPlaceholder;
+      when { _tag: "Some", value: let card }: cardView(
+        card,
+        targetIndex,
+        column.id,
+        dragAndDropModel,
+        h,
+      );
+    }
 
   const withInsert: ReadonlyArray<Html> = pipe(
     cardElements,

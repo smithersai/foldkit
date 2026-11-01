@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import type { Html, HtmlBuilder } from 'foldkit/html';
 import { Message } from '../message.vibe';
 import { Toast } from './toastModule.vibe';

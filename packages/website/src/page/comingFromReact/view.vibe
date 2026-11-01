@@ -41,41 +41,41 @@ const faqItem = (
   answerContent: ReadonlyArray<Html>,
   model: Model,
   h: HtmlBuilder<Message>,
-): Html =>
-  Option.match(Record.get(model, id), {
-    onSome: (isFaqOpen): infer _ =>
-      Disclosure.view(
-        {
-          id,
-          isOpen: isFaqOpen,
-          onToggle: (isOpen): infer _ => Message.ToggledFaq({ id, isOpen }),
-          toView: (attributes): infer _ =>
-            h.div(
-              [h.Class('mb-2')],
+): Html => match (Record.get(model, id)) {
+  when { _tag: "None" }: h.div([], [
+    h.p([h.Class('font-bold')], [question]),
+    ...answerContent,
+  ]);
+  when { _tag: "Some", value: let isFaqOpen }: Disclosure.view(
+    {
+      id,
+      isOpen: isFaqOpen,
+      onToggle: (isOpen): infer _ => Message.ToggledFaq({ id, isOpen }),
+      toView: (attributes): infer _ =>
+        h.div(
+          [h.Class('mb-2')],
+          [
+            h.button(
+              [...attributes.button, h.Class(faqButtonClassName)],
               [
-                h.button(
-                  [...attributes.button, h.Class(faqButtonClassName)],
-                  [
-                    h.div(
-                      [h.Class('flex items-center justify-between w-full')],
-                      [h.span([], [question]), chevron(isFaqOpen)],
-                    ),
-                  ],
+                h.div(
+                  [h.Class('flex items-center justify-between w-full')],
+                  [h.span([], [question]), chevron(isFaqOpen)],
                 ),
-                isFaqOpen
-                  ? h.div(
-                    [...attributes.panel, h.Class(faqPanelClassName)],
-                    [h.div([], answerContent)],
-                  )
-                  : h.empty,
               ],
             ),
-        },
-        h,
-      ),
-    onNone: (): infer _ =>
-      h.div([], [h.p([h.Class('font-bold')], [question]), ...answerContent]),
-  })
+            isFaqOpen
+              ? h.div(
+                [...attributes.panel, h.Class(faqPanelClassName)],
+                [h.div([], answerContent)],
+              )
+              : h.empty,
+          ],
+        ),
+    },
+    h,
+  );
+}
 
 // PAGE
 

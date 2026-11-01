@@ -1,4 +1,4 @@
-import { HashMap, HashSet } from "effect";
+import { HashMap, HashSet } from 'effect';
 import { type Update } from 'foldkit';
 import { Message } from './message.vibe';
 import { type Model } from './model.vibe';

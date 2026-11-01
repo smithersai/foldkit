@@ -32,20 +32,20 @@ const daysInMonth = (year: number, month: number): number => {
   return Option.getOrElse(Arr.get(MONTH_LENGTHS, month - 1), (): infer _ => 0)
 }
 
-const isCalendarDate = (value: string): boolean =>
-  Option.match(Str.match(ISO_DATE_PATTERN)(value), {
-    onNone: (): infer _ => false,
-    onSome: ([, year = '', month = '', day = '']): infer _ => {
-      const monthNumber = Number(month)
-      const dayNumber = Number(day)
-      return (
-        monthNumber >= 1
-        && monthNumber <= 12
-        && dayNumber >= 1
-        && dayNumber <= daysInMonth(Number(year), monthNumber)
-      )
-    },
-  })
+const isCalendarDate = (value: string): boolean => match (Str.match(ISO_DATE_PATTERN)(value)) {
+  when { _tag: "None" }: false;
+  when { _tag: "Some", value: let optionValue1 }: do {
+    const [, year = '', month = '', day = ''] = optionValue1
+
+    const monthNumber = Number(month)
+    const dayNumber = Number(day)
+
+    monthNumber >= 1
+      && monthNumber <= 12
+      && dayNumber >= 1
+      && dayNumber <= daysInMonth(Number(year), monthNumber)
+  };
+}
 
 const PostCoverImagePath = Schema.String.check(
   Schema.makeFilter(

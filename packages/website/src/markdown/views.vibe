@@ -67,11 +67,10 @@ const alignmentAttributes = (
 
 const titleAttributes = (
   maybeTitle: Option<string>,
-): ReadonlyArray<Attribute<never>> =>
-  Option.match(maybeTitle, {
-    onNone: (): infer _ => [],
-    onSome: (title): infer _ => [ih.Title(title)],
-  })
+): ReadonlyArray<Attribute<never>> => match (maybeTitle) {
+  when { _tag: "None" }: [];
+  when { _tag: "Some", value: let title }: [ih.Title(title)];
+}
 
 /**
  * The site's markdown node views. Every node not overridden here keeps the
@@ -99,10 +98,13 @@ export const docViews = (config: DocViewConfig): Partial<Markdown.Views> => {
     Heading: (heading, content): infer _ => {
       const { maybeId, text } = parseHeadingId(heading.content)
       const id = headingId(config.idByHeading, heading)
-      const displayContent = Option.match(maybeId, {
-        onNone: (): infer _ => content,
-        onSome: (): infer _ => stripHeadingIdMarker(content),
-      })
+      const displayContent = match (maybeId) {
+        when { _tag: "None" }: content;
+        when { _tag: "Some", value: let optionValue1 }: do {
+          void optionValue1
+          stripHeadingIdMarker(content)
+        };
+      }
 
       return match (heading.level) {
         when 1: pageTitle(config.pageId, text);
@@ -157,10 +159,12 @@ export const docViews = (config: DocViewConfig): Partial<Markdown.Views> => {
 
     List: (list, items): infer _ => {
       if (list.isOrdered) {
-        const start = Option.match(list.maybeStartNumber, {
-          onNone: (): infer _ => [],
-          onSome: (startNumber): infer _ => [ih.Start(startNumber)],
-        })
+        const start = match (list.maybeStartNumber) {
+          when { _tag: "None" }: [];
+          when { _tag: "Some", value: let startNumber }: [
+            ih.Start(startNumber),
+          ];
+        }
         return ih.ol(
           [ih.Class(`list-decimal ${listClassName}`), ...start],
           items,

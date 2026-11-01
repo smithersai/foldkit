@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import { type GroupKey } from './sidebarStorage.vibe';
 export declare const DOCS_SIDEBAR_NAV_ID = "docs-sidebar-nav";
 export declare const MOBILE_MENU_NAV_ID = "mobile-menu-nav";

@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import { type HtmlBuilder } from 'foldkit/html';
 import { Combobox } from '@foldkit/ui';
 import type { AnchorConfig } from '@foldkit/ui/combobox';

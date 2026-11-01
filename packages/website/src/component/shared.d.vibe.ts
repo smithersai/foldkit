@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import { Html, type HtmlBuilder } from 'foldkit/html';
 export declare const canaryBanner: (commit: string) => Html;
 export declare const betaTag: Html;

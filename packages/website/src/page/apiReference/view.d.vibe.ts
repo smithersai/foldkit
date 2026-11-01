@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import { Submodel } from 'foldkit';
 import { Html } from 'foldkit/html';
 import { type RenderHeadingLink } from '../../prose.vibe';

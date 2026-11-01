@@ -521,27 +521,30 @@ export const injectMetaTags = (
 
   const maybePostEntry = maybeRoutePostEntry(route)
 
-  const ogType = Option.match(maybePostEntry, {
-    onNone: (): infer _ => 'website',
-    onSome: (): infer _ => 'article',
-  })
+  const ogType = match (maybePostEntry) {
+    when { _tag: "None" }: 'website';
+    when { _tag: "Some", value: let optionValue1 }: do {
+      void optionValue1
+      'article'
+    };
+  }
 
   const headAppends = [
     ...(metadata.title === 'Foldkit' ? [HOMEPAGE_JSON_LD] : []),
-    ...Option.match(maybeSitePageSchemaType(route), {
-      onNone: (): infer _ => [],
-      onSome: (
-        schemaType,
-      ): infer _ => [sitePageJsonLd(schemaType, pageUrl, metadata)],
-    }),
-    ...Option.match(maybePostEntry, {
-      onNone: (): infer _ => [],
-      onSome: (entry): infer _ => [
+    ...match (maybeSitePageSchemaType(route)) {
+      when { _tag: "None" }: [];
+      when { _tag: "Some", value: let schemaType }: [
+        sitePageJsonLd(schemaType, pageUrl, metadata),
+      ];
+    },
+    ...match (maybePostEntry) {
+      when { _tag: "None" }: [];
+      when { _tag: "Some", value: let entry }: [
         `<meta property="article:published_time" content="${entry.frontmatter.date}" />`,
         `<meta property="article:section" content="${BLOG_SECTION}" />`,
         blogPostingJsonLd(entry, pageUrl, ogImageUrl),
-      ],
-    }),
+      ];
+    },
   ]
 
   const metaTagReplacements: ReadonlyArray<readonly [RegExp, string]> = [

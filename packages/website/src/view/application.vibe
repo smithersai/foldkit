@@ -72,30 +72,33 @@ const newsletterView = (model: Model, h: HtmlBuilder<Message>): infer _ =>
 
 export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
   const body = match (model.route) {
-    when { _tag: 'Home' }: Option.match(model.maybeHome, {
-      onNone: (): infer _ => h.empty,
-      onSome: (homeModel): infer _ => homeView(model, homeModel, h),
-    });
+    when { _tag: 'Home' }: match (model.maybeHome) {
+      when { _tag: "None" }: h.empty;
+      when { _tag: "Some", value: let homeModel }: homeView(
+        model,
+        homeModel,
+        h,
+      );
+    };
     when { _tag: 'Newsletter' }: newsletterView(model, h);
     when { _tag: 'Blog' or 'BlogPost' } and let route: Blog.view(
       model,
       route,
       h,
     );
-    when { _tag: 'Playground' }: Option.match(model.playground, {
-      onNone: (): infer _ => h.empty,
-      onSome: (playgroundModel): infer _ =>
-        h.submodel({
-          slotId: `playground-${playgroundModel.slug}`,
-          model: playgroundModel,
-          view: Playground.view,
-          viewInputs: {
-            maybeIsPlaygroundSupported: model.maybeIsPlaygroundSupported,
-          },
-          toParentMessage: (message): infer _ =>
-            Message.GotPlaygroundMessage({ message }),
-        }),
-    });
+    when { _tag: 'Playground' }: match (model.playground) {
+      when { _tag: "None" }: h.empty;
+      when { _tag: "Some", value: let playgroundModel }: h.submodel({
+        slotId: `playground-${playgroundModel.slug}`,
+        model: playgroundModel,
+        view: Playground.view,
+        viewInputs: {
+          maybeIsPlaygroundSupported: model.maybeIsPlaygroundSupported,
+        },
+        toParentMessage: (message): infer _ =>
+          Message.GotPlaygroundMessage({ message }),
+      });
+    };
     when let route: Docs.view(model, route, h);
   }
 

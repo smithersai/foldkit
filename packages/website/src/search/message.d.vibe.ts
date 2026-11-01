@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 export declare const SearchResult: Schema.Struct<{
     readonly url: Schema.String;
     readonly title: Schema.String;

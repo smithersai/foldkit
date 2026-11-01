@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 export declare const Plan: Schema.Literals<readonly ["Startup", "Business", "Enterprise"]>;
 export type Plan = typeof Plan.Type;
 export declare const DemoTab: Schema.Literals<readonly ["Foldkit", "React", "Elm"]>;

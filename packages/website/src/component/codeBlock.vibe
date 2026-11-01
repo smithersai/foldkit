@@ -44,10 +44,12 @@ export const view = (
     copyButtonPositionClass = DEFAULT_COPY_BUTTON_POSITION_CLASS,
   }: ViewOptions = {},
 ): infer _ => {
-  const languageAttribute = Option.match(maybeLanguage, {
-    onNone: (): infer _ => [],
-    onSome: (language): infer _ => [ih.DataAttribute('language', language)],
-  })
+  const languageAttribute = match (maybeLanguage) {
+    when { _tag: "None" }: [];
+    when { _tag: "Some", value: let language }: [
+      ih.DataAttribute('language', language),
+    ];
+  }
 
   const content = ih.pre(
     [

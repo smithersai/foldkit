@@ -51,11 +51,14 @@ export const basicDemo = (model: Model, h: HtmlBuilder<Message>): infer _ => {
     h.div(
       [h.Class(triggerContentClassName)],
       [
-        Option.match(maybeDate, {
-          onNone: (): infer _ =>
-            h.span([h.Class(placeholderClassName)], ['Pick a date']),
-          onSome: (date): infer _ => h.span([], [formatTriggerLabel(date)]),
-        }),
+        match (maybeDate) {
+          when { _tag: "None" }: h.span([h.Class(placeholderClassName)], [
+            'Pick a date',
+          ]);
+          when { _tag: "Some", value: let date }: h.span([], [
+            formatTriggerLabel(date),
+          ]);
+        },
         Icon.chevronDown('w-4 h-4'),
       ],
     )

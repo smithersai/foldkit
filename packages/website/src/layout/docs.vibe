@@ -269,15 +269,20 @@ const pageNavigationView = (tag: string, h: HtmlBuilder<Message>): infer _ => {
       ),
     ],
     [
-      Option.match(maybePrevious, {
-        onNone: (): infer _ => h.empty,
-        onSome: (page): infer _ =>
-          neighborLink({ page, direction: 'Previous' }, h),
-      }),
-      Option.match(maybeNext, {
-        onNone: (): infer _ => h.empty,
-        onSome: (page): infer _ => neighborLink({ page, direction: 'Next' }, h),
-      }),
+      match (maybePrevious) {
+        when { _tag: "None" }: h.empty;
+        when { _tag: "Some", value: let page }: neighborLink({
+          page,
+          direction: 'Previous',
+        }, h);
+      },
+      match (maybeNext) {
+        when { _tag: "None" }: h.empty;
+        when { _tag: "Some", value: let page }: neighborLink({
+          page,
+          direction: 'Next',
+        }, h);
+      },
     ],
   )
 }
@@ -559,27 +564,22 @@ export const view = (
     when { _tag: "ApiModule", let moduleSlug }: AsyncData.matchData(
       model.apiReference.apiData,
       {
-        onData: (data): infer _ =>
-          Option.match(
-            ApiReference.resolveModule(data.parsedApi, moduleSlug),
-            {
-              onSome: (module): infer _ => ({
-                content: lazyApiReference(renderApiReference, [
-                  model.apiReference,
-                  module,
-                  data.highlights,
-                  h,
-                ]),
-                tableOfContents: Option.some(
-                  ApiReference.toModuleTableOfContents(module),
-                ),
-              }),
-              onNone: (): infer _ =>
-                withoutTableOfContents(
-                  NotFound.view(moduleSlug, homeRouter()),
-                ),
-            },
-          ),
+        onData: (data): infer _ => match (ApiReference.resolveModule(data.parsedApi, moduleSlug)) {
+          when { _tag: "None" }: withoutTableOfContents(
+            NotFound.view(moduleSlug, homeRouter()),
+          );
+          when { _tag: "Some", value: let module }: ({
+            content: lazyApiReference(renderApiReference, [
+              model.apiReference,
+              module,
+              data.highlights,
+              h,
+            ]),
+            tableOfContents: Option.some(
+              ApiReference.toModuleTableOfContents(module),
+            ),
+          });
+        },
         onFailure: (error): infer _ =>
           withoutTableOfContents(ApiReference.failureView(error)),
         onEmpty: (): infer _ =>
@@ -1102,16 +1102,16 @@ export const view = (
               ),
             ],
             [
-              Option.match(currentPageTableOfContents, {
-                onSome: (tableOfContents): infer _ =>
+              match (currentPageTableOfContents) {
+                when { _tag: "None" }: h.empty;
+                when { _tag: "Some", value: let tableOfContents }:
                   TableOfContents.mobileView(
                     tableOfContents,
                     model.activeSection,
                     model.isMobileTableOfContentsOpen,
                     h,
-                  ),
-                onNone: (): infer _ => h.empty,
-              }),
+                  );
+              },
               h.keyed('div')(
                 match (docsRoute) {
                   when { _tag: 'ApiModule', moduleSlug: let moduleSlug }:
@@ -1141,11 +1141,11 @@ export const view = (
               h.div([PagefindIgnore], [footerView(model, h)]),
             ],
           ),
-          Option.match(currentPageTableOfContents, {
-            onSome: (tableOfContents): infer _ =>
-              TableOfContents.view(tableOfContents, model.activeSection, h),
-            onNone: (): infer _ => h.empty,
-          }),
+          match (currentPageTableOfContents) {
+            when { _tag: "None" }: h.empty;
+            when { _tag: "Some", value: let tableOfContents }: TableOfContents
+              .view(tableOfContents, model.activeSection, h);
+          },
         ],
       ),
     ],

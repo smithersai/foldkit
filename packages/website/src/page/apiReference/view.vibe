@@ -34,22 +34,21 @@ type Highlights = ApiData['highlights']
 const sourceLink = (
   sourceUrl: Option<string>,
   name: string,
-): ReadonlyArray<Html> =>
-  Option.match(sourceUrl, {
-    onNone: (): infer _ => [],
-    onSome: (url): infer _ => [
-      ih.a(
-        [
-          ih.Class(
-            'text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300',
-          ),
-          ih.AriaLabel(`View source for ${name}`),
-          ih.Href(url),
-        ],
-        ['source'],
-      ),
-    ],
-  })
+): ReadonlyArray<Html> => match (sourceUrl) {
+  when { _tag: "None" }: [];
+  when { _tag: "Some", value: let url }: [
+    ih.a(
+      [
+        ih.Class(
+          'text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300',
+        ),
+        ih.AriaLabel(`View source for ${name}`),
+        ih.Href(url),
+      ],
+      ['source'],
+    ),
+  ];
+}
 
 const lazyItem = createKeyedLazy()
 
@@ -174,8 +173,21 @@ const signaturesView = (
   const maybeHighlighted = Record.get(highlights, key)
   const isInDisclosure = isSignatureDisclosureOpen !== undefined
 
-  const { wrapperClass, content } = Option.match(maybeHighlighted, {
-    onSome: (highlighted): infer _ => ({
+  const { wrapperClass, content } = match (maybeHighlighted) {
+    when { _tag: "None" }: ({
+      wrapperClass: clsx('bg-cream dark:bg-gray-800 p-4 font-mono text-sm', {
+        rounded: !isInDisclosure,
+        'rounded-b-lg rounded-t-none': isInDisclosure,
+      }),
+      content: [
+        ...descriptionCommentFallback(apiFunction.description),
+        ...Arr.flatMap(
+          apiFunction.signatures,
+          (signature): infer _ => signatureChildrenFallback(signature),
+        ),
+      ],
+    });
+    when { _tag: "Some", value: let highlighted }: ({
       wrapperClass: clsx(
         'text-sm [&_pre]:!py-4 [&_pre]:!pl-4 [&_pre]:!pr-0 [&_code]:block [&_code]:w-fit [&_code]:min-w-full [&_code]:pr-4',
         {
@@ -188,21 +200,8 @@ const signaturesView = (
         h.div([h.InnerHTML(highlighted)]),
         ...allParameterDescriptions(apiFunction),
       ],
-    }),
-    onNone: (): infer _ => ({
-      wrapperClass: clsx('bg-cream dark:bg-gray-800 p-4 font-mono text-sm', {
-        rounded: !isInDisclosure,
-        'rounded-b-lg rounded-t-none': isInDisclosure,
-      }),
-      content: [
-        ...descriptionCommentFallback(apiFunction.description),
-        ...Arr.flatMap(
-          apiFunction.signatures,
-          (signature): infer _ => signatureChildrenFallback(signature),
-        ),
-      ],
-    }),
-  })
+    });
+  }
 
   if (isSignatureDisclosureOpen !== undefined) {
     return Disclosure.view(
@@ -328,16 +327,15 @@ const returnTypeView = (returnType: string): Html =>
 
 const descriptionCommentFallback = (
   maybeDescription: Option<string>,
-): ReadonlyArray<Html> =>
-  Option.match(maybeDescription, {
-    onNone: (): infer _ => [],
-    onSome: (description): infer _ => [
-      ih.div(
-        [ih.Class('text-gray-600 dark:text-gray-400 mb-3 whitespace-pre-wrap')],
-        [`/** ${description} */`],
-      ),
-    ],
-  })
+): ReadonlyArray<Html> => match (maybeDescription) {
+  when { _tag: "None" }: [];
+  when { _tag: "Some", value: let description }: [
+    ih.div(
+      [ih.Class('text-gray-600 dark:text-gray-400 mb-3 whitespace-pre-wrap')],
+      [`/** ${description} */`],
+    ),
+  ];
+}
 
 const signatureChildrenFallback = (signature: {
   readonly parameters: ReadonlyArray<ApiParameter>
@@ -403,16 +401,8 @@ const typeView = (
           renderHeadingLink(id, type.name),
         ],
       ),
-      ...Option.match(maybeHighlighted, {
-        onSome: (highlighted): infer _ => [
-          h.div([
-            h.Class(
-              'rounded text-sm [&_pre]:!rounded [&_pre]:!py-4 [&_pre]:!pl-4 [&_pre]:!pr-0 [&_code]:block [&_code]:w-fit [&_code]:min-w-full [&_code]:pr-4',
-            ),
-            h.InnerHTML(highlighted),
-          ]),
-        ],
-        onNone: (): infer _ => [
+      ...match (maybeHighlighted) {
+        when { _tag: "None" }: [
           h.div(
             [
               h.Class(
@@ -424,8 +414,16 @@ const typeView = (
               type.typeDefinition,
             ],
           ),
-        ],
-      }),
+        ];
+        when { _tag: "Some", value: let highlighted }: [
+          h.div([
+            h.Class(
+              'rounded text-sm [&_pre]:!rounded [&_pre]:!py-4 [&_pre]:!pl-4 [&_pre]:!pr-0 [&_code]:block [&_code]:w-fit [&_code]:min-w-full [&_code]:pr-4',
+            ),
+            h.InnerHTML(highlighted),
+          ]),
+        ];
+      },
     ],
   )
 }
@@ -476,16 +474,8 @@ const interfaceView = (
           renderHeadingLink(id, apiInterface.name),
         ],
       ),
-      ...Option.match(maybeHighlighted, {
-        onSome: (highlighted): infer _ => [
-          h.div([
-            h.Class(
-              'rounded text-sm [&_pre]:!rounded [&_pre]:!py-4 [&_pre]:!pl-4 [&_pre]:!pr-0 [&_code]:block [&_code]:w-fit [&_code]:min-w-full [&_code]:pr-4',
-            ),
-            h.InnerHTML(highlighted),
-          ]),
-        ],
-        onNone: (): infer _ => [
+      ...match (maybeHighlighted) {
+        when { _tag: "None" }: [
           h.div(
             [
               h.Class(
@@ -497,8 +487,16 @@ const interfaceView = (
               apiInterface.typeDefinition,
             ],
           ),
-        ],
-      }),
+        ];
+        when { _tag: "Some", value: let highlighted }: [
+          h.div([
+            h.Class(
+              'rounded text-sm [&_pre]:!rounded [&_pre]:!py-4 [&_pre]:!pl-4 [&_pre]:!pr-0 [&_code]:block [&_code]:w-fit [&_code]:min-w-full [&_code]:pr-4',
+            ),
+            h.InnerHTML(highlighted),
+          ]),
+        ];
+      },
     ],
   )
 }
@@ -549,16 +547,8 @@ const variableView = (
           renderHeadingLink(id, variable.name),
         ],
       ),
-      ...Option.match(maybeHighlighted, {
-        onSome: (highlighted): infer _ => [
-          h.div([
-            h.Class(
-              'rounded text-sm [&_pre]:!rounded [&_pre]:!py-4 [&_pre]:!pl-4 [&_pre]:!pr-0 [&_code]:block [&_code]:w-fit [&_code]:min-w-full [&_code]:pr-4',
-            ),
-            h.InnerHTML(highlighted),
-          ]),
-        ],
-        onNone: (): infer _ => [
+      ...match (maybeHighlighted) {
+        when { _tag: "None" }: [
           h.div(
             [
               h.Class(
@@ -570,8 +560,16 @@ const variableView = (
               variable.type,
             ],
           ),
-        ],
-      }),
+        ];
+        when { _tag: "Some", value: let highlighted }: [
+          h.div([
+            h.Class(
+              'rounded text-sm [&_pre]:!rounded [&_pre]:!py-4 [&_pre]:!pl-4 [&_pre]:!pr-0 [&_code]:block [&_code]:w-fit [&_code]:min-w-full [&_code]:pr-4',
+            ),
+            h.InnerHTML(highlighted),
+          ]),
+        ];
+      },
     ],
   )
 }

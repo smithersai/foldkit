@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import { PostFrontmatter } from '../src/page/blog/frontmatter.vibe';
 export declare const PUBLIC_DIR: string;
 export declare const maybeCoverMimeType: (src: string) => Option.Option<string>;

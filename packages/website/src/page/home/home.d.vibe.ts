@@ -1,4 +1,4 @@
-import { Option } from "effect";
+import { Option } from 'effect';
 import { Submodel } from 'foldkit';
 import { type ResolvedTheme } from '../../colorScheme.vibe';
 import { type CodeBlock } from '../../component/index.js';

@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 import { type Html, type HtmlBuilder } from 'foldkit/html';
 export declare const State: import("foldkit/schema").TaggedUnion<{
     readonly Loading: {

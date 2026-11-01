@@ -25,15 +25,16 @@ const isMeasuredToOverflow = (
   model: Model,
   id: string,
   rawCode: string,
-): infer _ =>
-  Option.match(HashMap.get(model.snippetSizes, id), {
-    onNone: (): infer _ => isEstimatedToOverflow(rawCode),
-    onSome: (snippetSize): infer _ =>
-      SnippetSize.match(snippetSize, {
-        Fits: (): infer _ => false,
-        Overflows: (): infer _ => true,
-      }),
-  })
+): infer _ => match (HashMap.get(model.snippetSizes, id)) {
+  when { _tag: "None" }: isEstimatedToOverflow(rawCode);
+  when { _tag: "Some", value: let snippetSize }: SnippetSize.match(
+    snippetSize,
+    {
+      Fits: (): infer _ => false,
+      Overflows: (): infer _ => true,
+    },
+  );
+}
 
 export const renderer = <ParentMessage>(
   model: Model,

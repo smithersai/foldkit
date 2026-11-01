@@ -40,10 +40,10 @@ export const view = (post: BlogPost, content: Html): Html =>
     [],
     [
       backToBlogLink,
-      ...Option.match(maybePostCover(post.frontmatter), {
-        onNone: (): infer _ => [],
-        onSome: (cover): infer _ => [coverImageView(cover)],
-      }),
+      ...match (maybePostCover(post.frontmatter)) {
+        when { _tag: "None" }: [];
+        when { _tag: "Some", value: let cover }: [coverImageView(cover)];
+      },
       ih.header(
         [ih.Class('mb-8')],
         [
