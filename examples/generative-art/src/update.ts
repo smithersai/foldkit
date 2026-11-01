@@ -31,7 +31,7 @@ import {
   TRAIL_LENGTH,
   TWO_PI,
 } from './constant'
-import { Message } from './message'
+import { Message } from './message.vibe'
 import { Model, Particle, Point } from './model.vibe'
 import { fractalNoise } from './noise.vibe'
 

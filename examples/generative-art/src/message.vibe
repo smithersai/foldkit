@@ -1,4 +1,3 @@
-import { Schema } from 'effect'
 import { defineMessageUnion } from 'foldkit/message'
 
 import { Slider } from '@foldkit/ui'

@@ -18,7 +18,7 @@ import {
   NOISE_SCALE_STEP,
   SPAWN_PER_FRAME_MAX,
 } from './constant'
-import { Message } from './message'
+import { Message } from './message.vibe'
 import { type Model, type Particle } from './model.vibe'
 import { update } from './update'
 

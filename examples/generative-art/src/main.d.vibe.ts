@@ -1,5 +1,5 @@
 import { Runtime } from 'foldkit';
-import { Message } from './message.js';
+import { Message } from './message.vibe';
 import { Model } from './model.vibe';
 import { subscriptions } from './subscription.vibe';
 import { update } from './update.js';

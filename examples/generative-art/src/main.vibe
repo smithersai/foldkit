@@ -15,7 +15,7 @@ import {
   NOISE_SCALE_MIN_DIVISOR,
   NOISE_SCALE_STEP,
 } from './constant.ts'
-import { Message } from './message.ts'
+import { Message } from './message.vibe'
 import { Model } from './model.vibe'
 import { subscriptions } from './subscription.vibe'
 import { update } from './update.ts'

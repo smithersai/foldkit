@@ -25,7 +25,7 @@ import {
   TWO_PI,
   VIGNETTE_ALPHA,
 } from './constant.ts'
-import { Message } from './message.ts'
+import { Message } from './message.vibe'
 import type { Model, Particle, Point } from './model.vibe'
 
 const fadeAlpha = (particle: Particle): number => {
