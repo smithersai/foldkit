@@ -4,7 +4,7 @@ import { markdown } from '@foldkit/markdown/vite'
 import { foldkit } from '@foldkit/vite-plugin'
 import tailwindcss from '@tailwindcss/vite'
 
-import { islandAttributes } from './src/island/islandAttributes.ts'
+import { islandAttributes } from './src/island/islandAttributes.vibe'
 
 export default defineConfig({
   plugins: [

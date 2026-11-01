@@ -1,2 +1,2 @@
 export * as Counter from './counter.vibe'
-export * from './islandAttributes.ts'
+export * from './islandAttributes.vibe'
