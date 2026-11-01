@@ -29,6 +29,9 @@ importers:
       '@changesets/cli':
         specifier: ^3.0.3
         version: 3.0.3
+      '@effect/platform-node':
+        specifier: 4.1.0
+        version: 4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0))
       '@effect/tsgo':
         specifier: 0.50.0
         version: 0.50.0
@@ -83,6 +86,9 @@ importers:
       vibelang:
         specifier: file:./.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz
         version: file:.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz(effect@4.1.0)
+      vibelang-runtime:
+        specifier: file:.vibelang-toolchain/vibelang-runtime-0.0.11-6d17132a0845.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-6d17132a0845.tgz(@effect/platform-browser@4.1.0(effect@4.1.0))(@effect/platform-node@4.1.0(effect@4.1.0)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.0)
       vite:
         specifier: ^8.3.1
         version: 8.3.1(patch_hash=50ca4e8a39e18b4a8bf115c5c1cd3bf5d255990f837f1e53df796d14ce6ca199)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1)

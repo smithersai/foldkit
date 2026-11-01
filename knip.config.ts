@@ -7,7 +7,7 @@ const config: { ignore?: string | string[]; [key: string]: unknown } = {
   workspaces: {
     '.': {
       entry: [
-        'scripts/*.{ts,js,mjs,sh}',
+        'scripts/*.{ts,mts,vibe,js,mjs,sh}',
         'scripts/**/*.test.mjs',
         'scripts/fixtures/host-parity/entry.server.ts',
         'scripts/fixtures/host-parity/vite.config.ts',

@@ -1,10 +1,10 @@
-import { Effect, Schema } from 'effect'
+import { NodeRuntime } from '@effect/platform-node'
+import { ExperimentalNodeServices } from 'vibelang-runtime/experimental/platform-node'
+import { loadChromium } from './check-dom-state-parity.platform.mts'
+
 import * as CustomElement from 'foldkit/customElement'
 import { Server } from 'foldkit/experimental'
 import { type Html, type HtmlBuilder } from 'foldkit/html'
-import { createRequire } from 'node:module'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
 
 import {
   BOOLEAN_PROPERTIES,
@@ -31,16 +31,12 @@ import {
 // the views where they cannot: a view that has no served spelling must fail
 // where it is written rather than diverge once deployed.
 
-const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
-
-class ParityError extends Error {}
-
-const log = (message: string): void => {
-  console.log(`[dom-state-parity] ${message}`)
+const log = effect (message: string) => {
+  try Console.log(`[dom-state-parity] ${message}`)
 }
 
-const fail = (message: string): never => {
-  throw new ParityError(message)
+const fail = effect (message: string) => {
+  return try die(new Error(message))
 }
 
 // THE CASES
@@ -776,8 +772,8 @@ type ReflectionExpectation = Readonly<{
   value: string | number | boolean
 }>
 
-const REFLECTION_MATRIX: ReadonlyArray<ReflectionExpectation> =
-  REFLECTION_TAGS.flatMap(tagName =>
+const REFLECTION_MATRIX: ReadonlyArray<ReflectionExpectation> = REFLECTION_TAGS
+  .flatMap(tagName =>
     REFLECTION_PROPERTIES.map(propertyName => ({
       tagName,
       propertyName,
@@ -789,9 +785,9 @@ const REFLECTION_MATRIX: ReadonlyArray<ReflectionExpectation> =
       value: BOOLEAN_PROPERTIES.has(propertyName)
         ? true
         : NUMERIC_ASSIGNMENTS.has(propertyName)
-          ? 2
-          : 'foldkit',
-    })),
+        ? 2
+        : 'foldkit',
+    }))
   )
 
 // RENDERING
@@ -840,23 +836,21 @@ type RenderedCase = Readonly<{
   container: Container
 }>
 
-const renderCase = async (parityCase: ParityCase): Promise<RenderedCase> => {
+const renderCase = effect (parityCase: ParityCase) => {
   let captured: CapturedData = {}
-  const rendered = await Effect.runPromise(
-    Server.renderToString(
-      {
-        init: () => ({ model: null }),
-        view: (_model: null, h: HtmlBuilder<never>) => {
-          const element = parityCase.build(h)
-          captured = element?.data ?? {}
-          return {
-            title: 'dom state parity',
-            body: containedBy(h, parityCase.container ?? 'Block', element),
-          }
-        },
+  const rendered = try Server.renderToString(
+    {
+      init: () => ({ model: null }),
+      view: (_model: null, h: HtmlBuilder<never>) => {
+        const element = parityCase.build(h)
+        captured = element?.data ?? {}
+        return {
+          title: 'dom state parity',
+          body: containedBy(h, parityCase.container ?? 'Block', element),
+        }
       },
-      { isHydratable: false },
-    ),
+    },
+    { isHydratable: false },
   )
 
   const attributes: Record<string, string> = {}
@@ -893,7 +887,7 @@ type PlaywrightBrowser = Readonly<{
   close: () => Promise<void>
 }>
 
-type PlaywrightBrowserType = Readonly<{
+export type PlaywrightBrowserType = Readonly<{
   launch: (
     options: Readonly<Record<string, never>>,
   ) => Promise<PlaywrightBrowser>
@@ -902,19 +896,12 @@ type PlaywrightBrowserType = Readonly<{
 // Playwright is installed for the browser suites in `packages/examples-e2e`
 // rather than at the root, and it is CommonJS, so it is required from that
 // package rather than imported from here.
-const loadChromium = (): PlaywrightBrowserType => {
-  const requireFromE2e = createRequire(
-    join(REPO_ROOT, 'packages/examples-e2e/package.json'),
-  )
-  const playwright: Readonly<{ chromium: PlaywrightBrowserType }> =
-    requireFromE2e('playwright')
-  return playwright.chromium
-}
 
 // Reads the served element, then builds the same element the way the client
 // does: snabbdom's attributes module writes the raw attributes, and the props
 // module assigns the typed properties, in that order.
-const COMPARE = `([servedHtml, selector, propertyNames, attributeNames, attributes, properties, styles, container]) => {
+const COMPARE =
+  `([servedHtml, selector, propertyNames, attributeNames, attributes, properties, styles, container]) => {
   const host = document.createElement('div')
   host.innerHTML = servedHtml
   const served = host.querySelector('[data-probe-host] ' + selector)
@@ -1072,111 +1059,134 @@ type StyleCsp = Readonly<{
 const messageFor = (error: unknown): string =>
   error instanceof Error ? error.message : String(error)
 
-const runRefusals = (h: HtmlBuilder<never>): void => {
+const runRefusals = effect (h: HtmlBuilder<never>) => {
   for (const refusal of REFUSALS) {
     let message: string | undefined
-    try {
-      refusal.build(h)
-    } catch (error) {
+    const outcome = try Effect.result(Effect.try(() => refusal.build(h)))
+    if (outcome is Result.Failure) {
+      const error = outcome.failure.cause
       message = error instanceof Error ? error.message : String(error)
     }
     if (message === undefined) {
-      fail(`${refusal.name}: built without refusing it`)
+      try fail(`${refusal.name}: built without refusing it`)
       return
     }
     if (!refusal.expected.test(message)) {
-      fail(`${refusal.name}: refused with an unexpected message: ${message}`)
+      try fail(
+        `${refusal.name}: refused with an unexpected message: ${message}`,
+      )
     }
   }
-  log(`${String(REFUSALS.length)} unrepresentable views refused where written`)
+  try log(
+    `${String(REFUSALS.length)} unrepresentable views refused where written`,
+  )
 }
 
 // A select's own refusal needs the whole subtree, so it lands in the serializer
 // rather than in a builder call.
-const runSerializeRefusals = async (): Promise<void> => {
+const runSerializeRefusals = effect () => {
   for (const refusal of SERIALIZE_REFUSALS) {
-    const outcome = await Effect.runPromise(
-      Effect.result(
-        Server.renderToString(
-          {
-            init: () => ({ model: null }),
-            view: (_model: null, h: HtmlBuilder<never>) => ({
-              title: 'dom state parity',
-              body: h.div([], [refusal.build(h)]),
-            }),
-          },
-          { isHydratable: false },
-        ),
+    const outcome = try Effect.result(
+      Server.renderToString(
+        {
+          init: () => ({ model: null }),
+          view: (_model: null, h: HtmlBuilder<never>) => ({
+            title: 'dom state parity',
+            body: h.div([], [refusal.build(h)]),
+          }),
+        },
+        { isHydratable: false },
       ),
     )
-    if (outcome._tag === 'Success') {
-      fail(`${refusal.name}: rendered without refusing it`)
+    if (outcome is Result.Success) {
+      try fail(`${refusal.name}: rendered without refusing it`)
       return
     }
     const message = messageFor(outcome.failure.cause)
     if (!refusal.expected.test(message)) {
-      fail(`${refusal.name}: refused with an unexpected message: ${message}`)
+      try fail(
+        `${refusal.name}: refused with an unexpected message: ${message}`,
+      )
     }
   }
-  log(
-    `${String(SERIALIZE_REFUSALS.length)} unrepresentable views refused when rendered`,
+  try log(
+    `${
+      String(SERIALIZE_REFUSALS.length)
+    } unrepresentable views refused when rendered`,
   )
 }
 
-const main = async (): Promise<void> => {
+const main = effect () => {
   // The builders need a builder instance, which only a render hands out.
   let builder: HtmlBuilder<never> | undefined
-  await Effect.runPromise(
-    Server.renderToString(
-      {
-        init: () => ({ model: null }),
-        view: (_model: null, h: HtmlBuilder<never>) => {
-          builder = h
-          return { title: 'dom state parity', body: h.div([], ['x']) }
-        },
+  try Server.renderToString(
+    {
+      init: () => ({ model: null }),
+      view: (_model: null, h: HtmlBuilder<never>) => {
+        builder = h
+        return { title: 'dom state parity', body: h.div([], ['x']) }
       },
-      { isHydratable: false },
-    ),
+    },
+    { isHydratable: false },
   )
   if (builder === undefined) {
-    fail('the render never called the view')
+    try fail('the render never called the view')
     return
   }
-  runRefusals(builder)
-  await runSerializeRefusals()
+  try runRefusals(builder)
+  try runSerializeRefusals()
 
-  const rendered = await Promise.all(
-    PARITY_CASES.map(async parityCase => {
-      try {
-        return await renderCase(parityCase)
-      } catch (error) {
-        return fail(
-          `${parityCase.name}: rendering failed: ${messageFor(error)}`,
-        )
-      }
-    }),
+  const rendered: Array<RenderedCase> = []
+  for concurrent (const [index, parityCase] of PARITY_CASES.entries()) {
+    const outcome = try exit(renderCase(parityCase))
+    if (outcome is Exit.Failure) {
+      try fail(
+        `${parityCase.name}: rendering failed: ${
+          messageFor(Cause.squash(outcome.cause))
+        }`,
+      )
+    } else {
+      rendered[index] = outcome.value
+    }
+  }
+
+  const path = try Path.Path()
+  const scriptPath = try path.fromFileUrl(new URL(import.meta.url)) catch (
+    error,
+  ) => die(error)
+  const manifestPath = path.resolve(
+    path.dirname(scriptPath),
+    '../packages/examples-e2e/package.json',
   )
-
-  const browser = await loadChromium().launch({})
+  const chromium = try sync(
+    (manifestPath: string) => loadChromium(manifestPath),
+    manifestPath,
+  )
+  const browser = try Effect.promise(() => chromium.launch({}))
   const divergences: Array<string> = []
   try {
-    const page = await browser.newPage()
-    await page.setContent('<!doctype html><html><body></body></html>')
-    const reflectionFailures = await page.evaluate<ReadonlyArray<string>>(
-      `${CHECK_REFLECTION_MATRIX}(${JSON.stringify(REFLECTION_MATRIX)})`,
+    const page = try Effect.promise(() => browser.newPage())
+    try Effect.promise(() =>
+      page.setContent('<!doctype html><html><body></body></html>')
+    )
+    const reflectionFailures = try Effect.promise(() =>
+      page.evaluate<ReadonlyArray<string>>(
+        `${CHECK_REFLECTION_MATRIX}(${JSON.stringify(REFLECTION_MATRIX)})`,
+      )
     )
     divergences.push(...reflectionFailures)
-    const styleContract =
-      await page.evaluate<StyleContract>(CHECK_STYLE_CONTRACT)
+    const styleContract = try Effect.promise(() =>
+      page.evaluate<StyleContract>(CHECK_STYLE_CONTRACT)
+    )
     if (styleContract.servedCssText !== styleContract.freshCssText) {
       divergences.push(
         'h.Style effective CSS differs between parsed server markup and CSSOM assignment',
       )
     }
     if (
-      styleContract.servedAuthored === styleContract.freshAuthored ||
-      !styleContract.servedExactSelector ||
-      styleContract.freshExactSelector
+      styleContract.servedAuthored === styleContract.freshAuthored
+      || !styleContract.servedExactSelector
+      || styleContract.freshExactSelector
     ) {
       divergences.push(
         'the style contract probe no longer distinguishes effective CSS from authored attribute text',
@@ -1185,17 +1195,21 @@ const main = async (): Promise<void> => {
     for (const parityCase of rendered) {
       // Playwright evaluates a string as an expression rather than calling it
       // with arguments, so the case travels inside the expression.
-      const comparison = await page.evaluate<Comparison>(
-        `(${COMPARE})(${JSON.stringify([
-          parityCase.html,
-          parityCase.selector,
-          parityCase.properties,
-          parityCase.probedAttributes,
-          parityCase.attributes,
-          parityCase.values,
-          parityCase.styles,
-          parityCase.container,
-        ])})`,
+      const comparison = try Effect.promise(() =>
+        page.evaluate<Comparison>(
+          `(${COMPARE})(${
+            JSON.stringify([
+              parityCase.html,
+              parityCase.selector,
+              parityCase.properties,
+              parityCase.probedAttributes,
+              parityCase.attributes,
+              parityCase.values,
+              parityCase.styles,
+              parityCase.container,
+            ])
+          })`,
+        )
       )
       if (comparison.freshError !== '') {
         divergences.push(
@@ -1214,30 +1228,38 @@ const main = async (): Promise<void> => {
         const fresh = comparison.fresh[key]
         if (served !== fresh) {
           divergences.push(
-            `${parityCase.name}: ${key} is ${JSON.stringify(served)} when ` +
-              `served and ${JSON.stringify(fresh)} when built fresh`,
+            `${parityCase.name}: ${key} is ${JSON.stringify(served)} when `
+              + `served and ${JSON.stringify(fresh)} when built fresh`,
           )
         }
       }
     }
-    await page.setContent(
-      '<!doctype html><html><body><script>window.__foldkitParsedScript = 1</script></body></html>',
+    try Effect.promise(() =>
+      page.setContent(
+        '<!doctype html><html><body><script>window.__foldkitParsedScript = 1</script></body></html>',
+      )
     )
-    const scriptInsertion = await page.evaluate<ScriptInsertion>(
-      CHECK_SCRIPT_INSERTION,
+    const scriptInsertion = try Effect.promise(() =>
+      page.evaluate<ScriptInsertion>(
+        CHECK_SCRIPT_INSERTION,
+      )
     )
     if (
-      scriptInsertion.parsed !== 1 ||
-      scriptInsertion.innerHtml !== undefined
+      scriptInsertion.parsed !== 1
+      || scriptInsertion.innerHtml !== undefined
     ) {
       divergences.push(
         'the script insertion probe no longer observes parser execution and innerHTML inertness',
       )
     }
-    await page.setContent(
-      '<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="style-src-attr \'none\'"></head><body></body></html>',
+    try Effect.promise(() =>
+      page.setContent(
+        '<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="style-src-attr \'none\'"></head><body></body></html>',
+      )
     )
-    const styleCsp = await page.evaluate<StyleCsp>(CHECK_STYLE_CSP)
+    const styleCsp = try Effect.promise(() =>
+      page.evaluate<StyleCsp>(CHECK_STYLE_CSP)
+    )
     if (styleCsp.cssom !== 'rgb(1, 2, 3)') {
       divergences.push(
         `CSSOM style assignment was blocked by style-src-attr: ${styleCsp.cssom}`,
@@ -1249,21 +1271,34 @@ const main = async (): Promise<void> => {
       )
     }
   } finally {
-    await browser.close()
+    try Effect.promise(() => browser.close())
   }
 
   if (divergences.length > 0) {
-    fail(
-      `the served DOM and a fresh client DOM disagree:\n  ${divergences.join('\n  ')}`,
+    try fail(
+      `the served DOM and a fresh client DOM disagree:\n  ${
+        divergences.join('\n  ')
+      }`,
     )
   }
-  log(`${String(REFLECTION_MATRIX.length)} HTML property reflections verified`)
-  log(`${String(rendered.length)} views agree between server and client`)
-  log('style, CSP, and script insertion contracts verified')
-  log('PASS')
+  try log(
+    `${String(REFLECTION_MATRIX.length)} HTML property reflections verified`,
+  )
+  try log(`${String(rendered.length)} views agree between server and client`)
+  try log('style, CSP, and script insertion contracts verified')
+  try log('PASS')
 }
 
-main().catch((error: unknown) => {
-  console.error(`[dom-state-parity] FAIL ${messageFor(error)}`)
-  process.exitCode = 1
-})
+const program = effect {
+  const outcome = try exit(main())
+  if (outcome is Exit.Failure) {
+    try Console.error(
+      `[dom-state-parity] FAIL ${messageFor(Cause.squash(outcome.cause))}`,
+    )
+    try Effect.failCause(outcome.cause)
+  }
+}
+NodeRuntime.runMain(
+  Effect.provide(program, ExperimentalNodeServices.layer),
+  { disableErrorReporting: true },
+)
