@@ -6,7 +6,7 @@ import { defineConfig } from 'vitest/config'
 import { foldkitViewIdentity } from '../vite-plugin-foldkit/src/viewIdentity.ts'
 
 export default defineConfig({
-  plugins: [vibelang(), foldkitViewIdentity()],
+  plugins: [vibelang({ register: true }), foldkitViewIdentity()],
   test: {
     environment: 'happy-dom',
     setupFiles: ['./src/vitest-setup.ts'],
