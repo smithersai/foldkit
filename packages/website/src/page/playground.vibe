@@ -482,22 +482,26 @@ export const WritePlaygroundFile = Command.define('WritePlaygroundFile', {
         try FiberMap.run(
           pendingWrites,
           path,
-          (effect {
-            try Effect.sleep(WRITE_DEBOUNCE_MILLIS)
-            try Effect.tryPromise(() => container.fs.writeFile(path, content))
-            if (path !== STYLES_CSS_PATH) {
-              const stylesContent = try Effect.tryPromise(() =>
-                container.fs.readFile(STYLES_CSS_PATH, 'utf-8')
-              )
+          effect {
+            return (effect {
+              try Effect.sleep(WRITE_DEBOUNCE_MILLIS)
               try Effect.tryPromise(() =>
-                container.fs.writeFile(STYLES_CSS_PATH, stylesContent)
+                container.fs.writeFile(path, content)
+              )
+              if (path !== STYLES_CSS_PATH) {
+                const stylesContent = try Effect.tryPromise(() =>
+                  container.fs.readFile(STYLES_CSS_PATH, 'utf-8')
+                )
+                try Effect.tryPromise(() =>
+                  container.fs.writeFile(STYLES_CSS_PATH, stylesContent)
+                )
+              }
+            }) catch effect (error) => {
+              try Effect.logError(
+                `[playground] Debounced write failed for ${path}:`,
+                error,
               )
             }
-          }) catch effect (error) => {
-            try Effect.logError(
-              `[playground] Debounced write failed for ${path}:`,
-              error,
-            )
           },
           { startImmediately: true },
         )

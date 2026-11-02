@@ -40,3 +40,9 @@ The five checked native schema snippets use a `schema` declaration for both the 
 The snippet measurement and OG image cleanup callbacks explicitly use `effect` and `try`. Their regression checks require the official VIP-only fixer to leave both sources unchanged. A seeded property compares 106 callback program models, checks cold construction and repeated runs, and detects a validly typed eager-read mutant.
 
 The good managed WebSocket excerpt uses a cold `effect` block with native `try`/`catch`. Its regression checks preserve the TypeScript factory's eager program lookup, three repeated runs, messages and failure channels across 212 runtime models. Compiled wrong-result and deferred-lookup mutants are rejected. The full-excerpt check compares its existing `TS2307`/`TS6133` diagnostic families under the illustrative-context rule.
+
+The template reader is an `effect` function, and local calendar values
+are run as stored programs. Debounced playground writes keep their catch handler
+inside the cold program passed to `FiberMap.run`. Regression properties compare
+509 write models with the original TypeScript callback, including replacements,
+CSS refreshes and failures.

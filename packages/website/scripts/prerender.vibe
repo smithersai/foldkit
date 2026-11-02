@@ -664,7 +664,7 @@ ${items}
 // hydration stamp, is covered by the same test.
 // Takes its paths so a test can drive it over a directory it controls; the
 // prerender itself always runs it over the build.
-export const readTemplateFrom = (
+export const readTemplateFrom = effect (
   indexPath: string,
   templateCopyPath: string,
 ): string!PlatformError!FileSystem.FileSystem => {

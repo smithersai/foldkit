@@ -19,7 +19,7 @@ type RenderContext = Readonly<{
 
 const loadBaseFlags = effect {
   const currentYear = DateTime.getPartUtc(try DateTime.now, 'year')
-  const today = try Calendar.today.local()
+  const today = try Calendar.today.local
   return Flags.make({
     currentYear,
     today,
