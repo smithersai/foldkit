@@ -1,3 +1,4 @@
+import { highlightedByPath, rawByPath } from './snippets.globs.ts'
 import { Array as Arr, String as Str, pipe } from 'effect'
 import cssSnippets from 'virtual:css-snippets'
 
@@ -14,26 +15,6 @@ export type Snippet = Readonly<{
 }>
 
 type SnippetEntry = readonly [string, Snippet]
-
-const rawByPath = import.meta.glob<string>(
-  [
-    '../snippet/*.{vibe,ts,tsx,elm,json,html,sh,txt}',
-    '!../snippet/*.d.vibe.ts',
-  ],
-  {
-    query: '?raw',
-    import: 'default',
-    eager: true,
-  },
-)
-
-const highlightedByPath = import.meta.glob<string>(
-  [
-    '../snippet/*.{vibe,ts,tsx,elm,json,html,sh,txt}',
-    '!../snippet/*.d.vibe.ts',
-  ],
-  { query: '?highlighted', import: 'default', eager: true },
-)
 
 const snippetName = (path: string): Option<string> =>
   Arr.last(Str.split(path, '/')).map(

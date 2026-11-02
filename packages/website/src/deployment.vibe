@@ -1,3 +1,4 @@
+import { canaryCommit } from './deployment.env.ts'
 import { defineTaggedUnion } from 'foldkit/schema'
 
 export const Deployment = defineTaggedUnion({
@@ -25,5 +26,5 @@ export const isTelemetryEnabled = (deployment: Deployment): boolean =>
   })
 
 export const deployment = deploymentFromCanaryCommit(
-  import.meta.env.VITE_FOLDKIT_CANARY_COMMIT,
+  canaryCommit,
 )

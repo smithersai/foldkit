@@ -18,3 +18,7 @@ links are highlighted by their selected slug.
 
 Build scripts resolve their module directory from `import.meta.url` through the
 Effect Path service.
+
+Vite `import.meta.glob` resources and `import.meta.env` build values live in
+sibling Effect-free TypeScript modules. Their relative roots and injected values
+are preserved when the native modules import them.
