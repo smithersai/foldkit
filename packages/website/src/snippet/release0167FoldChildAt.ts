@@ -1,24 +1,20 @@
-import { Array as EffectArray } from 'effect'
+import { Array, Option } from 'effect'
 import { Update } from 'foldkit'
 import { modifyFields } from 'foldkit/struct'
-import { Message } from './message'
-import { Model } from './model'
 
 const foldApplicant = Update.foldChildAt({
   update: Applicant.update,
   readAt: (model: Model, entryId: string) =>
     Option.map(
-      EffectArray.findFirst(model.applicants, applicant =>
-        applicant.id === entryId),
-      applicant =>
-        applicant.entry,
+      Array.findFirst(model.applicants, applicant => applicant.id === entryId),
+      applicant => applicant.entry,
     ),
   writeAt: (model, entryId, nextEntry) =>
     modifyFields(model, {
-      applicants: EffectArray.map(applicant =>
+      applicants: Array.map(applicant =>
         applicant.id === entryId
           ? modifyFields(applicant, { entry: () => nextEntry })
-          : applicant
+          : applicant,
       ),
     }),
   toParentMessage: (entryId, message) =>
