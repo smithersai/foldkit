@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
+import { Option, Schema } from 'effect'
 import { Update } from 'foldkit'
 import type { HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -66,10 +67,10 @@ const foldAccountDetailsPopover = Update.foldChild({
 
 // In the corresponding Message.match handlers, delegate each
 // Popover to its own Model field:
-GotAccountPopoverMessage: (({ message }) => foldAccountPopover(model, message))
+GotAccountPopoverMessage: ({ message }) => foldAccountPopover(model, message)
 
-GotAccountDetailsPopoverMessage: (({ message }) =>
-  foldAccountDetailsPopover(model, message))
+GotAccountDetailsPopoverMessage: ({ message }) =>
+  foldAccountDetailsPopover(model, message)
 
 // Inside your view function, render the child Popover inside the parent
 // panel. `focusSelector` points at the child trigger, which Popover derives
@@ -90,20 +91,20 @@ const view = (h: HtmlBuilder<Message>) => {
         ),
         ...(isVisible
           ? [
-            h.div([...backdrop, h.Class('fixed inset-0')]),
-            h.div(
-              [...panel, h.Class('rounded-lg border shadow-lg p-4 w-64')],
-              [
-                h.p([h.Class('font-medium')], ['Permissions']),
-                h.p(
-                  [h.Class('text-sm text-gray-500')],
-                  [
-                    'Review who can change billing, members, and integrations.',
-                  ],
-                ),
-              ],
-            ),
-          ]
+              h.div([...backdrop, h.Class('fixed inset-0')]),
+              h.div(
+                [...panel, h.Class('rounded-lg border shadow-lg p-4 w-64')],
+                [
+                  h.p([h.Class('font-medium')], ['Permissions']),
+                  h.p(
+                    [h.Class('text-sm text-gray-500')],
+                    [
+                      'Review who can change billing, members, and integrations.',
+                    ],
+                  ),
+                ],
+              ),
+            ]
           : []),
       ],
     )
@@ -135,15 +136,15 @@ const view = (h: HtmlBuilder<Message>) => {
         ),
         ...(isVisible
           ? [
-            h.div([...backdrop, h.Class('fixed inset-0')]),
-            h.div(
-              [...panel, h.Class('rounded-lg border shadow-lg p-4 w-72')],
-              [
-                h.p([], ['Manage account settings from this panel.']),
-                detailsPopover,
-              ],
-            ),
-          ]
+              h.div([...backdrop, h.Class('fixed inset-0')]),
+              h.div(
+                [...panel, h.Class('rounded-lg border shadow-lg p-4 w-72')],
+                [
+                  h.p([], ['Manage account settings from this panel.']),
+                  detailsPopover,
+                ],
+              ),
+            ]
           : []),
       ],
     )
