@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
+import { Option, Schema } from 'effect'
 import { Update } from 'foldkit'
 import type { HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -57,7 +58,7 @@ const foldTooltip = Update.foldChild({
 })
 
 // In the corresponding Message.match handler, call the fold:
-GotTooltipMessage: (({ message }) => foldTooltip(model, message))
+GotTooltipMessage: ({ message }) => foldTooltip(model, message)
 
 // Inside your view function, embed the tooltip via h.submodel. The tooltip
 // describes the trigger but does not name it, so give an icon-only trigger
@@ -76,16 +77,16 @@ const view = (h: HtmlBuilder<Message>) => {
         ),
         ...(isVisible
           ? [
-            h.div(
-              [
-                ...panel,
-                h.Class(
-                  'rounded-md bg-gray-900 px-3 py-1.5 text-sm text-white shadow-lg',
-                ),
-              ],
-              [h.span([], ['Save your changes (⌘S)'])],
-            ),
-          ]
+              h.div(
+                [
+                  ...panel,
+                  h.Class(
+                    'rounded-md bg-gray-900 px-3 py-1.5 text-sm text-white shadow-lg',
+                  ),
+                ],
+                [h.span([], ['Save your changes (⌘S)'])],
+              ),
+            ]
           : []),
       ],
     )
