@@ -30,8 +30,8 @@ const SendChatMessage = Command.define('SendChatMessage', {
     const socketProgram = ChatSocket.get
     return effect {
       try {
-        const socket = socketProgram()
-        Effect.try(() => socket.send(text))
+        const socket = try socketProgram
+        try Effect.try(() => socket.send(text))
         return Message.CompletedSendChatMessage()
       } catch (error) {
         return Message.FailedSendChatMessage({
