@@ -1,9 +1,7 @@
 // ✅ Good: update returns FetchSuggestions after interruption.
 
-import { Number as EffectNumber } from 'effect'
+import { Number } from 'effect'
 import type { Update } from 'foldkit'
-import { Message } from './message'
-import { Model } from './model'
 
 type UpdateReturn = Update.Return<Model, Message>
 
@@ -14,12 +12,12 @@ const update = (model: Model, message: Message) =>
         Running: () => ({
           model: modifyFields(model, {
             query: () => query,
-            searchGeneration: EffectNumber.increment,
+            searchGeneration: Number.increment,
             searchState: () => SearchState.Cancelling(),
           }),
           commands: [
             FetchSuggestions.Interrupt(() =>
-              Message.CompletedCancelFetchSuggestions()
+              Message.CompletedCancelFetchSuggestions(),
             ),
           ],
         }),
