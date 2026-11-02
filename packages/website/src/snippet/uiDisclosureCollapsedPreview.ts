@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
+import { Schema } from 'effect'
 import type { HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
@@ -27,9 +28,9 @@ const Message = defineMessageUnion({
 })
 
 // In the corresponding Message.match handler, store the value:
-ToggledArticle: (({ isOpen }) => ({
+ToggledArticle: ({ isOpen }) => ({
   model: modifyFields(model, { isArticleOpen: () => isOpen }),
-}))
+})
 
 // Pass peek to animatePanel to keep that much of the panel visible while
 // closed. The preview is inert until the disclosure opens, so keep the toggle
@@ -56,9 +57,7 @@ const view = (model, h: HtmlBuilder<Message>) => {
                 [
                   ...panel,
                   h.Class(
-                    `space-y-3 border-t px-4 pt-3 leading-6 ${
-                      model.isArticleOpen ? 'pb-20' : 'pb-3'
-                    }`,
+                    `space-y-3 border-t px-4 pt-3 leading-6 ${model.isArticleOpen ? 'pb-20' : 'pb-3'}`,
                   ),
                 ],
                 [
@@ -72,14 +71,14 @@ const view = (model, h: HtmlBuilder<Message>) => {
             ...(model.isArticleOpen
               ? []
               : [
-                // Match the fade's solid color to the card background.
-                h.div([
-                  h.AriaHidden(true),
-                  h.Class(
-                    'pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent',
-                  ),
+                  // Match the fade's solid color to the card background.
+                  h.div([
+                    h.AriaHidden(true),
+                    h.Class(
+                      'pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent',
+                    ),
+                  ]),
                 ]),
-              ]),
           ],
         ),
         h.div(
