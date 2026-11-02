@@ -5,7 +5,6 @@
     "domFilteredEvent",
     "domPreventDefault",
     "lintAcquireReleaseConstructsInAcquireBody",
-    "lintNoImpureCallAtDecisionTime",
     "lintNoPreventDefaultInStreamOperator",
     "managedResources",
     "resources",
@@ -21,6 +20,11 @@
     "name": "domFilteredEvent",
     "rawFragment": "target: document"
   },
-  "nativeSnippet": "uiMenuBasic",
-  "nonNativeSnippets": ["atomCompareAtomAsync", "comparisonElmTest"]
+  "nativeSnippet": "uiAnchorBasic",
+  "nonNativeSnippets": [
+    "atomCompareAtomAsync",
+    "comparisonElmTest",
+    "uiMenuBasic",
+    "lintNoImpureCallAtDecisionTime"
+  ]
 }

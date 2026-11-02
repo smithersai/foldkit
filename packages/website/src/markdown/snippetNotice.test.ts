@@ -21,11 +21,14 @@ const FOREIGN_NOTICE =
 type Panel = Parameters<CodeBlock.RenderSnippet>[0]
 type Example = Readonly<{ name: string; label: string }>
 
-const rawInputs = import.meta.glob<string>('../snippet/*.{vibe,tsx,elm}', {
-  query: '?raw',
-  import: 'default',
-  eager: true,
-})
+const rawInputs = import.meta.glob<string>(
+  ['../snippet/*.{vibe,ts,tsx,elm}', '!../snippet/*.d.vibe.ts'],
+  {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+  },
+)
 
 const sourceFor = (name: string): string => {
   const found = Object.entries(rawInputs).find(([path]) =>
