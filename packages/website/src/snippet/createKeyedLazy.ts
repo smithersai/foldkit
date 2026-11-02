@@ -1,6 +1,5 @@
-import { Array as EffectArray } from 'effect'
+import { Array, Option } from 'effect'
 import { type HtmlBuilder, createKeyedLazy } from 'foldkit/html'
-import { Message } from './message'
 
 // Define the per-item view at module level
 const contactView = (
@@ -32,7 +31,7 @@ const contactListView = (
 ) =>
   h.ul(
     [],
-    EffectArray.map(contacts, contact => {
+    Array.map(contacts, contact => {
       const isSelected = Option.exists(
         maybeSelectedId,
         selectedId => selectedId === contact.id,
