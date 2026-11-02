@@ -1,11 +1,9 @@
-import { Array as EffectArray } from 'effect'
+import { Array, Option } from 'effect'
 import { Update } from 'foldkit'
 import type { HtmlBuilder } from 'foldkit/html'
 import { modifyFields } from 'foldkit/struct'
 
 import { VirtualList } from '@foldkit/ui'
-import { Message } from './message'
-import { Model } from './model'
 
 // INIT
 
@@ -39,18 +37,18 @@ const foldMessageListItemsChanged = Update.foldChild({
   toParentMessage: message => Message.GotMessageListMessage({ message }),
 })
 
-GotMessageListMessage: (({ message }) => foldMessageList(model, message))
+GotMessageListMessage: ({ message }) => foldMessageList(model, message)
 
-ReceivedMessage: (({ message }) => {
-  const nextMessages = EffectArray.append(model.messages, message)
+ReceivedMessage: ({ message }) => {
+  const nextMessages = Array.append(model.messages, message)
   const nextModel = modifyFields(model, {
     messages: () => nextMessages,
   })
   return foldMessageListItemsChanged(
     nextModel,
-    EffectArray.map(nextMessages, message => String(message.id)),
+    Array.map(nextMessages, message => String(message.id)),
   )
-})
+}
 
 // VIEW
 
