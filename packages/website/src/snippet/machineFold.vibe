@@ -4,11 +4,10 @@ import { modifyFields } from 'foldkit/struct'
 
 import { CheckoutState, Message, checkoutMachine } from './machineDefinition'
 
-export const Model = Schema.Struct({
-  checkout: CheckoutState,
-  isHelpOpen: Schema.Boolean,
-})
-export type Model = typeof Model.Type
+export schema Model {
+  checkout: CheckoutState
+  isHelpOpen: boolean
+}
 
 export const initialModel = Model.make({
   checkout: checkoutMachine.initial,

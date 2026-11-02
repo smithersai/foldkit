@@ -1,0 +1,55 @@
+{
+  "key": "foldkit:website:snippet-schema-forms",
+  "files": [
+    "antiPatternLiveHandleGood",
+    "machineFold",
+    "release0166Query",
+    "submodelParentModel"
+  ],
+  "seed": 531135,
+  "generatedModels": 200,
+  "fixedModels": [
+    [
+      {
+        "name": "roomId",
+        "kind": "string"
+      }
+    ],
+    [
+      {
+        "name": "checkout",
+        "kind": "child"
+      },
+      {
+        "name": "isHelpOpen",
+        "kind": "boolean"
+      }
+    ],
+    [
+      {
+        "name": "posts",
+        "kind": "qualified"
+      }
+    ],
+    [
+      {
+        "name": "username",
+        "kind": "string"
+      },
+      {
+        "name": "settings",
+        "kind": "qualified"
+      }
+    ]
+  ],
+  "pending": [
+    {
+      "file": "antiPatternModelSchemaBad",
+      "reason": "native schema adds a second unused ModelSchema report"
+    },
+    {
+      "file": "multipleInstances",
+      "reason": "native schemas add unused type-alias reports for ModelA and ModelB"
+    }
+  ]
+}

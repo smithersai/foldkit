@@ -8,10 +8,9 @@ const postsQuery = Query.define({
   execute: fetchPosts,
 })
 
-const Model = Schema.Struct({
-  posts: postsQuery.Model,
-})
-type Model = typeof Model.Type
+schema Model {
+  posts: postsQuery.Model
+}
 
 const Message = defineMessageUnion({
   GotPostsMessage: { message: postsQuery.Message },

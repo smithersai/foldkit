@@ -1,7 +1,6 @@
 import * as Settings from './page/settings'
 
-export const Model = Schema.Struct({
-  username: Schema.String,
-  settings: Settings.Model,
-})
-export type Model = typeof Model.Type
+export schema Model {
+  username: string
+  settings: Settings.Model
+}

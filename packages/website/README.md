@@ -34,3 +34,5 @@ with `pnpm --filter website typecheck`; keep them with their `.vibe` sources.
 plain Node, before the native loader can generate declarations, then runs
 Vitest. The checks cover fresh typed lint, an unknown-error mutant, and generated
 fixture names with declaration deletion and restoration.
+
+Native schema snippets use a `schema` declaration for both the codec and its Model type. Their regression checks compile the four illustrative excerpts for legacy-constructor diagnostics. A separate generated-program property checks 204 complete schema programs for identical emitted JavaScript structure and declaration bytes; it does not make the excerpts standalone programs.

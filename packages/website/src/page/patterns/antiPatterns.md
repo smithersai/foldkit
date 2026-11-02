@@ -103,7 +103,7 @@ Imagine a chat screen that needs a `WebSocket` only while the visitor is in a ro
 
 ### Runtime-Owned Resource Lifetimes
 
-Storing the socket in the Model does not give it a Runtime-controlled lifetime. The live connection cannot be recreated from the Model Schema after a development reload, and update would still be responsible for opening and closing it. Keep the room and connection status in the Model, and let a ManagedResource own the `WebSocket` itself.
+Storing the socket in the Model does not give it a Runtime-controlled lifetime. The live connection cannot be recreated from the Model Schema after a development reload, and update would still be responsible for opening and closing it. Keep the room and connection status in the Model, and let a ManagedResource own the `WebSocket` itself. The `RoomRequirements` schema declares the room identifier needed to acquire it.
 
 ::Snippet{name="antiPatternLiveHandleBad" label="❌ A module variable owns the WebSocket" class="mb-4"}
 
