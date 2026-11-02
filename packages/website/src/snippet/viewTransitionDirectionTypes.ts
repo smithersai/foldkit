@@ -1,7 +1,6 @@
+import { Option } from 'effect'
 import { Runtime } from 'foldkit'
 import { Transition } from 'foldkit/route'
-import { Message } from './message'
-import { Model } from './model'
 
 export const viewTransition: Runtime.ViewTransitionConfig<Model, Message> = ({
   previousModel,
@@ -19,14 +18,12 @@ export const viewTransition: Runtime.ViewTransitionConfig<Model, Message> = ({
   // still cross-fades, it just does not slide. Moving between two artworks
   // enters no route at all, which is `onNone`. Adding a route to AppRoute is a
   // compile error here until it is given a direction.
-  const enteredRoute = Transition.enteredAny(transition)
-  const directionForRoute = AppRoute.match<Runtime.ViewTransitionDecision>({
-    Artwork: () => ({ types: ['to-artwork-detail'] }),
-    Gallery: () => ({ types: ['to-gallery'] }),
-    NotFound: () => true,
+  return Option.match(Transition.enteredAny(transition), {
+    onNone: () => true,
+    onSome: AppRoute.match<Runtime.ViewTransitionDecision>({
+      Artwork: () => ({ types: ['to-artwork-detail'] }),
+      Gallery: () => ({ types: ['to-gallery'] }),
+      NotFound: () => true,
+    }),
   })
-  return match (enteredRoute) {
-    when { _tag: 'None' }: true;
-    when { _tag: 'Some', value: let route }: directionForRoute(route);
-  }
 }
