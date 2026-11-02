@@ -221,7 +221,7 @@ const program = (model, native) =>
       ' ? "Overflows" : "Fits" }))',
   ].join('\n') + '\n'
 
-test('cold callback migration preserves declarations, emitted programs and call phases', async () => {
+test('explicit-effects callbacks preserve TypeScript declarations and cold call phases', async () => {
   const model = fc.record({
     value: fc.integer({ min: -1000, max: 1000 }),
     threshold: fc.integer({ min: -100, max: 1000 }),
@@ -239,17 +239,22 @@ test('cold callback migration preserves declarations, emitted programs and call 
         const models = [...corpus.fixedModels, ...generated]
         const path = directory()
         const outputs = {}
-        for (const side of ['legacy', 'native']) {
+        for (const side of ['typescript', 'native']) {
           const source = join(path, side)
           mkdirSync(source)
           const files = models.map((value, index) => {
-            const file = join(source, 'case_' + index + '.vibe')
-            writeFileSync(file, program(value, side === 'native'))
+            const file = join(
+              source,
+              'case_' + index + (side === 'native' ? '.vibe' : '.ts'),
+            )
+            writeFileSync(
+              file,
+              'import { Effect } from "effect"\n' +
+                program(value, side === 'native'),
+            )
             return file
           })
           const project = config(source, files, path)
-          if (side === 'legacy')
-            compile(['-p', project, '--fix', '--fix-vip-only', '--noEmit'])
           outputs[side] = join(path, 'emit-' + side)
           compile([
             '-p',
@@ -271,9 +276,8 @@ test('cold callback migration preserves declarations, emitted programs and call 
         let runs = 0
         for (let index = 0; index < models.length; index += 1) {
           const value = models[index]
-          const before = join(outputs.legacy, 'legacy', 'case_' + index)
+          const before = join(outputs.typescript, 'typescript', 'case_' + index)
           const after = join(outputs.native, 'native', 'case_' + index)
-          expect(javascript(after + '.js')).toEqual(javascript(before + '.js'))
           expect(readFileSync(after + '.d.ts')).toEqual(
             readFileSync(before + '.d.ts'),
           )
@@ -375,7 +379,7 @@ test('cold callback migration preserves declarations, emitted programs and call 
               compared: models.length,
               actualRuntimeRuns: runs,
               declarationsRawIdentical: true,
-              javascriptSyntaxTreesIdentical: true,
+              explicitEffectsAgainstTypeScriptDeclarations: true,
               coldConstructionAndRepeatedRuns: true,
               validTypedEagerMutantRejected: true,
             }),

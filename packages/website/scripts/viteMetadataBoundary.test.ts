@@ -66,10 +66,10 @@ test('sibling TypeScript boundaries preserve Vite selection, queries, value iden
     )
     const exportCalls = (source: string): string =>
       source.replace(/^const /gm, 'export const ')
-    write('src/markdown/before.vibe', exportCalls(corpus.snippetBlock))
-    write('src/page/blog/before.vibe', exportCalls(corpus.postBlock))
+    write('src/markdown/before.ts', exportCalls(corpus.snippetBlock))
+    write('src/page/blog/before.ts', exportCalls(corpus.postBlock))
     write(
-      'src/env.before.vibe',
+      'src/env.before.ts',
       'export const canaryCommit = ' + corpus.envExpression,
     )
     write(
@@ -99,11 +99,11 @@ test('sibling TypeScript boundaries preserve Vite selection, queries, value iden
     write(
       'entry.ts',
       [
-        "export * as beforeSnippets from './src/markdown/before.vibe'",
+        "export * as beforeSnippets from './src/markdown/before.ts'",
         "export * as afterSnippets from './src/markdown/after.vibe'",
-        "export * as beforePosts from './src/page/blog/before.vibe'",
+        "export * as beforePosts from './src/page/blog/before.ts'",
         "export * as afterPosts from './src/page/blog/after.vibe'",
-        "export * as beforeEnv from './src/env.before.vibe'",
+        "export * as beforeEnv from './src/env.before.ts'",
         "export * as afterEnv from './src/env.after.vibe'",
       ].join('\n'),
     )

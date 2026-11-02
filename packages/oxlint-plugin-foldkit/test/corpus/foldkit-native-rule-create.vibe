@@ -5,7 +5,7 @@ export const nativeRule = Rule.define({
   name: 'foldkit-native-create',
   meta: Rule.meta({ type: 'problem', description: 'Native rule callback' }),
   create: effect () => {
-    const context = try RuleContext()
+    const context = try RuleContext
     return {
       ThrowStatement: effect (node: ESTree.Node) => {
         try context.report(
