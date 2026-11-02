@@ -1,7 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
-import { Array as EffectArray } from 'effect'
+import { Array, Option, Schema } from 'effect'
 import { Update } from 'foldkit'
 import { type HtmlBuilder, childAttributes } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -9,7 +9,8 @@ import { modifyFields } from 'foldkit/struct'
 
 import { Combobox } from '@foldkit/ui'
 
-schema City = 'Johannesburg' | 'Kyiv' | 'Oxford' | 'Wellington'
+const City = Schema.Literals(['Johannesburg', 'Kyiv', 'Oxford', 'Wellington'])
+type City = typeof City.Type
 
 // Declare a typed multi-select Combobox once at module scope:
 const CitiesCombobox = Combobox.Multi.create<City>()
@@ -47,14 +48,16 @@ const foldComboboxMultiOutMessage = Combobox.OutMessage.match<
   Update.Step<Model, Message>,
   Combobox.OutMessage<City>
 >({
-  Selected: ({ value }) => model => ({
-    model: modifyFields(model, {
-      selectedCities: selectedCities =>
-        EffectArray.contains(selectedCities, value)
-          ? EffectArray.filter(selectedCities, city => city !== value)
-          : EffectArray.append(selectedCities, value),
+  Selected:
+    ({ value }) =>
+    model => ({
+      model: modifyFields(model, {
+        selectedCities: selectedCities =>
+          Array.contains(selectedCities, value)
+            ? Array.filter(selectedCities, city => city !== value)
+            : Array.append(selectedCities, value),
+      }),
     }),
-  }),
   ClearedSelection: () => model => ({ model }),
 })
 
@@ -72,7 +75,7 @@ const foldComboboxMulti = Update.foldChild({
 })
 
 // In the corresponding Message.match handler, call the fold:
-GotComboboxMultiMessage: (({ message }) => foldComboboxMulti(model, message))
+GotComboboxMultiMessage: ({ message }) => foldComboboxMulti(model, message)
 
 const cities: ReadonlyArray<City> = [
   'Johannesburg',
@@ -82,12 +85,14 @@ const cities: ReadonlyArray<City> = [
 ]
 
 // Filter items based on the current input value:
-const filteredCities = model.comboboxMulti.inputValue === ''
-  ? cities
-  : EffectArray.filter(cities, city =>
-    city
-      .toLowerCase()
-      .includes(model.comboboxMulti.inputValue.toLowerCase()))
+const filteredCities =
+  model.comboboxMulti.inputValue === ''
+    ? cities
+    : Array.filter(cities, city =>
+        city
+          .toLowerCase()
+          .includes(model.comboboxMulti.inputValue.toLowerCase()),
+      )
 
 // Inside your view function, embed the Combobox.Multi via h.submodel. As with
 // the single-select Combobox, give the input an accessible name: target the
