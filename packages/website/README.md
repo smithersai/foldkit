@@ -15,3 +15,6 @@ preserves the source exactly.
 
 Previous and next documentation links follow the sidebar page order. Example
 links are highlighted by their selected slug.
+
+Build scripts resolve their module directory from `import.meta.url` through the
+Effect Path service.

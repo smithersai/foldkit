@@ -21,7 +21,11 @@ const paths = Effect.runSync(effect {
     return try Path.Path
   }
 })
-const SCRIPT_DIR = import.meta.dirname
+const SCRIPT_DIR = Effect.runSync(effect {
+  const moduleUrl = try Effect.sync(() => new URL(import.meta.url))
+  const moduleFile = try Effect.orDie(paths.fromFileUrl(moduleUrl))
+  return paths.dirname(moduleFile)
+})
 
 export const PUBLIC_DIR = paths.resolve(SCRIPT_DIR, '../public')
 

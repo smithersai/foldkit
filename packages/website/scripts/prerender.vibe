@@ -191,7 +191,11 @@ export const enumerateRoutes = (
 
 // PATHS
 
-const SCRIPT_DIR = import.meta.dirname
+const SCRIPT_DIR = Effect.runSync(effect {
+  const moduleUrl = try Effect.sync(() => new URL(import.meta.url))
+  const moduleFile = try Effect.orDie(paths.fromFileUrl(moduleUrl))
+  return paths.dirname(moduleFile)
+})
 const WEBSITE_DIR = paths.resolve(SCRIPT_DIR, '..')
 const DIST_DIR = paths.resolve(WEBSITE_DIR, 'dist')
 const API_JSON_PATH = paths.resolve(WEBSITE_DIR, 'src/generated/api.json')

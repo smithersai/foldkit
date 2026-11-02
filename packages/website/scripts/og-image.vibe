@@ -36,8 +36,14 @@ const paths = Effect.runSync(effect {
   }
 })
 
+const SCRIPT_DIRECTORY = Effect.runSync(effect {
+  const moduleUrl = try Effect.sync(() => new URL(import.meta.url))
+  const moduleFile = try Effect.orDie(paths.fromFileUrl(moduleUrl))
+  return paths.dirname(moduleFile)
+})
+
 const LOGO_SVG_PATH = paths.resolve(
-  import.meta.dirname,
+  SCRIPT_DIRECTORY,
   '../public/logo-dark.svg',
 )
 

@@ -19,7 +19,11 @@ const paths = Effect.runSync(effect {
     return try Path.Path
   }
 })
-const SCRIPT_DIRECTORY = import.meta.dirname
+const SCRIPT_DIRECTORY = Effect.runSync(effect {
+  const moduleUrl = try Effect.sync(() => new URL(import.meta.url))
+  const moduleFile = try Effect.orDie(paths.fromFileUrl(moduleUrl))
+  return paths.dirname(moduleFile)
+})
 const WEBSITE_ROOT = paths.resolve(SCRIPT_DIRECTORY, '..')
 const REPO_ROOT = paths.resolve(WEBSITE_ROOT, '../..')
 const EXAMPLES_DIRECTORY = paths.resolve(WEBSITE_ROOT, '../../examples')
