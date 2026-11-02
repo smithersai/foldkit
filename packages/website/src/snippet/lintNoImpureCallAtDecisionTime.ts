@@ -1,13 +1,14 @@
+import { Effect, Schema } from 'effect'
 import { SecureRandom } from 'effect/crypto'
 import { Command } from 'foldkit'
 
 import { BrowserCrypto } from '@effect/platform-browser'
-import { Message } from './message'
 
 const SaveDraftWithId = Command.define('SaveDraftWithId', {
   args: { body: Schema.String, draftId: Schema.String },
   messages: [Message.CompletedSaveDraftWithId],
-  execute: effect ({ draftId }) => Message.CompletedSaveDraftWithId({ draftId }),
+  execute: ({ draftId }) =>
+    Effect.succeed(Message.CompletedSaveDraftWithId({ draftId })),
 })
 
 // ❌ Bad: assigning the UUID first does not defer the call.
@@ -21,13 +22,12 @@ const saveBad = (body: string) => {
 const SaveDraft = Command.define('SaveDraft', {
   args: { body: Schema.String },
   messages: [Message.CompletedSaveDraft],
-  execute: effect ({ body: _body }) => {
-    provide BrowserCrypto.layerSecureRandom {
-      const secureRandom = SecureRandom.SecureRandom()
-      const draftId = try secureRandom.uuidV4()
+  execute: ({ body: _body }) =>
+    Effect.gen(function* () {
+      const secureRandom = yield* SecureRandom.SecureRandom
+      const draftId = yield* secureRandom.uuidV4()
       return Message.CompletedSaveDraft({ draftId })
-    }
-  },
+    }).pipe(Effect.provide(BrowserCrypto.layerSecureRandom)),
 })
 
 const saveGood = (body: string) => SaveDraft({ body })
