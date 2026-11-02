@@ -1,3 +1,4 @@
+import { Duration, Effect, Schema, Stream } from 'effect'
 import { Subscription, type Update } from 'foldkit'
 import type { Document, HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -7,11 +8,12 @@ const TICK_INTERVAL_MS = 1000
 
 // MODEL
 
-schema Model {
-  count: number
-  step: number
-  isAutoCounting: boolean
-}
+const Model = Schema.Struct({
+  count: Schema.Number,
+  step: Schema.Number,
+  isAutoCounting: Schema.Boolean,
+})
+type Model = typeof Model.Type
 
 // MESSAGE
 
