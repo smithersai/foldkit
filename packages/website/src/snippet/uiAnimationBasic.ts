@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
+import { Option, Schema } from 'effect'
 import { Update } from 'foldkit'
 import type { HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -97,11 +98,11 @@ const foldAnimationHide = Update.foldChildStep({
 
 // In the corresponding Message.match handlers, route child Messages through
 // the regular fold and parent-owned actions through the child capabilities:
-GotAnimationMessage: (({ message }) => foldAnimation(model, message))
-ClickedToggleAnimation: (() =>
+GotAnimationMessage: ({ message }) => foldAnimation(model, message)
+ClickedToggleAnimation: () =>
   model.animation.isShowing
     ? foldAnimationHide(model)
-    : foldAnimationShow(model))
+    : foldAnimationShow(model)
 
 // Inside your view function, dispatch a parent-owned fact. The parent update
 // invokes the child capability. model.animation.isShowing is your source of
