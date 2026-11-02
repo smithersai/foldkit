@@ -1,9 +1,9 @@
 // ✅ Good: the result carries the generation that started the search.
 
+import { Schema } from 'effect'
 import type { Update } from 'foldkit'
 import { defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
-import { Model } from './model'
 
 const Message = defineMessageUnion({
   SucceededSearch: {
