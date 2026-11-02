@@ -22,3 +22,8 @@ including property reflection, refused views, style rules, CSP and script insert
 
 These entry points use VibeLang. Package scripts load `vibelang/register` automatically.
 `pnpm typecheck:scripts` checks TypeScript and `.vibe` scripts.
+
+The scaffold helper regression test compares the current script with its immutable
+original source. Five deterministic properties exercise JSON, shim files, browser
+diagnostics and cleanup, and child stdin. Its native adapter omits the CLI entry
+only. These checks complement the complete SSR and SSG scaffold gate.
