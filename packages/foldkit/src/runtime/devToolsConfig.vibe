@@ -144,46 +144,41 @@ export const resolveDevToolsConfig = (
 /** The Message tags `excludeFromHistory` keeps out of the DevTools history. */
 export const resolveExcludeFromHistoryTags = (
   devTools: DevToolsConfig | undefined,
-): ReadonlySet<string> =>
-  Option.liftPredicate(
+): ReadonlySet<string> => match (Option.liftPredicate(
     devTools ?? {},
     (config): config is Exclude<DevToolsConfig, false> => config !== false,
   )
-    .flatMapNullishOr((config): infer _ => config.excludeFromHistory)
-    .match({
-      onNone: (): infer _ => new Set<string>(),
-      onSome: (tags): infer _ => new Set(tags),
-    })
+    .flatMapNullishOr((config): infer _ => config.excludeFromHistory)) {
+  when Option.Some(let tags): new Set(tags);
+  default: new Set<string>();
+}
 
 /** The configured `maxEntries`, clamped to the supported range. */
 export const resolveDevToolsMaxEntries = (
   devTools: DevToolsConfig | undefined,
-): number | undefined =>
-  Option.liftPredicate(
+): number | undefined => match (Option.liftPredicate(
     devTools ?? {},
     (config): config is Exclude<DevToolsConfig, false> => config !== false,
   )
-    .flatMapNullishOr((config): infer _ => config.maxEntries)
-    .match({
-      onNone: (): infer _ => undefined,
-      onSome: (value): infer _ =>
-        Math.max(
-          DEV_TOOLS_MAX_ENTRIES_MIN,
-          Math.min(DEV_TOOLS_MAX_ENTRIES_MAX, value),
-        ),
-    })
+    .flatMapNullishOr((config): infer _ => config.maxEntries)) {
+  when Option.Some(let value): Math.max(
+    DEV_TOOLS_MAX_ENTRIES_MIN,
+    Math.min(DEV_TOOLS_MAX_ENTRIES_MAX, value),
+  );
+  default: undefined;
+}
 
 /** The configured `keyframeInterval`, floored and clamped to its minimum. */
 export const resolveDevToolsKeyframeInterval = (
   devTools: DevToolsConfig | undefined,
-): number | undefined =>
-  Option.liftPredicate(
+): number | undefined => match (Option.liftPredicate(
     devTools ?? {},
     (config): config is Exclude<DevToolsConfig, false> => config !== false,
   )
-    .flatMapNullishOr((config): infer _ => config.keyframeInterval)
-    .match({
-      onNone: (): infer _ => undefined,
-      onSome: (value): infer _ =>
-        Math.max(DEV_TOOLS_KEYFRAME_INTERVAL_MIN, Math.floor(value)),
-    })
+    .flatMapNullishOr((config): infer _ => config.keyframeInterval)) {
+  when Option.Some(let value): Math.max(
+    DEV_TOOLS_KEYFRAME_INTERVAL_MIN,
+    Math.floor(value),
+  );
+  default: undefined;
+}

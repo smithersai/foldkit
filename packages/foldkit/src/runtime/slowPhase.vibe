@@ -211,12 +211,15 @@ export const reportSlowPhase = <Context>(
 }
 
 const messageTag = (rawMessage: unknown): string =>
-  Option.liftPredicate(rawMessage, Predicate.isObject)
-    .flatMap(Record.get('_tag'))
-    .match({
-      onNone: (): infer _ => 'unknown',
-      onSome: String,
-    })
+  do {
+    const maybeTag = Option.liftPredicate(rawMessage, Predicate.isObject)
+      .flatMap(Record.get('_tag'))
+    const stringifyTag = String
+    match (maybeTag) {
+      when Option.Some(let tag): stringifyTag(tag);
+      default: 'unknown';
+    }
+  }
 
 const optionMessageTrigger = (maybeMessage: Option<unknown>): string =>
   do {

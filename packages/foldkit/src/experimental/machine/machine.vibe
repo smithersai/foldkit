@@ -1421,36 +1421,33 @@ function defineImplementation<
         Option.getOrUndefined,
       )
 
-      return Record.get(looseStates, state._tag)
-        .flatMap(stateEntry => Record.get(stateEntry.on, message._tag))
-        .match({
-          onNone: () =>
-            makeIgnored(
+      return match (Record.get(looseStates, state._tag)
+          .flatMap(stateEntry => Record.get(stateEntry.on, message._tag))) {
+        when Option.Some(let edgeOrGuardedEdges): do {
+          const selection = chooseEdge(
+            edgeOrGuardedEdges,
+            state,
+            message,
+            context,
+          )
+          match (selection) {
+            when { _tag: "SelectedEdge" } and let selectedEdge:
+              makeTransitioned(state, message, selectedEdge, context);
+            when { _tag: "IgnoredEdge" } and let ignoredEdge: makeIgnored(
               state,
               message,
-              HashSet.has(messageAlphabet, message._tag)
-                ? 'NotApplicable'
-                : 'OutOfAlphabet',
-            ),
-          onSome: (edgeOrGuardedEdges): TransitionResult<State, Message, R> => {
-            const selection = chooseEdge(
-              edgeOrGuardedEdges,
-              state,
-              message,
-              context,
-            )
-
-            return match (selection) {
-              when { _tag: "SelectedEdge" } and let selectedEdge:
-                makeTransitioned(state, message, selectedEdge, context);
-              when { _tag: "IgnoredEdge" } and let ignoredEdge: makeIgnored(
-                state,
-                message,
-                ignoredEdge.reason,
-              );
-            }
-          },
-        })
+              ignoredEdge.reason,
+            );
+          }
+        };
+        default: makeIgnored(
+          state,
+          message,
+          HashSet.has(messageAlphabet, message._tag)
+            ? 'NotApplicable'
+            : 'OutOfAlphabet',
+        );
+      }
     }
 
     const transition = (
@@ -1569,18 +1566,15 @@ function defineImplementation<
 
     const shadowedTransitionsInGroup = (
       edgeGroup: EdgeGroup,
-    ): ReadonlyArray<DeadTransition<State, Message>> =>
-      firstFallbackInEdgeGroup(edgeGroup)
-        .match({
-          onNone: () => [],
-          onSome: fallback =>
-            pipe(
-              edgesAfterGuardPosition(edgeGroup, fallback.position),
-              Array.map(edgeSummary =>
-                makeDeadTransition(edgeSummary, fallback.reason)
-              ),
-            ),
-        })
+    ): ReadonlyArray<DeadTransition<State, Message>> => match (firstFallbackInEdgeGroup(edgeGroup)) {
+      when Option.Some(let fallback): pipe(
+        edgesAfterGuardPosition(edgeGroup, fallback.position),
+        Array.map(edgeSummary =>
+          makeDeadTransition(edgeSummary, fallback.reason)
+        ),
+      );
+      default: [];
+    }
 
     const edgeGroups = pipe(
       edges,

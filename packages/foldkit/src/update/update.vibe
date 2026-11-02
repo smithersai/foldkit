@@ -203,16 +203,13 @@ export type Refreshable<Model, Message, A, E, R = never> = Readonly<{
 export const refresh = <Model, Message, A, E, R = never>(
   refreshable: Refreshable<Model, Message, A, E, R>,
 ): Step<Model, Message, R> =>
-model =>
-  refreshable.read(model)
-    .flatMap(refreshable.revalidate)
-    .match({
-      onNone: () => ({ model }),
-      onSome: next => ({
-        model: refreshable.write(model, next),
-        commands: [refreshable.load],
-      }),
-    })
+model => match (refreshable.read(model).flatMap(refreshable.revalidate)) {
+  when Option.Some(let next): ({
+    model: refreshable.write(model, next),
+    commands: [refreshable.load],
+  });
+  default: ({ model });
+}
 
 /** The four capabilities that fold one child Submodel's update into the
  *  parent, for a child whose update cannot emit an OutMessage.
