@@ -1,0 +1,34 @@
+{
+  "repository": "foldkit",
+  "pattern": "scaffold-service-failure-reporting",
+  "witnesses": [
+    {
+      "key": "main-defect-diagnostic",
+      "input": "ScaffoldCheckError as an Effect defect",
+      "expected": {
+        "exit": 1,
+        "stderr": "[scaffold-ssr] FAIL: root witness\n"
+      }
+    },
+    {
+      "key": "filesystem-original-cause",
+      "input": "PlatformError.NotFound with the original Node error as cause",
+      "expected": "the complete original error diagnostic bytes"
+    }
+  ],
+  "properties": [
+    {
+      "key": "nested-platform-foreign-errors",
+      "seed": 413928,
+      "runs": 100,
+      "depth": [0, 6]
+    },
+    {
+      "key": "foreign-primitive-rejections",
+      "seed": 413929,
+      "runs": 100,
+      "depth": [0, 6]
+    }
+  ],
+  "preserved": "existing original assertions, deadlines and all earlier helper tests"
+}

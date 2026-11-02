@@ -16,3 +16,9 @@ The native adapter copies source modules into an isolated temporary directory,
 omits only the CLI invocation and exposes private helpers for observation. It
 does not modify repository sources or original assertions and timeout arguments.
 The complete SSR and SSG scaffold check remains a separate integration gate.
+
+The failure-reporting tests exercise the actual CLI entry with a controlled
+failing main body. Typed failures and defects both retain the original complete
+stderr and exit status. Two further properties preserve complete original
+diagnostic bytes through nested foreign and platform wrappers, including error
+stacks, primitive rejection values and a platform error with no original cause.
