@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
+import { Option, Schema } from 'effect'
 import { Update } from 'foldkit'
 import type { HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -63,8 +64,8 @@ const foldDialogOpen = Update.foldChildStep({
 })
 
 // In the corresponding Message.match handler:
-ClickedOpenDialog: (() => foldDialogOpen(model))
-GotDialogMessage: (({ message }) => foldDialog(model, message))
+ClickedOpenDialog: () => foldDialogOpen(model)
+GotDialogMessage: ({ message }) => foldDialog(model, message)
 
 // In your view, open from a trigger with the fact, and dismiss from a Cancel
 // button by spreading the `closeButton` bundle, no parent message needed:
@@ -82,19 +83,19 @@ const view = (h: HtmlBuilder<Message>) => {
       [...dialog],
       isVisible
         ? [
-          h.div([...backdrop, h.Class('fixed inset-0 bg-black/50')]),
-          h.div(
-            [...panel, h.Class('rounded-lg p-6 max-w-md mx-auto shadow-xl')],
-            [
-              h.h2([...title], ['Confirm Action']),
-              h.p([...description], ['Are you sure you want to proceed?']),
-              h.button(
-                [...closeButton, h.Class('px-4 py-2 rounded-lg border')],
-                ['Cancel'],
-              ),
-            ],
-          ),
-        ]
+            h.div([...backdrop, h.Class('fixed inset-0 bg-black/50')]),
+            h.div(
+              [...panel, h.Class('rounded-lg p-6 max-w-md mx-auto shadow-xl')],
+              [
+                h.h2([...title], ['Confirm Action']),
+                h.p([...description], ['Are you sure you want to proceed?']),
+                h.button(
+                  [...closeButton, h.Class('px-4 py-2 rounded-lg border')],
+                  ['Cancel'],
+                ),
+              ],
+            ),
+          ]
         : [],
     )
 
