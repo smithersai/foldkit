@@ -22,3 +22,8 @@ failing main body. Typed failures and defects both retain the original complete
 stderr and exit status. Two further properties preserve complete original
 diagnostic bytes through nested foreign and platform wrappers, including error
 stacks, primitive rejection values and a platform error with no original cause.
+
+The signal regression compares real child CLI processes after a readiness
+handshake. Both signal names retain the original terminal status and exact
+stdout and stderr. The main body's finalizer must not run. A hundred seeded
+cases vary signal names and finalizer text and check its file side effect too.
