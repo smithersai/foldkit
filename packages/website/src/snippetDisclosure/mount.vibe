@@ -12,8 +12,8 @@ const COLLAPSIBLE_HEIGHT_PX = COLLAPSED_PREVIEW_HEIGHT_PX
 export const MeasureSnippetHeight = Mount.define('MeasureSnippetHeight', {
   args: { snippetId: Schema.String },
   messages: [Message.CompletedMeasureSnippetHeight],
-  execute: ({ element, snippetId }) =>
-    Effect.sync(() =>
+  execute: effect ({ element, snippetId }) =>
+    try Effect.sync(() =>
       Message.CompletedMeasureSnippetHeight({
         snippetId,
         snippetSize: element.scrollHeight > COLLAPSIBLE_HEIGHT_PX

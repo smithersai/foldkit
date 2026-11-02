@@ -278,12 +278,12 @@ const renderCoverOgImage = effect (browser: Browser, cover: PostCover) => {
         )
       )
     },
-    page => Effect.promise(() => page.close()),
+    effect page => try Effect.promise(() => page.close()),
   )
 
   return match (Base64.decode(pngBase64)) {
     when { _tag: 'Success', let success }: success;
-    when { _tag: 'Failure', let failure }: die(failure);
+    when { _tag: 'Failure', let failure }: try die(failure);
   }
 }
 

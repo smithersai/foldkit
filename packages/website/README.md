@@ -36,3 +36,5 @@ Vitest. The checks cover fresh typed lint, an unknown-error mutant, and generate
 fixture names with declaration deletion and restoration.
 
 The five checked native schema snippets use a `schema` declaration for both the codec and its associated type. Their regression checks compile the five illustrative excerpts for legacy-constructor diagnostics. A separate generated-program property checks 205 complete schema programs for identical emitted JavaScript structure and declaration bytes; it does not make the excerpts standalone programs.
+
+The snippet measurement and OG image cleanup callbacks explicitly use `effect` and `try`. Their regression checks require the official VIP-only fixer to leave both sources unchanged. A seeded property compares 106 callback program models, checks cold construction and repeated runs, and detects a validly typed eager-read mutant.
