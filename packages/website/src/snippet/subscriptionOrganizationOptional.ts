@@ -1,3 +1,4 @@
+import { Option } from 'effect'
 import { Subscription } from 'foldkit'
 
 import { Message } from './message'
