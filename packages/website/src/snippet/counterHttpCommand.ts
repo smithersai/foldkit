@@ -1,8 +1,8 @@
+import { Effect, Schema } from 'effect'
 import { HttpClient, HttpClientRequest } from 'effect/http'
 import { Command, Http, type Update } from 'foldkit'
 import { defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
-import { Model } from './model'
 
 const Message = defineMessageUnion({
   ClickedFetchCount: {},
@@ -10,29 +10,28 @@ const Message = defineMessageUnion({
   FailedFetchCount: { error: Schema.String },
 })
 
-schema CountResponse {
-  count: number
-}
-
-error ApiRequestFailed { message: string }
+const CountResponse = Schema.Struct({ count: Schema.Number })
 
 const FetchCount = Command.define('FetchCount', {
   messages: [Message.SucceededFetchCount, Message.FailedFetchCount],
-  execute: (effect {
-    provide Http.layer {
-      const response = try HttpClient.execute(
-        HttpClientRequest.get('/api/count'),
-      )
+  execute: Effect.gen(function* () {
+    const client = yield* HttpClient.HttpClient
+    const response = yield* client.execute(HttpClientRequest.get('/api/count'))
 
-      if (response.status !== 200) {
-        throw new ApiRequestFailed({ message: 'API request failed' })
-      }
-
-      const json = try response.json
-      const { count } = try Schema.decodeUnknownEffect(CountResponse)(json)
-      return Message.SucceededFetchCount({ count })
+    if (response.status !== 200) {
+      return yield* Effect.fail('API request failed')
     }
-  }) catch (error) => Message.FailedFetchCount({ error: String(error) }),
+
+    const { count } = yield* Schema.decodeUnknownEffect(CountResponse)(
+      yield* response.json,
+    )
+    return Message.SucceededFetchCount({ count })
+  }).pipe(
+    Effect.catch(error =>
+      Effect.succeed(Message.FailedFetchCount({ error: String(error) })),
+    ),
+    Effect.provide(Http.layer),
+  ),
 })
 
 const update = (model: Model, message: Message) =>
