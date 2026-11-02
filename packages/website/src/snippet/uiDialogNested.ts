@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
+import { Option, Schema } from 'effect'
 import { Update } from 'foldkit'
 import type { HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -68,12 +69,12 @@ const foldConfirmDialogClose = Update.foldChildStep({
 // through Dialog.open, keeping Got* for genuine child results.
 
 // In the corresponding Message.match handler:
-ClickedDeleteProject: (() => foldConfirmDialogOpen(model))
+ClickedDeleteProject: () => foldConfirmDialogOpen(model)
 
 // Confirming runs the deletion, then closes the confirmation through
 // Dialog.close, the same API the opening fact used.
 // Add the deletion as another Update.combine step when implementing it.
-ConfirmedDeleteProject: (() => foldConfirmDialogClose(model))
+ConfirmedDeleteProject: () => foldConfirmDialogClose(model)
 
 // Each dialog is its own submodel; the framework stacks them by z-index, traps
 // focus in the topmost, and Escape closes the topmost before the one beneath
@@ -92,19 +93,19 @@ const view = (h: HtmlBuilder<Message>) => {
       [...dialog],
       isVisible
         ? [
-          h.div([...backdrop, h.Class('fixed inset-0 bg-black/50')]),
-          h.div(
-            [...panel, h.Class('rounded-lg p-6 max-w-sm mx-auto shadow-xl')],
-            [
-              h.h2([...title], ['Delete project?']),
-              h.button([...closeButton], ['Cancel']),
-              h.button(
-                [h.OnClick(Message.ConfirmedDeleteProject())],
-                ['Delete'],
-              ),
-            ],
-          ),
-        ]
+            h.div([...backdrop, h.Class('fixed inset-0 bg-black/50')]),
+            h.div(
+              [...panel, h.Class('rounded-lg p-6 max-w-sm mx-auto shadow-xl')],
+              [
+                h.h2([...title], ['Delete project?']),
+                h.button([...closeButton], ['Cancel']),
+                h.button(
+                  [h.OnClick(Message.ConfirmedDeleteProject())],
+                  ['Delete'],
+                ),
+              ],
+            ),
+          ]
         : [],
     )
 
@@ -119,18 +120,18 @@ const view = (h: HtmlBuilder<Message>) => {
       [...dialog],
       isVisible
         ? [
-          h.div([...backdrop, h.Class('fixed inset-0 bg-black/50')]),
-          h.div(
-            [...panel, h.Class('rounded-lg p-6 max-w-lg mx-auto shadow-xl')],
-            [
-              h.h2([...title], ['Project settings']),
-              h.button(
-                [h.OnClick(Message.ClickedDeleteProject())],
-                ['Delete project'],
-              ),
-            ],
-          ),
-        ]
+            h.div([...backdrop, h.Class('fixed inset-0 bg-black/50')]),
+            h.div(
+              [...panel, h.Class('rounded-lg p-6 max-w-lg mx-auto shadow-xl')],
+              [
+                h.h2([...title], ['Project settings']),
+                h.button(
+                  [h.OnClick(Message.ClickedDeleteProject())],
+                  ['Delete project'],
+                ),
+              ],
+            ),
+          ]
         : [],
     )
 
