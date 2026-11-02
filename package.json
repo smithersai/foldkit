@@ -96,7 +96,8 @@
     "release:promote": "node scripts/coherent-release.mjs promote",
     "release:verify-latest": "node scripts/coherent-release.mjs verify-latest",
     "check:dom-state-parity": "node --import=vibelang/register scripts/check-dom-state-parity.vibe",
-    "check:published-versions": "node scripts/check-published-versions.ts"
+    "check:published-versions": "node scripts/check-published-versions.ts",
+    "check:model-preservation-hmr": "node scripts/check-model-preservation-hmr.browser.mjs"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^1.0.1",
@@ -124,7 +125,7 @@
     "vite": "^8.3.1"
   },
   "simple-git-hooks": {
-    "commit-msg": "if grep -q 'Co-Authored-By.*[Cc]laude' \"$1\"; then echo '\\n❌ Commit message contains a Claude Co-Authored-By line. Remove it and try again.' && exit 1; fi",
+    "commit-msg": "if grep -q 'Co-Authored-By.*[Cc]laude' \"$1\"; then echo '\\n\u274c Commit message contains a Claude Co-Authored-By line. Remove it and try again.' && exit 1; fi",
     "pre-push": "bash scripts/run-pre-push.sh"
   },
   "engines": {
