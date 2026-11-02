@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit each into your own Model, init, Message,
 // update, view, and subscription definitions.
+import { Option, Schema } from 'effect'
 import { Subscription, Update } from 'foldkit'
 import type { HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -46,9 +47,9 @@ const foldSliderOutMessage = Slider.OutMessage.match<
   // The child has emitted `ChangedValue`. Store the new value in the field
   // you own. This arm is also where the parent can validate, persist, or
   // trigger a downstream Command.
-  ChangedValue: ({ value }) => model => ({
-    model: modifyFields(model, { ratingValue: () => value }),
-  }),
+  ChangedValue:
+    ({ value }) =>
+    model => ({ model: modifyFields(model, { ratingValue: () => value }) }),
 })
 
 // Update.foldChild wires the child into the parent: it runs Slider.update,
@@ -64,7 +65,7 @@ const foldSlider = Update.foldChild({
 })
 
 // In the corresponding Message.match handler, call the fold:
-GotSliderMessage: (({ message }) => foldSlider(model, message))
+GotSliderMessage: ({ message }) => foldSlider(model, message)
 
 // NOTE: wire BOTH dragPointer and dragEscape. Without dragEscape, pressing
 // Escape during a drag won't cancel back to the origin value, but every
