@@ -1,10 +1,9 @@
-import { String as EffectString } from 'effect'
+import { Option, Schema, String } from 'effect'
 import { type Update } from 'foldkit'
 import { defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
 
 import { PeopleRoute } from './route'
-import { Model } from './model'
 
 // MESSAGE
 
@@ -39,7 +38,7 @@ export const update = (model: Model, message: Message) =>
         PushSearchUrl({
           searchText: Option.liftPredicate(
             model.searchInput,
-            EffectString.isNonEmpty,
+            String.isNonEmpty,
           ),
         }),
       ],
