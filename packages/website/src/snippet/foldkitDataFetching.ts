@@ -1,12 +1,10 @@
+import { Effect, Schema } from 'effect'
 import { Command, type Update } from 'foldkit'
 import { defineMessageUnion } from 'foldkit/message'
 import { defineTaggedUnion } from 'foldkit/schema'
 import { modifyFields } from 'foldkit/struct'
 
-schema UserSchema {
-  id: string
-  name: string
-}
+const UserSchema = Schema.Struct({ id: Schema.String, name: Schema.String })
 
 const UserState = defineTaggedUnion({
   Loading: {},
@@ -16,10 +14,11 @@ const UserState = defineTaggedUnion({
 
 // MODEL
 
-schema Model {
-  userId: string
-  user: UserState
-}
+const Model = Schema.Struct({
+  userId: Schema.String,
+  user: UserState,
+})
+type Model = typeof Model.Type
 
 // MESSAGE
 
@@ -35,17 +34,18 @@ type Message = typeof Message.Type
 const FetchUser = Command.define('FetchUser', {
   args: { userId: Schema.String },
   messages: [Message.SucceededFetchUser, Message.FailedFetchUser],
-  execute: effect ({ userId }) => {
-    try {
-      const response = try Effect.tryPromise(() =>
-        fetch(`/api/users/${userId}`).then(response => response.json())
+  execute: ({ userId }) =>
+    Effect.gen(function* () {
+      const response = yield* Effect.tryPromise(() =>
+        fetch(`/api/users/${userId}`).then(response => response.json()),
       )
-      const data = try Schema.decodeUnknownEffect(UserSchema)(response)
+      const data = yield* Schema.decodeUnknownEffect(UserSchema)(response)
       return Message.SucceededFetchUser({ data })
-    } catch (error) {
-      return Message.FailedFetchUser({ error: String(error) })
-    }
-  },
+    }).pipe(
+      Effect.catch(error =>
+        Effect.succeed(Message.FailedFetchUser({ error: String(error) })),
+      ),
+    ),
 })
 
 // UPDATE
