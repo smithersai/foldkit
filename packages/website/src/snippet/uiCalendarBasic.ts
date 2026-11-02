@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
+import { Effect, Match, Option, Schema } from 'effect'
 import { Calendar, Update } from 'foldkit'
 import type { ChildAttribute, Html, HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -23,10 +24,10 @@ const Flags = Schema.Struct({
   // ...your other flags
 })
 
-const flags = effect {
-  const today = try Calendar.today.local
+const flags = Effect.gen(function* () {
+  const today = yield* Calendar.today.local
   return { today /* ...your other flags */ }
-}
+})
 
 // In your init function, pass the flags-resolved today into UiCalendar.init.
 // `initialViewDate` seeds the month the calendar opens onto (pass your
@@ -61,11 +62,13 @@ const foldCalendarOutMessage = UiCalendar.OutMessage.match<
   // the committed date into its own field. That field is then passed back
   // to the calendar as `maybeSelectedDate`, so the parent stays the single
   // source of truth for the selection.
-  SelectedDate: ({ date }) => model => ({
-    model: modifyFields(model, {
-      maybeSelectedDate: () => Option.some(date),
+  SelectedDate:
+    ({ date }) =>
+    model => ({
+      model: modifyFields(model, {
+        maybeSelectedDate: () => Option.some(date),
+      }),
     }),
-  }),
   // The child has emitted `ChangedViewMonth`. In this arm the parent can
   // update its own state or dispatch its own Commands, for example
   // prefetch month data, fire analytics, or trigger a downstream Command.
@@ -86,7 +89,7 @@ const foldCalendar = Update.foldChild({
 })
 
 // In the corresponding Message.match handler, call the fold:
-GotCalendarMessage: (({ message }) => foldCalendar(model, message))
+GotCalendarMessage: ({ message }) => foldCalendar(model, message)
 
 // Class names live at module scope, and each view mode gets its own view
 // function below.
@@ -153,7 +156,7 @@ const weekRow = (week: UiCalendar.Week, h: HtmlBuilder<Message>): Html =>
             [cell.label],
           ),
         ],
-      )
+      ),
     ),
   )
 
@@ -183,7 +186,7 @@ const daysView = (
               h.div(
                 [...header.attributes, h.Class(columnHeaderClassName)],
                 [header.name],
-              )
+              ),
             ),
           ),
           ...days.weeks.map(week => weekRow(week, h)),
@@ -216,7 +219,7 @@ const monthsView = (
                 [cell.shortLabel],
               ),
             ],
-          )
+          ),
         ),
       ),
     ],
@@ -254,7 +257,7 @@ const yearsView = (
                 [cell.label],
               ),
             ],
-          )
+          ),
         ),
       ),
     ],
@@ -265,13 +268,13 @@ const yearsView = (
 // calendar's current `viewMode`, so the match hands each grid to its own view
 // function:
 const view = (model: Model, h: HtmlBuilder<Message>) => {
-  const calendarView = (
-    attributes: UiCalendar.CalendarAttributes,
-  ): infer _ => match (attributes) {
-    when { _tag: 'Days' } and let days: daysView(days, h);
-    when { _tag: 'Months' } and let months: monthsView(months, h);
-    when { _tag: 'Years' } and let years: yearsView(years, h);
-  }
+  const calendarView = Match.type<UiCalendar.CalendarAttributes>().pipe(
+    Match.tagsExhaustive({
+      Days: days => daysView(days, h),
+      Months: months => monthsView(months, h),
+      Years: years => yearsView(years, h),
+    }),
+  )
 
   return h.submodel({
     slotId: model.calendarDemo.id,
