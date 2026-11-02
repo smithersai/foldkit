@@ -12,3 +12,6 @@ raw browser API calls also identify those lines as foreign JavaScript. Checked
 VibeLang programs use Effect platform services for browser operations. These
 notices do not make an excerpt a complete checked example, and the copy button
 preserves the source exactly.
+
+Previous and next documentation links follow the sidebar page order. Example
+links are highlighted by their selected slug.

@@ -121,13 +121,11 @@ export const isNavPageActive = (
   routeTag: string,
   maybeExampleSlug: Option<string>,
   pageTag: string,
-): boolean =>
-  maybeExampleSlug
-    .filter((): infer _ => pageTag.startsWith(EXAMPLE_DETAIL_TAG_PREFIX))
-    .match({
-      onNone: (): infer _ => routeTag === pageTag,
-      onSome: (slug): infer _ => pageTag === exampleDetailTag(slug),
-    })
+): boolean => match (maybeExampleSlug) {
+  when Option.Some(let slug) and if (pageTag.startsWith(EXAMPLE_DETAIL_TAG_PREFIX)):
+    pageTag === exampleDetailTag(slug);
+  default: routeTag === pageTag;
+}
 
 // DOCS SECTIONS
 
@@ -729,21 +727,16 @@ export type PageNeighbors = Readonly<{
   maybeNext: Option<NavPage>
 }>
 
-export const pageNeighbors = (_tag: string): PageNeighbors =>
-  pipe(
-    allPages,
-    Arr.findFirstIndex((page): infer _ => page._tag === _tag),
-    Option.match({
-      onNone: (): PageNeighbors => ({
-        maybePrevious: Option.none(),
-        maybeNext: Option.none(),
-      }),
-      onSome: (index): infer _ => ({
-        maybePrevious: Arr.get(allPages, Num.decrement(index)),
-        maybeNext: Arr.get(allPages, Num.increment(index)),
-      }),
-    }),
-  )
+export const pageNeighbors = (_tag: string): PageNeighbors => match (Arr.findFirstIndex(allPages, (page): infer _ => page._tag === _tag)) {
+  when Option.None: ({
+    maybePrevious: Option.none(),
+    maybeNext: Option.none(),
+  });
+  when Option.Some(let index): ({
+    maybePrevious: Arr.get(allPages, Num.decrement(index)),
+    maybeNext: Arr.get(allPages, Num.increment(index)),
+  });
+}
 
 export const findActiveSectionKey = (
   routeTag: string,
