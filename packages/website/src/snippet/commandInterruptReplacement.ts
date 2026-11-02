@@ -1,9 +1,7 @@
-import { Number as EffectNumber } from 'effect'
+import { Number } from 'effect'
 import type { Update } from 'foldkit'
 import { defineTaggedUnion } from 'foldkit/schema'
 import { modifyFields } from 'foldkit/struct'
-import { Message } from './message'
-import { Model } from './model'
 
 const SearchState = defineTaggedUnion({
   Idle: {},
@@ -18,7 +16,7 @@ const update = (model: Model, message: Message) =>
     UpdatedQuery: ({ query }) =>
       SearchState.match<UpdateReturn>(model.searchState, {
         Idle: () => {
-          const nextGeneration = EffectNumber.increment(model.generation)
+          const nextGeneration = Number.increment(model.generation)
 
           return {
             model: modifyFields(model, {
@@ -32,12 +30,12 @@ const update = (model: Model, message: Message) =>
         Running: () => ({
           model: modifyFields(model, {
             query: () => query,
-            generation: EffectNumber.increment,
+            generation: Number.increment,
             searchState: () => SearchState.Cancelling(),
           }),
           commands: [
             FetchSuggestions.Interrupt(() =>
-              Message.CompletedCancelFetchSuggestions()
+              Message.CompletedCancelFetchSuggestions(),
             ),
           ],
         }),
