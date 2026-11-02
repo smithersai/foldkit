@@ -1,3 +1,4 @@
+import { Option } from 'effect'
 import { Update } from 'foldkit'
 import { modifyFields } from 'foldkit/struct'
 
@@ -39,5 +40,5 @@ const foldSettings = (currentUser: User) =>
     toParentMessage: message => Message.GotSettingsMessage({ message }),
   })
 
-GotSettingsMessage: (({ message }) =>
-  foldSettings(model.currentUser)(model, message))
+GotSettingsMessage: ({ message }) =>
+  foldSettings(model.currentUser)(model, message)
