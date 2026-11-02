@@ -1,0 +1,7 @@
+{
+  "repo": "foldkit",
+  "pattern": "animation-frame-detached-lifetime",
+  "seed": 413950,
+  "numRuns": 100,
+  "contract": "Cold construction; same-turn frame registration; caller interruption preserves the original frame; read HTMLElement animations on the frame and await all outcomes."
+}

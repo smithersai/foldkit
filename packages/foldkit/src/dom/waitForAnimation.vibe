@@ -1,3 +1,5 @@
+import { Effect } from 'effect'
+
 import { Experimental } from 'vibelang-runtime'
 import {
   ExperimentalBrowserAnimations,
@@ -28,29 +30,36 @@ export const waitForAnimationSettled = effect (selector: string): void!! => {
     const animations = try Experimental.Animations.Animations
     const windows = try Experimental.Window.Window
     const window = try windows.current
-    try callback(
-      (
-        animations: Experimental.Animations.Animations,
-        window: Window,
-        selector: string,
-        resume: Resume<void, never>,
-      ) => {
-        // callback's body is plain TypeScript. The original frame registration is
-        // not cancelled on interruption; retain that lifetime and its async read.
-        animations.onNextFrame(async () => {
-          const element = asHtmlElement(window.document.querySelector(selector))
-          const activeAnimations = element === null
-            ? []
-            : element.getAnimations()
-          await Promise.allSettled(
-            activeAnimations.map(({ finished }) => finished),
-          )
-          resume(undefined)
-        })
+    // The original frame continues after the caller is interrupted. Start the
+    // detached operation immediately to preserve same-turn frame registration.
+    const settled = try Effect.forkDetach(
+      effect {
+        try animations.nextFrame
+        try callback(
+          (
+            window: Window,
+            selector: string,
+            resume: Resume<void, never>,
+          ) => {
+            void (async () => {
+              const element = asHtmlElement(
+                window.document.querySelector(selector),
+              )
+              const activeAnimations = element === null
+                ? []
+                : element.getAnimations()
+              await Promise.allSettled(
+                activeAnimations.map(({ finished }) => finished),
+              )
+              resume(undefined)
+            })()
+          },
+          window,
+          selector,
+        )
       },
-      animations,
-      window,
-      selector,
+      { startImmediately: true },
     )
+    join settled
   }
 }
