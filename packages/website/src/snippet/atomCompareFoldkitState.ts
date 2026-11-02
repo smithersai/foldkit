@@ -1,4 +1,4 @@
-import { Array as EffectArray } from 'effect'
+import { Array, Schema } from 'effect'
 import { type Update } from 'foldkit'
 import { defineMessageUnion } from 'foldkit/message'
 
@@ -26,12 +26,10 @@ type Message = typeof Message.Type
 export const update = (model: Model, message: Message) =>
   Message.match<Update.Return<Model, Message>>(message, {
     AddedTodo: () => ({
-      model: modifyFields(model, { todos: EffectArray.append(emptyTodo()) }),
+      model: modifyFields(model, { todos: Array.append(emptyTodo()) }),
     }),
     ClearedDoneTodos: () => ({
-      model: modifyFields(model, {
-        todos: EffectArray.filter(todo => !todo.done),
-      }),
+      model: modifyFields(model, { todos: Array.filter(todo => !todo.done) }),
     }),
     SelectedFilter: ({ filter }) => ({
       model: modifyFields(model, { filter: () => filter }),
