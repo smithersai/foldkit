@@ -1,4 +1,4 @@
-import { Array as EffectArray } from 'effect'
+import { Array, Option } from 'effect'
 import { Update } from 'foldkit'
 import type { Html, HtmlBuilder } from 'foldkit/html'
 import { modifyFields } from 'foldkit/struct'
@@ -10,7 +10,7 @@ import type { Model } from './model'
 export const view = (model: Model, h: HtmlBuilder<Message>): Html =>
   h.ul(
     [h.Class('flex flex-col gap-4')],
-    EffectArray.map(model.applicants, applicant =>
+    Array.map(model.applicants, applicant =>
       h.keyed('li')(
         applicant.id,
         [],
@@ -23,24 +23,23 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Html =>
               Message.GotApplicantMessage({ entryId: applicant.id, message }),
           }),
         ],
-      )),
+      ),
+    ),
   )
 
 const foldApplicant = Update.foldChildAt({
   update: Applicant.update,
   readAt: (model: Model, entryId: string) =>
     Option.map(
-      EffectArray.findFirst(model.applicants, applicant =>
-        applicant.id === entryId),
-      applicant =>
-        applicant.entry,
+      Array.findFirst(model.applicants, applicant => applicant.id === entryId),
+      applicant => applicant.entry,
     ),
   writeAt: (model, entryId, nextEntry) =>
     modifyFields(model, {
-      applicants: EffectArray.map(applicant =>
+      applicants: Array.map(applicant =>
         applicant.id === entryId
           ? modifyFields(applicant, { entry: () => nextEntry })
-          : applicant
+          : applicant,
       ),
     }),
   toParentMessage: (entryId, message) =>
