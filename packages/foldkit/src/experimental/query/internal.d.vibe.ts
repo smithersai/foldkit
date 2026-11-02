@@ -1,7 +1,7 @@
 import { Effect, Option, Schema } from 'effect';
-import * as AsyncData from '../../asyncData/index.js';
+import * as AsyncData from '../../asyncData/index.ts';
 import * as Command from '../../command/index.vibe';
-import * as Update from '../../update/index.js';
+import * as Update from '../../update/index.ts';
 export type FoldLens<ParentModel, ParentMessage, ChildModel, ChildMessage> = Pick<Update.ChildFold<ParentModel, ParentMessage, ChildModel, never, ChildMessage>, 'read' | 'write' | 'toParentMessage'>;
 export type ParentFieldOf<ParentModel, ChildModel> = Extract<{
     [K in keyof ParentModel]-?: ParentModel[K] extends ChildModel ? K : never;

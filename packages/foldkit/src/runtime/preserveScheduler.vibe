@@ -59,7 +59,7 @@ export const makePreserveScheduler = effect <Model>(
   const schedule = effect (model: Model): void!! => {
     try Ref.set(pendingRef, Option.some(model))
     try interruptPending
-    const fiber = try forkIn(scope, () => debounce())
+    const fiber = try Effect.forkIn(debounce(), scope)
     try Ref.set(fiberRef, Option.some(fiber))
   }
 

@@ -1,4 +1,4 @@
-import type { VNode } from '../../snabbdom/vnode.js';
+import type { VNode } from '../../snabbdom/vnode.ts';
 /** Extra attributes appended to the serialized root element, used by
  *  `renderToString` to stamp the hydration marker without threading
  *  server-only concerns through view code. Root attributes are applied after

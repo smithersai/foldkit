@@ -10,7 +10,7 @@ import type { CalendarDate } from './calendarDate.vibe';
  * unpadded numbers; their `Padded*` counterparts render two digits.
  * `YearNumber` renders the full year.
  */
-export declare const DatePart: import("../schema/index.js").TaggedUnion<{
+export declare const DatePart: import("../schema/index.ts").TaggedUnion<{
     readonly MonthName: {};
     readonly ShortMonthName: {};
     readonly MonthNumber: {};
@@ -44,7 +44,7 @@ export type DatePart = typeof DatePart.Type;
  * ]
  * ```
  */
-export declare const DateFormat: Schema.NonEmptyArray<import("../schema/index.js").TaggedUnion<{
+export declare const DateFormat: Schema.NonEmptyArray<import("../schema/index.ts").TaggedUnion<{
     readonly MonthName: {};
     readonly ShortMonthName: {};
     readonly MonthNumber: {};
@@ -106,7 +106,7 @@ export declare const LocaleConfig: Schema.Struct<{
     readonly shortMonthNames: Schema.Tuple<readonly [Schema.String, Schema.String, Schema.String, Schema.String, Schema.String, Schema.String, Schema.String, Schema.String, Schema.String, Schema.String, Schema.String, Schema.String]>;
     readonly dayNames: Schema.Tuple<readonly [Schema.String, Schema.String, Schema.String, Schema.String, Schema.String, Schema.String, Schema.String]>;
     readonly shortDayNames: Schema.Tuple<readonly [Schema.String, Schema.String, Schema.String, Schema.String, Schema.String, Schema.String, Schema.String]>;
-    readonly longFormat: Schema.NonEmptyArray<import("../schema/index.js").TaggedUnion<{
+    readonly longFormat: Schema.NonEmptyArray<import("../schema/index.ts").TaggedUnion<{
         readonly MonthName: {};
         readonly ShortMonthName: {};
         readonly MonthNumber: {};
@@ -120,7 +120,7 @@ export declare const LocaleConfig: Schema.Struct<{
             text: Schema.String;
         };
     }>>;
-    readonly shortFormat: Schema.NonEmptyArray<import("../schema/index.js").TaggedUnion<{
+    readonly shortFormat: Schema.NonEmptyArray<import("../schema/index.ts").TaggedUnion<{
         readonly MonthName: {};
         readonly ShortMonthName: {};
         readonly MonthNumber: {};
@@ -134,7 +134,7 @@ export declare const LocaleConfig: Schema.Struct<{
             text: Schema.String;
         };
     }>>;
-    readonly ariaLabelFormat: Schema.NonEmptyArray<import("../schema/index.js").TaggedUnion<{
+    readonly ariaLabelFormat: Schema.NonEmptyArray<import("../schema/index.ts").TaggedUnion<{
         readonly MonthName: {};
         readonly ShortMonthName: {};
         readonly MonthNumber: {};

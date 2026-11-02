@@ -287,15 +287,15 @@ export const createDevToolsStore = (
           maybeLatestModel: (): infer _ => Option.some(model),
         }))
 
-    const recordMessage = (
+    const recordMessage = effect (
       message: Readonly<{ _tag: string }>,
       modelBeforeUpdate: unknown,
       modelAfterUpdate: unknown,
       commands: ReadonlyArray<CommandRecord>,
       isModelChanged: boolean,
     ) => {
-      const clock = Clock()
-      const didAutoResume = SubscriptionRef.modify(
+      const clock = try Clock.Clock
+      const didAutoResume = try SubscriptionRef.modify(
         stateRef,
         (state): infer _ => {
           const absoluteIndex = nextEntryIndex(state)
@@ -330,7 +330,7 @@ export const createDevToolsStore = (
       )
 
       if (didAutoResume) {
-        bridge.markRenderPending()
+        try bridge.markRenderPending
       }
     }
 
@@ -450,12 +450,12 @@ export const createDevToolsStore = (
         Effect.map(state => resolveModel(state, index)),
       )
 
-    const getMessageAtIndex = (index: number) => {
+    const getMessageAtIndex = effect (index: number) => {
       if (index === INIT_INDEX) {
         return Option.none()
       }
 
-      const state = SubscriptionRef.get(stateRef)
+      const state = try SubscriptionRef.get(stateRef)
 
       return pipe(
         state.entries,
@@ -464,11 +464,11 @@ export const createDevToolsStore = (
       )
     }
 
-    const jumpTo = (index: number) => {
-      const state = SubscriptionRef.get(stateRef)
+    const jumpTo = effect (index: number) => {
+      const state = try SubscriptionRef.get(stateRef)
       const model = resolveModel(state, index)
-      bridge.render(model)
-      const wasTargetEvicted = SubscriptionRef.modify(
+      try bridge.render(model)
+      const wasTargetEvicted = try SubscriptionRef.modify(
         stateRef,
         (currentState): infer _ => {
           const isTargetRetained = index === INIT_INDEX
@@ -492,7 +492,7 @@ export const createDevToolsStore = (
         },
       )
       if (wasTargetEvicted) {
-        bridge.markRenderPending()
+        try bridge.markRenderPending
       }
       return model
     }
@@ -529,12 +529,12 @@ export const createDevToolsStore = (
       })
     }
 
-    const getDiffAtIndex = (index: number) => {
+    const getDiffAtIndex = effect (index: number) => {
       if (index === INIT_INDEX) {
         return emptyDiff
       }
 
-      const state = SubscriptionRef.get(stateRef)
+      const state = try SubscriptionRef.get(stateRef)
 
       return pipe(
         state.entries,

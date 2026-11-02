@@ -1,4 +1,4 @@
-import { type Html, type HtmlBuilder } from '../html/index.js';
+import { type Html, type HtmlBuilder } from '../html/index.ts';
 import type { Point, Shape } from './shape.vibe';
 /**
  * Configuration for `Canvas.view`. Pointer handlers are optional and

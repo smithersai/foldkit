@@ -17,10 +17,10 @@ import { watchElementMovement } from './elementMovement.platform.ts'
  * Dom.detectElementMovement('#menu-button')
  * ```
  */
-export const detectElementMovement = (selector: string): void!! => {
-  afterCommit()
+export const detectElementMovement = effect (selector: string): void!! => {
+  try afterCommit
 
-  return callback<void, never, [string]>(
+  return try callback<void, never, [string]>(
     (selector, resume, signal) => {
       // callback's function is plain TypeScript, not VibeLang.
       watchElementMovement(selector, () => resume(), signal)

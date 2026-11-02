@@ -91,6 +91,6 @@ export const forkManagedResourceFibers = effect <Model, Message>({
 
     // A defect in requirements or equivalence reaches the runtime crash view.
     // Stream.scoped supplies acquisition's Scope; release needs nothing.
-    try forkIn(runtimeScope, () => runLifecycle())
+    try Effect.forkIn(runLifecycle(), runtimeScope)
   }
 }

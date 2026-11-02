@@ -43,9 +43,10 @@ const openPicker = ({
  * )
  * ```
  */
-export const select = (
+export const select = effect (
   accept: ReadonlyArray<string>,
-): Option<File>!! => EffectArray.head(openPicker({ accept, multiple: false }))
+): Option<File>!! =>
+  EffectArray.head(try openPicker({ accept, multiple: false }))
 
 /**
  * Opens the native file picker allowing multiple files to be selected at

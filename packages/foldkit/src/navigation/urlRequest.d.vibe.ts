@@ -1,6 +1,6 @@
 import { Schema } from 'effect';
 /** Union of `Internal` and `External` URL request types. */
-export declare const UrlRequest: import("../schema/index.js").TaggedUnion<{
+export declare const UrlRequest: import("../schema/index.ts").TaggedUnion<{
     readonly Internal: {
         url: Schema.Struct<{
             readonly protocol: Schema.String;

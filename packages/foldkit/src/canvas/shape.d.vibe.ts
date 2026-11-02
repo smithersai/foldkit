@@ -6,21 +6,21 @@ export declare const Point: Schema.Struct<{
 }>;
 export type Point = typeof Point.Type;
 /** Move the path cursor to a point without drawing. */
-export declare const MoveTo: import("../schema/index.js").CallableTaggedStruct<"MoveTo", {
+export declare const MoveTo: import("../schema/index.ts").CallableTaggedStruct<"MoveTo", {
     x: Schema.Number;
     y: Schema.Number;
 }>;
 /** Move the path cursor to a point without drawing. */
 export type MoveTo = typeof MoveTo.Type;
 /** Draw a straight line from the cursor to a point. */
-export declare const LineTo: import("../schema/index.js").CallableTaggedStruct<"LineTo", {
+export declare const LineTo: import("../schema/index.ts").CallableTaggedStruct<"LineTo", {
     x: Schema.Number;
     y: Schema.Number;
 }>;
 /** Draw a straight line from the cursor to a point. */
 export type LineTo = typeof LineTo.Type;
 /** Draw a quadratic Bezier curve from the cursor through a control point to an end point. */
-export declare const QuadTo: import("../schema/index.js").CallableTaggedStruct<"QuadTo", {
+export declare const QuadTo: import("../schema/index.ts").CallableTaggedStruct<"QuadTo", {
     cpx: Schema.Number;
     cpy: Schema.Number;
     x: Schema.Number;
@@ -29,7 +29,7 @@ export declare const QuadTo: import("../schema/index.js").CallableTaggedStruct<"
 /** Draw a quadratic Bezier curve from the cursor through a control point to an end point. */
 export type QuadTo = typeof QuadTo.Type;
 /** Draw a cubic Bezier curve from the cursor through two control points to an end point. */
-export declare const BezierTo: import("../schema/index.js").CallableTaggedStruct<"BezierTo", {
+export declare const BezierTo: import("../schema/index.ts").CallableTaggedStruct<"BezierTo", {
     cp1x: Schema.Number;
     cp1y: Schema.Number;
     cp2x: Schema.Number;
@@ -40,29 +40,29 @@ export declare const BezierTo: import("../schema/index.js").CallableTaggedStruct
 /** Draw a cubic Bezier curve from the cursor through two control points to an end point. */
 export type BezierTo = typeof BezierTo.Type;
 /** Close the current path by drawing a line back to its starting point. */
-export declare const Close: import("../schema/index.js").CallableTaggedStruct<"Close", {}>;
+export declare const Close: import("../schema/index.ts").CallableTaggedStruct<"Close", {}>;
 /** Close the current path by drawing a line back to its starting point. */
 export type Close = typeof Close.Type;
 /** A single drawing instruction within a `Path` shape. */
-export declare const PathInstruction: Schema.Union<readonly [import("../schema/index.js").CallableTaggedStruct<"MoveTo", {
+export declare const PathInstruction: Schema.Union<readonly [import("../schema/index.ts").CallableTaggedStruct<"MoveTo", {
     x: Schema.Number;
     y: Schema.Number;
-}>, import("../schema/index.js").CallableTaggedStruct<"LineTo", {
+}>, import("../schema/index.ts").CallableTaggedStruct<"LineTo", {
     x: Schema.Number;
     y: Schema.Number;
-}>, import("../schema/index.js").CallableTaggedStruct<"QuadTo", {
+}>, import("../schema/index.ts").CallableTaggedStruct<"QuadTo", {
     cpx: Schema.Number;
     cpy: Schema.Number;
     x: Schema.Number;
     y: Schema.Number;
-}>, import("../schema/index.js").CallableTaggedStruct<"BezierTo", {
+}>, import("../schema/index.ts").CallableTaggedStruct<"BezierTo", {
     cp1x: Schema.Number;
     cp1y: Schema.Number;
     cp2x: Schema.Number;
     cp2y: Schema.Number;
     x: Schema.Number;
     y: Schema.Number;
-}>, import("../schema/index.js").CallableTaggedStruct<"Close", {}>]>;
+}>, import("../schema/index.ts").CallableTaggedStruct<"Close", {}>]>;
 /** A single drawing instruction within a `Path` shape. */
 export type PathInstruction = typeof PathInstruction.Type;
 /** Stroke cap style: how the ends of an open stroked subpath are rendered. */
@@ -82,7 +82,7 @@ export declare const TextBaseline: Schema.Literals<readonly ["Top", "Middle", "B
 /** Vertical alignment of a `Text` shape relative to its anchor y coordinate. */
 export type TextBaseline = typeof TextBaseline.Type;
 /** An axis-aligned rectangle. */
-export declare const Rect: import("../schema/index.js").CallableTaggedStruct<"Rect", {
+export declare const Rect: import("../schema/index.ts").CallableTaggedStruct<"Rect", {
     x: Schema.Number;
     y: Schema.Number;
     width: Schema.Number;
@@ -94,7 +94,7 @@ export declare const Rect: import("../schema/index.js").CallableTaggedStruct<"Re
 /** An axis-aligned rectangle. */
 export type Rect = typeof Rect.Type;
 /** A filled or stroked circle. */
-export declare const Circle: import("../schema/index.js").CallableTaggedStruct<"Circle", {
+export declare const Circle: import("../schema/index.ts").CallableTaggedStruct<"Circle", {
     x: Schema.Number;
     y: Schema.Number;
     radius: Schema.Number;
@@ -105,26 +105,26 @@ export declare const Circle: import("../schema/index.js").CallableTaggedStruct<"
 /** A filled or stroked circle. */
 export type Circle = typeof Circle.Type;
 /** A path built from a sequence of `PathInstruction`s. */
-export declare const Path: import("../schema/index.js").CallableTaggedStruct<"Path", {
-    instructions: Schema.$Array<Schema.Union<readonly [import("../schema/index.js").CallableTaggedStruct<"MoveTo", {
+export declare const Path: import("../schema/index.ts").CallableTaggedStruct<"Path", {
+    instructions: Schema.$Array<Schema.Union<readonly [import("../schema/index.ts").CallableTaggedStruct<"MoveTo", {
         x: Schema.Number;
         y: Schema.Number;
-    }>, import("../schema/index.js").CallableTaggedStruct<"LineTo", {
+    }>, import("../schema/index.ts").CallableTaggedStruct<"LineTo", {
         x: Schema.Number;
         y: Schema.Number;
-    }>, import("../schema/index.js").CallableTaggedStruct<"QuadTo", {
+    }>, import("../schema/index.ts").CallableTaggedStruct<"QuadTo", {
         cpx: Schema.Number;
         cpy: Schema.Number;
         x: Schema.Number;
         y: Schema.Number;
-    }>, import("../schema/index.js").CallableTaggedStruct<"BezierTo", {
+    }>, import("../schema/index.ts").CallableTaggedStruct<"BezierTo", {
         cp1x: Schema.Number;
         cp1y: Schema.Number;
         cp2x: Schema.Number;
         cp2y: Schema.Number;
         x: Schema.Number;
         y: Schema.Number;
-    }>, import("../schema/index.js").CallableTaggedStruct<"Close", {}>]>>;
+    }>, import("../schema/index.ts").CallableTaggedStruct<"Close", {}>]>>;
     fill: Schema.optional<Schema.String>;
     stroke: Schema.optional<Schema.String>;
     lineWidth: Schema.optional<Schema.Number>;
@@ -134,7 +134,7 @@ export declare const Path: import("../schema/index.js").CallableTaggedStruct<"Pa
 /** A path built from a sequence of `PathInstruction`s. */
 export type Path = typeof Path.Type;
 /** A single line of text drawn with a font, fill, and optional stroke. */
-export declare const Text: import("../schema/index.js").CallableTaggedStruct<"Text", {
+export declare const Text: import("../schema/index.ts").CallableTaggedStruct<"Text", {
     x: Schema.Number;
     y: Schema.Number;
     content: Schema.String;
@@ -171,7 +171,7 @@ export interface Group extends Readonly<{
  */
 export type Shape = typeof Rect.Type | typeof Circle.Type | typeof Path.Type | typeof Text.Type | Group;
 /** Construct a `Group` shape that wraps its children in a transformed scope. */
-export declare const Group: import("../schema/index.js").CallableTaggedStruct<"Group", {
+export declare const Group: import("../schema/index.ts").CallableTaggedStruct<"Group", {
     shapes: Schema.$Array<Schema.Schema<Shape>>;
     translate: Schema.optional<Schema.Struct<{
         readonly x: Schema.Number;

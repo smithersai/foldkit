@@ -1,5 +1,5 @@
 import { Exit, Option, Schema } from 'effect';
-import { type Inbound, type Outbound, type Ports, type __PortChannels } from '../port/index.js';
+import { type Inbound, type Outbound, type Ports, type __PortChannels } from '../port/index.ts';
 /** Host-side handle for one inbound Port. `send` validates the value by
  *  decoding it against the Port's Schema: on success the decoded value enters
  *  the app through the Port's Subscription; on failure nothing reaches the

@@ -118,7 +118,7 @@ export const __registerKeyWhileRunning = effect <A, E, R>(
   effect: A!E!R,
 ): A!E!R => {
   return try Effect.withFiber(effect (fiber) => {
-    const registry: __Registry = __CurrentRegistry()
+    const registry: __Registry = try __CurrentRegistry
     return try Effect.acquireUseRelease(
       effect {
         return registry.register(key, fiber)
@@ -135,7 +135,7 @@ const makeInterruptEffect = effect <ToMessage>(
   key: string,
   toMessage: (outcome: Outcome) => ToMessage,
 ): ToMessage!! => {
-  const registry: __Registry = __CurrentRegistry()
+  const registry: __Registry = try __CurrentRegistry
   const outcome = try registry.interrupt(key)
   return toMessage(outcome)
 }

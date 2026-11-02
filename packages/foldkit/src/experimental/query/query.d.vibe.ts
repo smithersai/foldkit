@@ -1,7 +1,7 @@
 import { Effect, Schema } from 'effect';
-import * as AsyncData from '../../asyncData/index.js';
+import * as AsyncData from '../../asyncData/index.ts';
 import * as Command from '../../command/index.vibe';
-import * as Update from '../../update/index.js';
+import * as Update from '../../update/index.ts';
 import { type CompletedFetchOf, type LiftQuery } from './internal.vibe';
 export type QueryConfig<Name extends string, A, AI, E, EI, R> = Readonly<{
     name: Name;
@@ -9,7 +9,7 @@ export type QueryConfig<Name extends string, A, AI, E, EI, R> = Readonly<{
     error: Schema.Codec<E, EI, never, never>;
     execute: Effect.Effect<A, E, R>;
 }>;
-declare const makeQueryMessage: <A, AI, E, EI>(data: Schema.Codec<A, AI>, error: Schema.Codec<E, EI>) => import("../../schema/index.js").MessageUnion<{
+declare const makeQueryMessage: <A, AI, E, EI>(data: Schema.Codec<A, AI>, error: Schema.Codec<E, EI>) => import("../../schema/index.ts").MessageUnion<{
     readonly CompletedFetch: {
         generation: Schema.Number;
         result: Schema.Result<Schema.Codec<A, AI, never, never>, Schema.Codec<E, EI, never, never>>;

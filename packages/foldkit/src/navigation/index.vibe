@@ -8,7 +8,7 @@ export { UrlRequest } from './urlRequest.vibe'
 /** Pushes a new URL to browser history and triggers Foldkit's URL change handling. */
 export const pushUrl = effect (url: string): void!! => {
   provide ExperimentalBrowserWindow.layer {
-    const browser = Experimental.Window.Window()
+    const browser = try Experimental.Window.Window
     const window = try browser.current
     try sync(
       (window: Window, url: string) => window.history.pushState({}, '', url),
@@ -25,7 +25,7 @@ export const pushUrl = effect (url: string): void!! => {
 /** Replaces the current URL in browser history and triggers Foldkit's URL change handling. */
 export const replaceUrl = effect (url: string): void!! => {
   provide ExperimentalBrowserWindow.layer {
-    const browser = Experimental.Window.Window()
+    const browser = try Experimental.Window.Window
     const window = try browser.current
     try sync(
       (window: Window, url: string) => window.history.replaceState({}, '', url),
@@ -42,7 +42,7 @@ export const replaceUrl = effect (url: string): void!! => {
 /** Navigates back in browser history. */
 export const back = effect (): void!! => {
   provide ExperimentalBrowserWindow.layer {
-    const browser = Experimental.Window.Window()
+    const browser = try Experimental.Window.Window
     const window = try browser.current
     try sync((window: Window) => window.history.back(), window)
   }
@@ -51,7 +51,7 @@ export const back = effect (): void!! => {
 /** Navigates forward in browser history. */
 export const forward = effect (): void!! => {
   provide ExperimentalBrowserWindow.layer {
-    const browser = Experimental.Window.Window()
+    const browser = try Experimental.Window.Window
     const window = try browser.current
     try sync((window: Window) => window.history.forward(), window)
   }
@@ -60,7 +60,7 @@ export const forward = effect (): void!! => {
 /** Performs a full page navigation to the given href. */
 export const load = effect (href: string): void!! => {
   provide ExperimentalBrowserWindow.layer {
-    const browser = Experimental.Window.Window()
+    const browser = try Experimental.Window.Window
     const window = try browser.current
     try sync(
       (window: Window, href: string) => window.location.assign(href),
@@ -74,7 +74,7 @@ export const load = effect (href: string): void!! => {
  *  The current page is unchanged. Subject to popup blockers when not called from a user-gesture handler. */
 export const openUrl = effect (href: string): void!! => {
   provide ExperimentalBrowserWindow.layer {
-    const browser = Experimental.Window.Window()
+    const browser = try Experimental.Window.Window
     const window = try browser.current
     try sync(
       (window: Window, href: string) =>

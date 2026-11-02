@@ -465,7 +465,7 @@ export const resolveHydrationHandoff = <Flags, Resources>({
         return try provideResources(maybeResolveFreshFlags.value)
       }
       if (isFlagsRequired) {
-        die(
+        try die(
           new Error(
             '[foldkit] This application declares Flags. Pass its '
               + 'Flags Effect to Runtime.run or Runtime.embed.',
@@ -486,14 +486,14 @@ export const resolveHydrationHandoff = <Flags, Resources>({
       cause?: unknown,
     ): A!! => {
       containRefusedPage(root.ownerDocument)
-      return die(
+      return try die(
         cause === undefined
           ? new Error(message)
           : new Error(message, { cause }),
       )
     }
 
-    const decodeFlagsPayload = (
+    const decodeFlagsPayload = effect (
       payload: string,
       runtimeId: string,
       root: Element,
@@ -563,7 +563,7 @@ export const resolveHydrationHandoff = <Flags, Resources>({
           ? try sync(() => currentDocument())
           : container.ownerDocument,
       )
-      return die(
+      return try die(
         new Error(
           '[foldkit] Runtime.hydrate could not find a server-rendered '
             + `root stamped with \`${FOLDKIT_APP_ATTRIBUTE}\`. Use `
@@ -588,7 +588,7 @@ export const resolveHydrationHandoff = <Flags, Resources>({
       )
       if (skew !== undefined) {
         containRefusedPage(maybeRequestedHydration.value.root.ownerDocument)
-        return die(skew)
+        return try die(skew)
       }
     }
 

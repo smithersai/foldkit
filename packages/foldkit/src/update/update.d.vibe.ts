@@ -1,5 +1,5 @@
 import { type Effect, Option } from 'effect';
-import { type AsyncData } from '../asyncData/index.js';
+import { type AsyncData } from '../asyncData/index.ts';
 import { type Command } from '../command/index.vibe';
 /** The Commands collection an update return may include. The collection keeps
  *  the order in which the update returned them, but the runtime forks the

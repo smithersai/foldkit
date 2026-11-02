@@ -176,12 +176,12 @@ export const stream = <Value, Encoded>(
   port: Inbound<Value, Encoded>,
 ): Stream<Value> =>
   Stream.unwrap(effect {
-    const channels: __PortChannels = __CurrentPortChannels()
+    const channels: __PortChannels = try __CurrentPortChannels
     if (!channels.isConfigured) {
       return try die(new Error(notConfiguredMessage('Port.stream')))
     }
     const channel = match (channels.lookupInbound(port)) {
-      when Option.None: die(new Error(unknownPortMessage('Port.stream')));
+      when Option.None: try die(new Error(unknownPortMessage('Port.stream')));
       when Option.Some(let channel): channel;
     }
     return Stream.callback<Value>(effect (queue) => {
@@ -243,12 +243,12 @@ export const emit = effect <Value, Encoded>(
   port: Outbound<Value, Encoded>,
   value: Value,
 ): void!! => {
-  const channels: __PortChannels = __CurrentPortChannels()
+  const channels: __PortChannels = try __CurrentPortChannels
   if (!channels.isConfigured) {
     return try die(new Error(notConfiguredMessage('Port.emit')))
   }
   const deliver = match (channels.lookupOutbound(port)) {
-    when Option.None: die(new Error(unknownPortMessage('Port.emit')));
+    when Option.None: try die(new Error(unknownPortMessage('Port.emit')));
     when Option.Some(let deliver): deliver;
   }
   const encodedValue = try Effect.orDie(

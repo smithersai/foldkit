@@ -1,6 +1,6 @@
 import { Array, Option, Schema } from 'effect';
 import type { Command } from '../../command/index.vibe';
-import type * as Update from '../../update/index.js';
+import type * as Update from '../../update/index.ts';
 /** Any value discriminated by a `_tag` field. Both states and Messages satisfy this shape. */
 export type Tagged = Readonly<{
     _tag: string;

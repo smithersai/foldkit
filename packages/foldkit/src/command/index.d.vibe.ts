@@ -1,6 +1,6 @@
 import { Array, Effect, Schema } from 'effect';
-import { CommandDefinitionTypeId } from './brand.js';
-import * as Interruptible from './interruptible/index.js';
+import { CommandDefinitionTypeId } from './brand.ts';
+import * as Interruptible from './interruptible/index.ts';
 export { CommandDefinitionTypeId };
 /** A named Effect that produces a message, optionally carrying the args used
  *  to construct it. `key` is present on Commands built by

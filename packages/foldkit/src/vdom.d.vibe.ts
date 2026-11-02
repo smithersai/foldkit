@@ -1,6 +1,6 @@
 import { Option } from 'effect';
-import { type VNode, toVNode } from './snabbdom/index.js';
-export type { VNode } from './snabbdom/index.js';
+import { type VNode, toVNode } from './snabbdom/index.ts';
+export type { VNode } from './snabbdom/index.ts';
 export { toVNode };
 export declare const patch: (oldVnode: VNode | Element | DocumentFragment, vnode: VNode, onRootPatched?: (vnode: VNode) => void) => VNode;
 export declare const memoizedVNodes: WeakSet<VNode>;

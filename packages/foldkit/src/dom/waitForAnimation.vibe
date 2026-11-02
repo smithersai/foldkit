@@ -25,8 +25,8 @@ export const waitForAnimationSettled = effect (selector: string): void!! => {
     ExperimentalBrowserAnimations.layer,
     ExperimentalBrowserWindow.layer,
   ) {
-    const animations = Experimental.Animations.Animations()
-    const windows = Experimental.Window.Window()
+    const animations = try Experimental.Animations.Animations
+    const windows = try Experimental.Window.Window
     const window = try windows.current
     try callback(
       (

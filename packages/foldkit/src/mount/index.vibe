@@ -161,10 +161,10 @@ const wrapEffectAsStream = <Message>(
   element: Element,
   viewStateChanges: Stream<ViewState>,
 ): Stream<Message> =>
-  Stream.callback<Message>(queue => {
-    const message = toEffect(element, viewStateChanges)
+  Stream.callback<Message>(effect queue => {
+    const message = try toEffect(element, viewStateChanges)
     Queue.offerUnsafe(queue, message)
-    return Effect.never()
+    return try Effect.never
   })
 
 /**

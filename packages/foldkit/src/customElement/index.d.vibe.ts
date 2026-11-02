@@ -1,5 +1,5 @@
 import { Schema } from 'effect';
-import type { Attribute, Child, ChildAttribute, Html, HtmlBuilder } from '../html/index.js';
+import type { Attribute, Child, ChildAttribute, Html, HtmlBuilder } from '../html/index.ts';
 /** Type-level kebab-case to PascalCase, used to convert event names like
  *  `'change-rating'` into the corresponding factory name `'OnChangeRating'`. */
 type KebabToPascal<S extends string> = S extends `${infer Head}-${infer Tail}` ? `${Capitalize<Head>}${KebabToPascal<Tail>}` : Capitalize<S>;

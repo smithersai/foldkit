@@ -1,5 +1,5 @@
 import { Effect, Option } from 'effect';
-import { Document, Html, type HtmlBuilder } from '../html/index.js';
+import { Document, Html, type HtmlBuilder } from '../html/index.ts';
 import { VNode } from '../vdom.vibe';
 /** Context provided to crash.view and crash.report when the runtime encounters
  *  an unrecoverable error. `message` is the Message being processed when the

@@ -45,7 +45,7 @@ export const tag = <Value>(): infer _ =>
   >(`@foldkit/ManagedResource/${key}`)
 
   const get = effect {
-    const ref = serviceTag()
+    const ref = try serviceTag
     const maybeValue = try Ref.get(ref)
     if (Option.isNone(maybeValue)) {
       throw new ResourceNotAvailable({ resource: key })

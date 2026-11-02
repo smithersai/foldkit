@@ -1,10 +1,10 @@
 import { Context, Effect, Fiber, Schema } from 'effect';
-import { CommandDefinitionTypeId } from '../brand.js';
+import { CommandDefinitionTypeId } from '../brand.ts';
 /** The result of interrupting a key. `Outcome.Interrupted` means at least one
  * in-flight Command was stopped and will not dispatch its result Message.
  * `Outcome.NotFound` means no Command held the key. The interrupt operation
  * itself cannot fail. */
-export declare const Outcome: import("../../schema/index.js").TaggedUnion<{
+export declare const Outcome: import("../../schema/index.ts").TaggedUnion<{
     readonly Interrupted: {};
     readonly NotFound: {};
 }>;

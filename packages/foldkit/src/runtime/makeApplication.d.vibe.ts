@@ -1,14 +1,14 @@
 import { Layer, Schema } from 'effect';
-import { Document, type HtmlBuilder } from '../html/index.js';
-import type { ManagedResources } from '../managedResource/index.js';
-import type { Ports } from '../port/index.js';
+import { Document, type HtmlBuilder } from '../html/index.ts';
+import type { ManagedResources } from '../managedResource/index.ts';
+import type { Ports } from '../port/index.ts';
 import type { Subscriptions } from '../subscription/subscription.vibe';
-import type { Return as UpdateReturn } from '../update/index.js';
+import type { Return as UpdateReturn } from '../update/index.ts';
 import { Url } from '../url/index.vibe';
-import type { RoutingConfig } from './browserListeners.js';
+import type { RoutingConfig } from './browserListeners.ts';
 import type { CrashConfig } from './crashUI.vibe';
 import type { DevToolsConfig } from './devToolsConfig.vibe';
-import { type FlagsSchemaConfig, type MakeRuntimeReturn } from './runtime.js';
+import { type FlagsSchemaConfig, type MakeRuntimeReturn } from './runtime.ts';
 import type { SlowConfig } from './slowPhase.vibe';
 import type { ViewTransitionConfig } from './viewTransition.vibe';
 type BaseApplicationConfig<Model, Message, Resources = never, ManagedResourceServices = never, P extends Ports | undefined = undefined> = Readonly<{

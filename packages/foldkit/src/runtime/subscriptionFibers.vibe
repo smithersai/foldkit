@@ -131,6 +131,6 @@ export const forkSubscriptionFibers = effect <Model, Message, Services>({
         },
       )
     }
-    try forkIn(runtimeScope, () => runSubscription())
+    try Effect.forkIn(runSubscription(), runtimeScope)
   }
 }
