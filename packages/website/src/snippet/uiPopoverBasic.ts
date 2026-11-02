@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
+import { Option, Schema } from 'effect'
 import { Update } from 'foldkit'
 import type { HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -58,7 +59,7 @@ const foldPopover = Update.foldChild({
 })
 
 // In the corresponding Message.match handler, call the fold:
-GotPopoverMessage: (({ message }) => foldPopover(model, message))
+GotPopoverMessage: ({ message }) => foldPopover(model, message)
 
 // Inside your view function, embed the popover via h.submodel. Give the
 // trigger an accessible name: target the trigger id with
@@ -88,20 +89,20 @@ const view = (h: HtmlBuilder<Message>) => {
         ),
         ...(isVisible
           ? [
-            h.div([...backdrop, h.Class('fixed inset-0')]),
-            h.div(
-              [...panel, h.Class('rounded-lg border shadow-lg p-4 w-80')],
-              [
-                h.h3([h.Class('font-medium')], ['Analytics']),
-                h.p(
-                  [h.Class('text-sm text-gray-500')],
-                  [
-                    'Get a better understanding of where your traffic is coming from.',
-                  ],
-                ),
-              ],
-            ),
-          ]
+              h.div([...backdrop, h.Class('fixed inset-0')]),
+              h.div(
+                [...panel, h.Class('rounded-lg border shadow-lg p-4 w-80')],
+                [
+                  h.h3([h.Class('font-medium')], ['Analytics']),
+                  h.p(
+                    [h.Class('text-sm text-gray-500')],
+                    [
+                      'Get a better understanding of where your traffic is coming from.',
+                    ],
+                  ),
+                ],
+              ),
+            ]
           : []),
       ],
     )
