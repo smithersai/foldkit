@@ -1,14 +1,15 @@
+import { Option } from 'effect'
 import { Update } from 'foldkit'
 import { modifyFields } from 'foldkit/struct'
-import { Message } from './message'
-import { Model } from './model'
 
 const foldLoginOutMessage = Login.OutMessage.match<Update.Step<Model, Message>>(
   {
-    SucceededLogin: ({ sessionId }) => () => ({
-      model: LoggedIn({ sessionId }),
-      commands: [SaveSession(sessionId)],
-    }),
+    SucceededLogin:
+      ({ sessionId }) =>
+      () => ({
+        model: LoggedIn({ sessionId }),
+        commands: [SaveSession(sessionId)],
+      }),
   },
 )
 
