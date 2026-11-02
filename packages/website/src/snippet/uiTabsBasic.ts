@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
+import { Option, Schema } from 'effect'
 import { Update } from 'foldkit'
 import type { HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -8,7 +9,8 @@ import { modifyFields } from 'foldkit/struct'
 
 import { Tabs } from '@foldkit/ui'
 
-schema Framework = 'Foldkit' | 'React' | 'Elm'
+const Framework = Schema.Literals(['Foldkit', 'React', 'Elm'])
+type Framework = typeof Framework.Type
 
 // Add fields to your Model for the Tabs Submodel and the active tab. The
 // Submodel keeps private keyboard-focus state; the parent owns the active
@@ -60,9 +62,9 @@ const foldTabsOutMessage = Tabs.OutMessage.match<
   // active tab. In this arm the parent can also update its own state or
   // dispatch Commands, for example route to a new URL, persist the
   // selection, or trigger a panel content fetch.
-  Selected: ({ value }) => model => ({
-    model: modifyFields(model, { activeFramework: () => value }),
-  }),
+  Selected:
+    ({ value }) =>
+    model => ({ model: modifyFields(model, { activeFramework: () => value }) }),
 })
 
 // Update.foldChild wires the child into the parent: it runs
@@ -78,7 +80,7 @@ const foldTabs = Update.foldChild({
 })
 
 // In the corresponding Message.match handler, call the fold:
-GotTabsMessage: (({ message }) => foldTabs(model, message))
+GotTabsMessage: ({ message }) => foldTabs(model, message)
 
 // Inside your view function, embed the tabs via h.submodel and pass the
 // parent-owned active tab as selectedValue:
@@ -102,7 +104,7 @@ const view = (model: Model, h: HtmlBuilder<Message>) => {
                 ),
               ],
               [h.span([], [tab.value])],
-            )
+            ),
           ),
         ),
         ...tabs
@@ -111,7 +113,7 @@ const view = (model: Model, h: HtmlBuilder<Message>) => {
             h.div(
               [...tab.panel, h.Class('p-6 border rounded-b-lg')],
               [h.p([], [descriptions[tab.value]])],
-            )
+            ),
           ),
       ],
     )
