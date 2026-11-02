@@ -1,7 +1,7 @@
+import { Effect } from 'effect'
 import { Command, type Update } from 'foldkit'
 import { defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
-import { Model } from './model'
 
 const Message = defineMessageUnion({
   ClickedResetAfterDelay: {},
@@ -15,10 +15,9 @@ const DelayReset = Command.define(
     // Every Message this Command can produce
     messages: [Message.CompletedDelayReset],
     // The Effect
-    execute: effect {
-      try sleep('1 second')
-      return Message.CompletedDelayReset()
-    },
+    execute: Effect.sleep('1 second').pipe(
+      Effect.as(Message.CompletedDelayReset()),
+    ),
   },
 )
 
