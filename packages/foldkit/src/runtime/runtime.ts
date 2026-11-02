@@ -47,7 +47,7 @@ import {
 } from './hydrationHandoff.vibe'
 import { forkManagedResourceFibers } from './managedResourceFibers.vibe'
 import { type MessageQueue, makeMessageQueue } from './messageQueue.js'
-import { preserveModel } from './modelPreservationBridge.vibe'
+import { preserveModel } from './modelPreservationBridge.js'
 import { makePreserveScheduler } from './preserveScheduler.vibe'
 import { type ResolvedViewTransition, makeRenderer } from './renderer.js'
 import { makeResourceProvider } from './resourceProvider.js'

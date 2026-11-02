@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join, resolve } from 'node:path'
 import test from 'node:test'
@@ -42,6 +48,13 @@ test(
   async () => {
     const dir = mkdtempSync(join(root, 'packages/foldkit/.hmr-model-owner-'))
     const runtime = join(root, 'packages/foldkit/src/runtime')
+    const bridgeSource = existsSync(
+      join(runtime, 'modelPreservationBridge.vibe'),
+    )
+      ? 'modelPreservationBridge.vibe'
+      : 'modelPreservationBridge.ts'
+    const bridgeFile = bridgeSource.replace('modelPreservationBridge', 'bridge')
+
     const errors = []
     const requests = []
     const preserves = []
@@ -65,7 +78,7 @@ test(
             incremental: false,
           },
           include: [
-            './bridge.vibe',
+            './' + bridgeFile,
             './modelPreservation.vibe',
             './modelPreservationBridge.platform.ts',
             './bridge.hot.ts',
@@ -73,17 +86,18 @@ test(
         }),
       )
       writeFileSync(
-        join(dir, 'bridge.vibe'),
-        readFileSync(join(runtime, 'modelPreservationBridge.vibe')),
+        join(dir, bridgeFile),
+        readFileSync(join(runtime, bridgeSource)),
       )
       writeFileSync(
         join(dir, 'modelPreservation.vibe'),
         readFileSync(join(runtime, 'modelPreservation.vibe')),
       )
-      writeFileSync(
-        join(dir, 'modelPreservationBridge.platform.ts'),
-        readFileSync(join(runtime, 'modelPreservationBridge.platform.ts')),
-      )
+      if (existsSync(join(runtime, 'modelPreservationBridge.platform.ts')))
+        writeFileSync(
+          join(dir, 'modelPreservationBridge.platform.ts'),
+          readFileSync(join(runtime, 'modelPreservationBridge.platform.ts')),
+        )
       // The mutation control imports this sibling. The production bridge does not.
       writeFileSync(
         join(dir, 'bridge.hot.ts'),
@@ -93,11 +107,13 @@ test(
         join(dir, 'entry.ts'),
         [
           "import { Effect } from 'effect';",
-          "import * as bridge from './bridge.vibe';",
+          "import * as bridge from './" + bridgeFile + "';",
           'window.bridge = bridge; window.updates = 0; window.connected = false;',
           "window.begin = id => { window.result = 'pending'; window.started = performance.now(); Effect.runPromise(window.bridge.resolvePreservedModel(id)).then(value => { window.result = { value, elapsed: performance.now() - window.started } }, error => { window.result = { error: String(error) } }); };",
           'window.preserve = (id, model) => window.bridge.preserveModel(id, model, true);',
-          "import.meta.hot.accept('./bridge.vibe', next => { window.bridge = next; window.updates++; });",
+          "import.meta.hot.accept('./" +
+            bridgeFile +
+            "', next => { window.bridge = next; window.updates++; });",
           "import.meta.hot.on('foldkit-owner-handshake', () => window.connected = true);",
           "import.meta.hot.send('foldkit-owner-ready', {});",
         ].join('\n'),
@@ -183,9 +199,7 @@ test(
         await waitUntil(() => requests.length === before + 1)
         request = requests[before]
         assert.deepEqual(request.data, { id: model.id })
-        const module = server.moduleGraph.getModuleById(
-          join(dir, 'bridge.vibe'),
-        )
+        const module = server.moduleGraph.getModuleById(join(dir, bridgeFile))
         assert.ok(module)
         await server.reloadModule(module)
         await page.waitForFunction(

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import ts from 'typescript'
 import parser from 'vibelang/eslint'
@@ -143,4 +143,40 @@ console.log(JSON.stringify({ propertyRuns: 100, seed: 413934, modules }))
     seed: 413934,
     modules: 200,
   })
+})
+
+test('model-preservation metadata stays with its host module outside native code', () => {
+  const native = 'packages/foldkit/src/runtime/modelPreservationBridge.vibe'
+  if (existsSync(new URL('../' + native, import.meta.url))) {
+    assert.deepEqual(
+      rawMetadataReads(source(native), native),
+      [],
+      'native model preservation must obey the same metadata rule as other consumers',
+    )
+  } else {
+    const path = 'packages/foldkit/src/runtime/modelPreservationBridge.ts'
+    const ast = ts.createSourceFile(
+      path,
+      source(path),
+      ts.ScriptTarget.Latest,
+      true,
+    )
+    const hotReads = []
+    const visit = node => {
+      if (
+        ts.isPropertyAccessExpression(node) &&
+        node.name.text === 'hot' &&
+        ts.isMetaProperty(node.expression) &&
+        node.expression.keywordToken === ts.SyntaxKind.ImportKeyword
+      ) {
+        hotReads.push(node)
+      }
+      ts.forEachChild(node, visit)
+    }
+    visit(ast)
+    assert.ok(
+      hotReads.length > 0,
+      'the host entry itself owns its Vite context',
+    )
+  }
 })

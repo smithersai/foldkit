@@ -11,7 +11,7 @@ import {
   makeHostConnector,
 } from './hostConnector.vibe'
 import type { BootMode } from './hydrationHandoff.vibe'
-import { resolvePreservedModel } from './modelPreservationBridge.vibe'
+import { resolvePreservedModel } from './modelPreservationBridge.js'
 import { type MakeRuntimeReturn, runtimeInternals } from './runtime.js'
 
 /** Client-only startup input for an application that declares Flags. Pass it
