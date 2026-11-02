@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update and view definitions.
+import { Option, Schema } from 'effect'
 import { Update } from 'foldkit'
 import type { HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -53,9 +54,9 @@ const foldActivityListScrollToIndex = Update.foldChild({
 })
 
 // In the corresponding Message.match handler:
-GotActivityListMessage: (({ message }) => foldActivityList(model, message))
-ClickedScrollActivityListToMiddle: (() =>
-  foldActivityListScrollToIndex(model, 500))
+GotActivityListMessage: ({ message }) => foldActivityList(model, message)
+ClickedScrollActivityListToMiddle: () =>
+  foldActivityListScrollToIndex(model, 500)
 
 // Inside your view, render the list. Pass `items` from your Model, key
 // each row by a stable identifier (the data id, not its array position),
