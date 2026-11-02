@@ -60,14 +60,25 @@ export const __makeRegistry = (): __Registry => {
     key: string,
     fiber: Fiber<unknown, unknown>,
   ): void => {
-    Option.match(Option.fromNullishOr(holders.get(key)), {
-      onNone: () => {
-        holders.set(key, new Set([fiber]))
-      },
-      onSome: fibers => {
-        fibers.add(fiber)
-      },
-    })
+    {
+      const $optionSubject$1 = Option.fromNullishOr(holders.get(key))
+      const $optionHandlers$1: {
+        onNone: () => void
+        onSome: (fibers: Set<Fiber<unknown, unknown>>) => void
+      } = {
+        onNone: () => {
+          holders.set(key, new Set([fiber]))
+        },
+        onSome: fibers => {
+          fibers.add(fiber)
+        },
+      }
+      const { onNone: $optionNone$1, onSome: $optionSome$1 } = $optionHandlers$1
+      match ($optionSubject$1) {
+        when Option.Some(let $optionValue$1): $optionSome$1($optionValue$1);
+        default: $optionNone$1();
+      }
+    }
   }
 
   const release = (key: string, fiber: Fiber<unknown, unknown>): void => {

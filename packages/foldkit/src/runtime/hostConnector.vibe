@@ -122,13 +122,26 @@ export const makeHostConnector = (): HostConnector => {
         )
       },
       onSuccess: (decodedValue): infer _ => {
-        Option.match(maybeDeliverInbound, {
-          onNone: (): infer _ => {
-            pendingInboundSends.push({ port, value: decodedValue })
-          },
-          onSome: (deliverInbound): infer _ =>
-            deliverInbound(port, decodedValue),
-        })
+        {
+          const $optionSubject = maybeDeliverInbound
+          const $optionHandlers: {
+            onNone: () => void
+            onSome: (
+              deliverInbound: (port: Inbound<any, any>, value: unknown) => void,
+            ) => void
+          } = {
+            onNone: (): infer _ => {
+              pendingInboundSends.push({ port, value: decodedValue })
+            },
+            onSome: (deliverInbound): infer _ =>
+              deliverInbound(port, decodedValue),
+          }
+          const { onNone: $optionNone, onSome: $optionSome } = $optionHandlers
+          match ($optionSubject) {
+            when Option.Some(let $optionValue): $optionSome($optionValue);
+            default: $optionNone();
+          }
+        }
       },
     })
     return Exit.asVoid(decodeExit)
@@ -223,21 +236,21 @@ export const makePortChannels = (
       Option.fromNullishOr(inboundChannelsByPort.get(port)),
     lookupOutbound: (port): infer _ =>
       outboundPorts.has(port)
-        ? Option.some((encodedValue): infer _ =>
-          Option.match(maybeConnector, {
-            onNone: EffectFunction.constVoid,
-            onSome: (connector): infer _ =>
-              connector.deliverOutbound(port, encodedValue),
-          })
-        )
+        ? Option.some((encodedValue): infer _ => match (maybeConnector) {
+          when Option.Some(let connector): connector.deliverOutbound(
+            port,
+            encodedValue,
+          );
+          default: EffectFunction.constVoid();
+        })
         : Option.none(),
   }
 
   const deliverInbound = (port: Inbound<any, any>, value: unknown): void => {
-    Option.match(Option.fromNullishOr(inboundChannelsByPort.get(port)), {
-      onNone: EffectFunction.constVoid,
-      onSome: (channel): infer _ => channel.deliver(value),
-    })
+    match (Option.fromNullishOr(inboundChannelsByPort.get(port))) {
+      when Option.Some(let channel): channel.deliver(value);
+      default: EffectFunction.constVoid();
+    }
   }
 
   return { channels, deliverInbound }

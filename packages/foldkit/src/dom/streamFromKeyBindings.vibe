@@ -747,10 +747,21 @@ const handleKeyBindingEvent = <Message>(
     return
   }
 
-  Option.match(maybeSequence, {
-    onNone: () => startFreshSequence(context, event),
-    onSome: sequence => continueSequence(context, sequence, event),
-  })
+  {
+    const $optionSubject = maybeSequence
+    const $optionHandlers: {
+      onNone: () => void
+      onSome: (sequence: ActiveSequence<Message>) => void
+    } = {
+      onNone: () => startFreshSequence(context, event),
+      onSome: sequence => continueSequence(context, sequence, event),
+    }
+    const { onNone: $optionNone, onSome: $optionSome } = $optionHandlers
+    match ($optionSubject) {
+      when Option.Some(let $optionValue): $optionSome($optionValue);
+      default: $optionNone();
+    }
+  }
 }
 
 const makeKeyBindingHandler = <Message>(

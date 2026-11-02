@@ -360,15 +360,14 @@ export const diagnoseVariantPath = (
       return Option.none()
     }
     const prefix = EffectArray.take(segments, length)
-    return Option.match(variantTagsAtPathPrefix(document, prefix), {
-      onNone: () => tryLength(length - 1),
-      onSome: available =>
-        Option.some({
-          prefix,
-          failingSegment: EffectArray.get(segments, length),
-          available,
-        }),
-    })
+    return match (variantTagsAtPathPrefix(document, prefix)) {
+      when Option.Some(let available): Option.some({
+        prefix,
+        failingSegment: EffectArray.get(segments, length),
+        available,
+      });
+      default: tryLength(length - 1);
+    }
   }
   return tryLength(segments.length - 1)
 }
