@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
+import { Option, Schema } from 'effect'
 import { Update } from 'foldkit'
 import type { HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -47,7 +48,7 @@ const foldDialog = Update.foldChild({
   foldOutMessage: foldDialogOutMessage,
 })
 
-GotDialogMessage: (({ message }) => foldDialog(model, message))
+GotDialogMessage: ({ message }) => foldDialog(model, message)
 
 // Inside your view function, use data-[closed] for enter/leave transitions and
 // spread the `closeButton` bundle onto your dismiss buttons:
@@ -68,41 +69,41 @@ const view = (model: Model, h: HtmlBuilder<Message>) => {
       ],
       isVisible
         ? [
-          h.div([
-            ...backdrop,
-            h.Class(
-              'fixed inset-0 bg-black/50 transition duration-150 ease-out data-[closed]:opacity-0',
-            ),
-          ]),
-          h.div(
-            [
-              ...panel,
+            h.div([
+              ...backdrop,
               h.Class(
-                'rounded-lg p-6 max-w-md mx-auto shadow-xl transition duration-150 ease-out data-[closed]:opacity-0 data-[closed]:scale-95',
+                'fixed inset-0 bg-black/50 transition duration-150 ease-out data-[closed]:opacity-0',
               ),
-            ],
-            [
-              h.h2([...title], ['Confirm Action']),
-              h.p([...description], ['Are you sure you want to proceed?']),
-              h.div(
-                [h.Class('flex gap-2 justify-end mt-4')],
-                [
-                  h.button(
-                    [...closeButton, h.Class('px-4 py-2 rounded-lg border')],
-                    ['Cancel'],
-                  ),
-                  h.button(
-                    [
-                      ...closeButton,
-                      h.Class('px-4 py-2 rounded-lg bg-blue-600 text-white'),
-                    ],
-                    ['Confirm'],
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ]
+            ]),
+            h.div(
+              [
+                ...panel,
+                h.Class(
+                  'rounded-lg p-6 max-w-md mx-auto shadow-xl transition duration-150 ease-out data-[closed]:opacity-0 data-[closed]:scale-95',
+                ),
+              ],
+              [
+                h.h2([...title], ['Confirm Action']),
+                h.p([...description], ['Are you sure you want to proceed?']),
+                h.div(
+                  [h.Class('flex gap-2 justify-end mt-4')],
+                  [
+                    h.button(
+                      [...closeButton, h.Class('px-4 py-2 rounded-lg border')],
+                      ['Cancel'],
+                    ),
+                    h.button(
+                      [
+                        ...closeButton,
+                        h.Class('px-4 py-2 rounded-lg bg-blue-600 text-white'),
+                      ],
+                      ['Confirm'],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ]
         : [],
     )
 
