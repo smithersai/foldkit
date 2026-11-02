@@ -1,3 +1,5 @@
+import { readHotContext } from './hydrate.hot.ts'
+
 import { HYDRATION_BUILD_ATTRIBUTE } from './buildToken.ts'
 import {
   isCommentNode,
@@ -495,7 +497,7 @@ const seedAdoptedState = (
   // In development, record the server DOM signature so the post-patch pass can
   // report an attribute-only mismatch the structural walk cannot see. Gated on
   // the dev flag so a production hydrate does no extra work.
-  if (import.meta.hot && !status.adoptedSignatures.has(element)) {
+  if (readHotContext() && !status.adoptedSignatures.has(element)) {
     status.adoptedSignatures.set(element, {
       vnode,
       server: __elementSignature(element, vnode),
@@ -508,7 +510,7 @@ const detectMismatch = (status: HydrationStatus): void => {
 }
 
 const reportMismatch = (status: HydrationStatus): void => {
-  if (import.meta.hot && status.isMismatchDetected) {
+  if (readHotContext() && status.isMismatchDetected) {
     Console.defaultValue().warn(
       '[foldkit] The server DOM did not match the first client view during '
         + 'hydration. Foldkit reconciled the mismatching subtree. Ensure Flags, '
@@ -1132,7 +1134,7 @@ export const __hydrateVNode = (
     adoptedClone,
     dedupedVNode,
   )
-  if (import.meta.hot && !status.isMismatchDetected) {
+  if (readHotContext() && !status.isMismatchDetected) {
     for (const [element, { vnode, server }] of status.adoptedSignatures) {
       if (__elementSignature(element, vnode) !== server) {
         detectMismatch(status)

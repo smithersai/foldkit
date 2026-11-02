@@ -1,3 +1,5 @@
+import { readHotContext } from './devToolsConfig.hot.ts'
+
 import type { DevToolsStore } from '../devTools/store.vibe'
 import { isEmbeddedInFrame } from './devToolsConfig.platform.ts'
 import { type Visibility, isVisible } from './visibility.vibe'
@@ -96,7 +98,7 @@ const resolveDevToolsMode = (config: DevToolsModeConfig): DevToolsMode => {
   if (typeof config === 'string') {
     return config
   } else {
-    return import.meta.hot ? config.development : config.production
+    return readHotContext() ? config.development : config.production
   }
 }
 const DEV_TOOLS_MAX_ENTRIES_MIN = 20
@@ -128,7 +130,7 @@ export const resolveDevToolsConfig = (
     .filter((config): infer _ =>
       isVisible(
         config.show ?? DEFAULT_DEV_TOOLS_SHOW,
-        !!import.meta.hot && !isInIframe,
+        !!readHotContext() && !isInIframe,
       )
     )
     .map((config): infer _ => ({

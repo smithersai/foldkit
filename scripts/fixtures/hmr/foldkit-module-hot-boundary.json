@@ -1,0 +1,21 @@
+{
+  "repository": "foldkit",
+  "pattern": "module-hot-presence-platform-edge",
+  "oracle": "In .vibe code import.meta may appear only as the object of the static member access .url.",
+  "source": "accepted detail90 / VIP33",
+  "consumers": ["hydrate", "runtime/devToolsConfig"],
+  "witnesses": [
+    "hot member is forbidden in native code",
+    "bare meta and computed url are forbidden",
+    "static url and string literals are controls",
+    "raw helper retains lazy lookup and exact context identity"
+  ],
+  "properties": [
+    {
+      "key": "module-hot-context-changes",
+      "seed": 413934,
+      "runs": 100,
+      "modulesPerRun": 2
+    }
+  ]
+}
