@@ -1,60 +1,61 @@
-import { Number as EffectNumber } from 'effect'
+import { Effect, Match, Number, Schema } from 'effect'
 import { Command, Update } from 'foldkit'
 import { Invalid, Valid, Validating, validate } from 'foldkit/fieldValidation'
 import { modifyFields } from 'foldkit/struct'
-import { Message } from './message'
-import { Model } from './model'
 
 const validateEmail = validate(emailRules)
 
 const CheckEmailAvailable = Command.define('CheckEmailAvailable', {
   args: { email: Schema.String, validationId: Schema.Number },
   messages: [CompletedCheckEmailAvailable],
-  execute: effect ({ email, validationId }) => {
-    try {
-      const isAvailable = try apiCheckEmail(email)
+  execute: ({ email, validationId }) =>
+    Effect.gen(function* () {
+      const isAvailable = yield* apiCheckEmail(email)
       return CompletedCheckEmailAvailable({
         validationId,
         field: isAvailable
           ? Valid({ value: email })
           : Invalid({
-            value: email,
-            errors: ['This email is already taken'],
+              value: email,
+              errors: ['This email is already taken'],
+            }),
+      })
+    }).pipe(
+      Effect.catch(() =>
+        Effect.succeed(
+          CompletedCheckEmailAvailable({
+            validationId,
+            field: Invalid({
+              value: email,
+              errors: ['Could not check this email. Try again.'],
+            }),
           }),
-      })
-    } catch {
-      return CompletedCheckEmailAvailable({
-        validationId,
-        field: Invalid({
-          value: email,
-          errors: ['Could not check this email. Try again.'],
-        }),
-      })
-    }
-  },
+        ),
+      ),
+    ),
 })
 
 const update = (model: Model, message: Message) =>
   Message.match<Update.Return<Model, Message>>(message, {
     ChangedEmail: ({ value }) => {
       const syncResult = validateEmail(value)
-      const validationId = EffectNumber.increment(model.emailValidationId)
+      const validationId = Number.increment(model.emailValidationId)
 
-      return match (syncResult) {
-        when { _tag: 'Valid' }: ({
+      return Match.value(syncResult).pipe(
+        Match.tag('Valid', () => ({
           model: modifyFields(model, {
             email: () => Validating({ value }),
             emailValidationId: () => validationId,
           }),
           commands: [CheckEmailAvailable({ email: value, validationId })],
-        });
-        default: ({
+        })),
+        Match.orElse(() => ({
           model: modifyFields(model, {
             email: () => syncResult,
             emailValidationId: () => validationId,
           }),
-        });
-      }
+        })),
+      )
     },
 
     CompletedCheckEmailAvailable: ({ validationId, field }) => {
