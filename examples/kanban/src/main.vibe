@@ -20,7 +20,7 @@ export type Flags = typeof Flags.Type
 export const flags: Flags!! = effect {
   provide BrowserKeyValueStore.layerLocalStorage {
     return (effect {
-      const store = KeyValueStore.KeyValueStore()
+      const store = KeyValueStore()
       const json = try Effect.fromOption(
         Option.fromNullishOr(try store.get(STORAGE_KEY)),
       )
@@ -33,10 +33,10 @@ export const flags: Flags!! = effect {
 // INIT
 
 export const init: Runtime.ApplicationInit<Model, Message, Flags> = flags => {
-  const columns = flags.maybeSavedBoard.match({
-    onNone: () => DEFAULT_COLUMNS,
-    onSome: ({ columns }) => columns,
-  })
+  const columns = match (flags.maybeSavedBoard) {
+    when Option.None: DEFAULT_COLUMNS;
+    when Option.Some(let savedBoard): savedBoard.columns;
+  }
 
   return {
     model: {

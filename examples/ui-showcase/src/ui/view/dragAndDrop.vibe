@@ -179,26 +179,27 @@ const ghostView = (
 ): Html => {
   const maybeItemId = DragAndDrop.maybeDraggedItemId(dragAndDropModel)
 
-  return DragAndDrop.ghostStyle(dragAndDropModel)
-    .flatMap(ghostStyle =>
-      Option.map(findDraggedCard(columns, maybeItemId), card => ({
-        ghostStyle,
-        card,
-      }))
-    )
-    .match({
-      onNone: () => h.empty,
-      onSome: ({ ghostStyle, card }) =>
-        h.div(
-          [
-            h.Style(ghostStyle),
-            h.Class(
-              'rounded-lg border border-accent-400 bg-white px-3 py-2 text-sm text-gray-900 shadow-lg',
-            ),
-          ],
-          [card.label],
-        ),
-    })
+  return match (DragAndDrop.ghostStyle(dragAndDropModel)
+      .flatMap(ghostStyle =>
+        Option.map(findDraggedCard(columns, maybeItemId), card => ({
+          ghostStyle,
+          card,
+        }))
+      )) {
+    when Option.None: h.empty;
+    when Option.Some(let ghost): do {
+      const { ghostStyle, card } = ghost
+      h.div(
+        [
+          h.Style(ghostStyle),
+          h.Class(
+            'rounded-lg border border-accent-400 bg-white px-3 py-2 text-sm text-gray-900 shadow-lg',
+          ),
+        ],
+        [card.label],
+      )
+    };
+  }
 }
 
 export const view = Submodel.defineView<UiModel, UiMessage>(

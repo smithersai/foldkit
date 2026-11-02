@@ -96,16 +96,16 @@ const fetchOptionalGitHubStat =
         const json = try response.json
         return try Schema.decodeUnknownEffect(schema)(json)
       })
-      return data.match({
-        onNone: (): GitHubStatResult<A> => ({
+      return match (data) {
+        when Option.None: ({
           data: Option.none<A>(),
           warnings: [`${label} returned an unexpected response shape.`],
-        }),
-        onSome: (value): GitHubStatResult<A> => ({
+        });
+        when Option.Some(let value): ({
           data: Option.some(value),
           warnings: [],
-        }),
-      })
+        });
+      }
     }) catch effect (error) => match (error) {
       when GitHubStatError: ({
         data: Option.none<A>(),

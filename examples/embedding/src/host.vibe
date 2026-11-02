@@ -1,4 +1,3 @@
-import { Function as Fn } from 'effect'
 import { Runtime } from 'foldkit'
 
 import { makeElement } from './main.vibe'
@@ -73,20 +72,18 @@ export const startHost = (): void => {
   }
 
   mountToggleButton.addEventListener('click', () => {
-    maybeHandle.match({
-      onNone: mountWidget,
-      onSome: unmountWidget,
-    })
+    if (maybeHandle is Option.Some(let handle)) {
+      unmountWidget(handle)
+    } else {
+      mountWidget()
+    }
   })
 
   stepRange.addEventListener('input', () => {
     stepValueDisplay.textContent = stepRange.value
-    maybeHandle.match({
-      onNone: Fn.constVoid,
-      onSome: handle => {
-        void handle.ports.stepChanged.send(Number(stepRange.value))
-      },
-    })
+    if (maybeHandle is Option.Some(let handle)) {
+      void handle.ports.stepChanged.send(Number(stepRange.value))
+    }
   })
 
   mountWidget()
