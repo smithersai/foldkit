@@ -1,7 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
-import { Array as EffectArray } from 'effect'
+import { Array, Option, Schema } from 'effect'
 import { File, Update } from 'foldkit'
 import type { HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -37,11 +37,13 @@ const Message = defineMessageUnion({
 const foldFileDropOutMessage = FileDrop.OutMessage.match<
   Update.Step<Model, Message>
 >({
-  ReceivedFiles: ({ files }) => model => ({
-    model: modifyFields(model, {
-      uploadedFiles: EffectArray.appendAll(files),
+  ReceivedFiles:
+    ({ files }) =>
+    model => ({
+      model: modifyFields(model, {
+        uploadedFiles: Array.appendAll(files),
+      }),
     }),
-  }),
   // Fires when something is dropped but no files came through (e.g.
   // a drag of text or a URL). Ignore, or show a hint to the user.
   RejectedNonFiles: () => model => ({ model }),
@@ -60,7 +62,7 @@ const foldFileDrop = Update.foldChild({
 })
 
 // In the corresponding Message.match handler, call the fold:
-GotFileDropMessage: (({ message }) => foldFileDrop(model, message))
+GotFileDropMessage: ({ message }) => foldFileDrop(model, message)
 
 // Render the drop zone. The `toView` callback receives attribute groups.
 // Spread `root` onto a <label> so clicking opens the picker, and spread
