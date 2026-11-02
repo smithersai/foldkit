@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
+import { Option, Schema } from 'effect'
 import { Update } from 'foldkit'
 import { type HtmlBuilder, childAttributes } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -50,9 +51,11 @@ const Message = defineMessageUnion({
 const foldListboxOutMessage = Listbox.OutMessage.match<
   Update.Step<Model, Message>
 >({
-  Selected: ({ value }) => model => ({
-    model: modifyFields(model, { maybeCharacter: () => Option.some(value) }),
-  }),
+  Selected:
+    ({ value }) =>
+    model => ({
+      model: modifyFields(model, { maybeCharacter: () => Option.some(value) }),
+    }),
 })
 
 // Update.foldChild wires the child into the parent: it delegates keyboard
@@ -69,7 +72,7 @@ const foldListbox = Update.foldChild({
 })
 
 // In the corresponding Message.match handler, call the fold:
-GotListboxMessage: (({ message }) => foldListbox(model, message))
+GotListboxMessage: ({ message }) => foldListbox(model, message)
 
 const characters: ReadonlyArray<Character> = [
   { firstName: 'Michael', lastName: 'Bluth' },
