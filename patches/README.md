@@ -75,3 +75,15 @@ and writer starts after close.
 
 Refresh with `pnpm patch vite@8.3.1` and `pnpm patch-commit`; keep the
 shutdown tests passing.
+
+When `port: 0` selects an automatic port, another listener can acquire it
+after Vite closes its availability probe and before the HTTP server binds.
+The patch retries only `EADDRINUSE` with up to three fresh ephemeral candidates.
+Explicit ports keep their strict or incrementing policy, and other errors propagate.
+If contention exhausts the bound, the error records the candidate ports and retains
+the last Node bind error as `cause`.
+
+`scripts/vite-ephemeral-port.test.mjs` creates real competing listeners in
+that gap, checks HTTP responses, and exercises 100 generated collision sequences.
+The named Foldkit corpus also covers strict automatic ports, bounded exhaustion,
+explicit port policies and an unchanged non-address error.

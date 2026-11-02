@@ -1,8 +1,32 @@
 diff --git a/dist/node/chunks/node.js b/dist/node/chunks/node.js
-index ee0a227ca9d629a7b70a66cb328095bd309ea85e..21899d84a3419cd8c12fa0557fcd6140c2818a66 100644
 --- a/dist/node/chunks/node.js
 +++ b/dist/node/chunks/node.js
-@@ -28414,7 +28414,11 @@ function runOptimizeDeps(environment, depsInfo) {
+@@ -14491,12 +14491,18 @@
+ async function httpServerStart(httpServer, serverOptions) {
+ 	const { port: startPort, strictPort, host, logger } = serverOptions;
+ 	if (startPort === 0) {
+-		const port = await getAvailableEphemeralPort(host);
+-		if (port == null) throw new Error("No available ephemeral port found");
+-		const result = await tryBindServer(httpServer, port, host);
+-		if (result.success) return port;
+-		if (result.error.code !== "EADDRINUSE") throw result.error;
+-		throw new Error(`Port ${port} is already in use`);
++		const attemptedPorts = [];
++		let lastBindError;
++		for (let attempt = 0; attempt < 3; attempt++) {
++			const port = await getAvailableEphemeralPort(host);
++			if (port == null) throw new Error("No available ephemeral port found");
++			const result = await tryBindServer(httpServer, port, host);
++			if (result.success) return port;
++			if (result.error.code !== "EADDRINUSE") throw result.error;
++			attemptedPorts.push(port);
++			lastBindError = result.error;
++		}
++		throw new Error(`Port ${attemptedPorts.at(-1)} is already in use after 3 ephemeral bind attempts (candidates: ${attemptedPorts.join(", ")})`, { cause: lastBindError });
+ 	}
+ 	for (let port = startPort; port <= MAX_PORT; port++) {
+ 		const portAvailableOnWildcard = await isPortAvailable(port);
+@@ -28414,7 +28420,11 @@
  			optimizerContext.cancelled = true;
  			const { context } = await preparedRun;
  			context?.cancel();
@@ -15,7 +39,7 @@ index ee0a227ca9d629a7b70a66cb328095bd309ea85e..21899d84a3419cd8c12fa0557fcd6140
  		},
  		result: runResult
  	};
-@@ -35573,6 +35577,7 @@ function createDepsOptimizer(environment) {
+@@ -35573,6 +35583,7 @@
  						} finally {
  							clearTimeout(scanTimer);
  						}
