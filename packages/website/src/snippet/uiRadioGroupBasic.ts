@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
+import { Option, Schema } from 'effect'
 import { Update } from 'foldkit'
 import type { HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -8,7 +9,8 @@ import { modifyFields } from 'foldkit/struct'
 
 import { RadioGroup } from '@foldkit/ui'
 
-schema Plan = 'Startup' | 'Business' | 'Enterprise'
+const Plan = Schema.Literals(['Startup', 'Business', 'Enterprise'])
+type Plan = typeof Plan.Type
 
 // Add fields to your Model for the RadioGroup Submodel and the selected
 // value. The Submodel keeps private keyboard-focus state; the parent owns
@@ -57,9 +59,11 @@ const foldPlanRadioGroupOutMessage = RadioGroup.OutMessage.match<
   Update.Step<Model, Message>,
   RadioGroup.OutMessage<Plan>
 >({
-  Selected: ({ value }) => model => ({
-    model: modifyFields(model, { maybePlan: () => Option.some(value) }),
-  }),
+  Selected:
+    ({ value }) =>
+    model => ({
+      model: modifyFields(model, { maybePlan: () => Option.some(value) }),
+    }),
 })
 
 // Update.foldChild wires the child into the parent: it runs the child update,
@@ -75,7 +79,7 @@ const foldPlanRadioGroup = Update.foldChild({
 })
 
 // In the corresponding Message.match handler, call the fold:
-GotPlanRadioGroupMessage: (({ message }) => foldPlanRadioGroup(model, message))
+GotPlanRadioGroupMessage: ({ message }) => foldPlanRadioGroup(model, message)
 
 // Inside your view function, embed the radio group via h.submodel and pass
 // the parent-owned selection as selectedValue:
