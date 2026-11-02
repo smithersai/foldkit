@@ -1,3 +1,4 @@
+import { Schema } from 'effect'
 import { Runtime, type Update } from 'foldkit'
 import type { Document, HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -5,9 +6,10 @@ import { modifyFields } from 'foldkit/struct'
 
 // MODEL
 
-export schema Model {
-  count: number
-}
+export const Model = Schema.Struct({
+  count: Schema.Number,
+})
+export type Model = typeof Model.Type
 
 // MESSAGE
 

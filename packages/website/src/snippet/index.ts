@@ -1,5 +1,5 @@
-export { default as counterRaw } from './counter.vibe?raw'
-export { default as counterHighlighted } from './counter.vibe?highlighted'
+export { default as counterRaw } from './counter.ts?raw'
+export { default as counterHighlighted } from './counter.ts?highlighted'
 export { default as counterEntryRaw } from './counterEntry.ts?raw'
 export { default as counterEntryHighlighted } from './counterEntry.ts?highlighted'
 export { default as counterCommandsRaw } from './counterCommands.vibe?raw'
