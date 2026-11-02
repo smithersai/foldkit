@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
+import { Option, Schema } from 'effect'
 import { Update } from 'foldkit'
 import type { HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -45,7 +46,7 @@ const foldHoverIntent = Update.foldChild({
   foldOutMessage: foldHoverIntentOutMessage,
 })
 
-GotHoverIntentMessage: (({ message }) => foldHoverIntent(model, message))
+GotHoverIntentMessage: ({ message }) => foldHoverIntent(model, message)
 
 // Spread each attribute bundle onto the element it names. HoverIntent owns the
 // interaction; this view owns the markup, semantics, positioning, and styles.
@@ -73,11 +74,11 @@ const view = (h: HtmlBuilder<Message>) => {
         ),
         ...(isVisible
           ? [
-            h.div(
-              [...panel, h.Id(panelId)],
-              [h.p([], ['A short description can provide useful context.'])],
-            ),
-          ]
+              h.div(
+                [...panel, h.Id(panelId)],
+                [h.p([], ['A short description can provide useful context.'])],
+              ),
+            ]
           : []),
       ],
     )
