@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
+import { Schema } from 'effect'
 import type { HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
@@ -30,9 +31,9 @@ const Message = defineMessageUnion({
 // In the corresponding Message.match handler, store the value.
 // This is the moment to fire analytics, validate a form, or push the value
 // to a backend.
-ToggledTerms: (({ isChecked }) => ({
+ToggledTerms: ({ isChecked }) => ({
   model: modifyFields(model, { acceptedTerms: () => isChecked }),
-}))
+})
 
 // Inside your view function, render the checkbox with Checkbox.view. It reads
 // the checked state from your Model and calls onToggle with the new state.
