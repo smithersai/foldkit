@@ -29,7 +29,7 @@ export schema Flags { maybeSavedCanvas: MaybeSavedCanvas }
 export const flags: Flags!! = effect {
   provide BrowserKeyValueStore.layerLocalStorage {
     return (effect {
-      const store = KeyValueStore()
+      const store = try KeyValueStore.KeyValueStore
       const stored = try store.get(STORAGE_KEY)
       const json = try Effect.fromOption(Option.fromNullishOr(stored))
       const decoded = try Schema.decodeEffect(SavedCanvasJsonString)(json)

@@ -202,8 +202,8 @@ export schema Flags {
   today: Calendar.CalendarDate
 }
 
-export const flags: Flags!! = () => {
-  const today = Calendar.today.local()
+export const flags: Flags!! = effect {
+  const today = try Calendar.today.local
   return { today }
 }
 

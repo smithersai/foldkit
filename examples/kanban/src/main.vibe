@@ -20,7 +20,7 @@ export type Flags = typeof Flags.Type
 export const flags: Flags!! = effect {
   provide BrowserKeyValueStore.layerLocalStorage {
     return (effect {
-      const store = KeyValueStore()
+      const store = try KeyValueStore.KeyValueStore
       const json = try Effect.fromOption(
         Option.fromNullishOr(try store.get(STORAGE_KEY)),
       )

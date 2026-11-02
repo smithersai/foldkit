@@ -19,7 +19,7 @@ export const Flags = Schema.Struct({
 export const flags: Flags!! = effect {
   provide BrowserKeyValueStore.layerLocalStorage {
     return (effect {
-      const store = KeyValueStore.KeyValueStore()
+      const store = try KeyValueStore.KeyValueStore
       const stored = try store.get(SESSION_STORAGE_KEY)
       const sessionJson = try Effect.fromOption(Option.fromNullishOr(stored))
       const decodeSession = Schema.decodeEffect(SessionJsonString)

@@ -13,7 +13,7 @@ export const SaveSession = Command.define('SaveSession', {
     effect {
       provide BrowserKeyValueStore.layerLocalStorage {
         return (effect {
-          const store = KeyValueStore.KeyValueStore()
+          const store = try KeyValueStore.KeyValueStore
           const encodedSession = try Schema.encodeEffect(SessionJsonString)(
             session,
           )
@@ -29,7 +29,7 @@ export const ClearSession = Command.define('ClearSession', {
   execute: effect {
     provide BrowserKeyValueStore.layerLocalStorage {
       return (effect {
-        const store = KeyValueStore.KeyValueStore()
+        const store = try KeyValueStore.KeyValueStore
         try store.remove(SESSION_STORAGE_KEY)
         return Message.SucceededClearSession()
       }) catch (error) => Message.FailedClearSession({ error: String(error) })

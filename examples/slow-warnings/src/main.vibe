@@ -1,4 +1,3 @@
-import { Clock } from 'effect'
 import { Array as Arr, Number as Num, pipe } from 'effect'
 import { Dom, Runtime, Subscription, type Update } from 'foldkit'
 import { type Document, type Html, HtmlBuilder, createLazy } from 'foldkit/html'
@@ -69,7 +68,7 @@ const slowWarningTarget: Dom.TypedEventTarget<{
 
 // Retain synchronous CPU work using the standard Clock service.
 const clock = runSync(effect {
-  return Clock.Clock()
+  return try Clock.Clock
 })
 
 const burnCpu = (durationMs: number): number => {

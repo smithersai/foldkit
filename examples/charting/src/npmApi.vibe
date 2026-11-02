@@ -42,7 +42,7 @@ export service NpmApi {
 export const NpmApiLive: Layer<NpmApi, never, HttpClient> = Layer.effect(
   NpmApi,
   effect {
-    const client = HttpClient()
+    const client = try HttpClient.HttpClient
     const fetch_ = fetchJson(client)
     return {
       fetchPackage: (spec: PackageSpec): infer _ => {

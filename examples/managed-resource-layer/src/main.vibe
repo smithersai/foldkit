@@ -1,5 +1,4 @@
-import { Context, Effect, Layer, Number as Num, Option, Schema } from 'effect'
-import { SecureRandom } from 'effect/crypto'
+import { Effect, Number as Num, Option, Schema } from 'effect'
 import { Command, ManagedResource, Runtime, type Update } from 'foldkit'
 import { Document, Html, HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -22,12 +21,12 @@ service ComputeEngineService {
   readonly square: (value: number) => number
 }
 
-const engineLayer: Layer.Layer<ComputeEngineService> = Layer.effect(
+const engineLayer: Layer<ComputeEngineService> = Layer.effect(
   ComputeEngineService,
   Effect.acquireRelease(
     effect {
       provide BrowserCrypto.layerSecureRandom {
-        const secureRandom = SecureRandom.SecureRandom()
+        const secureRandom = try SecureRandom.SecureRandom
         const id = try secureRandom.uuidV4()
         const engineId = `engine-${id.slice(0, 8)}`
         return { engineId, square: (value: number): number => value * value }

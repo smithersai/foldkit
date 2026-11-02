@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Array as Arr, Duration, Effect, Random, Schema } from 'effect'
+import { Array as Arr, Effect, Schema } from 'effect'
 import { Command, FieldValidation, Runtime, type Update } from 'foldkit'
 import {
   Field,
@@ -83,7 +83,7 @@ const EMAILS_ON_WAITLIST = [
 ]
 
 const isEmailOnWaitlist = effect (email: string): boolean!! => {
-  Effect.sleep(Duration.millis(FAKE_API_DELAY_MS))
+  try Effect.sleep(Duration.millis(FAKE_API_DELAY_MS))
   return Arr.contains(EMAILS_ON_WAITLIST, email.toLowerCase())
 }
 

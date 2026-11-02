@@ -274,7 +274,7 @@ export const SaveTodos = Command.define('SaveTodos', {
     effect {
       provide BrowserKeyValueStore.layerLocalStorage {
         return (effect {
-          const store = KeyValueStore()
+          const store = try KeyValueStore.KeyValueStore
           const encodedTodos = try Schema.encodeEffect(TodosJsonString)(todos)
           try store.set(TODOS_STORAGE_KEY, encodedTodos)
           return Message.SucceededSaveTodos({ todos })
@@ -637,7 +637,7 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
 export const flags: Flags!! = effect {
   provide BrowserKeyValueStore.layerLocalStorage {
     return (effect {
-      const store = KeyValueStore()
+      const store = try KeyValueStore.KeyValueStore
       const stored = try store.get(TODOS_STORAGE_KEY)
       const todosJson = try Effect.fromOption(Option.fromNullishOr(stored))
       const decodeTodos = Schema.decodeEffect(TodosJsonString)

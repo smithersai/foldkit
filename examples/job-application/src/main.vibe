@@ -28,7 +28,7 @@ export schema Flags {
 export const flags: Flags!! = effect {
   provide BrowserCrypto.layerSecureRandom {
     const today = try Calendar.today.local
-    const secureRandom = SecureRandom.SecureRandom()
+    const secureRandom = try SecureRandom.SecureRandom
     const initialWorkHistoryEntryId = try secureRandom.uuidV4()
     const initialEducationEntryId = try secureRandom.uuidV4()
     const initialSkillsEntryId = try secureRandom.uuidV4()

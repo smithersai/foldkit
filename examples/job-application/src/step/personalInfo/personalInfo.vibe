@@ -1,11 +1,4 @@
-import {
-  Array as Arr,
-  Duration,
-  Effect,
-  Number as Num,
-  Option,
-  Schema,
-} from 'effect'
+import { Array as Arr, Effect, Number as Num, Option, Schema } from 'effect'
 import { Command, Update } from 'foldkit'
 import { CalendarDate } from 'foldkit/calendar'
 import {
@@ -133,7 +126,7 @@ const TAKEN_EMAILS = [
 ]
 
 const isEmailTaken = effect (emailInput: string): boolean!! => {
-  Effect.sleep(Duration.millis(FAKE_API_DELAY_MS))
+  try Effect.sleep(Duration.millis(FAKE_API_DELAY_MS))
   return Arr.contains(TAKEN_EMAILS, emailInput.toLowerCase())
 }
 

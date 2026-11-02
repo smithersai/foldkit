@@ -1,5 +1,4 @@
 import { Array as Arr, Effect, Schema } from 'effect'
-import { SecureRandom } from 'effect/crypto'
 import { Command, Update } from 'foldkit'
 import { defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
@@ -42,7 +41,7 @@ export const GenerateEntryId = Command.define('GenerateEntryId', {
   execute: Effect.catchDefect(
     effect {
       provide BrowserCrypto.layerSecureRandom {
-        const secureRandom = SecureRandom.SecureRandom()
+        const secureRandom = try SecureRandom.SecureRandom
         const entryId = try secureRandom.uuidV4()
         return Message.SucceededGenerateEntryId({ entryId })
       }

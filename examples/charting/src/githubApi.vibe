@@ -79,39 +79,41 @@ const fetchOptionalGitHubStat =
   <A, I>(schema: Schema.Codec<A, I>): infer _ =>
   (path: string, label: string): infer _ => {
     const url = `${GITHUB_REPOSITORY_API}${path}`
-    const attempt: GitHubStatResult<A>!GitHubStatsPending = (effect {
-      const response = client.execute(HttpClientRequest.get(url)) catch effect () => {
-          throw new GitHubStatError()
+    const attempt: GitHubStatResult<A>!GitHubStatsPending = effect {
+      return (effect {
+        const response = client.execute(HttpClientRequest.get(url)) catch effect () => {
+            throw new GitHubStatError()
+          }
+        if (response.status === HTTP_ACCEPTED) {
+          throw new GitHubStatsPending()
         }
-      if (response.status === HTTP_ACCEPTED) {
-        throw new GitHubStatsPending()
-      }
-      if (!isSuccessfulStatus(response.status)) {
-        return {
-          data: Option.none<A>(),
-          warnings: [`${label} returned HTTP ${response.status}.`],
+        if (!isSuccessfulStatus(response.status)) {
+          return {
+            data: Option.none<A>(),
+            warnings: [`${label} returned HTTP ${response.status}.`],
+          }
         }
-      }
-      const data = try Effect.option(effect {
-        const json = try response.json
-        return try Schema.decodeUnknownEffect(schema)(json)
-      })
-      return match (data) {
-        when Option.None: ({
+        const data = try Effect.option(effect {
+          const json = try response.json
+          return try Schema.decodeUnknownEffect(schema)(json)
+        })
+        return match (data) {
+          when Option.None: ({
+            data: Option.none<A>(),
+            warnings: [`${label} returned an unexpected response shape.`],
+          });
+          when Option.Some(let value): ({
+            data: Option.some(value),
+            warnings: [],
+          });
+        }
+      }) catch effect (error) => match (error) {
+        when GitHubStatError: ({
           data: Option.none<A>(),
-          warnings: [`${label} returned an unexpected response shape.`],
+          warnings: [`${label} is unavailable right now.`],
         });
-        when Option.Some(let value): ({
-          data: Option.some(value),
-          warnings: [],
-        });
+        default: throw error;
       }
-    }) catch effect (error) => match (error) {
-      when GitHubStatError: ({
-        data: Option.none<A>(),
-        warnings: [`${label} is unavailable right now.`],
-      });
-      default: throw error;
     }
     return effect {
       return retry(attempt, {
@@ -132,7 +134,7 @@ const fetchOptionalGitHubStat =
 export const GitHubApiLive: Layer<GitHubApi, never, HttpClient> = Layer.effect(
   GitHubApi,
   effect {
-    const client = HttpClient()
+    const client = try HttpClient.HttpClient
     const fetch_ = fetchJson(client)
     const fetchStat_ = fetchOptionalGitHubStat(client)
     return {

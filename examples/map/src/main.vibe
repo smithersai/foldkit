@@ -1,4 +1,3 @@
-import type { Scope } from 'effect'
 import clsx from 'clsx'
 import { Array as Arr, String as Str } from 'effect'
 import { Command, Mount, Runtime, Update } from 'foldkit'
@@ -164,7 +163,7 @@ export const Geolocate = Command.define('Geolocate', {
     }
     provide BrowserGeolocation.layer {
       return (effect {
-        const geolocation = BrowserGeolocation.Geolocation()
+        const geolocation = try BrowserGeolocation.Geolocation
         const position = try geolocation.getCurrentPosition({
           enableHighAccuracy: false,
           timeout: GEOLOCATION_TIMEOUT_MS,
@@ -354,7 +353,7 @@ const listenToMapMovesAndMarkerClicks = effect (
   container: HTMLElement
   onMoveEnd: () => void
   onContainerClick: (event: MouseEvent) => void
-}!Error!Scope.Scope => {
+}!Error!Scope => {
   // Effect.try executes this MapLibre/DOM callback registration as plain TypeScript.
   return try Effect.acquireRelease(
     Effect.try({

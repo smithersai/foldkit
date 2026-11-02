@@ -24,7 +24,7 @@ export const SaveCanvas = Command.define('SaveCanvas', {
     effect {
       provide BrowserKeyValueStore.layerLocalStorage {
         return (effect {
-          const store = KeyValueStore()
+          const store = try KeyValueStore.KeyValueStore
           const data: SavedCanvas = {
             grid,
             gridSize,

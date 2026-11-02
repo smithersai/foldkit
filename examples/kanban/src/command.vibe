@@ -15,7 +15,7 @@ export const GenerateCardId = Command.define('GenerateCardId', {
   ): ReturnType<typeof Message.CompletedGenerateCardId>!! =>
     effect {
       provide BrowserCrypto.layerSecureRandom {
-        const secureRandom = SecureRandom.SecureRandom()
+        const secureRandom = try SecureRandom.SecureRandom
         const cardId = try secureRandom.uuidV4()
         return Message.CompletedGenerateCardId({ cardId, columnId, title })
       }
@@ -29,7 +29,7 @@ export const SaveBoard = Command.define('SaveBoard', {
     effect {
       provide BrowserKeyValueStore.layerLocalStorage {
         return (effect {
-          const store = KeyValueStore.KeyValueStore()
+          const store = try KeyValueStore.KeyValueStore
           const encodedBoard = try Schema.encodeEffect(SavedBoardJsonString)({
             columns,
           })

@@ -318,8 +318,8 @@ export const contributorSummary = (
 // FETCH
 
 export const fetchRawTelemetry: RawTelemetry!Error!GitHubApi | NpmApi = effect {
-    const github = GitHubApi()
-    const npm = NpmApi()
+    const github = try GitHubApi
+    const npm = try NpmApi
     const fetchedAt = try DateTime.now
 
     const repository = try github.fetchRepository
