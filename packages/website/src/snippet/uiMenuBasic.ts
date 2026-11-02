@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
+import { Option, Schema } from 'effect'
 import { Update } from 'foldkit'
 import type { HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -63,7 +64,7 @@ const foldMenu = Update.foldChild({
 })
 
 // In the corresponding Message.match handler, call the fold:
-GotMenuMessage: (({ message }) => foldMenu(model, message))
+GotMenuMessage: ({ message }) => foldMenu(model, message)
 
 // Inside your view function, render the menu via the factory's view. The
 // `buttonContent` below names the trigger. When the trigger is icon-only,
