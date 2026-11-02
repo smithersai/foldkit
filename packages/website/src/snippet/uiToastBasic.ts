@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
+import { Option, Schema } from 'effect'
 import { Subscription, Update } from 'foldkit'
 import type { HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -60,11 +61,13 @@ type Message = typeof Message.Type
 // the parent Model, which already has the next Toast Model written back:
 const foldToastOutMessage = Toast.OutMessage.match<Update.Step<Model, Message>>(
   {
-    DismissedToast: ({ payload }) => model => ({
-      model: modifyFields(model, {
-        maybeLastDismissedBody: () => Option.some(payload.bodyText),
+    DismissedToast:
+      ({ payload }) =>
+      model => ({
+        model: modifyFields(model, {
+          maybeLastDismissedBody: () => Option.some(payload.bodyText),
+        }),
       }),
-    }),
   },
 )
 
@@ -89,9 +92,9 @@ const foldToastShow = Update.foldChild({
 })
 
 // In the corresponding Message.match handler, call the fold:
-GotToastMessage: (({ message }) => foldToast(model, message))
+GotToastMessage: ({ message }) => foldToast(model, message)
 
-ClickedSave: (() =>
+ClickedSave: () =>
   foldToastShow(model, {
     variant: 'Success',
     payload: {
@@ -101,7 +104,7 @@ ClickedSave: (() =>
       // not a string literal, so renames flow through.
       maybeLink: Option.some({ href: changesRouter(), text: 'View' }),
     },
-  }))
+  })
 
 // Wire pointer subscriptions once at the app root so swipe tracking
 // continues when the pointer leaves the entry. Without this lift the
@@ -147,15 +150,12 @@ const view = (h: HtmlBuilder<Message>) =>
                     ),
                   ],
                 ),
-                ...match (entry.payload.maybeLink) {
-                  when { _tag: "None" }: [];
-                  when { _tag: "Some", value: let optionValue1 }: do {
-                    const { href, text } = optionValue1
-                    ;[
-                      h.a([h.Class('text-sm underline'), h.Href(href)], [text]),
-                    ]
-                  };
-                },
+                ...Option.match(entry.payload.maybeLink, {
+                  onNone: () => [],
+                  onSome: ({ href, text }) => [
+                    h.a([h.Class('text-sm underline'), h.Href(href)], [text]),
+                  ],
+                }),
               ],
             ),
             h.button([...handlers.dismiss], ['Close']),
