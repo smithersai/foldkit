@@ -1,10 +1,9 @@
+import { Option } from 'effect'
 import { Update } from 'foldkit'
 import { Transition } from 'foldkit/route'
 import { modifyFields } from 'foldkit/struct'
 
 import { People } from './page'
-import { Message } from './message'
-import { Model } from './model'
 
 type Step = Update.Step<Model, Message>
 
@@ -24,9 +23,9 @@ const foldPeopleRouteChanged = Update.foldChild({
   toParentMessage: message => Message.GotPeopleMessage({ message }),
 })
 
-const setRoute = (nextRoute: AppRoute): Step => model => ({
-  model: modifyFields(model, { route: () => nextRoute }),
-})
+const setRoute =
+  (nextRoute: AppRoute): Step =>
+  model => ({ model: modifyFields(model, { route: () => nextRoute }) })
 
 const keepModel: Step = model => ({ model })
 
