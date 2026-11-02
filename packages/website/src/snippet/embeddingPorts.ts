@@ -1,5 +1,5 @@
+import { Effect, Schema } from 'effect'
 import { Port, Runtime } from 'foldkit'
-import { Model } from './model'
 
 // Each Port carries a Schema. The host works with the Schema's Encoded
 // side, the app with the decoded Type. Record keys name the ports on the
