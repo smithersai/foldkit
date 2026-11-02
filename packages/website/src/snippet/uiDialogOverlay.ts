@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
+import { Option, Schema } from 'effect'
 import type { HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
 
@@ -49,34 +50,34 @@ const view = (model: Model, h: HtmlBuilder<Message>) => {
       [...dialog],
       isVisible
         ? [
-          h.div([...backdrop, h.Class('fixed inset-0 bg-black/50')]),
-          h.div(
-            [
-              ...panel,
-              h.Class('relative rounded-lg p-6 max-w-md mx-auto shadow-xl'),
-            ],
-            [
-              h.h2([...title], ['Edit filters']),
-              h.submodel({
-                slotId: model.combobox.id,
-                model: model.combobox,
-                view: CityCombobox.view,
-                viewInputs: {
-                  // ...items, itemToConfig, itemToValue, etc.
-                  className: 'relative w-full',
-                  maybeSelectedValue: model.maybeCity,
-                  restingInputValue: Option.getOrElse(
-                    model.maybeCity,
-                    () => '',
-                  ),
-                  anchor: { placement: 'bottom-start' },
-                },
-                toParentMessage: message =>
-                  Message.GotComboboxMessage({ message }),
-              }),
-            ],
-          ),
-        ]
+            h.div([...backdrop, h.Class('fixed inset-0 bg-black/50')]),
+            h.div(
+              [
+                ...panel,
+                h.Class('relative rounded-lg p-6 max-w-md mx-auto shadow-xl'),
+              ],
+              [
+                h.h2([...title], ['Edit filters']),
+                h.submodel({
+                  slotId: model.combobox.id,
+                  model: model.combobox,
+                  view: CityCombobox.view,
+                  viewInputs: {
+                    // ...items, itemToConfig, itemToValue, etc.
+                    className: 'relative w-full',
+                    maybeSelectedValue: model.maybeCity,
+                    restingInputValue: Option.getOrElse(
+                      model.maybeCity,
+                      () => '',
+                    ),
+                    anchor: { placement: 'bottom-start' },
+                  },
+                  toParentMessage: message =>
+                    Message.GotComboboxMessage({ message }),
+                }),
+              ],
+            ),
+          ]
         : [],
     )
 
