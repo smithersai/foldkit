@@ -1,5 +1,5 @@
 // main.ts (parent)
-import { Array as EffectArray } from 'effect'
+import { Array } from 'effect'
 import type { HtmlBuilder } from 'foldkit/html'
 
 import { GotCommandMenuMessage, type Message } from './message'
@@ -25,19 +25,20 @@ export const view = (model: Model, h: HtmlBuilder<Message>) =>
             ),
             ...(slot.isOpen
               ? [
-                h.div(
-                  [...slot.menuAttributes, h.Class('mt-2 p-1 bg-gray-50')],
-                  EffectArray.map(slot.items, item =>
-                    h.keyed('div')(
-                      item.id,
-                      [
-                        ...item.attributes,
-                        ...(item.isActive ? [h.Class('bg-blue-50')] : []),
-                      ],
-                      [item.label],
-                    )),
-                ),
-              ]
+                  h.div(
+                    [...slot.menuAttributes, h.Class('mt-2 p-1 bg-gray-50')],
+                    Array.map(slot.items, item =>
+                      h.keyed('div')(
+                        item.id,
+                        [
+                          ...item.attributes,
+                          ...(item.isActive ? [h.Class('bg-blue-50')] : []),
+                        ],
+                        [item.label],
+                      ),
+                    ),
+                  ),
+                ]
               : []),
           ],
         ),
