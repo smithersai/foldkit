@@ -1,12 +1,11 @@
 // Pseudocode walkthrough of a custom leave Command. Fit it into the
 // foldAnimationOutMessage from the basic example.
+import { Effect, Schema } from 'effect'
 import { Update } from 'foldkit'
 import * as Command from 'foldkit/command'
 import * as Dom from 'foldkit/dom'
 
 import { Animation } from '@foldkit/ui'
-import { Message } from './message'
-import { Model } from './model'
 
 // The leave Command returns Animation's own EndedAnimation Message. It takes
 // the generation of the leave that started it and puts that generation on the
@@ -16,10 +15,10 @@ import { Model } from './model'
 const WaitForPanelSettled = Command.define('WaitForPanelSettled', {
   args: { generation: Schema.Number },
   messages: [Animation.Message.EndedAnimation],
-  execute: effect ({ generation }) => {
-    try Dom.waitForAnimationSettled('#drawer-panel')
-    return Animation.Message.EndedAnimation({ generation })
-  },
+  execute: ({ generation }) =>
+    Dom.waitForAnimationSettled('#drawer-panel').pipe(
+      Effect.as(Animation.Message.EndedAnimation({ generation })),
+    ),
 })
 
 // StartedLeaveAnimating carries the generation. Pass it straight to the Command:
@@ -28,9 +27,11 @@ const foldAnimationOutMessage = (
   { liftCommand }: Update.FoldContext<Animation.Message, Message>,
 ) =>
   Animation.OutMessage.match<Update.Step<Model, Message>>(outMessage, {
-    StartedLeaveAnimating: ({ generation }) => model => ({
-      model,
-      commands: [liftCommand(WaitForPanelSettled({ generation }))],
-    }),
+    StartedLeaveAnimating:
+      ({ generation }) =>
+      model => ({
+        model,
+        commands: [liftCommand(WaitForPanelSettled({ generation }))],
+      }),
     TransitionedOut: () => model => ({ model }),
   })
