@@ -1,8 +1,7 @@
-import { Array as EffectArray } from 'effect'
+import { Array, Effect, Schema } from 'effect'
 import { Command, type Update } from 'foldkit'
 import { defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
-import { Model } from './model'
 
 const Message = defineMessageUnion({
   ClickedCancelUpload: { uploadId: Schema.Number },
@@ -14,9 +13,8 @@ const Message = defineMessageUnion({
   },
 })
 
-schema UploadKey {
-  uploadId: number
-}
+const UploadKey = Schema.Struct({ uploadId: Schema.Number })
+type UploadKey = typeof UploadKey.Type
 
 const UploadFile = Command.define('UploadFile', {
   args: { ...UploadKey.fields, file: Schema.instanceOf(File) },
@@ -28,21 +26,20 @@ const UploadFile = Command.define('UploadFile', {
     keyFields: ['uploadId'],
     toKey: ({ uploadId }) => String(uploadId),
   },
-  execute: effect ({ uploadId, file }) => {
-    try {
-      try postFile(file)
-      return Message.SucceededUploadFile({ uploadId })
-    } catch {
-      return Message.FailedUploadFile({ uploadId })
-    }
-  },
+  execute: ({ uploadId, file }) =>
+    postFile(file).pipe(
+      Effect.as(Message.SucceededUploadFile({ uploadId })),
+      Effect.catch(() =>
+        Effect.succeed(Message.FailedUploadFile({ uploadId })),
+      ),
+    ),
 })
 
 const setStatusForId = (uploadId: number, status: UploadStatus) =>
-  EffectArray.map((upload: Upload) =>
+  Array.map((upload: Upload) =>
     upload.id === uploadId
       ? modifyFields(upload, { status: () => status })
-      : upload
+      : upload,
   )
 
 type UpdateReturn = Update.Return<Model, Message>
@@ -53,9 +50,8 @@ const update = (model: Model, message: Message) =>
     ClickedCancelUpload: ({ uploadId }) => ({
       model,
       commands: [
-        UploadFile.Interrupt(
-          { uploadId },
-          outcome => Message.CompletedCancelUploadFile({ uploadId, outcome }),
+        UploadFile.Interrupt({ uploadId }, outcome =>
+          Message.CompletedCancelUploadFile({ uploadId, outcome }),
         ),
       ],
     }),
