@@ -17,6 +17,7 @@ import {
   asHtmlElement,
   createMarkerButton,
   geolocationIsUnavailable,
+  isElement,
   isHtmlElement,
   lockBodyScroll,
   unlockBodyScroll,
@@ -367,7 +368,7 @@ const listenToMapMovesAndMarkerClicks = effect (
         }
         const onContainerClick = (event: MouseEvent) => {
           const target = event.target
-          if (!(target instanceof Element)) {
+          if (!isElement(target)) {
             return
           }
           const marker = target.closest('[data-location-id]')

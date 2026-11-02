@@ -529,9 +529,297 @@ export declare const ThemeListbox: Readonly<{
         }>;
     }>;
 }>;
-export declare const ToolRadioGroup: any;
-export declare const GridSizeRadioGroup: any;
-export declare const PaletteRadioGroup: any;
+export declare const ToolRadioGroup: Readonly<{
+    view: import("foldkit/submodel").View<{
+        readonly id: string;
+        readonly maybeFocusedIndex: Option.Option<number>;
+    }, {
+        readonly _tag: "CompletedFocusOption";
+    } | {
+        readonly _tag: "FocusedOption";
+        readonly index: number;
+    } | {
+        readonly _tag: "SelectedOption";
+        readonly index: number;
+        readonly value: string;
+    }, Readonly<{
+        options: readonly ("Brush" | "Eraser" | "Fill")[];
+        selectedValue: Option.Option<"Brush" | "Eraser" | "Fill">;
+        ariaLabel: string;
+        toView: (render: Readonly<{
+            group: readonly Readonly<{
+                readonly __childAttribute: true;
+                readonly attribute: unknown;
+                readonly dispatch: import("../../node_modules/foldkit/dist/html/runtimeSingleton").DispatchSync;
+                readonly resolveUnmount: (message: unknown) => () => void;
+                readonly boundaryMappers: ReadonlyArray<(message: unknown) => unknown>;
+                readonly resolveMountDispatch?: import("../../node_modules/foldkit/dist/html/runtimeSingleton").MountDispatchResolver;
+            }>[];
+            options: readonly Readonly<{
+                value: "Brush" | "Eraser" | "Fill";
+                index: number;
+                isSelected: boolean;
+                isActive: boolean;
+                isDisabled: boolean;
+                isReadOnly: boolean;
+                option: readonly Readonly<{
+                    readonly __childAttribute: true;
+                    readonly attribute: unknown;
+                    readonly dispatch: import("../../node_modules/foldkit/dist/html/runtimeSingleton").DispatchSync;
+                    readonly resolveUnmount: (message: unknown) => () => void;
+                    readonly boundaryMappers: ReadonlyArray<(message: unknown) => unknown>;
+                    readonly resolveMountDispatch?: import("../../node_modules/foldkit/dist/html/runtimeSingleton").MountDispatchResolver;
+                }>[];
+                label: readonly Readonly<{
+                    readonly __childAttribute: true;
+                    readonly attribute: unknown;
+                    readonly dispatch: import("../../node_modules/foldkit/dist/html/runtimeSingleton").DispatchSync;
+                    readonly resolveUnmount: (message: unknown) => () => void;
+                    readonly boundaryMappers: ReadonlyArray<(message: unknown) => unknown>;
+                    readonly resolveMountDispatch?: import("../../node_modules/foldkit/dist/html/runtimeSingleton").MountDispatchResolver;
+                }>[];
+                description: readonly Readonly<{
+                    readonly __childAttribute: true;
+                    readonly attribute: unknown;
+                    readonly dispatch: import("../../node_modules/foldkit/dist/html/runtimeSingleton").DispatchSync;
+                    readonly resolveUnmount: (message: unknown) => () => void;
+                    readonly boundaryMappers: ReadonlyArray<(message: unknown) => unknown>;
+                    readonly resolveMountDispatch?: import("../../node_modules/foldkit/dist/html/runtimeSingleton").MountDispatchResolver;
+                }>[];
+            }>[];
+            selectedValue: Option.Option<"Brush" | "Eraser" | "Fill">;
+            hiddenInput: readonly Readonly<{
+                readonly __childAttribute: true;
+                readonly attribute: unknown;
+                readonly dispatch: import("../../node_modules/foldkit/dist/html/runtimeSingleton").DispatchSync;
+                readonly resolveUnmount: (message: unknown) => () => void;
+                readonly boundaryMappers: ReadonlyArray<(message: unknown) => unknown>;
+                readonly resolveMountDispatch?: import("../../node_modules/foldkit/dist/html/runtimeSingleton").MountDispatchResolver;
+            }>[];
+        }>) => Html;
+        orientation?: RadioGroup.Orientation;
+        isOptionDisabled?: (value: "Brush" | "Eraser" | "Fill", index: number) => boolean;
+        hasOptionDescription?: (value: "Brush" | "Eraser" | "Fill", index: number) => boolean;
+        isDisabled?: boolean;
+        isReadOnly?: boolean;
+        name?: string;
+    }>>;
+    update: (model: RadioGroup.Model, message: RadioGroup.Message) => Readonly<{
+        model: {
+            readonly id: string;
+            readonly maybeFocusedIndex: Option.Option<number>;
+        };
+        commands?: import("foldkit/update").Commands<{
+            readonly _tag: "CompletedFocusOption";
+        } | {
+            readonly _tag: "FocusedOption";
+            readonly index: number;
+        } | {
+            readonly _tag: "SelectedOption";
+            readonly index: number;
+            readonly value: string;
+        }, never>;
+        outMessage?: Readonly<{
+            readonly _tag: 'Selected';
+            readonly value: "Brush" | "Eraser" | "Fill";
+            readonly index: number;
+        }>;
+    }>;
+}>;
+export declare const GridSizeRadioGroup: Readonly<{
+    view: import("foldkit/submodel").View<{
+        readonly id: string;
+        readonly maybeFocusedIndex: Option.Option<number>;
+    }, {
+        readonly _tag: "CompletedFocusOption";
+    } | {
+        readonly _tag: "FocusedOption";
+        readonly index: number;
+    } | {
+        readonly _tag: "SelectedOption";
+        readonly index: number;
+        readonly value: string;
+    }, Readonly<{
+        options: readonly string[];
+        selectedValue: Option.Option<string>;
+        ariaLabel: string;
+        toView: (render: Readonly<{
+            group: readonly Readonly<{
+                readonly __childAttribute: true;
+                readonly attribute: unknown;
+                readonly dispatch: import("../../node_modules/foldkit/dist/html/runtimeSingleton").DispatchSync;
+                readonly resolveUnmount: (message: unknown) => () => void;
+                readonly boundaryMappers: ReadonlyArray<(message: unknown) => unknown>;
+                readonly resolveMountDispatch?: import("../../node_modules/foldkit/dist/html/runtimeSingleton").MountDispatchResolver;
+            }>[];
+            options: readonly Readonly<{
+                value: string;
+                index: number;
+                isSelected: boolean;
+                isActive: boolean;
+                isDisabled: boolean;
+                isReadOnly: boolean;
+                option: readonly Readonly<{
+                    readonly __childAttribute: true;
+                    readonly attribute: unknown;
+                    readonly dispatch: import("../../node_modules/foldkit/dist/html/runtimeSingleton").DispatchSync;
+                    readonly resolveUnmount: (message: unknown) => () => void;
+                    readonly boundaryMappers: ReadonlyArray<(message: unknown) => unknown>;
+                    readonly resolveMountDispatch?: import("../../node_modules/foldkit/dist/html/runtimeSingleton").MountDispatchResolver;
+                }>[];
+                label: readonly Readonly<{
+                    readonly __childAttribute: true;
+                    readonly attribute: unknown;
+                    readonly dispatch: import("../../node_modules/foldkit/dist/html/runtimeSingleton").DispatchSync;
+                    readonly resolveUnmount: (message: unknown) => () => void;
+                    readonly boundaryMappers: ReadonlyArray<(message: unknown) => unknown>;
+                    readonly resolveMountDispatch?: import("../../node_modules/foldkit/dist/html/runtimeSingleton").MountDispatchResolver;
+                }>[];
+                description: readonly Readonly<{
+                    readonly __childAttribute: true;
+                    readonly attribute: unknown;
+                    readonly dispatch: import("../../node_modules/foldkit/dist/html/runtimeSingleton").DispatchSync;
+                    readonly resolveUnmount: (message: unknown) => () => void;
+                    readonly boundaryMappers: ReadonlyArray<(message: unknown) => unknown>;
+                    readonly resolveMountDispatch?: import("../../node_modules/foldkit/dist/html/runtimeSingleton").MountDispatchResolver;
+                }>[];
+            }>[];
+            selectedValue: Option.Option<string>;
+            hiddenInput: readonly Readonly<{
+                readonly __childAttribute: true;
+                readonly attribute: unknown;
+                readonly dispatch: import("../../node_modules/foldkit/dist/html/runtimeSingleton").DispatchSync;
+                readonly resolveUnmount: (message: unknown) => () => void;
+                readonly boundaryMappers: ReadonlyArray<(message: unknown) => unknown>;
+                readonly resolveMountDispatch?: import("../../node_modules/foldkit/dist/html/runtimeSingleton").MountDispatchResolver;
+            }>[];
+        }>) => Html;
+        orientation?: RadioGroup.Orientation;
+        isOptionDisabled?: (value: string, index: number) => boolean;
+        hasOptionDescription?: (value: string, index: number) => boolean;
+        isDisabled?: boolean;
+        isReadOnly?: boolean;
+        name?: string;
+    }>>;
+    update: (model: RadioGroup.Model, message: RadioGroup.Message) => Readonly<{
+        model: {
+            readonly id: string;
+            readonly maybeFocusedIndex: Option.Option<number>;
+        };
+        commands?: import("foldkit/update").Commands<{
+            readonly _tag: "CompletedFocusOption";
+        } | {
+            readonly _tag: "FocusedOption";
+            readonly index: number;
+        } | {
+            readonly _tag: "SelectedOption";
+            readonly index: number;
+            readonly value: string;
+        }, never>;
+        outMessage?: Readonly<{
+            readonly _tag: 'Selected';
+            readonly value: string;
+            readonly index: number;
+        }>;
+    }>;
+}>;
+export declare const PaletteRadioGroup: Readonly<{
+    view: import("foldkit/submodel").View<{
+        readonly id: string;
+        readonly maybeFocusedIndex: Option.Option<number>;
+    }, {
+        readonly _tag: "CompletedFocusOption";
+    } | {
+        readonly _tag: "FocusedOption";
+        readonly index: number;
+    } | {
+        readonly _tag: "SelectedOption";
+        readonly index: number;
+        readonly value: string;
+    }, Readonly<{
+        options: readonly string[];
+        selectedValue: Option.Option<string>;
+        ariaLabel: string;
+        toView: (render: Readonly<{
+            group: readonly Readonly<{
+                readonly __childAttribute: true;
+                readonly attribute: unknown;
+                readonly dispatch: import("../../node_modules/foldkit/dist/html/runtimeSingleton").DispatchSync;
+                readonly resolveUnmount: (message: unknown) => () => void;
+                readonly boundaryMappers: ReadonlyArray<(message: unknown) => unknown>;
+                readonly resolveMountDispatch?: import("../../node_modules/foldkit/dist/html/runtimeSingleton").MountDispatchResolver;
+            }>[];
+            options: readonly Readonly<{
+                value: string;
+                index: number;
+                isSelected: boolean;
+                isActive: boolean;
+                isDisabled: boolean;
+                isReadOnly: boolean;
+                option: readonly Readonly<{
+                    readonly __childAttribute: true;
+                    readonly attribute: unknown;
+                    readonly dispatch: import("../../node_modules/foldkit/dist/html/runtimeSingleton").DispatchSync;
+                    readonly resolveUnmount: (message: unknown) => () => void;
+                    readonly boundaryMappers: ReadonlyArray<(message: unknown) => unknown>;
+                    readonly resolveMountDispatch?: import("../../node_modules/foldkit/dist/html/runtimeSingleton").MountDispatchResolver;
+                }>[];
+                label: readonly Readonly<{
+                    readonly __childAttribute: true;
+                    readonly attribute: unknown;
+                    readonly dispatch: import("../../node_modules/foldkit/dist/html/runtimeSingleton").DispatchSync;
+                    readonly resolveUnmount: (message: unknown) => () => void;
+                    readonly boundaryMappers: ReadonlyArray<(message: unknown) => unknown>;
+                    readonly resolveMountDispatch?: import("../../node_modules/foldkit/dist/html/runtimeSingleton").MountDispatchResolver;
+                }>[];
+                description: readonly Readonly<{
+                    readonly __childAttribute: true;
+                    readonly attribute: unknown;
+                    readonly dispatch: import("../../node_modules/foldkit/dist/html/runtimeSingleton").DispatchSync;
+                    readonly resolveUnmount: (message: unknown) => () => void;
+                    readonly boundaryMappers: ReadonlyArray<(message: unknown) => unknown>;
+                    readonly resolveMountDispatch?: import("../../node_modules/foldkit/dist/html/runtimeSingleton").MountDispatchResolver;
+                }>[];
+            }>[];
+            selectedValue: Option.Option<string>;
+            hiddenInput: readonly Readonly<{
+                readonly __childAttribute: true;
+                readonly attribute: unknown;
+                readonly dispatch: import("../../node_modules/foldkit/dist/html/runtimeSingleton").DispatchSync;
+                readonly resolveUnmount: (message: unknown) => () => void;
+                readonly boundaryMappers: ReadonlyArray<(message: unknown) => unknown>;
+                readonly resolveMountDispatch?: import("../../node_modules/foldkit/dist/html/runtimeSingleton").MountDispatchResolver;
+            }>[];
+        }>) => Html;
+        orientation?: RadioGroup.Orientation;
+        isOptionDisabled?: (value: string, index: number) => boolean;
+        hasOptionDescription?: (value: string, index: number) => boolean;
+        isDisabled?: boolean;
+        isReadOnly?: boolean;
+        name?: string;
+    }>>;
+    update: (model: RadioGroup.Model, message: RadioGroup.Message) => Readonly<{
+        model: {
+            readonly id: string;
+            readonly maybeFocusedIndex: Option.Option<number>;
+        };
+        commands?: import("foldkit/update").Commands<{
+            readonly _tag: "CompletedFocusOption";
+        } | {
+            readonly _tag: "FocusedOption";
+            readonly index: number;
+        } | {
+            readonly _tag: "SelectedOption";
+            readonly index: number;
+            readonly value: string;
+        }, never>;
+        outMessage?: Readonly<{
+            readonly _tag: 'Selected';
+            readonly value: string;
+            readonly index: number;
+        }>;
+    }>;
+}>;
 export declare const THEME_INDEX_STRINGS: [string, ...string[]];
 export declare const THEME_LISTBOX_ANCHOR: Listbox.AnchorConfig;
 export declare const toolPanelView: (mirrorMode: MirrorMode, tool: Tool, gridSize: number, selectedColorIndex: PaletteIndex, isCanvasEmpty: boolean, theme: PaletteTheme, paletteThemeIndex: number, themeListbox: typeof Listbox.Model.Type, toolRadioGroup: RadioGroup.Model, gridSizeRadioGroup: RadioGroup.Model, paletteRadioGroup: RadioGroup.Model, h: HtmlBuilder<Message>) => Html;

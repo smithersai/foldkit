@@ -12,6 +12,9 @@ export const unlockBodyScroll = (): void => {
   document.body.classList.remove('overflow-hidden')
 }
 
+export const isElement = (value: unknown): value is Element =>
+  value instanceof Element
+
 export const isHtmlElement = (value: unknown): value is HTMLElement =>
   value instanceof HTMLElement
 

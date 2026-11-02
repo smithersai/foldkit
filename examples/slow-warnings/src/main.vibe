@@ -5,7 +5,10 @@ import { type Document, type Html, HtmlBuilder, createLazy } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
 
-import { createSlowWarningTarget } from './slowWarningTarget.ts'
+import {
+  createSlowWarningEvent,
+  createSlowWarningTarget,
+} from './slowWarningTarget.ts'
 
 const UPDATE_WORK_MS = 10
 const VIEW_WORK_MS = 24
@@ -134,9 +137,7 @@ export const handleSlow = (
 
   const report = slowContextToReport(context)
   slowWarningTarget.dispatchEvent(
-    new CustomEvent<SlowWarningReport>(SLOW_WARNING_EVENT, {
-      detail: report,
-    }),
+    createSlowWarningEvent(SLOW_WARNING_EVENT, report),
   )
 }
 
