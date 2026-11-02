@@ -1,0 +1,71 @@
+{
+  "originalSourceSha256": "8d9aa7e285501481deca87619bf090aebb010a6afb733113e9884b73e312aa1e",
+  "originalFullSource": "// ✅ Good: Model state controls the WebSocket's lifetime.\n\nimport { Command, ManagedResource } from 'foldkit'\nimport { Message } from './message'\nimport { Model } from './model'\n\nconst ChatSocket = ManagedResource.tag<WebSocket>()('ChatSocket')\nschema RoomRequirements {\n  roomId: string\n}\n\nconst managedResources = ManagedResource.make<Model, Message>()(entry => ({\n  chatSocket: entry(Schema.Option(RoomRequirements), {\n    resource: ChatSocket,\n    modelToMaybeRequirements: model => model.maybeRoomRequirements,\n    acquire: ({ roomId }) =>\n      Effect.try(() => new WebSocket(`/rooms/${roomId}`)),\n    release: socket => Effect.sync(() => socket.close()),\n    onAcquired: () => Message.AcquiredChatSocket(),\n    onReleased: () => Message.ReleasedChatSocket(),\n    onAcquireError: error =>\n      Message.FailedAcquireChatSocket({ error: globalThis.String(error) }),\n  }),\n}))\n\nconst SendChatMessage = Command.define('SendChatMessage', {\n  args: { text: Schema.String },\n  messages: [Message.CompletedSendChatMessage, Message.FailedSendChatMessage],\n  execute: ({ text }) =>\n    ChatSocket.get.pipe(\n      Effect.flatMap(socket => Effect.try(() => socket.send(text))),\n      Effect.match({\n        onFailure: error =>\n          Message.FailedSendChatMessage({\n            error: globalThis.String(error),\n          }),\n        onSuccess: () => Message.CompletedSendChatMessage(),\n      }),\n    ),\n})\n",
+  "originalExecute": "({ text }) =>\n    ChatSocket.get.pipe(\n      Effect.flatMap(socket => Effect.try(() => socket.send(text))),\n      Effect.match({\n        onFailure: error =>\n          Message.FailedSendChatMessage({\n            error: globalThis.String(error),\n          }),\n        onSuccess: () => Message.CompletedSendChatMessage(),\n      }),\n    )",
+  "lateGetterExecute": "({ text }) =>\n    ChatSocket.get |> do {\n      try {\n        const socket = %()\n        Effect.try(() => socket.send(text))\n        Message.CompletedSendChatMessage()\n      } catch (error) {\n        Message.FailedSendChatMessage({ error: globalThis.String(error) })\n      }\n    }",
+  "scaffold": "import { Effect } from 'effect'\ntype Socket = Readonly<{ send: (text: string) => void }>\ntype Missing = Readonly<{ _tag: 'Missing'; reason: string }>\ntype Message = Readonly<{ _tag: 'Completed' }> | Readonly<{ _tag: 'Failed'; error: string }>\ndeclare const ChatSocket: Readonly<{ get: Effect.Effect<Socket, Missing> }>\ndeclare const Message: Readonly<{\n  CompletedSendChatMessage: () => Message\n  FailedSendChatMessage: (payload: Readonly<{ error: string }>) => Message\n}>\nexport const definition: Readonly<{ execute: (args: Readonly<{ text: string }>) => Effect.Effect<Message> }> = {\n  execute: __EXECUTE_CALLBACK__,\n}\n",
+  "cases": [
+    {
+      "mode": "success",
+      "text": "",
+      "label": "fixed-success"
+    },
+    {
+      "mode": "success",
+      "text": "hello",
+      "label": "fixed-success"
+    },
+    {
+      "mode": "success",
+      "text": "chat-☃\n",
+      "label": "fixed-success"
+    },
+    {
+      "mode": "checkedFailure",
+      "text": "",
+      "label": "fixed-checkedFailure"
+    },
+    {
+      "mode": "checkedFailure",
+      "text": "hello",
+      "label": "fixed-checkedFailure"
+    },
+    {
+      "mode": "checkedFailure",
+      "text": "chat-☃\n",
+      "label": "fixed-checkedFailure"
+    },
+    {
+      "mode": "defect",
+      "text": "",
+      "label": "fixed-defect"
+    },
+    {
+      "mode": "defect",
+      "text": "hello",
+      "label": "fixed-defect"
+    },
+    {
+      "mode": "defect",
+      "text": "chat-☃\n",
+      "label": "fixed-defect"
+    },
+    {
+      "mode": "sendThrow",
+      "text": "",
+      "label": "fixed-sendThrow"
+    },
+    {
+      "mode": "sendThrow",
+      "text": "hello",
+      "label": "fixed-sendThrow"
+    },
+    {
+      "mode": "sendThrow",
+      "text": "chat-☃\n",
+      "label": "fixed-sendThrow"
+    }
+  ],
+  "seed": 5311390,
+  "numRuns": 200
+}

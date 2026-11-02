@@ -109,7 +109,7 @@ Storing the socket in the Model does not give it a Runtime-controlled lifetime. 
 
 ::Snippet{name="antiPatternLiveHandleGood" label="✅ A ManagedResource owns the WebSocket lifetime"}
 
-ManagedResource fits when Commands or Subscriptions need the typed handle. In this example, `acquire` returns the Effect that creates the socket, and `release` returns the Effect that closes it when the room requirements disappear. The Runtime performs both Effects. When the Runtime performs `SendChatMessage`, that Command's Effect retrieves the live `ChatSocket`. When the socket only produces an event stream, a Subscription can own the connection directly.
+ManagedResource fits when Commands or Subscriptions need the typed handle. In this example, `acquire` returns the Effect that creates the socket, and `release` returns the Effect that closes it when the room requirements disappear. The Runtime performs both Effects. `execute` captures `ChatSocket.get` as a program, then returns a cold `effect` block. When the Runtime performs `SendChatMessage`, that block retrieves the live socket, sends the text and maps an expected failure to a failure Message. When the socket only produces an event stream, a Subscription can own the connection directly.
 
 ### Choose by Cause and Lifetime
 
