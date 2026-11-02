@@ -1,7 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
-import { Array as EffectArray } from 'effect'
+import { Array, Option, Schema } from 'effect'
 import { Update } from 'foldkit'
 import type { HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -9,7 +9,12 @@ import { modifyFields } from 'foldkit/struct'
 
 import { Listbox } from '@foldkit/ui'
 
-schema Person = 'Michael Bluth' | 'Lindsay Funke' | 'Tobias Funke'
+const Person = Schema.Literals([
+  'Michael Bluth',
+  'Lindsay Funke',
+  'Tobias Funke',
+])
+type Person = typeof Person.Type
 
 // Declare a typed multi-select Listbox once at module scope:
 const PeopleListbox = Listbox.Multi.create<Person>()
@@ -46,14 +51,16 @@ const foldListboxMultiOutMessage = Listbox.OutMessage.match<
   Update.Step<Model, Message>,
   Listbox.OutMessage<Person>
 >({
-  Selected: ({ value }) => model => ({
-    model: modifyFields(model, {
-      selectedPeople: selectedPeople =>
-        EffectArray.contains(selectedPeople, value)
-          ? EffectArray.filter(selectedPeople, person => person !== value)
-          : EffectArray.append(selectedPeople, value),
+  Selected:
+    ({ value }) =>
+    model => ({
+      model: modifyFields(model, {
+        selectedPeople: selectedPeople =>
+          Array.contains(selectedPeople, value)
+            ? Array.filter(selectedPeople, person => person !== value)
+            : Array.append(selectedPeople, value),
+      }),
     }),
-  }),
 })
 
 // Update.foldChild wires the child into the parent: it delegates keyboard
@@ -70,7 +77,7 @@ const foldListboxMulti = Update.foldChild({
 })
 
 // In the corresponding Message.match handler, call the fold:
-GotListboxMultiMessage: (({ message }) => foldListboxMulti(model, message))
+GotListboxMultiMessage: ({ message }) => foldListboxMulti(model, message)
 
 const people: ReadonlyArray<Person> = [
   'Michael Bluth',
@@ -92,7 +99,7 @@ const view = (model: Model, h: HtmlBuilder<Message>) =>
       buttonContent: h.span(
         [],
         [
-          EffectArray.isReadonlyArrayNonEmpty(model.selectedPeople)
+          Array.isReadonlyArrayNonEmpty(model.selectedPeople)
             ? `${model.selectedPeople.length} selected`
             : 'Select people',
         ],
