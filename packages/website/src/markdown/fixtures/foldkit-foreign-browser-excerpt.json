@@ -1,0 +1,26 @@
+{
+  "foreignSnippets": [
+    "atomCompareFoldkitEffect",
+    "crashReport",
+    "domFilteredEvent",
+    "domPreventDefault",
+    "lintAcquireReleaseConstructsInAcquireBody",
+    "lintNoImpureCallAtDecisionTime",
+    "lintNoPreventDefaultInStreamOperator",
+    "managedResources",
+    "resources",
+    "resourcesFlags",
+    "resourcesMultiple",
+    "routingQueryParams",
+    "slowConfig",
+    "subscriptionFromEvent",
+    "subscriptionOrganizationChild",
+    "subscriptionOrganizationComposing"
+  ],
+  "foreignWitness": {
+    "name": "domFilteredEvent",
+    "rawFragment": "target: document"
+  },
+  "nativeSnippet": "uiMenuBasic",
+  "nonNativeSnippets": ["atomCompareAtomAsync", "comparisonElmTest"]
+}

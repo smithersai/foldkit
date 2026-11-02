@@ -12,6 +12,7 @@ import type { DemoLabels } from './demoLabel.vibe'
 import { islandAttributes } from './islandAttributes.vibe'
 import { type Slots, renderFaqSection, resolveDemo } from './slots.vibe'
 import { lookupSnippet } from './snippets.vibe'
+import { snippetNotice } from './snippetNotice.vibe'
 
 // ISLANDS
 
@@ -60,10 +61,13 @@ export const docIslands = (
       when { _tag: "None" }: ih.empty;
       when { _tag: "Some", value: let snippet }: CodeBlock.highlightedView(
         `${pageId}-snippet-${name}-${occurrenceIndex}`,
-        ih.div([
-          ih.Class('text-sm'),
-          ih.DataAttribute('language', snippet.language),
-          ih.InnerHTML(snippet.highlighted),
+        ih.div([], [
+          snippetNotice(name, snippet.language),
+          ih.div([
+            ih.Class('text-sm'),
+            ih.DataAttribute('language', snippet.language),
+            ih.InnerHTML(snippet.highlighted),
+          ]),
         ]),
         snippet.raw,
         `Copy ${label} to clipboard`,
