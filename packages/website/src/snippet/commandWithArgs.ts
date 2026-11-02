@@ -1,8 +1,8 @@
+import { Effect, Schema } from 'effect'
 import { HttpClient, HttpClientRequest } from 'effect/http'
 import { Command, Http, type Update } from 'foldkit'
 import { defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
-import { Model } from './model'
 
 const Message = defineMessageUnion({
   SubmittedWeatherForm: {},
@@ -16,20 +16,22 @@ const FetchWeather = Command.define('FetchWeather', {
   // Every Message this Command can produce.
   messages: [Message.SucceededFetchWeather, Message.FailedFetchWeather],
   // The Effect receives a typed args record.
-  execute: effect ({ zipCode }) => {
-    try {
-      provide Http.layer {
-        const response = try HttpClient.execute(
-          HttpClientRequest.get(`/api/weather?zip=${zipCode}`),
-        )
-        const json = try response.json
-        const weather = try Schema.decodeUnknownEffect(WeatherSchema)(json)
-        return Message.SucceededFetchWeather({ weather })
-      }
-    } catch (error) {
-      return Message.FailedFetchWeather({ error: String(error) })
-    }
-  },
+  execute: ({ zipCode }) =>
+    Effect.gen(function* () {
+      const client = yield* HttpClient.HttpClient
+      const response = yield* client.execute(
+        HttpClientRequest.get(`/api/weather?zip=${zipCode}`),
+      )
+      const weather = yield* Schema.decodeUnknownEffect(WeatherSchema)(
+        yield* response.json,
+      )
+      return Message.SucceededFetchWeather({ weather })
+    }).pipe(
+      Effect.catch(error =>
+        Effect.succeed(Message.FailedFetchWeather({ error: String(error) })),
+      ),
+      Effect.provide(Http.layer),
+    ),
 })
 
 const update = (model: Model, message: Message) =>
