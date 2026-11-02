@@ -1,3 +1,4 @@
+import { Effect, Schema } from 'effect'
 import { AsyncData, Command, type Update } from 'foldkit'
 import { defineMessageUnion } from 'foldkit/message'
 
@@ -28,12 +29,14 @@ type Message = typeof Message.Type
 // Api is an Effect service; Api.Default is its layer.
 const FetchUser = Command.define('FetchUser', {
   messages: [Message.SucceededLoadUser, Message.FailedLoadUser],
-  execute: (effect {
-    provide Api.Default {
-      const user = try Api.getUser()
-      return Message.SucceededLoadUser({ user })
-    }
-  }) catch (error) => Message.FailedLoadUser({ error }),
+  execute: Effect.gen(function* () {
+    const api = yield* Api
+    const user = yield* api.getUser()
+    return Message.SucceededLoadUser({ user })
+  }).pipe(
+    Effect.catch(error => Effect.succeed(Message.FailedLoadUser({ error }))),
+    Effect.provide(Api.Default),
+  ),
 })
 
 // UPDATE
