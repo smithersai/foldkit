@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
+import { Effect, Match, Option, Schema } from 'effect'
 import { Calendar, Update } from 'foldkit'
 import type { ChildAttribute, Html, HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -23,10 +24,10 @@ const Flags = Schema.Struct({
   // ...your other flags
 })
 
-const flags = effect {
-  const today = try Calendar.today.local
+const flags = Effect.gen(function* () {
+  const today = yield* Calendar.today.local
   return { today /* ...your other flags */ }
-}
+})
 
 // In your init function, pass the flags-resolved today into DatePicker.init.
 // Optional: constrain the selectable range with minDate / maxDate.
@@ -63,11 +64,13 @@ const foldDatePickerOutMessage = DatePicker.OutMessage.match<
   // the committed date into its own field, which is then passed back to
   // the picker as `maybeSelectedDate`, so the parent stays the single
   // source of truth for the selection.
-  SelectedDate: ({ date }) => model => ({
-    model: modifyFields(model, {
-      maybeSelectedDate: () => Option.some(date),
+  SelectedDate:
+    ({ date }) =>
+    model => ({
+      model: modifyFields(model, {
+        maybeSelectedDate: () => Option.some(date),
+      }),
     }),
-  }),
   // The user cleared the selection. Reset the parent's field.
   ClearedDate: () => model => ({
     model: modifyFields(model, { maybeSelectedDate: () => Option.none() }),
@@ -92,7 +95,7 @@ const foldDatePicker = Update.foldChild({
 })
 
 // In the corresponding Message.match handler, call the fold:
-GotDatePickerMessage: (({ message }) => foldDatePicker(model, message))
+GotDatePickerMessage: ({ message }) => foldDatePicker(model, message)
 
 // Class names live at module scope, and each view mode gets its own view
 // function below. The calendar panel has no border of its own: the
@@ -160,7 +163,7 @@ const weekRow = (week: UiCalendar.Week, h: HtmlBuilder<Message>): Html =>
             [cell.label],
           ),
         ],
-      )
+      ),
     ),
   )
 
@@ -190,7 +193,7 @@ const daysView = (
               h.div(
                 [...header.attributes, h.Class(columnHeaderClassName)],
                 [header.name],
-              )
+              ),
             ),
           ),
           ...days.weeks.map(week => weekRow(week, h)),
@@ -223,7 +226,7 @@ const monthsView = (
                 [cell.shortLabel],
               ),
             ],
-          )
+          ),
         ),
       ),
     ],
@@ -261,7 +264,7 @@ const yearsView = (
                 [cell.label],
               ),
             ],
-          )
+          ),
         ),
       ),
     ],
@@ -298,19 +301,19 @@ const view = (model: Model, h: HtmlBuilder<Message>) => {
           // The parent-owned selection. The trigger content, the calendar's
           // selected-day marker, and the hidden form input all derive from it.
           maybeSelectedDate: model.maybeSelectedDate,
-          triggerContent: maybeDate => match (maybeDate) {
-            when { _tag: "None" }: h.span([], ['Pick a date']);
-            when { _tag: "Some", value: let date }: h.span([], [
-              `${date.year}-${date.month}-${date.day}`,
-            ]);
-          },
-          toCalendarView: (
-            attributes: UiCalendar.CalendarAttributes,
-          ): infer _ => match (attributes) {
-            when { _tag: 'Days' } and let days: daysView(days, h);
-            when { _tag: 'Months' } and let months: monthsView(months, h);
-            when { _tag: 'Years' } and let years: yearsView(years, h);
-          },
+          triggerContent: maybeDate =>
+            Option.match(maybeDate, {
+              onNone: () => h.span([], ['Pick a date']),
+              onSome: date =>
+                h.span([], [`${date.year}-${date.month}-${date.day}`]),
+            }),
+          toCalendarView: Match.type<UiCalendar.CalendarAttributes>().pipe(
+            Match.tagsExhaustive({
+              Days: days => daysView(days, h),
+              Months: months => monthsView(months, h),
+              Years: years => yearsView(years, h),
+            }),
+          ),
           // Optional: enable hidden form input for native <form> submission:
           name: 'appointment-date',
         },
