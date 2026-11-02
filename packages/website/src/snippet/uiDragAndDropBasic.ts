@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit each into your own Model, init, Message,
 // update, subscriptions, and view definitions.
+import { Option, Schema } from 'effect'
 import { Subscription, Update } from 'foldkit'
 import type { HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -42,12 +43,14 @@ const Message = defineMessageUnion({
 const foldDragAndDropOutMessage = DragAndDrop.OutMessage.match<
   Update.Step<Model, Message>
 >({
-  Reordered: ({ itemId, fromIndex, toIndex }) => model => ({
-    model: modifyFields(model, {
-      // reorder is your own function that moves the item
-      items: items => reorder(items, itemId, fromIndex, toIndex),
+  Reordered:
+    ({ itemId, fromIndex, toIndex }) =>
+    model => ({
+      model: modifyFields(model, {
+        // reorder is your own function that moves the item
+        items: items => reorder(items, itemId, fromIndex, toIndex),
+      }),
     }),
-  }),
   // The child has emitted `Cancelled`. In this arm the parent can update
   // its own state or dispatch its own Commands, for example revert an
   // optimistic UI change, log analytics, or trigger a downstream Command.
@@ -68,7 +71,7 @@ const foldDragAndDrop = Update.foldChild({
 })
 
 // In the corresponding Message.match handler, call the fold:
-GotDragAndDropMessage: (({ message }) => foldDragAndDrop(model, message))
+GotDragAndDropMessage: ({ message }) => foldDragAndDrop(model, message)
 
 // In your subscriptions, lift all four document-level listeners through
 // Subscription.lift in one shot:
@@ -112,6 +115,6 @@ const view = (model: Model, h: HtmlBuilder<Message>) =>
           h.Class('p-3 rounded-lg border cursor-grab'),
         ],
         [h.span([], [item.label])],
-      )
+      ),
     ),
   )
