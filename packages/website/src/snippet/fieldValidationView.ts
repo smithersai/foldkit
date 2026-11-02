@@ -1,9 +1,7 @@
-import { Array as EffectArray } from 'effect'
+import { Array } from 'effect'
 import { FieldValidation } from 'foldkit'
 import { type Field, allValid } from 'foldkit/fieldValidation'
 import type { HtmlBuilder } from 'foldkit/html'
-import { Message } from './message'
-import { Model } from './model'
 
 const borderClass = (field: Field<string>) =>
   FieldValidation.match(field, {
@@ -18,7 +16,7 @@ const statusIndicator = (field: Field<string>, h: HtmlBuilder<Message>) =>
     onNotValidated: () => h.empty,
     onValidating: () => h.span([], ['Checking...']),
     onValid: () => h.span([], ['✓']),
-    onInvalid: ({ errors }) => h.div([], [EffectArray.headNonEmpty(errors)]),
+    onInvalid: ({ errors }) => h.div([], [Array.headNonEmpty(errors)]),
   })
 
 // `allValid` gates fields of one value type per call; required rules demand
