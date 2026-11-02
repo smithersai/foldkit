@@ -1,7 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
-import { Array as EffectArray } from 'effect'
+import { Array, Option, Schema } from 'effect'
 import { Update } from 'foldkit'
 import { type HtmlBuilder, childAttributes } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -9,7 +9,8 @@ import { modifyFields } from 'foldkit/struct'
 
 import { Combobox } from '@foldkit/ui'
 
-schema City = 'Johannesburg' | 'Kyiv' | 'Oxford' | 'Wellington'
+const City = Schema.Literals(['Johannesburg', 'Kyiv', 'Oxford', 'Wellington'])
+type City = typeof City.Type
 
 // Declare a typed Combobox once at module scope:
 const CityCombobox = Combobox.create<City>()
@@ -47,9 +48,11 @@ const foldComboboxOutMessage = Combobox.OutMessage.match<
   Update.Step<Model, Message>,
   Combobox.OutMessage<City>
 >({
-  Selected: ({ value }) => model => ({
-    model: modifyFields(model, { maybeCity: () => Option.some(value) }),
-  }),
+  Selected:
+    ({ value }) =>
+    model => ({
+      model: modifyFields(model, { maybeCity: () => Option.some(value) }),
+    }),
   ClearedSelection: () => model => ({ model }),
 })
 
@@ -67,7 +70,7 @@ const foldCombobox = Update.foldChild({
 })
 
 // In the corresponding Message.match handler, call the fold:
-GotComboboxMessage: (({ message }) => foldCombobox(model, message))
+GotComboboxMessage: ({ message }) => foldCombobox(model, message)
 
 const cities: ReadonlyArray<City> = [
   'Johannesburg',
@@ -77,13 +80,12 @@ const cities: ReadonlyArray<City> = [
 ]
 
 // Filter items based on the current input value:
-const filteredCities = model.combobox.inputValue === ''
-  ? cities
-  : EffectArray.filter(
-    cities,
-    city =>
-      city.toLowerCase().includes(model.combobox.inputValue.toLowerCase()),
-  )
+const filteredCities =
+  model.combobox.inputValue === ''
+    ? cities
+    : Array.filter(cities, city =>
+        city.toLowerCase().includes(model.combobox.inputValue.toLowerCase()),
+      )
 
 // Inside your view function, embed the Combobox via h.submodel. Give the
 // input an accessible name: target the input id with `Combobox.inputId('city')`
