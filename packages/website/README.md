@@ -24,3 +24,13 @@ sibling Effect-free TypeScript modules. Their relative roots and injected values
 are preserved when the native modules import them.
 
 The prerender command starts `scripts/runPrerender.ts`, which keeps the host-owned `import.meta.main` check and runs the cold Effect program exported by `scripts/prerender.vibe`. Importing the native library does not launch prerendering.
+
+Native fixtures imported by TypeScript tests include their compiler-generated
+`*.d.vibe.ts` declarations in the repository. This lets typed lint resolve their
+contracts in a fresh checkout before typecheck runs. Regenerate the declarations
+with `pnpm --filter website typecheck`; keep them with their `.vibe` sources.
+
+`pnpm --filter website test` first runs the native-fixture contract checks with
+plain Node, before the native loader can generate declarations, then runs
+Vitest. The checks cover fresh typed lint, an unknown-error mutant, and generated
+fixture names with declaration deletion and restoration.

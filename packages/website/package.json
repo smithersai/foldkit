@@ -12,7 +12,7 @@
     "pretypecheck": "node ../../internal/api-reference-generator/generate.mjs",
     "typecheck": "vibelang --noEmit",
     "format": "(oxfmt) && vibelang-format --write",
-    "test": "node --import vibelang/register ./node_modules/vitest/vitest.mjs run --configLoader native --maxWorkers=1",
+    "test": "node scripts/checkNativeFixtureDeclarations.mjs && node --import vibelang/register ./node_modules/vitest/vitest.mjs run --configLoader native --maxWorkers=1",
     "openapi": "node --import vibelang/register ./node_modules/vite/bin/vite.js build --configLoader native --config vite.scripts.config.ts --ssr scripts/openApi.ts --outDir dist-scripts && node dist-scripts/openApi.js",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
