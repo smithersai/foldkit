@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
+import { Schema } from 'effect'
 import type { HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
@@ -34,12 +35,12 @@ const Message = defineMessageUnion({
 
 // In the corresponding Message.match handler, toggling "Select All"
 // writes the same value to every child:
-ToggledSelectAll: (({ isChecked }) => ({
+ToggledSelectAll: ({ isChecked }) => ({
   model: modifyFields(model, {
     optionA: () => isChecked,
     optionB: () => isChecked,
   }),
-}))
+})
 
 // Inside your view function, compute the parent's checked and indeterminate
 // state from the children and pass isIndeterminate straight to Checkbox.view:
