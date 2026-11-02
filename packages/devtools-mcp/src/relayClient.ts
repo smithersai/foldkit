@@ -30,7 +30,7 @@ import {
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
 import { type RawData, WebSocket } from 'ws'
 
-import type { RelayTarget } from './relayLocation.vibe'
+import type { RelayTarget } from './relayLocation.js'
 
 const REQUEST_TIMEOUT = Duration.seconds(10)
 const CONNECT_TIMEOUT = Duration.seconds(2)

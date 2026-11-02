@@ -18,8 +18,8 @@ import {
   configuredRelayUrl,
   loadSettings,
   resolveRelayTargets,
-} from './relayLocation.vibe'
-import { makeRelayRegistryReader } from './relayRegistry.vibe'
+} from './relayLocation.ts'
+import { makeRelayRegistryReader } from './relayRegistry.ts'
 import { buildTools } from './tools.vibe'
 
 const main = Effect.gen(function* () {

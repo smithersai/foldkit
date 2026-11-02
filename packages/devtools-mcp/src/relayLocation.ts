@@ -1,15 +1,12 @@
-import { Array as EffectArray } from 'effect'
+import { Array, Config, Effect, Option } from 'effect'
 import type { ChildProcessSpawner } from 'effect/process'
+import { isIPv6 } from 'node:net'
 
-import {
-  currentWorkingDirectory,
-  isIPv6Address,
-} from './relayLocation.platform.ts'
 import {
   type RelayRegistryReader,
   type RelayRegistryServices,
   discoverRelays,
-} from './relayRegistry.vibe'
+} from './relayRegistry.js'
 
 const LEGACY_DEFAULT_PORT = 9988
 const DEFAULT_HOST = 'localhost'
@@ -30,26 +27,24 @@ export type RelayTarget = Readonly<{
   maybeProjectRoot: Option.Option<string>
 }>
 
-export const loadSettings: Settings!! = effect {
-  const maybeConfiguredPort = Config.option(
+export const loadSettings: Effect.Effect<Settings> = Effect.gen(function* () {
+  const maybeConfiguredPort = yield* Config.option(
     Config.String('FOLDKIT_DEVTOOLS_MCP_PORT'),
-  )() catch (error) => die(error)
-  const maybeConfiguredHost = Config.option(
+  )
+  const maybeConfiguredHost = yield* Config.option(
     Config.String('FOLDKIT_DEVTOOLS_MCP_HOST'),
-  )() catch (error) => die(error)
-  const maybeProjectRoot = Config.option(
+  )
+  const maybeProjectRoot = yield* Config.option(
     Config.String('FOLDKIT_PROJECT_ROOT'),
-  )() catch (error) => die(error)
-  const workingDirectory = sync(() => currentWorkingDirectory())
+  )
   return {
     maybeConfiguredPort,
     maybeConfiguredHost,
-    projectRoot: maybeProjectRoot.getOrElse(() => workingDirectory),
+    projectRoot: Option.getOrElse(maybeProjectRoot, () => process.cwd()),
   }
-}
+}).pipe(Effect.orDie)
 
-const urlHost = (host: string): string =>
-  isIPv6Address(host) ? `[${host}]` : host
+const urlHost = (host: string): string => (isIPv6(host) ? `[${host}]` : host)
 
 const relayUrl = (host: string, port: number | string): string =>
   `ws://${urlHost(host)}:${port}`
@@ -66,32 +61,32 @@ const hasValidPort = (url: URL): boolean => {
   const port = globalThis.Number(url.port)
 
   return (
-    url.port !== ''
-    && globalThis.Number.isInteger(port)
-    && port > 0
-    && port <= 65_535
+    url.port !== '' &&
+    globalThis.Number.isInteger(port) &&
+    port > 0 &&
+    port <= 65_535
   )
 }
 
 const isPublishedRelayUrl = (value: string): boolean =>
   Option.exists(parseUrl(value), url => {
     if (
-      url.protocol !== 'ws:'
-      || url.username !== ''
-      || url.password !== ''
-      || url.hash !== ''
-      || !hasValidPort(url)
+      url.protocol !== 'ws:' ||
+      url.username !== '' ||
+      url.password !== '' ||
+      url.hash !== '' ||
+      !hasValidPort(url)
     ) {
       return false
     }
 
-    const parameters = EffectArray.fromIterable(url.searchParams)
+    const parameters = Array.fromIterable(url.searchParams)
     return (
-      url.hostname === AUTOMATIC_RELAY_HOST
-      && url.pathname === AUTOMATIC_RELAY_PATH
-      && EffectArray.length(parameters) === 1
-      && Option.exists(
-        EffectArray.head(parameters),
+      url.hostname === AUTOMATIC_RELAY_HOST &&
+      url.pathname === AUTOMATIC_RELAY_PATH &&
+      Array.length(parameters) === 1 &&
+      Option.exists(
+        Array.head(parameters),
         ([name, token]) =>
           name === RELAY_TOKEN_PARAMETER && RELAY_TOKEN_PATTERN.test(token),
       )
@@ -104,8 +99,8 @@ export const configuredRelayUrl = (
   const { maybeConfiguredHost, maybeConfiguredPort } = settings
 
   if (
-    Option.isSome(maybeConfiguredHost)
-    || Option.isSome(maybeConfiguredPort)
+    Option.isSome(maybeConfiguredHost) ||
+    Option.isSome(maybeConfiguredPort)
   ) {
     const host = Option.getOrElse(maybeConfiguredHost, () => DEFAULT_HOST)
     const port = Option.getOrElse(
@@ -122,21 +117,26 @@ export const configuredRelayUrl = (
 export const resolveRelayTargets = (
   settings: Settings,
   registryReader: RelayRegistryReader,
-): ReadonlyArray<RelayTarget>!never!RelayRegistryServices | ChildProcessSpawner.ChildProcessSpawner => {
-  const maybeUrl = configuredRelayUrl(settings)
-  if (maybeUrl is Option.Some(let url)) {
-    return [fixedTarget(url)]
-  }
+): Effect.Effect<
+  ReadonlyArray<RelayTarget>,
+  never,
+  RelayRegistryServices | ChildProcessSpawner.ChildProcessSpawner
+> =>
+  Option.match(configuredRelayUrl(settings), {
+    onSome: url => Effect.succeed([fixedTarget(url)]),
+    onNone: () =>
+      Effect.map(
+        discoverRelays(settings.projectRoot, registryReader),
+        records => {
+          const trustedRecords = Array.filter(records, record =>
+            isPublishedRelayUrl(record.url),
+          )
 
-  const records = discoverRelays(settings.projectRoot, registryReader)
-  const trustedRecords = EffectArray.filter(
-    records,
-    record => isPublishedRelayUrl(record.url),
-  )
-
-  return EffectArray.map(trustedRecords, (record): RelayTarget => ({
-    key: record.id,
-    url: record.url,
-    maybeProjectRoot: Option.some(record.root),
-  }))
-}
+          return Array.map(trustedRecords, (record): RelayTarget => ({
+            key: record.id,
+            url: record.url,
+            maybeProjectRoot: Option.some(record.root),
+          }))
+        },
+      ),
+  })
