@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 /**
  * A file selected by the user. Direct alias for the browser's native `File`
  * type — opaque by convention (Foldkit never constructs files itself, only
