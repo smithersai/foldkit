@@ -1,11 +1,12 @@
 import * as NodePath from '@effect/platform-node/NodePath'
 import { Array as EffectArray, String as EffectString, pipe } from 'effect'
+import type { UnknownError } from 'effect/Cause'
 import type { PlatformError } from 'effect/PlatformError'
 import { Server } from 'foldkit/experimental'
 import { Window } from 'happy-dom'
 import { chromium } from 'playwright'
 
-import { NodeRuntime, NodeServices } from '@effect/platform-node'
+import { NodeServices } from '@effect/platform-node'
 
 import type * as ServerEntry from '../src/entry.server.vibe'
 import {
@@ -892,10 +893,15 @@ const program = effect {
   )
 }
 
-if (import.meta.main) {
-  NodeRuntime.runMain(effect {
-    provide NodeServices.layer {
-      try program
-    }
-  })
+type PrerenderFailure =
+  | PrerenderError
+  | PlatformError
+  | Schema.SchemaError
+  | UnknownError
+  | Effect.Error<ReturnType<typeof generateOgImages>>
+
+export effect function main(): void!PrerenderFailure!never {
+  provide NodeServices.layer {
+    try program
+  }
 }

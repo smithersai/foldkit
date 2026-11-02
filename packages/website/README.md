@@ -22,3 +22,5 @@ Effect Path service.
 Vite `import.meta.glob` resources and `import.meta.env` build values live in
 sibling Effect-free TypeScript modules. Their relative roots and injected values
 are preserved when the native modules import them.
+
+The prerender command starts `scripts/runPrerender.ts`, which keeps the host-owned `import.meta.main` check and runs the cold Effect program exported by `scripts/prerender.vibe`. Importing the native library does not launch prerendering.

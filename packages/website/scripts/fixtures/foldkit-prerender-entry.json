@@ -1,0 +1,11 @@
+{
+  "sourceRevision": "b141014736fa223b8fc6fe3f7f05b457fd923ec5",
+  "inbox": 126,
+  "rule": "VIP33/detail90 and owner05:20: only the host-started TSentry asks import.meta.main; native main is cold on import",
+  "originalEntryBlock": "if (import.meta.main) {\n  NodeRuntime.runMain(effect {\n    provide NodeServices.layer {\n      try program\n    }\n  })\n}\n",
+  "condition": "import.meta.main",
+  "marker": "foldkit-entry-marker",
+  "nodePropertySeed": 531126,
+  "nodePropertyRuns": 100,
+  "scope": "Host-entry decision model uses a sentinel runner; actual Effect program/website validated by production build/prerender gates"
+}
