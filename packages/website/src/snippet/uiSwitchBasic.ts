@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
+import { Schema } from 'effect'
 import type { HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
@@ -30,9 +31,9 @@ const Message = defineMessageUnion({
 // In the corresponding Message.match handler, store the value.
 // This is the moment to persist the preference, sync to a backend, or fire
 // analytics.
-ToggledNotifications: (({ isChecked }) => ({
+ToggledNotifications: ({ isChecked }) => ({
   model: modifyFields(model, { notificationsEnabled: () => isChecked }),
-}))
+})
 
 // Inside your view function, render the switch with Switch.view. It reads the
 // checked state from your Model and calls onToggle with the new state. The
@@ -53,9 +54,7 @@ const view = (model, h: HtmlBuilder<Message>) => {
           [
             h.span([
               h.Class(
-                `inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
-                  model.notificationsEnabled ? 'translate-x-6' : 'translate-x-1'
-                }`,
+                `inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${model.notificationsEnabled ? 'translate-x-6' : 'translate-x-1'}`,
               ),
             ]),
           ],
