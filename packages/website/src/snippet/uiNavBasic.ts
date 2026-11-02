@@ -1,10 +1,10 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, Message, update,
 // and view definitions.
+import { Match } from 'effect'
 import type { HtmlBuilder } from 'foldkit/html'
 
 import { Nav } from '@foldkit/ui'
-import { Message } from './message'
 
 // Nav is stateless: the current destination comes from the URL, so there is
 // no Nav.Model to store and no Nav.update to delegate to. Your app already
@@ -28,15 +28,19 @@ const sections: ReadonlyArray<Section> = [
 // Map each section to its URL with your routers, and decide which section is
 // current from the active route. A section can own a whole family of routes,
 // so this is a predicate rather than an equality check:
-const sectionToHref = (section: Section): string => match (section) {
-  when 'Home': homeRouter();
-  when 'Search': searchRouter();
-  when 'Library': libraryRouter();
-  when 'Profile': profileRouter();
-}
+const sectionToHref = (section: Section): string =>
+  Match.value(section).pipe(
+    Match.when('Home', () => homeRouter()),
+    Match.when('Search', () => searchRouter()),
+    Match.when('Library', () => libraryRouter()),
+    Match.when('Profile', () => profileRouter()),
+    Match.exhaustive,
+  )
 
-const isSectionCurrent = (route: AppRoute) => (section: Section): boolean =>
-  sectionToRouteTag(section) === route._tag
+const isSectionCurrent =
+  (route: AppRoute) =>
+  (section: Section): boolean =>
+    sectionToRouteTag(section) === route._tag
 
 // Inside your view function, render the nav. Spread the nav bundle onto an
 // h.nav landmark and each item.link bundle onto an h.a. The current item
@@ -56,7 +60,7 @@ const view = (model: Model, h: HtmlBuilder<Message>) => {
             ),
           ],
           [h.span([], [item.value])],
-        )
+        ),
       ),
     )
 
