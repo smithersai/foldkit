@@ -1,3 +1,4 @@
+import { Effect, Redacted, Schema } from 'effect'
 import { Command } from 'foldkit'
 import { defineMessageUnion } from 'foldkit/message'
 
@@ -16,9 +17,8 @@ const makeAccessToken = (accessToken: string): AccessToken =>
 // MODEL
 
 // 2. Store the wrapper in the Model, never the raw string.
-schema Model {
-  accessToken: AccessToken
-}
+const Model = Schema.Struct({ accessToken: AccessToken })
+type Model = typeof Model.Type
 
 const init = (accessToken: string) => ({
   model: { accessToken: makeAccessToken(accessToken) },
@@ -37,21 +37,18 @@ const FetchProfile = Command.define('FetchProfile', {
   // 3. Require a Redacted value because DevTools records Command arguments.
   args: { accessToken: AccessToken },
   messages: [Message.CompletedFetchProfile, Message.FailedFetchProfile],
-  execute: effect ({ accessToken }) => {
-    try {
-      try Effect.tryPromise(() =>
-        fetch('/api/profile', {
-          headers: {
-            // 4. Recover the raw token only at the request boundary that needs it.
-            Authorization: `Bearer ${Redacted.value(accessToken)}`,
-          },
-        })
-      )
-      return Message.CompletedFetchProfile()
-    } catch {
-      return Message.FailedFetchProfile()
-    }
-  },
+  execute: ({ accessToken }) =>
+    Effect.tryPromise(() =>
+      fetch('/api/profile', {
+        headers: {
+          // 4. Recover the raw token only at the request boundary that needs it.
+          Authorization: `Bearer ${Redacted.value(accessToken)}`,
+        },
+      }),
+    ).pipe(
+      Effect.as(Message.CompletedFetchProfile()),
+      Effect.catch(() => Effect.succeed(Message.FailedFetchProfile())),
+    ),
 })
 
 const fetchProfile = (model: Model) =>
