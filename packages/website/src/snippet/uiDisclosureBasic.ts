@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
+import { Schema } from 'effect'
 import type { HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
@@ -30,9 +31,9 @@ const Message = defineMessageUnion({
 // In the corresponding Message.match handler, store the value.
 // This is the moment to persist the open state, lazy-load panel content, or
 // log analytics.
-ToggledFaq: (({ isOpen }) => ({
+ToggledFaq: ({ isOpen }) => ({
   model: modifyFields(model, { isFaqOpen: () => isOpen }),
-}))
+})
 
 // Inside your view function, render the disclosure with Disclosure.view.
 // Render the panel unconditionally and pass it through animatePanel: the
