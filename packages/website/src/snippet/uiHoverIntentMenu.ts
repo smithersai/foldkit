@@ -1,6 +1,7 @@
 // Pseudocode walkthrough of the Foldkit integration points. Each labeled
 // block below is an excerpt. Fit them into your own Model, init, Message,
 // update, and view definitions.
+import { Option, Schema } from 'effect'
 import { Update } from 'foldkit'
 import type { HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -60,8 +61,8 @@ const foldHoverMenuClose = Update.foldChildStep({
 })
 
 // In the corresponding Message.match handlers:
-GotHoverMenuMessage: (({ message }) => foldHoverMenu(model, message))
-ClickedHoverMenuItem: (() => foldHoverMenuClose(model))
+GotHoverMenuMessage: ({ message }) => foldHoverMenu(model, message)
+ClickedHoverMenuItem: () => foldHoverMenuClose(model)
 
 const triggerId = 'actions-trigger'
 const panelId = 'actions-panel'
@@ -87,33 +88,33 @@ const view = (h: HtmlBuilder<Message>) => {
         ),
         ...(isVisible
           ? [
-            h.div(
-              [...panel, h.Id(panelId)],
-              [
-                h.button(
-                  [
-                    h.Type('button'),
-                    h.OnClick(Message.ClickedHoverMenuItem()),
-                  ],
-                  ['Edit'],
-                ),
-                h.button(
-                  [
-                    h.Type('button'),
-                    h.OnClick(Message.ClickedHoverMenuItem()),
-                  ],
-                  ['Duplicate'],
-                ),
-                h.button(
-                  [
-                    h.Type('button'),
-                    h.OnClick(Message.ClickedHoverMenuItem()),
-                  ],
-                  ['Archive'],
-                ),
-              ],
-            ),
-          ]
+              h.div(
+                [...panel, h.Id(panelId)],
+                [
+                  h.button(
+                    [
+                      h.Type('button'),
+                      h.OnClick(Message.ClickedHoverMenuItem()),
+                    ],
+                    ['Edit'],
+                  ),
+                  h.button(
+                    [
+                      h.Type('button'),
+                      h.OnClick(Message.ClickedHoverMenuItem()),
+                    ],
+                    ['Duplicate'],
+                  ),
+                  h.button(
+                    [
+                      h.Type('button'),
+                      h.OnClick(Message.ClickedHoverMenuItem()),
+                    ],
+                    ['Archive'],
+                  ),
+                ],
+              ),
+            ]
           : []),
       ],
     )
