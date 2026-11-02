@@ -1,8 +1,8 @@
+import { Option } from 'effect'
 import { Update } from 'foldkit'
 import { modifyFields } from 'foldkit/struct'
 
 import * as Settings from './settings'
-import { Message } from './message'
 
 const foldSettingsTheme = Update.foldChild({
   update: Settings.setTheme,
