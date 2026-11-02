@@ -1,18 +1,15 @@
 // ✅ Good: update returns a Command and the Runtime performs the effect.
 
+import { Effect } from 'effect'
 import { Command, Dom, type Update } from 'foldkit'
 import { modifyFields } from 'foldkit/struct'
-import { Message } from './message'
-import { Model } from './model'
 
 const FocusSearchInput = Command.define('FocusSearchInput', {
   messages: [Message.CompletedFocusSearchInput],
-  execute: effect {
-    try {
-      try Dom.focus('#search-input')
-    } catch {}
-    return Message.CompletedFocusSearchInput()
-  },
+  execute: Dom.focus('#search-input').pipe(
+    Effect.ignore,
+    Effect.as(Message.CompletedFocusSearchInput()),
+  ),
 })
 
 const update = (model: Model, message: Message) =>
