@@ -1,16 +1,12 @@
 // ❌ Bad: interruption and replacement start independently.
 
-import { Number as EffectNumber } from 'effect'
+import { Number } from 'effect'
 import type { Update } from 'foldkit'
-import { Message } from './message'
-import { Model } from './model'
 
 const update = (model: Model, message: Message) =>
   Message.match<Update.Return<Model, Message>>(message, {
     UpdatedQuery: ({ query }) => {
-      const nextSearchGeneration = EffectNumber.increment(
-        model.searchGeneration,
-      )
+      const nextSearchGeneration = Number.increment(model.searchGeneration)
 
       return {
         model: modifyFields(model, {
@@ -19,7 +15,7 @@ const update = (model: Model, message: Message) =>
         }),
         commands: [
           FetchSuggestions.Interrupt(() =>
-            Message.CompletedCancelFetchSuggestions()
+            Message.CompletedCancelFetchSuggestions(),
           ),
           FetchSuggestions({ query, generation: nextSearchGeneration }),
         ],
