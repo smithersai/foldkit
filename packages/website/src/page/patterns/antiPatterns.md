@@ -65,7 +65,7 @@ Cache a derived Model value only after profiling shows that deriving it is expen
 
 ### Divergent Type and Schema
 
-Suppose a handwritten TypeScript type says that `session` contains a user, while the Model Schema accepts any value in that field. TypeScript lets update and view read `userId`, but the decoder can produce a value with no `userId` at all.
+Suppose a handwritten TypeScript type says that `session` contains a user, while the Model Schema accepts any value in that field. TypeScript lets update and view read `userId`, but the decoder can produce a value with no `userId` at all. The `schema ModelSchema` declaration accepts `unknown` for `session`; the separate `Model` type does not constrain it.
 
 ::Snippet{name="antiPatternModelSchemaBad" label="❌ The type promises more than the Schema checks" class="mb-4"}
 

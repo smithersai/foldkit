@@ -7,6 +7,6 @@ type Model = {
   }
 }
 
-const ModelSchema = Schema.Struct({
-  session: Schema.Unknown,
-})
+schema ModelSchema {
+  session: Schema.Unknown
+}

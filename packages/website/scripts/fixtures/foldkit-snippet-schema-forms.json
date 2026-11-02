@@ -4,7 +4,8 @@
     "antiPatternLiveHandleGood",
     "machineFold",
     "release0166Query",
-    "submodelParentModel"
+    "submodelParentModel",
+    "antiPatternModelSchemaBad"
   ],
   "seed": 531135,
   "generatedModels": 200,
@@ -40,13 +41,15 @@
         "name": "settings",
         "kind": "qualified"
       }
+    ],
+    [
+      {
+        "name": "session",
+        "kind": "unknown"
+      }
     ]
   ],
   "pending": [
-    {
-      "file": "antiPatternModelSchemaBad",
-      "reason": "native schema adds a second unused ModelSchema report"
-    },
     {
       "file": "multipleInstances",
       "reason": "native schemas add unused type-alias reports for ModelA and ModelB"
