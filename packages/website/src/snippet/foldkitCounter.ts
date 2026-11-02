@@ -1,3 +1,4 @@
+import { Schema } from 'effect'
 import { type Update } from 'foldkit'
 import type { Document, HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -5,9 +6,10 @@ import { modifyFields } from 'foldkit/struct'
 
 // MODEL - Your entire application state
 
-schema Model {
-  count: number
-}
+const Model = Schema.Struct({
+  count: Schema.Number,
+})
+type Model = typeof Model.Type
 
 // MESSAGE - Events that can happen in your app
 
