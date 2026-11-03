@@ -50,3 +50,5 @@ CSS refreshes and failures.
 Snippet discovery accepts `.vibex` alongside `.vibe`, retaining the basename lookup, native excerpt notice, raw copy text and native syntax highlighting. Generated declaration sidecars stay out of the displayed snippets. This display support does not compile JSX snippets or establish compiler support for `.vibex`.
 
 Example source listings exclude both `.d.vibe.ts` and `.d.vibex.ts` native declaration sidecars. The source files remain visible.
+
+The `check:playground-ssg-build` launcher enables native loading only for its checker process, so generated project installs preserve caller `NODE_OPTIONS` without inheriting the checker's loader.

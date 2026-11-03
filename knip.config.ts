@@ -67,6 +67,7 @@ const config: { ignore?: string | string[]; [key: string]: unknown } = {
         'vite.scripts.config.ts',
         'src/**/*.test.ts',
         'scripts/**/*.test.ts',
+        'scripts/fixtures/foldkit-playground-launcher-environment.mjs',
         'e2e/livePlaygrounds.ts',
       ],
       ignore: ['src/snippet/**'],
