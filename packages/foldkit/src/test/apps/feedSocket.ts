@@ -1,6 +1,6 @@
 import { Boolean, Effect, Option, Schema } from 'effect'
 
-import type { Html, HtmlBuilder } from '../../html/index.js'
+import type { Html, HtmlBuilder } from '../../html/index.vibe'
 import * as ManagedResource from '../../managedResource/index.js'
 import { defineMessageUnion } from '../../message/index.js'
 import { modifyFields } from '../../struct/index.vibe'

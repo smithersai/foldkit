@@ -14,8 +14,8 @@ import {
   Prop,
   __htmlBuilder,
   customElement,
-} from '../../html/index.js'
-import { clearRuntime, setRuntime } from '../../html/runtimeSingleton.js'
+} from '../../html/index.vibe'
+import { clearRuntime, setRuntime } from '../../html/runtimeSingleton.vibe'
 import {
   HYDRATION_IDENTITY_ATTRIBUTE,
   HYDRATION_KEY_ATTRIBUTE,

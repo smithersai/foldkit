@@ -1,6 +1,6 @@
 import { Array as EffectArray, Function as EffectFunction } from 'effect'
 
-import { defineTaggedUnion } from '../schema/index.ts'
+import { defineTaggedUnion } from '../schema/index.vibe'
 import type { CalendarDate } from './calendarDate.vibe'
 import { DayOfWeek, dayOfWeek } from './info.vibe'
 

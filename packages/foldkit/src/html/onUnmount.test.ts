@@ -33,7 +33,7 @@ import {
   __endReplayRender as endReplayRender,
   __flushReplayUnmountsAfterPatchFailure as flushReplayUnmountsAfterPatchFailure,
   __setRuntime as setHtmlRuntime,
-} from './index.js'
+} from './index.vibe'
 
 const patch = init([
   attributesModule,

@@ -1,7 +1,7 @@
 import { Array as EffectArray } from 'effect'
 
 import { OptionExt } from '../effectExtensions/index.ts'
-import { defineTaggedUnion } from '../schema/index.ts'
+import { defineTaggedUnion } from '../schema/index.vibe'
 
 const ROOT = 'root'
 const PATH_SEPARATOR = '.'

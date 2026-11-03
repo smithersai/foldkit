@@ -6,13 +6,13 @@ import {
   __createBoundaryRegistry as createHtmlBoundaryRegistry,
   __htmlBuilder as htmlBuilderFor,
   __setRuntime as setHtmlRuntime,
-} from '../html/index.js'
-import type { Document, Html, HtmlBuilder } from '../html/index.js'
+} from '../html/index.vibe'
+import type { Document, Html, HtmlBuilder } from '../html/index.vibe'
 import {
   LazyMissReason,
   type LazyResolution,
   observeLazyResolutions,
-} from '../html/lazy.js'
+} from '../html/lazy.vibe'
 import { MountTracker } from '../mount/index.vibe'
 import { Dispatch } from '../runtime/dispatch.vibe'
 

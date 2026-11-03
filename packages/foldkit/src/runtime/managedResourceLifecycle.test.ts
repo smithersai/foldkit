@@ -2,7 +2,7 @@ import { Context, Effect, Fiber, Layer, Option, Schema } from 'effect'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import * as Command from '../command/index.vibe'
-import { __htmlBuilder } from '../html/index.js'
+import { __htmlBuilder } from '../html/index.vibe'
 import * as ManagedResource from '../managedResource/index.js'
 import { make } from '../managedResource/managedResource.vibe'
 import { defineMessageUnion } from '../message/index.js'

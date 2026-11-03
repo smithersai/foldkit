@@ -1,4 +1,4 @@
-export { DEVTOOLS_HOST_ID } from '../html/index.js'
+export { DEVTOOLS_HOST_ID } from '../html/index.vibe'
 export { __setDevToolsOverlay } from '../runtime/devToolsConfig.vibe'
 export type { DevToolsOverlay } from '../runtime/devToolsConfig.vibe'
 

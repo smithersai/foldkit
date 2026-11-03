@@ -1,7 +1,7 @@
 import { Effect, Fiber, Number, Option, Schema, Stream } from 'effect'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { __htmlBuilder } from '../html/index.js'
+import { __htmlBuilder } from '../html/index.vibe'
 import { defineMessageUnion } from '../message/index.js'
 import { modifyFields } from '../struct/index.vibe'
 import * as Subscription from '../subscription/subscription.vibe'

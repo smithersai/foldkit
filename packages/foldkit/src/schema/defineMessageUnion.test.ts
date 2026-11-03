@@ -1,7 +1,7 @@
 import { Match, Schema } from 'effect'
 import { describe, expect, expectTypeOf, it } from 'vitest'
 
-import { defineMessageUnion } from './index.js'
+import { defineMessageUnion } from './index.vibe'
 
 const Message = defineMessageUnion({
   ClickedReset: {},

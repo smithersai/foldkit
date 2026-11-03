@@ -1,13 +1,4 @@
-import {
-  Array,
-  Effect,
-  Option,
-  PubSub,
-  Schema,
-  type Scope,
-  Stream,
-  SubscriptionRef,
-} from 'effect'
+import { Array as EffectArray, type Scope } from 'effect'
 
 import {
   type CommandRecord,
@@ -16,7 +7,7 @@ import {
   createDevToolsStore,
 } from '../devTools/store.vibe'
 import { extractSubmodelInfo, isTagged } from '../devTools/submodelPath.vibe'
-import { startWebSocketBridge } from '../devTools/webSocketBridge.js'
+import { startWebSocketBridge } from '../devTools/webSocketBridge.vibe'
 import {
   MountRuntime,
   MountTracker,
@@ -30,6 +21,7 @@ import {
   resolveDevToolsMaxEntries,
   resolveExcludeFromHistoryTags,
 } from './devToolsConfig.vibe'
+import { hot } from './devToolsIntegration.platform.js'
 
 /** The Mount starts and ends recorded since the last drain. */
 export type MountEvents = Readonly<{
@@ -48,8 +40,8 @@ export type RecordableCommand = Readonly<{
 
 /** The replay bridge the render side hands the store when it is installed. */
 export type DevToolsRenderBridge = Readonly<{
-  renderReplay: (model: unknown) => Effect.Effect<void>
-  markRenderPending: Effect.Effect<void>
+  renderReplay: (model: unknown) => void!!
+  markRenderPending: void!!
 }>
 
 /**
@@ -71,12 +63,12 @@ export type DevToolsIntegration<Model, Message> = Readonly<{
   isPausedNow: () => boolean
   installDevToolsStore: (
     bridge: DevToolsRenderBridge,
-  ) => Effect.Effect<void, never, Scope.Scope>
-  resumeDevTools: Effect.Effect<void>
+  ) => void!never!Scope.Scope
+  resumeDevTools: void!!
   recordInit: (
     initModel: Model,
     initCommands: ReadonlyArray<RecordableCommand>,
-  ) => Effect.Effect<void>
+  ) => void!!
   recordMessage: (
     message: Message,
     currentModel: Model,
@@ -90,11 +82,11 @@ export type DevToolsIntegration<Model, Message> = Readonly<{
 const toCommandRecord = ({ id, command }: RecordableCommand): CommandRecord =>
   command.args !== undefined
     ? {
-        id,
-        name: command.name,
-        args: command.args,
-        maybeSubmodelPath: Option.none(),
-      }
+      id,
+      name: command.name,
+      args: command.args,
+      maybeSubmodelPath: Option.none(),
+    }
     : { id, name: command.name, maybeSubmodelPath: Option.none() }
 
 /**
@@ -112,9 +104,9 @@ export const makeDevToolsIntegration = <Model, Message>({
   devTools: DevToolsConfig | undefined
   update: (model: Model, message: Message) => Readonly<{ model: Model }>
   maybeFreezeModel: (model: Model) => Model
-  enqueueMessageEffect: (message: Message) => Effect.Effect<void>
-}>): Effect.Effect<DevToolsIntegration<Model, Message>> =>
-  Effect.gen(function* () {
+  enqueueMessageEffect: (message: Message) => void!!
+}>): DevToolsIntegration<Model, Message>!! =>
+  effect {
     const resolvedDevTools = resolveDevToolsConfig(devTools)
     const excludeFromHistoryTags = resolveExcludeFromHistoryTags(devTools)
     const devToolsMaxEntries = resolveDevToolsMaxEntries(devTools)
@@ -123,18 +115,18 @@ export const makeDevToolsIntegration = <Model, Message>({
     let currentViewState: ViewState = 'Live'
     const maybeViewStatePubSub = Option.isSome(resolvedDevTools)
       ? Option.some(
-          yield* PubSub.unbounded<ViewState>({
-            replay: 1,
-          }),
-        )
+        try PubSub.unbounded<ViewState>({
+          replay: 1,
+        }),
+      )
       : Option.none()
-    const viewStateChanges = Option.match(maybeViewStatePubSub, {
-      onNone: () => liveViewStateChanges,
-      onSome: viewStatePubSub => {
+    const viewStateChanges = match (maybeViewStatePubSub) {
+      when Option.None: liveViewStateChanges;
+      when Option.Some(let viewStatePubSub): do {
         PubSub.publishUnsafe(viewStatePubSub, currentViewState)
-        return Stream.fromPubSub(viewStatePubSub)
-      },
-    })
+        Stream.fromPubSub(viewStatePubSub)
+      };
+    }
     const setViewState = (nextViewState: ViewState): void => {
       if (nextViewState === currentViewState) {
         return
@@ -162,8 +154,8 @@ export const makeDevToolsIntegration = <Model, Message>({
     })
 
     const isPausedNow = (): boolean =>
-      devToolsStore !== null &&
-      SubscriptionRef.getUnsafe(devToolsStore.stateRef).isPaused
+      devToolsStore !== null
+      && SubscriptionRef.getUnsafe(devToolsStore.stateRef).isPaused
 
     // NOTE: recording is gated on the DevTools store because the store
     // is the only consumer. Without the gate every Mount start and end
@@ -196,94 +188,92 @@ export const makeDevToolsIntegration = <Model, Message>({
     const installDevToolsStore = ({
       renderReplay,
       markRenderPending,
-    }: DevToolsRenderBridge): Effect.Effect<void, never, Scope.Scope> =>
-      Option.match(resolvedDevTools, {
-        onNone: () => Effect.void,
-        onSome: ({ position, mode, maybeBanner, maybeOverlay }) =>
-          Effect.gen(function* () {
-            // NOTE: when excludeFromHistory is active, the runtime drops
-            // excluded Messages from the recorded history. Replay walks the
-            // recorded entries forward from the nearest keyframe. With
-            // exclusion, the dropped Messages aren't in that walk, so any
-            // cumulative state they would have produced is missing from the
-            // replayed model. Setting keyframeInterval to 1 stores a full
-            // snapshot on every recorded entry, so time-travel becomes a
-            // direct lookup that reflects the real live state at the moment
-            // the entry was recorded.
-            const isExcludingMessages = excludeFromHistoryTags.size > 0
-            const store = yield* createDevToolsStore(
-              {
-                /* eslint-disable @typescript-eslint/consistent-type-assertions */
-                replay: (model, message) => {
-                  const replayUpdate = update(
-                    model as Model,
-                    message as Message,
-                  )
-                  return maybeFreezeModel(replayUpdate.model)
-                },
-                /* eslint-enable @typescript-eslint/consistent-type-assertions */
-                render: renderReplay,
-                markRenderPending,
+    }: DevToolsRenderBridge): void!never!Scope.Scope =>
+      effect {
+        if (resolvedDevTools is Option.Some(let resolvedDevToolsConfig)) {
+          const { position, mode, maybeBanner, maybeOverlay } =
+            resolvedDevToolsConfig
+          // NOTE: when excludeFromHistory is active, the runtime drops
+          // excluded Messages from the recorded history. Replay walks the
+          // recorded entries forward from the nearest keyframe. With
+          // exclusion, the dropped Messages aren't in that walk, so any
+          // cumulative state they would have produced is missing from the
+          // replayed model. Setting keyframeInterval to 1 stores a full
+          // snapshot on every recorded entry, so time-travel becomes a
+          // direct lookup that reflects the real live state at the moment
+          // the entry was recorded.
+          const isExcludingMessages = excludeFromHistoryTags.size > 0
+          const store = try createDevToolsStore(
+            {
+              /* eslint-disable @typescript-eslint/consistent-type-assertions */
+              replay: (model, message) => {
+                const replayUpdate = update(
+                  model as Model,
+                  message as Message,
+                )
+                return maybeFreezeModel(replayUpdate.model)
               },
-              {
-                ...(devToolsKeyframeInterval !== undefined && {
-                  keyframeInterval: devToolsKeyframeInterval,
-                }),
-                ...(devToolsMaxEntries !== undefined && {
-                  maxEntries: devToolsMaxEntries,
-                }),
-                // NOTE: exclusion forces keyframeInterval to 1 regardless of any
-                // configured value, since excluded Messages are never replayed
-                // and a denser interval would leave gaps in the replayed model.
-                // Spread last so it wins over `keyframeInterval` above.
-                ...(isExcludingMessages && { keyframeInterval: 1 }),
-              },
+              /* eslint-enable @typescript-eslint/consistent-type-assertions */
+              render: renderReplay,
+              markRenderPending,
+            },
+            {
+              ...(devToolsKeyframeInterval !== undefined && {
+                keyframeInterval: devToolsKeyframeInterval,
+              }),
+              ...(devToolsMaxEntries !== undefined && {
+                maxEntries: devToolsMaxEntries,
+              }),
+              // NOTE: exclusion forces keyframeInterval to 1 regardless of any
+              // configured value, since excluded Messages are never replayed
+              // and a denser interval would leave gaps in the replayed model.
+              // Spread last so it wins over `keyframeInterval` above.
+              ...(isExcludingMessages && { keyframeInterval: 1 }),
+            },
+          )
+          devToolsStore = store
+          // NOTE: the boot records init through `recordInit` after the init
+          // render, so the mount buffer reflects the Mounts that fired on the
+          // first paint.
+          if (maybeOverlay is Option.Some(let overlay)) {
+            try overlay(store, position, mode, maybeBanner)
+          }
+
+          if (hot) {
+            const maybeMessageSchema =
+              devTools !== undefined && devTools !== false
+                ? Option.fromNullishOr(devTools.Message)
+                : Option.none<Schema.Codec<any, any, unknown, unknown>>()
+            try startWebSocketBridge(
+              store,
+              hot,
+              /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
+              message => enqueueMessageEffect(message as Message),
+              /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
+              maybeMessageSchema as Option<Schema.Codec<any, any>>,
             )
-            devToolsStore = store
-            // NOTE: the boot records init through `recordInit` after the init
-            // render, so the mount buffer reflects the Mounts that fired on the
-            // first paint.
-            yield* Option.match(maybeOverlay, {
-              onNone: () => Effect.void,
-              onSome: overlay => overlay(store, position, mode, maybeBanner),
-            })
+          }
+        }
+      }
 
-            if (import.meta.hot) {
-              const maybeMessageSchema =
-                devTools !== undefined && devTools !== false
-                  ? Option.fromNullishOr(devTools.Message)
-                  : Option.none<Schema.Codec<any, any, unknown, unknown>>()
-              yield* startWebSocketBridge(
-                store,
-                import.meta.hot,
-                /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
-                message => enqueueMessageEffect(message as Message),
-                /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
-                maybeMessageSchema as Option.Option<Schema.Codec<any, any>>,
-              )
-            }
-          }),
-      })
-
-    const recordInit = (
+    const recordInit = effect (
       initModel: Model,
       initCommands: ReadonlyArray<RecordableCommand>,
-    ): Effect.Effect<void> =>
-      Effect.gen(function* () {
-        const initMountEvents = drainMountEvents()
-        if (devToolsStore !== null) {
-          yield* devToolsStore.recordInit(
-            initModel,
-            Array.map(initCommands, toCommandRecord),
-            initMountEvents.starts,
-          )
-        }
-      })
+    ): void!! => {
+      const initMountEvents = drainMountEvents()
+      if (devToolsStore !== null) {
+        try devToolsStore.recordInit(
+          initModel,
+          EffectArray.map(initCommands, toCommandRecord),
+          initMountEvents.starts,
+        )
+      }
+    }
 
     const attachRenderedMounts = (): void => {
       if (devToolsStore !== null) {
         const mountEvents = drainMountEvents()
-        Effect.runFork(
+        runFork(
           devToolsStore.attachRenderedMounts(
             mountEvents.starts,
             mountEvents.ends,
@@ -311,18 +301,18 @@ export const makeDevToolsIntegration = <Model, Message>({
         const tag = (message as { _tag: string })._tag
         const isModelChanged = currentModel !== nextModel
         if (!excludeFromHistoryTags.has(tag)) {
-          Effect.runFork(
+          runFork(
             store.recordMessage(
               /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
               message as Message & { _tag: string },
               currentModel,
               nextModel,
-              Array.map(commands, toCommandRecord),
+              EffectArray.map(commands, toCommandRecord),
               isModelChanged,
             ),
           )
         } else if (isModelChanged) {
-          Effect.runFork(store.updateLatestModel(nextModel))
+          runFork(store.updateLatestModel(nextModel))
         }
       }
     }
@@ -336,12 +326,14 @@ export const makeDevToolsIntegration = <Model, Message>({
         ? extractSubmodelInfo(message._tag, message).submodelPath
         : []
 
-      Effect.runFork(devToolsStore.recordResolvedCommand(id, submodelPath))
+      runFork(devToolsStore.recordResolvedCommand(id, submodelPath))
     }
 
-    const resumeDevTools = Effect.suspend(() =>
-      devToolsStore !== null ? devToolsStore.resume : Effect.void,
-    )
+    const resumeDevTools = effect {
+      if (devToolsStore !== null) {
+        try devToolsStore.resume
+      }
+    }
 
     return {
       isRecordingCommands: Option.isSome(resolvedDevTools),
@@ -358,4 +350,4 @@ export const makeDevToolsIntegration = <Model, Message>({
       recordCommandResult,
       attachRenderedMounts,
     }
-  })
+  }

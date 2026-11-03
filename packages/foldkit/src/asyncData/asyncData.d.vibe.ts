@@ -53,10 +53,10 @@ export type Success<A> = Readonly<{
 export type AsyncData<A, E> = Idle | Loading | Refreshing<A> | Failure<E> | Stale<A, E> | Success<A>;
 /** Constructs the `Idle` state. A parameter-free callable Schema, so it can
  *  also serve as a Union member. */
-export declare const Idle: import("../schema/index.ts").CallableTaggedStruct<"Idle", {}>;
+export declare const Idle: import("../schema/index.vibe").CallableTaggedStruct<"Idle", {}>;
 /** Constructs the `Loading` state. A parameter-free callable Schema, so it
  *  can also serve as a Union member. */
-export declare const Loading: import("../schema/index.ts").CallableTaggedStruct<"Loading", {}>;
+export declare const Loading: import("../schema/index.vibe").CallableTaggedStruct<"Loading", {}>;
 /** Constructs a `Refreshing` state holding the previous good data. Plain
  *  value builder, generic in `A`; use the `Schema` factory's `Refreshing`
  *  for a Schema-bound constructor. */

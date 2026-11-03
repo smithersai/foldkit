@@ -22,7 +22,7 @@ import {
   __htmlBuilder,
   createLazy,
   defineView,
-} from '../html/index.js'
+} from '../html/index.vibe'
 import { defineMessageUnion } from '../message/index.js'
 import * as Mount from '../mount/index.vibe'
 import { modifyFields } from '../struct/index.vibe'

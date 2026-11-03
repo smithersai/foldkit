@@ -4,7 +4,10 @@ import { describe, it } from '@effect/vitest'
 
 import { type UrlRequest } from '../navigation/urlRequest.vibe'
 import { type Url } from '../url/index.vibe'
-import { type RoutingConfig, addLinkClickListener } from './browserListeners.js'
+import {
+  type RoutingConfig,
+  addLinkClickListener,
+} from './browserListeners.vibe'
 
 declare global {
   interface Window {

@@ -1,4 +1,4 @@
-import { defineTaggedUnion } from '../schema/index.ts'
+import { defineTaggedUnion } from '../schema/index.vibe'
 
 // SHARED
 

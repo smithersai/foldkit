@@ -8,20 +8,20 @@ import { Dispatch, embed, makeElement } from '../runtime/index.js'
 import { modifyFields } from '../struct/index.vibe'
 import type * as Update from '../update/index.js'
 import { beginRender, createBoundaryRegistry } from './boundary.js'
-import * as HtmlModule from './index.js'
+import * as HtmlModule from './index.vibe'
 import {
   type Html,
   type HtmlBuilder,
   __htmlBuilder,
   createLazy,
   inertHtml,
-} from './index.js'
+} from './index.vibe'
 import * as HtmlPublicModule from './public.js'
 import {
   type DispatchSync,
   clearRuntime,
   setRuntime,
-} from './runtimeSingleton.js'
+} from './runtimeSingleton.vibe'
 import { defineView } from './submodel.js'
 
 type ChildModel = Readonly<{ value: number }>

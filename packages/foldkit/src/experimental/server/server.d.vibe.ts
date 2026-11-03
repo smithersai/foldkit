@@ -1,5 +1,5 @@
 import { Effect, Schema } from 'effect';
-import { type Document, type HtmlBuilder } from '../../html/index.js';
+import { type Document, type HtmlBuilder } from '../../html/index.vibe';
 import { FOLDKIT_APP_ATTRIBUTE, FOLDKIT_FLAGS_ATTRIBUTE } from '../../hydrationMarker.js';
 import type { Return as UpdateReturn } from '../../update/index.js';
 import { Url } from '../../url/index.vibe';

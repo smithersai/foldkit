@@ -24,7 +24,7 @@ import {
   EVENT_CHANNEL,
   dispatchRequest,
   startWebSocketBridge,
-} from './webSocketBridge.js'
+} from './webSocketBridge.vibe'
 
 const CounterModel = Schema.Struct({ count: Schema.Number })
 type CounterModel = typeof CounterModel.Type

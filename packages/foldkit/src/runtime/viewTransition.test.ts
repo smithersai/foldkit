@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import * as Command from '../command/index.vibe'
 import { type DevToolsStore, INIT_INDEX } from '../devTools/store.vibe'
-import { __htmlBuilder } from '../html/index.js'
+import { __htmlBuilder } from '../html/index.vibe'
 import { defineMessageUnion } from '../message/index.js'
 import { afterCommit } from '../render/render.vibe'
 import * as Subscription from '../subscription/subscription.vibe'

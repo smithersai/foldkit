@@ -10,7 +10,7 @@ import {
   clearRuntime,
   requireDispatch,
   setRuntime,
-} from './runtimeSingleton.js'
+} from './runtimeSingleton.vibe'
 
 const makeContext = (dispatchSync: DispatchSync) =>
   Context.make(

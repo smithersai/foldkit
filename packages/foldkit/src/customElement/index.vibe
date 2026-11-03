@@ -7,12 +7,12 @@ import type {
   ChildAttribute,
   Html,
   HtmlBuilder,
-} from '../html/index.ts'
+} from '../html/index.vibe'
 import {
   OnCustomEvent,
   Prop,
   customElement as customElementVNode,
-} from '../html/index.ts'
+} from '../html/index.vibe'
 import { invariant } from '../invariant.ts'
 
 /** Type-level kebab-case to PascalCase, used to convert event names like

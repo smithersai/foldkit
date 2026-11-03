@@ -1,7 +1,7 @@
 import { Cause, Effect, Logger, Runtime } from 'effect'
 import { describe, expect, it } from 'vitest'
 
-import { __reportUnhandledCause } from './start.js'
+import { __reportUnhandledCause } from './start.vibe'
 
 const runWithCollectingLogger = async (
   effect: Effect.Effect<void>,

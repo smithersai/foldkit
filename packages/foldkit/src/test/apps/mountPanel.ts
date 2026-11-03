@@ -1,6 +1,6 @@
 import { Effect, Number, Option, Schema } from 'effect'
 
-import type { Html, HtmlBuilder } from '../../html/index.js'
+import type { Html, HtmlBuilder } from '../../html/index.vibe'
 import { defineMessageUnion } from '../../message/index.js'
 import * as Mount from '../../mount/index.vibe'
 import { modifyFields } from '../../struct/index.vibe'

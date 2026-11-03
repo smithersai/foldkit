@@ -19,7 +19,7 @@ import {
   schemaSegment,
   slash,
   string,
-} from './parser.js'
+} from './parser.vibe'
 
 const makeUrl = (path: string, search?: string): Url => ({
   protocol: 'https:',

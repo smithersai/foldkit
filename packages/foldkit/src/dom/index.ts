@@ -12,7 +12,7 @@ export {
 } from './dom.vibe'
 export type { FocusDirection } from './dom.vibe'
 export { detectElementMovement } from './elementMovement.vibe'
-export { inertOthers, restoreInert } from './inert.js'
+export { inertOthers, restoreInert } from './inert.vibe'
 export { lockScroll, unlockScroll } from './scrollLock.vibe'
 export {
   streamFromEvent,

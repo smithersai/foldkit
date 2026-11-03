@@ -4,7 +4,7 @@ import { CommandDefinitionTypeId } from '../brand.ts';
  * in-flight Command was stopped and will not dispatch its result Message.
  * `Outcome.NotFound` means no Command held the key. The interrupt operation
  * itself cannot fail. */
-export declare const Outcome: import("../../schema/index.ts").TaggedUnion<{
+export declare const Outcome: import("../../schema/index.vibe").TaggedUnion<{
     readonly Interrupted: {};
     readonly NotFound: {};
 }>;

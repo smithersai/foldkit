@@ -1,4 +1,4 @@
-import { Document, Html, type HtmlBuilder } from '../html/index.ts'
+import { Document, Html, type HtmlBuilder } from '../html/index.vibe'
 import type { ManagedResources } from '../managedResource/index.ts'
 import type { Ports } from '../port/index.ts'
 import type { Subscriptions } from '../subscription/subscription.vibe'
@@ -15,7 +15,7 @@ import {
   type MakeRuntimeReturn,
   type RuntimeConfig,
   makeRuntime,
-} from './runtime.ts'
+} from './runtime.vibe'
 import type { SlowConfig } from './slowPhase.vibe'
 import type { ViewTransitionConfig } from './viewTransition.vibe'
 import { invariant } from '../invariant.ts'

@@ -2,7 +2,7 @@ import { Effect, Exit, Queue, Schema, Stream } from 'effect'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import * as Command from '../command/index.vibe'
-import { type Html, __htmlBuilder } from '../html/index.js'
+import { type Html, __htmlBuilder } from '../html/index.vibe'
 import { defineMessageUnion } from '../message/index.js'
 import * as Mount from '../mount/index.vibe'
 import * as Port from '../port/index.js'
@@ -11,7 +11,7 @@ import * as Subscription from '../subscription/subscription.vibe'
 import type * as Update from '../update/index.js'
 import { makeApplication } from './makeApplication.vibe'
 import { makeElement } from './makeElement.vibe'
-import { embed } from './start.js'
+import { embed } from './start.vibe'
 
 const Message = defineMessageUnion({
   ChangedStep: { step: Schema.Number },

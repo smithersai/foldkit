@@ -12,7 +12,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import * as Command from '../command/index.vibe'
 import type { DevToolsStore } from '../devTools/store.vibe'
-import { __htmlBuilder } from '../html/index.js'
+import { __htmlBuilder } from '../html/index.vibe'
 import { defineMessageUnion } from '../message/index.js'
 import type * as Update from '../update/index.js'
 import { __setDevToolsOverlay } from './devToolsConfig.vibe'

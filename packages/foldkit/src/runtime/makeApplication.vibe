@@ -1,11 +1,11 @@
-import { Document, type HtmlBuilder } from '../html/index.ts'
+import { Document, type HtmlBuilder } from '../html/index.vibe'
 import { currentDocument, locationHref } from './makeApplication.platform.ts'
 import type { ManagedResources } from '../managedResource/index.ts'
 import type { Ports } from '../port/index.ts'
 import type { Subscriptions } from '../subscription/subscription.vibe'
 import type { Return as UpdateReturn } from '../update/index.ts'
 import { Url, fromString as urlFromString } from '../url/index.vibe'
-import type { RoutingConfig } from './browserListeners.ts'
+import type { RoutingConfig } from './browserListeners.vibe'
 import type { CrashConfig } from './crashUI.vibe'
 import type { DevToolsConfig } from './devToolsConfig.vibe'
 import {
@@ -18,7 +18,7 @@ import {
   type MakeRuntimeReturn,
   type RuntimeConfig,
   makeRuntime,
-} from './runtime.ts'
+} from './runtime.vibe'
 import type { SlowConfig } from './slowPhase.vibe'
 import type { ViewTransitionConfig } from './viewTransition.vibe'
 import { invariant } from '../invariant.ts'

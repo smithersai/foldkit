@@ -8,7 +8,7 @@ import { describe, expect, it, vi } from 'vitest'
 import * as AsyncData from '../asyncData/index.js'
 import type { Command } from '../command/index.vibe'
 import { define, to } from '../experimental/machine/machine.vibe'
-import { defineMessageUnion, defineTaggedUnion } from '../schema/index.js'
+import { defineMessageUnion, defineTaggedUnion } from '../schema/index.vibe'
 import { refresh } from '../update/update.vibe'
 import {
   resolveDevToolsKeyframeInterval,

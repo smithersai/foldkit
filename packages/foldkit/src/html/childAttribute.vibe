@@ -5,7 +5,7 @@ import {
   requireDispatch,
   requireMountDispatchResolver,
   requireUnmountResolver,
-} from './runtimeSingleton.ts'
+} from './runtimeSingleton.vibe'
 
 const BRAND = '__childAttribute'
 

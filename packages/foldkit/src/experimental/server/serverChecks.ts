@@ -18,7 +18,7 @@ import {
   SVG_NAMESPACE,
   parsedAttributeName,
 } from '../../domReflection.js'
-import type { Document } from '../../html/index.js'
+import type { Document } from '../../html/index.vibe'
 import {
   FOLDKIT_APP_ATTRIBUTE,
   FOLDKIT_FLAGS_ATTRIBUTE,

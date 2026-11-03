@@ -1,5 +1,11 @@
-import { Cause, Effect, Option, type Scope } from 'effect'
+import { type Scope } from 'effect'
 
+import {
+  type DeferredDrainChannel,
+  closeDeferredDrainChannel,
+  makeDeferredDrainChannel,
+  nowMs,
+} from './messageQueue.platform.js'
 import type { RuntimeStatus } from './runtimeStatus.js'
 
 const DRAIN_BUDGET_MS = 5
@@ -7,7 +13,7 @@ const DRAIN_BUDGET_MS = 5
 /** The plain functions the runtime uses to buffer, drain, and gate Messages. */
 export type MessageQueue<Message> = Readonly<{
   enqueueMessage: (message: Message) => void
-  enqueueMessageEffect: (message: Message) => Effect.Effect<void>
+  enqueueMessageEffect: (message: Message) => void!!
   drainPendingMessages: () => void
   resetDrainBudget: () => void
   isAnyMessageDeferred: () => boolean
@@ -33,11 +39,11 @@ export const makeMessageQueue = <Message>({
   status: RuntimeStatus
   processMessage: (message: Message) => void
   crashWith: (
-    cause: Cause.Cause<never>,
-    maybeMessage: Option.Option<Message>,
-  ) => Effect.Effect<void>
-}>): Effect.Effect<MessageQueue<Message>, never, Scope.Scope> =>
-  Effect.gen(function* () {
+    cause: Cause<never>,
+    maybeMessage: Option<Message>,
+  ) => void!!
+}>): MessageQueue<Message>!never!Scope.Scope =>
+  effect {
     let pendingMessages: Array<Message> = []
     let isProcessingMessages = false
     // NOTE: a Message arriving before boot completes, say a navigation
@@ -58,8 +64,8 @@ export const makeMessageQueue = <Message>({
       drainPendingMessages()
     }
 
-    const enqueueMessageEffect = (message: Message) =>
-      Effect.sync(() => enqueueMessage(message))
+    const enqueueMessageEffect = effect (message: Message) =>
+      enqueueMessage(message)
 
     let currentMessage = Option.none<Message>()
 
@@ -77,43 +83,39 @@ export const makeMessageQueue = <Message>({
     let syncWorkMsSinceYield = 0
     let lastDrainEndedAt = 0
     let isDrainDeferredToNextTask = false
-    let maybeDeferredDrainChannel: MessageChannel | null = null
+    let maybeDeferredDrainChannel: DeferredDrainChannel | null = null
 
     const scheduleDeferredDrain = (): void => {
       if (maybeDeferredDrainChannel === null) {
-        maybeDeferredDrainChannel = new MessageChannel()
-        maybeDeferredDrainChannel.port2.onmessage = () => {
+        maybeDeferredDrainChannel = makeDeferredDrainChannel(() => {
           isDrainDeferredToNextTask = false
           syncWorkMsSinceYield = 0
           drainPendingMessages()
-        }
+        })
       }
       isDrainDeferredToNextTask = true
-      maybeDeferredDrainChannel.port1.postMessage(null)
+      maybeDeferredDrainChannel.post()
     }
 
-    yield* Effect.addFinalizer(() =>
-      Effect.sync(() => {
-        if (maybeDeferredDrainChannel !== null) {
-          maybeDeferredDrainChannel.port1.close()
-          maybeDeferredDrainChannel.port2.close()
-          maybeDeferredDrainChannel = null
-        }
-      }),
-    )
+    try Effect.addFinalizer(effect () => {
+      if (maybeDeferredDrainChannel !== null) {
+        closeDeferredDrainChannel(maybeDeferredDrainChannel)
+        maybeDeferredDrainChannel = null
+      }
+    })
 
     const drainPendingMessages = (): void => {
       if (
-        !isBootComplete ||
-        isProcessingMessages ||
-        status.isRenderingFrame ||
-        isDrainDeferredToNextTask ||
-        status.isRuntimeDisposed ||
-        status.isCrashed
+        !isBootComplete
+        || isProcessingMessages
+        || status.isRenderingFrame
+        || isDrainDeferredToNextTask
+        || status.isRuntimeDisposed
+        || status.isCrashed
       ) {
         return
       }
-      const drainStartedAt = performance.now()
+      const drainStartedAt = nowMs()
       if (drainStartedAt - lastDrainEndedAt > DRAIN_BUDGET_MS) {
         syncWorkMsSinceYield = 0
       }
@@ -131,12 +133,12 @@ export const makeMessageQueue = <Message>({
             currentMessage = Option.some(message)
             processMessage(message)
 
-            const hasRemainingWork =
-              index + 1 < batch.length || pendingMessages.length > 0
+            const hasRemainingWork = index + 1 < batch.length
+              || pendingMessages.length > 0
             if (
-              hasRemainingWork &&
-              syncWorkMsSinceYield + (performance.now() - drainStartedAt) >
-                DRAIN_BUDGET_MS
+              hasRemainingWork
+              && syncWorkMsSinceYield + (nowMs() - drainStartedAt)
+                > DRAIN_BUDGET_MS
             ) {
               // NOTE: unprocessed batch Messages arrived before
               // anything in pendingMessages, so they go back to the
@@ -148,9 +150,9 @@ export const makeMessageQueue = <Message>({
           }
         }
       } catch (error) {
-        Effect.runFork(crashWith(Cause.die(error), currentMessage))
+        runFork(crashWith(Cause.die(error), currentMessage))
       } finally {
-        const drainEndedAt = performance.now()
+        const drainEndedAt = nowMs()
         syncWorkMsSinceYield += drainEndedAt - drainStartedAt
         lastDrainEndedAt = drainEndedAt
         isProcessingMessages = false
@@ -177,4 +179,4 @@ export const makeMessageQueue = <Message>({
       isAnyMessageDeferred,
       completeBoot,
     }
-  })
+  }

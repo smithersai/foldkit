@@ -1,5 +1,5 @@
 import { Schema } from 'effect';
-declare const PathResolution: import("../schema/index.ts").TaggedUnion<{
+declare const PathResolution: import("../schema/index.vibe").TaggedUnion<{
     readonly Found: {
         value: Schema.Unknown;
         atPath: Schema.String;

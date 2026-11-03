@@ -1,5 +1,5 @@
 import { Effect, Layer, Schema } from 'effect';
-import { Html, type HtmlBuilder } from '../html/index.ts';
+import { Html, type HtmlBuilder } from '../html/index.vibe';
 import type { ManagedResources } from '../managedResource/index.ts';
 import type { Ports } from '../port/index.ts';
 import type { Subscriptions } from '../subscription/subscription.vibe';
@@ -7,7 +7,7 @@ import type { Return as UpdateReturn } from '../update/index.ts';
 import type { ElementCrashConfig } from './crashUI.vibe';
 import type { DevToolsConfig } from './devToolsConfig.vibe';
 import type { ApplicationInit } from './makeApplication.vibe';
-import { type FlagsSchemaConfig, type MakeRuntimeReturn } from './runtime.ts';
+import { type FlagsSchemaConfig, type MakeRuntimeReturn } from './runtime.vibe';
 import type { SlowConfig } from './slowPhase.vibe';
 import type { ViewTransitionConfig } from './viewTransition.vibe';
 type BaseElementConfig<Model, Message, Resources = never, ManagedResourceServices = never, P extends Ports | undefined = undefined> = Readonly<{

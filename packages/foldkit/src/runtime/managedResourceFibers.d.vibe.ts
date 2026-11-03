@@ -1,5 +1,5 @@
 import { Cause, Effect, Option, PubSub, Scope } from 'effect';
-import type { ManagedResourceRef } from './resourceProvider.ts';
+import type { ManagedResourceRef } from './resourceProvider.vibe';
 /**
  * Forks one fiber per Managed Resource into the runtime scope. Each fiber
  * derives the resource's requirements from every Model, acquires the

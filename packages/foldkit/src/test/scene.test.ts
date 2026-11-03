@@ -6,7 +6,7 @@ import {
   type HtmlBuilder,
   __htmlBuilder as attributeHtml,
   inertHtml,
-} from '../html/index.js'
+} from '../html/index.vibe'
 import { defineMessageUnion } from '../message/index.js'
 import * as PublicScene from '../scene/public.js'
 import { h } from '../snabbdom/index.js'

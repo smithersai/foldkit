@@ -4,7 +4,7 @@ import {
   type Html,
   type HtmlBuilder,
   __requireDispatch,
-} from '../html/index.ts'
+} from '../html/index.vibe'
 import { h } from '../snabbdom/index.ts'
 import type { Classes, On, VNodeData } from '../snabbdom/index.ts'
 import { paintScene } from './paint.vibe'

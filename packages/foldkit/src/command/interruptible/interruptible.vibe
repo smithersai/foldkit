@@ -1,6 +1,6 @@
 import { Array as EffectArray } from 'effect'
 
-import { defineTaggedUnion } from '../../schema/index.ts'
+import { defineTaggedUnion } from '../../schema/index.vibe'
 import { CommandDefinitionTypeId, brandAsDefinition } from '../brand.ts'
 
 /** The result of interrupting a key. `Outcome.Interrupted` means at least one

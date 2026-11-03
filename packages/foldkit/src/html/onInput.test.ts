@@ -19,7 +19,7 @@ import {
   __htmlBuilder,
   __clearRuntime as clearHtmlRuntime,
   __setRuntime as setHtmlRuntime,
-} from './index.js'
+} from './index.vibe'
 
 const patch = init([
   attributesModule,

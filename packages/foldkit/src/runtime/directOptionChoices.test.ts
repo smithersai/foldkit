@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest'
 import { __makeRegistry } from '../command/interruptible/interruptible.vibe'
 import { diagnoseVariantPath } from '../devTools/schemaSummarize.vibe'
 import * as Port from '../port/index.ts'
-import { defineMessageUnion } from '../schema/index.js'
+import { defineMessageUnion } from '../schema/index.vibe'
 import { makeHostConnector, makePortChannels } from './hostConnector.vibe'
 
 const directory = dirname(fileURLToPath(import.meta.url))

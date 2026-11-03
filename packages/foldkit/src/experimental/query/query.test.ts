@@ -18,7 +18,7 @@ import { modifyFields } from '../../struct/index.vibe'
 import * as Story from '../../test/story.js'
 import type * as Update from '../../update/index.js'
 import * as Query from './index.js'
-import type { SyncFields } from './keyedQuery.js'
+import type { SyncFields } from './keyedQuery.vibe'
 
 const Note = Schema.Struct({ id: Schema.String, body: Schema.String })
 type Note = typeof Note.Type

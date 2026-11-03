@@ -27,7 +27,7 @@ import {
   __createBoundaryRegistry as createHtmlBoundaryRegistry,
   defineView,
   __setRuntime as setHtmlRuntime,
-} from './index.js'
+} from './index.vibe'
 
 const patch = init([
   attributesModule,

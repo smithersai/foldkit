@@ -1,6 +1,6 @@
 import { Array as EffectArray, Schema as EffectSchema, Function } from 'effect'
 
-import { taggedStruct } from '../schema/index.ts'
+import { taggedStruct } from '../schema/index.vibe'
 
 // STATE
 

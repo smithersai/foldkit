@@ -1,4 +1,4 @@
-import { Array, Data, Predicate, Result } from 'effect'
+import { Data, Array as EffectArray, Predicate, Result } from 'effect'
 
 import { type VNode, dedupeMemoizedResult, memoizedVNodes } from '../vdom.vibe'
 import {
@@ -16,8 +16,12 @@ import {
   requireDispatch,
   requireMountDispatch,
   requireMountRenderOwner,
-} from './runtimeSingleton.js'
+} from './runtimeSingleton.vibe'
 
+// NOTE: kept as Effect's `Data.TaggedEnum` rather than a `data` declaration:
+// a native data declaration gives the constructor the type's doc comment,
+// where this API documents the constructor separately as @internal
+// (foldkit-16).
 /** Why a lazy call ran its view instead of reusing the cached result. */
 export type LazyMissReason = Data.TaggedEnum<{
   NoCachedEntry: {}
@@ -105,9 +109,9 @@ const findMissReason = (
   }
 
   if (
-    previousEntry.dispatch !== dispatch ||
-    previousEntry.mountDispatch !== mountDispatch ||
-    previousEntry.mountRenderOwner !== mountRenderOwner
+    previousEntry.dispatch !== dispatch
+    || previousEntry.mountDispatch !== mountDispatch
+    || previousEntry.mountRenderOwner !== mountRenderOwner
   ) {
     return LazyMissReason.FrameChanged()
   }
@@ -119,8 +123,8 @@ const findMissReason = (
     })
   }
 
-  const indices = Array.filterMap(
-    Array.zip(previousEntry.args, args),
+  const indices = EffectArray.filterMap(
+    EffectArray.zip(previousEntry.args, args),
     ([previousArg, arg], index) =>
       previousArg === arg ? Result.failVoid : Result.succeed(index),
   )
@@ -148,13 +152,12 @@ const resolveOrCache = <Args extends ReadonlyArray<unknown>>(
   // future renderer that separates them from retaining stale handler or Mount
   // lifecycle closures. Custom renderers can also use one dispatcher for both
   // owners, so the owner remains a separate key member.
-  const isHit =
-    Predicate.isNotUndefined(previousEntry) &&
-    previousEntry.fn === fn &&
-    previousEntry.dispatch === dispatch &&
-    previousEntry.mountDispatch === mountDispatch &&
-    previousEntry.mountRenderOwner === mountRenderOwner &&
-    argsEqual(previousEntry.args, args)
+  const isHit = Predicate.isNotUndefined(previousEntry)
+    && previousEntry.fn === fn
+    && previousEntry.dispatch === dispatch
+    && previousEntry.mountDispatch === mountDispatch
+    && previousEntry.mountRenderOwner === mountRenderOwner
+    && argsEqual(previousEntry.args, args)
 
   if (resolutionObserver !== undefined) {
     resolutionObserver({
@@ -163,13 +166,13 @@ const resolveOrCache = <Args extends ReadonlyArray<unknown>>(
       missReason: isHit
         ? undefined
         : findMissReason(
-            previousEntry,
-            fn,
-            args,
-            dispatch,
-            mountDispatch,
-            mountRenderOwner,
-          ),
+          previousEntry,
+          fn,
+          args,
+          dispatch,
+          mountDispatch,
+          mountRenderOwner,
+        ),
     })
   }
 

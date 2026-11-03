@@ -1,21 +1,26 @@
-import { Array, Cause, Match, Schema, SchemaAST, Types } from 'effect'
+import { Cause, Array as EffectArray, Schema, SchemaAST, Types } from 'effect'
+
+import {
+  failConstructorOperation,
+  failSchemaDefinition,
+} from './index.plain.js'
 
 /** A `TaggedStruct` schema that can be called directly as a constructor: `Foo({ count: 1 })` instead of `Foo.make({ count: 1 })`. */
 export type CallableTaggedStruct<
   Tag extends string,
   Fields extends Schema.Struct.Fields,
-> = Schema.TaggedStruct<Tag, Fields> &
-  (keyof Fields extends never
-    ? (
-        value?: Parameters<Schema.TaggedStruct<Tag, Fields>['make']>[0] | void,
-      ) => Types.Simplify<
-        Schema.Struct.Type<{ readonly _tag: Schema.tag<Tag> } & Fields>
-      >
+> =
+  & Schema.TaggedStruct<Tag, Fields>
+  & (keyof Fields extends never ? (
+      value?: Parameters<Schema.TaggedStruct<Tag, Fields>['make']>[0] | void,
+    ) => Types.Simplify<
+      Schema.Struct.Type<{ readonly _tag: Schema.tag<Tag> } & Fields>
+    >
     : (
-        value: Parameters<Schema.TaggedStruct<Tag, Fields>['make']>[0],
-      ) => Types.Simplify<
-        Schema.Struct.Type<{ readonly _tag: Schema.tag<Tag> } & Fields>
-      >)
+      value: Parameters<Schema.TaggedStruct<Tag, Fields>['make']>[0],
+    ) => Types.Simplify<
+      Schema.Struct.Type<{ readonly _tag: Schema.tag<Tag> } & Fields>
+    >)
 
 const assignPlainProperty = (
   output: Record<PropertyKey, unknown>,
@@ -38,48 +43,45 @@ const runConstructorOperation = <Value>(operation: () => Value): Value => {
   try {
     return operation()
   } catch (error) {
-    throw new Error('Constructor adapter can only throw schema issues', {
-      cause: Cause.die(error),
-    })
+    return failConstructorOperation(Cause.die(error))
   }
 }
 
 const isDirectlyCopyable = (ast: SchemaAST.AST): boolean => {
   if (
-    ast.checks !== undefined ||
-    ast.encoding !== undefined ||
-    ast.context !== undefined
+    ast.checks !== undefined
+    || ast.encoding !== undefined
+    || ast.context !== undefined
   ) {
     return false
   }
 
-  return Match.value(ast).pipe(
-    Match.withReturnType<boolean>(),
-    Match.tagsExhaustive({
-      Declaration: () => false,
-      Null: () => true,
-      Undefined: () => true,
-      Void: () => true,
-      Never: () => true,
-      Unknown: () => true,
-      Any: () => true,
-      String: () => true,
-      Number: () => true,
-      Boolean: () => true,
-      BigInt: () => true,
-      Symbol: () => true,
-      Literal: () => true,
-      UniqueSymbol: () => true,
-      ObjectKeyword: () => true,
-      Enum: () => true,
-      TemplateLiteral: ({ parts }) => parts.every(isDirectlyCopyable),
-      Arrays: () => false,
-      Objects: () => false,
-      Union: ({ options, types }) =>
-        options?.mode !== 'oneOf' && types.every(isDirectlyCopyable),
-      Suspend: () => false,
-    }),
-  )
+  return match (ast) {
+    when { _tag: "Declaration" }: false;
+    when { _tag: "Null" }: true;
+    when { _tag: "Undefined" }: true;
+    when { _tag: "Void" }: true;
+    when { _tag: "Never" }: true;
+    when { _tag: "Unknown" }: true;
+    when { _tag: "Any" }: true;
+    when { _tag: "String" }: true;
+    when { _tag: "Number" }: true;
+    when { _tag: "Boolean" }: true;
+    when { _tag: "BigInt" }: true;
+    when { _tag: "Symbol" }: true;
+    when { _tag: "Literal" }: true;
+    when { _tag: "UniqueSymbol" }: true;
+    when { _tag: "ObjectKeyword" }: true;
+    when { _tag: "Enum" }: true;
+    when { _tag: "TemplateLiteral", let parts }: parts.every(
+      isDirectlyCopyable,
+    );
+    when { _tag: "Arrays" }: false;
+    when { _tag: "Objects" }: false;
+    when { _tag: "Union", let options, let types }: options?.mode !== 'oneOf'
+      && types.every(isDirectlyCopyable);
+    when { _tag: "Suspend" }: false;
+  }
 }
 
 const getDirectPropertyNames = (
@@ -111,47 +113,43 @@ const makeCallable = <Tag extends string, Fields extends Schema.Struct.Fields>(
       /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
       (value ?? {}) as Parameters<typeof schema.make>[0],
     )
-  const construct =
-    propertyNames !== undefined
-      ? (value: unknown): Record<PropertyKey, unknown> => {
-          /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
-          const input = (value ?? {}) as Record<PropertyKey, unknown>
-          if (Object(input) !== input) {
+  const construct = propertyNames !== undefined
+    ? (value: unknown): Record<PropertyKey, unknown> => {
+      /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
+      const input = (value ?? {}) as Record<PropertyKey, unknown>
+      if (Object(input) !== input) {
+        return make(value)
+      }
+
+      const output: Record<PropertyKey, unknown> = {}
+
+      for (const name of propertyNames) {
+        const inputValue = runConstructorOperation(() => {
+          const hasProperty = name === '__proto__'
+            ? Object.hasOwn(input, name)
+            : Reflect.has(input, name)
+          return hasProperty ? input[name] : undefined
+        })
+
+        if (name === '_tag') {
+          if (inputValue !== undefined && inputValue !== tag) {
             return make(value)
           }
 
-          const output: Record<PropertyKey, unknown> = {}
-
-          for (const name of propertyNames) {
-            const inputValue = runConstructorOperation(() => {
-              const hasProperty =
-                name === '__proto__'
-                  ? Object.hasOwn(input, name)
-                  : Reflect.has(input, name)
-              return hasProperty ? input[name] : undefined
-            })
-
-            if (name === '_tag') {
-              if (inputValue !== undefined && inputValue !== tag) {
-                return make(value)
-              }
-
-              runConstructorOperation(() =>
-                assignPlainProperty(output, name, tag),
-              )
-            } else {
-              runConstructorOperation(() =>
-                assignPlainProperty(output, name, inputValue),
-              )
-            }
-          }
-
-          return output
+          runConstructorOperation(() => assignPlainProperty(output, name, tag))
+        } else {
+          runConstructorOperation(() =>
+            assignPlainProperty(output, name, inputValue)
+          )
         }
-      : make
+      }
+
+      return output
+    }
+    : make
 
   /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
-  return new Proxy(function () {} as unknown as object, {
+  return new Proxy(function() {} as unknown as object, {
     apply(_target, _thisArg, argumentsList) {
       return construct(argumentsList[0])
     },
@@ -173,22 +171,24 @@ type UnionProperty = TaggedUnionProperty | 'members' | 'subset'
 
 const reservedUnionPropertyNames = new Set<string>(['members', 'subset'])
 
-const taggedUnionTypeOnlyPropertyNames = new Set<string>([
-  'Rebuild',
-  '~type.parameters',
-  'Type',
-  'Encoded',
-  'DecodingServices',
-  'EncodingServices',
-  '~type.make.in',
-  '~type.make',
-  '~type.constructor.default',
-  'Iso',
-  '~type.mutability',
-  '~type.optionality',
-  '~encoded.mutability',
-  '~encoded.optionality',
-] satisfies ReadonlyArray<TaggedUnionProperty>)
+const taggedUnionTypeOnlyPropertyNames = new Set<string>(
+  [
+    'Rebuild',
+    '~type.parameters',
+    'Type',
+    'Encoded',
+    'DecodingServices',
+    'EncodingServices',
+    '~type.make.in',
+    '~type.make',
+    '~type.constructor.default',
+    'Iso',
+    '~type.mutability',
+    '~type.optionality',
+    '~encoded.mutability',
+    '~encoded.optionality',
+  ] satisfies ReadonlyArray<TaggedUnionProperty>,
+)
 
 type VariantNameCollision<Name extends PropertyKey> = Readonly<{
   'Variant names must not conflict with union properties': Name
@@ -196,20 +196,20 @@ type VariantNameCollision<Name extends PropertyKey> = Readonly<{
 
 type ValidateVariantNames<
   CasesByTag extends Record<string, Schema.Struct.Fields>,
-> =
-  Extract<keyof CasesByTag, UnionProperty> extends infer Name
-    ? [Name] extends [never]
-      ? unknown
-      : VariantNameCollision<Name & PropertyKey>
-    : never
+> = Extract<keyof CasesByTag, UnionProperty> extends infer Name
+  ? [Name] extends [never] ? unknown
+  : VariantNameCollision<Name & PropertyKey>
+  : never
 
 type BaseTaggedUnion<CasesByTag extends Record<string, Schema.Struct.Fields>> =
-  Schema.TaggedUnion<{
-    readonly [Tag in keyof CasesByTag & string]: Schema.TaggedStruct<
-      Tag,
-      CasesByTag[Tag]
-    >
-  }>
+  Schema.TaggedUnion<
+    {
+      readonly [Tag in keyof CasesByTag & string]: Schema.TaggedStruct<
+        Tag,
+        CasesByTag[Tag]
+      >
+    }
+  >
 
 type TaggedUnionType<CasesByTag extends Record<string, Schema.Struct.Fields>> =
   BaseTaggedUnion<CasesByTag>['Type']
@@ -237,8 +237,7 @@ type TaggedUnionMatchOrElseCases<
 type TaggedUnionCaseReturns<Cases> = {
   [Tag in keyof Cases]-?: NonNullable<Cases[Tag]> extends (
     ...args: never
-  ) => infer Output
-    ? Output
+  ) => infer Output ? Output
     : never
 }[keyof Cases]
 
@@ -354,10 +353,12 @@ type TaggedUnionMatchOrElse<
 
 interface UnionSchema<
   CasesByTag extends Record<string, Schema.Struct.Fields>,
-> extends Schema.BottomLazy<
-  BaseTaggedUnion<CasesByTag>['ast'],
-  UnionSchema<CasesByTag>
-> {
+> extends
+  Schema.BottomLazy<
+    BaseTaggedUnion<CasesByTag>['ast'],
+    UnionSchema<CasesByTag>
+  >
+{
   readonly Type: BaseTaggedUnion<CasesByTag>['Type']
   readonly Encoded: BaseTaggedUnion<CasesByTag>['Encoded']
   readonly DecodingServices: BaseTaggedUnion<CasesByTag>['DecodingServices']
@@ -415,12 +416,14 @@ interface RichUnionSchema<
  * each handler. */
 export type TaggedUnion<
   CasesByTag extends Record<string, Schema.Struct.Fields>,
-> = RichUnionSchema<CasesByTag> & {
-  readonly [Tag in keyof CasesByTag & string]: CallableTaggedStruct<
-    Tag,
-    CasesByTag[Tag]
-  >
-}
+> =
+  & RichUnionSchema<CasesByTag>
+  & {
+    readonly [Tag in keyof CasesByTag & string]: CallableTaggedStruct<
+      Tag,
+      CasesByTag[Tag]
+    >
+  }
 
 /** The Schema returned by `defineMessageUnion`. Each variant is a callable
  * property on the union, and `match` handles the union exhaustively. With no
@@ -430,12 +433,14 @@ export type TaggedUnion<
  * preserve narrower payload fields in each handler. */
 export type MessageUnion<
   CasesByTag extends Record<string, Schema.Struct.Fields>,
-> = UnionSchema<CasesByTag> & {
-  readonly [Tag in keyof CasesByTag & string]: CallableTaggedStruct<
-    Tag,
-    CasesByTag[Tag]
-  >
-}
+> =
+  & UnionSchema<CasesByTag>
+  & {
+    readonly [Tag in keyof CasesByTag & string]: CallableTaggedStruct<
+      Tag,
+      CasesByTag[Tag]
+    >
+  }
 
 /** The Schema returned by `defineRouteUnion`. It has the same constructors and
  * helpers as `TaggedUnion`, with a Route-specific name for public signatures. */
@@ -449,16 +454,18 @@ const defineUnion = <CasesByTag extends Record<string, Schema.Struct.Fields>>(
 ): TaggedUnion<CasesByTag> => {
   const union = Schema.TaggedUnion(casesByTag)
 
-  const conflictingNames = Array.filter(
+  const conflictingNames = EffectArray.filter(
     Object.keys(casesByTag),
     name =>
-      Reflect.has(union, name) ||
-      taggedUnionTypeOnlyPropertyNames.has(name) ||
-      reservedUnionPropertyNames.has(name),
+      Reflect.has(union, name)
+      || taggedUnionTypeOnlyPropertyNames.has(name)
+      || reservedUnionPropertyNames.has(name),
   )
-  if (Array.isArrayNonEmpty(conflictingNames)) {
-    throw new Error(
-      `${variantLabel} names conflict with union properties: ${conflictingNames.join(', ')}`,
+  if (EffectArray.isArrayNonEmpty(conflictingNames)) {
+    failSchemaDefinition(
+      `${variantLabel} names conflict with union properties: ${
+        conflictingNames.join(', ')
+      }`,
     )
   }
 
@@ -466,9 +473,11 @@ const defineUnion = <CasesByTag extends Record<string, Schema.Struct.Fields>>(
     string,
     CallableTaggedStruct<string, Schema.Struct.Fields>
   > = {}
-  for (const [tag, fields] of Object.entries<Schema.Struct.Fields>(
-    casesByTag,
-  )) {
+  for (
+    const [tag, fields] of Object.entries<Schema.Struct.Fields>(
+      casesByTag,
+    )
+  ) {
     callables[tag] = makeCallable(tag, fields)
   }
 
@@ -479,7 +488,7 @@ const defineUnion = <CasesByTag extends Record<string, Schema.Struct.Fields>>(
     for (const tag of tags) {
       const member = callables[tag]
       if (!Object.hasOwn(callables, tag) || member === undefined) {
-        throw new Error(`Union subset contains an unknown variant: ${tag}`)
+        failSchemaDefinition(`Union subset contains an unknown variant: ${tag}`)
       }
 
       members.push(member)

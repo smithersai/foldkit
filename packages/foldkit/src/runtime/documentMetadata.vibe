@@ -4,7 +4,7 @@ import {
 } from './documentMetadata.platform.ts'
 import { Array as EffectArray } from 'effect'
 
-import { Document, textDirectionToAttribute } from '../html/index.ts'
+import { Document, textDirectionToAttribute } from '../html/index.vibe'
 
 type OwnedElement =
   | Readonly<{ _tag: 'Created'; element: HTMLElement }>

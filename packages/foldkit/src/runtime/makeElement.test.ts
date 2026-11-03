@@ -1,7 +1,7 @@
 import { Effect, Fiber, Number, Schema } from 'effect'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { TextDirection, __htmlBuilder } from '../html/index.js'
+import { TextDirection, __htmlBuilder } from '../html/index.vibe'
 import { defineMessageUnion } from '../message/index.js'
 import { modifyFields } from '../struct/index.vibe'
 import type * as Update from '../update/index.js'

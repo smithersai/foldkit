@@ -13,7 +13,7 @@ import {
   __htmlBuilder,
   __clearRuntime as clearHtmlRuntime,
   __setRuntime as setHtmlRuntime,
-} from '../html/index.js'
+} from '../html/index.vibe'
 import { defineView, submodel as submodelImpl } from '../html/submodel.js'
 import { defineMessageUnion } from '../message/index.js'
 import { MountTracker } from '../mount/index.vibe'

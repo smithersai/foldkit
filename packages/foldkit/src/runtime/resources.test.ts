@@ -11,13 +11,13 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import * as Command from '../command/index.vibe'
-import { __htmlBuilder } from '../html/index.js'
+import { __htmlBuilder } from '../html/index.vibe'
 import { defineMessageUnion } from '../message/index.js'
 import * as Subscription from '../subscription/subscription.vibe'
 import type * as Update from '../update/index.js'
 import { makeApplication } from './makeApplication.vibe'
 import { makeElement } from './makeElement.vibe'
-import { run } from './start.js'
+import { run } from './start.vibe'
 
 const Message = defineMessageUnion({
   ClickedReadValue: {},

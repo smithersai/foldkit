@@ -1,12 +1,12 @@
 import { Context, Effect } from 'effect'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
-import { createLazy } from '../html/lazy.js'
+import { createLazy } from '../html/lazy.vibe'
 import {
   type DispatchSync,
   clearRuntime,
   setRuntime,
-} from '../html/runtimeSingleton.js'
+} from '../html/runtimeSingleton.vibe'
 import { MountTracker } from '../mount/index.vibe'
 import { Dispatch } from '../runtime/index.js'
 import { h } from '../snabbdom/index.js'

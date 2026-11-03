@@ -17,12 +17,12 @@ import {
   createKeyedLazy,
   createLazy,
   observeLazyResolutions,
-} from './lazy.js'
+} from './lazy.vibe'
 import {
   type DispatchSync,
   clearRuntime,
   setRuntime,
-} from './runtimeSingleton.js'
+} from './runtimeSingleton.vibe'
 
 const noOpDispatchSync: DispatchSync = () => {}
 

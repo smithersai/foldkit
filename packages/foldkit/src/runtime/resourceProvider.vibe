@@ -1,14 +1,4 @@
-import {
-  Array,
-  Cause,
-  Context,
-  Effect,
-  Layer,
-  Option,
-  Record,
-  Ref,
-  type Scope,
-} from 'effect'
+import { Array as EffectArray, type Scope } from 'effect'
 
 import {
   __CurrentRegistry as __CurrentInterruptRegistry,
@@ -24,7 +14,7 @@ import type { PortChannelsBundle } from './hostConnector.vibe'
 /** A Managed Resource's config next to the Ref that holds its acquired value. */
 export type ManagedResourceRef<Model, Message> = Readonly<{
   config: ManagedResourceConfig<Model, Message>
-  ref: Ref.Ref<Option.Option<unknown>>
+  ref: Ref<Option<unknown>>
 }>
 
 /**
@@ -41,11 +31,11 @@ export type ResourceProvider<
 > = Readonly<{
   managedResourceRefs: ReadonlyArray<ManagedResourceRef<Model, Message>>
   provideAllResources: <A>(
-    effect: Effect.Effect<A, never, Resources | ManagedResourceServices>,
-  ) => Effect.Effect<A>
+    effect: A!never!(Resources | ManagedResourceServices),
+  ) => A!!
   provideResources: <A>(
-    effect: Effect.Effect<A, never, Resources>,
-  ) => Effect.Effect<A>
+    effect: A!never!Resources,
+  ) => A!!
 }>
 
 /**
@@ -66,16 +56,14 @@ export const makeResourceProvider = <
   runtimeScope,
   maybePortChannels,
 }: Readonly<{
-  resources: Layer.Layer<Resources> | undefined
+  resources: Layer<Resources> | undefined
   managedResources:
     | ManagedResources<Model, Message, ManagedResourceServices>
     | undefined
   runtimeScope: Scope.Scope
-  maybePortChannels: Option.Option<PortChannelsBundle>
-}>): Effect.Effect<
-  ResourceProvider<Model, Message, Resources, ManagedResourceServices>
-> =>
-  Effect.gen(function* () {
+  maybePortChannels: Option<PortChannelsBundle>
+}>): ResourceProvider<Model, Message, Resources, ManagedResourceServices>!! =>
+  effect {
     // NOTE: `Effect.provide(effect, layer)` builds the Layer into a
     // scope that closes when the provided effect ends, so providing the
     // Layer per Command would construct and tear down every resource on
@@ -87,40 +75,36 @@ export const makeResourceProvider = <
     // `Effect.cached` caches whatever Exit the first run produces:
     // dispose racing an in-flight build would otherwise cache an
     // interrupt, which every waiter would then surface as a crash.
-    const maybeAcquireResourceContext: Option.Option<
-      Effect.Effect<Context.Context<Resources>>
-    > = yield* Option.match(Option.fromNullishOr(resources), {
-      onNone: () => Effect.succeed(Option.none()),
-      onSome: resourceLayer =>
-        Effect.map(
-          Effect.cached(
-            Effect.uninterruptible(
-              Layer.buildWithScope(resourceLayer, runtimeScope),
-            ),
+    const maybeAcquireResourceContext: Option<Context<Resources>!!> = match (Option.fromNullishOr(resources)) {
+      when Option.None: Option.none();
+      when Option.Some(let resourceLayer): Option.some(
+        try Effect.cached(
+          Effect.uninterruptible(
+            Layer.buildWithScope(resourceLayer, runtimeScope),
           ),
-          Option.some,
         ),
-    })
+      );
+    }
 
     const managedResourceEntries: ReadonlyArray<
       [string, ManagedResourceConfig<Model, Message>]
     > = managedResources
-      ? /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
-        (Record.toEntries(managedResources) as ReadonlyArray<
-          [string, ManagedResourceConfig<Model, Message>]
-        >)
+      /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
+      ? (Record.toEntries(managedResources) as ReadonlyArray<
+        [string, ManagedResourceConfig<Model, Message>]
+      >)
       : []
 
-    const managedResourceRefs = yield* Effect.forEach(
+    const managedResourceRefs = try forEach(
       managedResourceEntries,
-      ([_key, config]) =>
-        Ref.make<Option.Option<unknown>>(Option.none()).pipe(
-          Effect.map(ref => ({ config, ref })),
-        ),
+      effect ([_key, config]) => {
+        const ref = try Ref.make<Option<unknown>>(Option.none())
+        return { config, ref }
+      },
     )
 
     const mergeResourceIntoLayer = (
-      layer: Layer.Layer<any>,
+      layer: Layer<any>,
       { config, ref }: ManagedResourceRef<Model, Message>,
     ) =>
       Layer.merge(
@@ -132,56 +116,41 @@ export const makeResourceProvider = <
         ),
       )
 
-    const maybeManagedResourceLayer = Array.match(managedResourceRefs, {
-      onEmpty: () => Option.none(),
-      onNonEmpty: refs =>
-        Option.some(
-          Array.reduce(
-            refs,
-            /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
-            Layer.empty as Layer.Layer<any>,
-            mergeResourceIntoLayer,
-          ),
-        ),
-    })
+    // NOTE: an app without Managed Resources provides the empty Layer, which
+    // builds nothing; the original provided no Layer at all and asserted the
+    // requirements away, which VibeLang's contracts do not allow.
+    const managedResourceLayer: Layer<any> = EffectArray.reduce(
+      managedResourceRefs,
+      /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
+      Layer.empty as Layer<any>,
+      mergeResourceIntoLayer,
+    )
 
     const interruptRegistry = __makeInterruptRegistry()
 
-    const provideAllResources = <A>(
-      effect: Effect.Effect<A, never, Resources | ManagedResourceServices>,
-    ): Effect.Effect<A> => {
-      const withResources = Option.match(maybeAcquireResourceContext, {
-        onNone: () => effect,
-        onSome: acquireResourceContext =>
-          Effect.flatMap(acquireResourceContext, resourceContext =>
-            Effect.provideContext(effect, resourceContext),
-          ),
-      })
-
-      const withManagedResources = Option.match(maybeManagedResourceLayer, {
-        /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
-        onNone: () => withResources as Effect.Effect<A>,
-        onSome: managedLayer =>
-          /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
-          Effect.provide(withResources, managedLayer) as Effect.Effect<A>,
-      })
-
-      const withPortChannels = Option.match(maybePortChannels, {
-        onNone: () => withManagedResources,
-        onSome: portChannels =>
-          Effect.provideService(
-            withManagedResources,
-            __CurrentPortChannels,
-            portChannels.channels,
-          ),
-      })
-
-      return Effect.provideService(
-        withPortChannels,
-        __CurrentInterruptRegistry,
-        interruptRegistry,
-      )
+    const resourceContextOrEmpty = effect (): Context<Resources>!! => match (maybeAcquireResourceContext) {
+      /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
+      when Option.None: Context.empty() as Context<Resources>;
+      when Option.Some(let acquireResourceContext): try acquireResourceContext;
     }
+
+    const provideAllResources = <A>(
+      program: A!never!(Resources | ManagedResourceServices),
+    ): A!! =>
+      effect {
+        const withResources = Effect.provideContext(
+          program,
+          try resourceContextOrEmpty(),
+        )
+        if (maybePortChannels is Option.Some(let portChannels)) {
+          provide managedResourceLayer, __CurrentPortChannels = portChannels.channels, __CurrentInterruptRegistry = interruptRegistry {
+            return try withResources
+          }
+        }
+        provide managedResourceLayer, __CurrentInterruptRegistry = interruptRegistry {
+          return try withResources
+        }
+      }
 
     // NOTE: Flags run through the same cached build that Commands and
     // Subscriptions use, rather than being handed the Layer again, so a
@@ -206,34 +175,40 @@ export const makeResourceProvider = <
     // untouched on both sides, because dispose racing either the build
     // or the Flags run is not a failure to recover from, and
     // `Effect.catchCause` hands the handler interrupt causes too.
-    const provideResources = <A>(
-      effect: Effect.Effect<A, never, Resources>,
-    ): Effect.Effect<A> =>
-      Option.match(maybeAcquireResourceContext, {
-        /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
-        onNone: () => effect as Effect.Effect<A>,
-        onSome: acquireResourceContext =>
-          Effect.matchCauseEffect(acquireResourceContext, {
-            onFailure: buildCause =>
-              Cause.hasInterruptsOnly(buildCause)
-                ? Effect.failCause(buildCause)
-                : Effect.catchCause(
-                    Effect.provideContext(
-                      effect,
-                      /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
-                      Context.empty() as Context.Context<Resources>,
-                    ),
-                    flagsCause =>
-                      Cause.hasInterruptsOnly(flagsCause)
-                        ? Effect.failCause(flagsCause)
-                        : Effect.failCause(
-                            Cause.combine(buildCause, flagsCause),
-                          ),
-                  ),
-            onSuccess: resourceContext =>
-              Effect.provideContext(effect, resourceContext),
-          }),
-      })
+    const provideResources = <A>(program: A!never!Resources): A!! =>
+      effect {
+        if (
+          maybeAcquireResourceContext is Option.Some(let acquireResourceContext)
+        ) {
+          const buildExit = try exit(acquireResourceContext)
+          if (buildExit is Exit.Failure(let buildCause)) {
+            if (Cause.hasInterruptsOnly(buildCause)) {
+              return try Effect.failCause(buildCause)
+            }
+            const flagsExit = try exit(
+              Effect.provideContext(
+                program,
+                /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
+                Context.empty() as Context<Resources>,
+              ),
+            )
+            return match (flagsExit) {
+              when Exit.Success(let value): value;
+              when Exit.Failure(let flagsCause): try Effect.failCause(
+                Cause.hasInterruptsOnly(flagsCause)
+                  ? flagsCause
+                  : Cause.combine(buildCause, flagsCause),
+              );
+            }
+          }
+          return try Effect.provideContext(program, buildExit.value)
+        }
+        return try Effect.provideContext(
+          program,
+          /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
+          Context.empty() as Context<Resources>,
+        )
+      }
 
     return { managedResourceRefs, provideAllResources, provideResources }
-  })
+  }

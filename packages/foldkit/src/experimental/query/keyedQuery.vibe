@@ -1,14 +1,7 @@
 import {
-  Array,
-  Effect,
-  Function,
-  HashMap,
-  Number,
-  Option,
-  Order,
-  Predicate,
-  Record,
-  Schema,
+  Array as EffectArray,
+  Function as EffectFunction,
+  Number as EffectNumber,
   pipe,
 } from 'effect'
 
@@ -32,6 +25,7 @@ import {
   parentFieldToLens,
   runExecute,
 } from './internal.vibe'
+import { failKeyedQueryDefinition } from './keyedQuery.plain.js'
 
 export type SyncFields = {
   readonly [x: PropertyKey]: Schema.Codec<unknown, unknown, never, never>
@@ -52,15 +46,15 @@ const isJsonObject = (value: Schema.Json): value is Schema.JsonObject =>
 
 const canonicalizeJson = (value: Schema.Json): Schema.Json => {
   if (globalThis.Array.isArray(value)) {
-    return Array.map(value, canonicalizeJson)
+    return EffectArray.map(value, canonicalizeJson)
   }
 
   if (isJsonObject(value)) {
     return pipe(
       value,
       Record.toEntries,
-      Array.sort(jsonEntryOrder),
-      Array.map(canonicalizeJsonEntry),
+      EffectArray.sort(jsonEntryOrder),
+      EffectArray.map(canonicalizeJsonEntry),
       Record.fromEntries,
     )
   }
@@ -95,7 +89,7 @@ export type KeyedQueryConfig<
   toKey?: (args: Schema.Schema.Type<Schema.Struct<Fields>>) => string
   execute: (
     args: Schema.Schema.Type<Schema.Struct<Fields>>,
-  ) => Effect.Effect<A, E, R>
+  ) => A!E!R
 }>
 
 const makeKeyedQueryMessage = <A, AI, E, EI, Fields extends SyncFields>(
@@ -187,11 +181,7 @@ export interface KeyedQuery<
       readonly args: Schema.Struct<Fields>
       readonly generation: typeof Schema.Number
     },
-    Effect.Effect<
-      CompletedFetchOf<KeyedQueryMessage<A, AI, E, EI, Fields>>,
-      never,
-      R
-    >
+    CompletedFetchOf<KeyedQueryMessage<A, AI, E, EI, Fields>>!never!R
   >
   /**
    * Creates a KeyedQuery Model for initial parent Model construction. Never
@@ -250,7 +240,7 @@ export interface KeyedQuery<
   /** Executes one keyed fetch directly and returns settled `AsyncData`. */
   readonly run: (
     args: KeyedArgs<Fields>,
-  ) => Effect.Effect<AsyncData.AsyncData<A, E>, never, R>
+  ) => AsyncData.AsyncData<A, E>!never!R
 }
 
 export function defineKeyedQuery<
@@ -268,8 +258,8 @@ export function defineKeyedQuery<
   type EntryData = typeof asyncData.schema.Type
   const Args = Schema.Struct(config.args)
   type Args = typeof Args.Type
-  if (Array.isArrayEmpty(Record.keys(config.args))) {
-    throw new Error(
+  if (EffectArray.isArrayEmpty(Record.keys(config.args))) {
+    failKeyedQueryDefinition(
       `Query.define("${config.name}"): keyed args must include at least one field`,
     )
   }
@@ -282,20 +272,17 @@ export function defineKeyedQuery<
   const Fetch = Command.define(`Fetch${config.name}`, {
     args: { args: Args, generation: Schema.Number },
     messages: [Message.CompletedFetch],
-    execute: ({ args, generation }) =>
-      pipe(
-        config.execute(args),
-        Effect.result,
-        Effect.map((result): typeof Message.CompletedFetch.Type =>
-          // NOTE: CompletedFetch's constructor input view rejects args that are already the decoded Type.
-          ({
-            _tag: 'CompletedFetch',
-            args,
-            generation,
-            result,
-          }),
-        ),
-      ),
+    execute: effect ({ args, generation }) => {
+      const result = try Effect.result(config.execute(args))
+      // NOTE: CompletedFetch's constructor input view rejects args that are already the decoded Type.
+      const completed: typeof Message.CompletedFetch.Type = {
+        _tag: 'CompletedFetch',
+        args,
+        generation,
+        result,
+      }
+      return completed
+    },
   })
 
   const Model = makeKeyedQueryModel(config.data, config.error, Args)
@@ -312,7 +299,7 @@ export function defineKeyedQuery<
         ),
       ),
     start: (model, args, data) => {
-      const nextGeneration = Number.increment(model.generation)
+      const nextGeneration = EffectNumber.increment(model.generation)
 
       return {
         model: modifyFields(model, {
@@ -339,8 +326,10 @@ export function defineKeyedQuery<
   const liftTransition = (
     transition: AsyncDataTransition,
   ): Update.Fold<Model, Message, Args, R> =>
-    Function.dual(2, (model: Model, args: Args): UpdateReturn =>
-      applyTransition(store, model, args, transition),
+    EffectFunction.dual(
+      2,
+      (model: Model, args: Args): UpdateReturn =>
+        applyTransition(store, model, args, transition),
     )
 
   const revalidate = liftTransition(AsyncData.revalidate)
@@ -360,8 +349,8 @@ export function defineKeyedQuery<
         const entry = maybeEntry.value
 
         if (
-          !AsyncData.isPending(entry.data) ||
-          generation !== entry.generation
+          !AsyncData.isPending(entry.data)
+          || generation !== entry.generation
         ) {
           return { model }
         }
@@ -408,7 +397,7 @@ export function defineKeyedQuery<
     return liftFromLens(config)
   }
 
-  const run = (args: Args): Effect.Effect<EntryData, never, R> =>
+  const run = (args: Args): EntryData!never!R =>
     runExecute(config.execute(args))
 
   return {

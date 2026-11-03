@@ -1,4 +1,4 @@
-import { Cause, Context, Effect, Exit, Option, type Scope } from 'effect'
+import { type Scope } from 'effect'
 
 import {
   type BoundaryRegistry,
@@ -9,9 +9,10 @@ import {
   __clearRuntime as clearHtmlRuntime,
   __createBoundaryRegistry as createHtmlBoundaryRegistry,
   __endReplayRender as endReplayHtmlRender,
-  __flushReplayUnmountsAfterPatchFailure as flushReplayUnmountsAfterPatchFailure,
+  __flushReplayUnmountsAfterPatchFailure
+    as flushReplayUnmountsAfterPatchFailure,
   __setRuntime as setHtmlRuntime,
-} from '../html/index.js'
+} from '../html/index.vibe'
 import { __hydrateVNode } from '../hydrate.vibe'
 import { FOLDKIT_APP_ATTRIBUTE } from '../hydrationMarker.js'
 import { MountRuntime, MountTracker } from '../mount/index.vibe'
@@ -30,11 +31,17 @@ import {
 import type {
   DevToolsIntegration,
   DevToolsRenderBridge,
-} from './devToolsIntegration.js'
+} from './devToolsIntegration.vibe'
 import { Dispatch } from './dispatch.vibe'
 import { applyDocumentMetadata } from './documentMetadata.vibe'
 import type { DuplicateIdScanner } from './duplicateIdScanner.vibe'
-import type { MessageQueue } from './messageQueue.js'
+import type { MessageQueue } from './messageQueue.vibe'
+import { rethrow } from './renderer.plain.js'
+import {
+  isHot,
+  replacePlaceholderWithContainer,
+  requestFrame,
+} from './renderer.platform.js'
 import type { RuntimeStatus } from './runtimeStatus.js'
 import {
   type ResolvedSlowPhaseConfig,
@@ -82,13 +89,13 @@ type PendingViewTransition = Readonly<{
  */
 export type Renderer<Model, Message> = Readonly<{
   crashWith: (
-    cause: Cause.Cause<never>,
-    maybeMessage: Option.Option<Message>,
-  ) => Effect.Effect<void>
+    cause: Cause<never>,
+    maybeMessage: Option<Message>,
+  ) => void!!
   render: (
     model: Model,
-    maybeMessage: Option.Option<Message>,
-  ) => Effect.Effect<void>
+    maybeMessage: Option<Message>,
+  ) => void!!
   setLastDirtyMessage: (message: Message) => void
   scheduleRenderFrame: () => void
   skipPendingViewTransition: () => void
@@ -135,24 +142,24 @@ export const makeRenderer = <Model, Message>({
   crash: CrashConfig<Model, Message> | undefined
   buildId: string | undefined
   initModel: Model
-  maybeHydrationRoot: Option.Option<HTMLElement>
-  maybeSlowView: Option.Option<
+  maybeHydrationRoot: Option<HTMLElement>
+  maybeSlowView: Option<
     ResolvedSlowPhaseConfig<SlowViewContext<Model, Message>>
   >
-  maybeSlowPatch: Option.Option<
+  maybeSlowPatch: Option<
     ResolvedSlowPhaseConfig<SlowPatchContext<Model, Message>>
   >
   duplicateIdScanner: DuplicateIdScanner | undefined
-  maybeResolvedViewTransition: Option.Option<
+  maybeResolvedViewTransition: Option<
     ResolvedViewTransition<Model, Message>
   >
   commitNotifier: CommitNotifier
-  runtimeContext: Context.Context<never>
+  runtimeContext: Context<never>
   readLiveModel: () => Model
   messageQueue: MessageQueue<Message>
   devToolsIntegration: DevToolsIntegration<Model, Message>
-}>): Effect.Effect<Renderer<Model, Message>, never, Scope.Scope> =>
-  Effect.gen(function* () {
+}>): Renderer<Model, Message>!never!Scope.Scope =>
+  effect {
     const {
       enqueueMessage,
       enqueueMessageEffect,
@@ -226,7 +233,7 @@ export const makeRenderer = <Model, Message>({
     const vnodeSlot: VNodeSlot = { maybeCurrentVNode: Option.none() }
 
     const patchRuntimeVNode = (
-      maybeCurrentVNode: Option.Option<VNode>,
+      maybeCurrentVNode: Option<VNode>,
       nextVNode: VNode | null,
       seen?: Set<object>,
     ): VNode => {
@@ -251,15 +258,16 @@ export const makeRenderer = <Model, Message>({
         } finally {
           flushReplayUnmountsAfterPatchFailure()
         }
-        throw error
+        rethrow(error)
       }
     }
 
     // NOTE: consumed by the first render only. Set when this boot found
     // an adoptable server-rendered root; the first patch then goes
     // through `__hydrateVNode` instead of replacing the container.
-    let pendingHydrationRoot: HTMLElement | null =
-      Option.getOrNull(maybeHydrationRoot)
+    let pendingHydrationRoot: HTMLElement | null = Option.getOrNull(
+      maybeHydrationRoot,
+    )
 
     // NOTE: registered before any perpetual fiber is forked so it runs
     // after they are interrupted (scope finalizers are LIFO). Patching to
@@ -270,32 +278,19 @@ export const makeRenderer = <Model, Message>({
     // dispose path. A runtime that stops because it crashed completes
     // normally after rendering the crash view, and the crash view must
     // stay visible.
-    yield* Effect.addFinalizer(exit =>
-      Effect.gen(function* () {
-        if (!Exit.hasInterrupts(exit)) {
-          return
-        }
-        const maybeCurrentVNode = vnodeSlot.maybeCurrentVNode
-        yield* Option.match(maybeCurrentVNode, {
-          onNone: () => Effect.void,
-          onSome: currentVNode =>
-            Effect.sync(() => {
-              const placeholderNode = __patchVNode(
-                Option.some(currentVNode),
-                null,
-                container,
-              ).elm
-              if (placeholderNode && placeholderNode.parentNode) {
-                placeholderNode.parentNode.replaceChild(
-                  container,
-                  placeholderNode,
-                )
-                container.replaceChildren()
-              }
-            }),
-        })
-      }),
-    )
+    try Effect.addFinalizer(effect (exit) => {
+      if (!Exit.hasInterrupts(exit)) {
+        return
+      }
+      if (vnodeSlot.maybeCurrentVNode is Option.Some(let currentVNode)) {
+        const placeholderNode = __patchVNode(
+          Option.some(currentVNode),
+          null,
+          container,
+        ).elm
+        replacePlaceholderWithContainer(placeholderNode, container)
+      }
+    })
 
     // NOTE: shared by every crash path: the init render, the plain
     // message drain and render frame (which reach it through
@@ -308,31 +303,31 @@ export const makeRenderer = <Model, Message>({
     // silently and leaving the DOM frozen at the last successful
     // render. The first crash wins: concurrent Command fibers can fail
     // on the same broken Layer, and only one should report and render.
-    const crashWith = (
-      cause: Cause.Cause<never>,
-      maybeMessage: Option.Option<Message>,
-    ): Effect.Effect<void> =>
-      Effect.sync(() => {
-        if (status.isCrashed) {
-          return
-        }
-        status.isCrashed = true
-        // NOTE: the crash view should appear at once, not animate in from
-        // a snapshot of the state that crashed.
-        skipPendingViewTransition()
-        const model = readLiveModel()
-        const squashed = Cause.squash(cause)
-        const error =
-          squashed instanceof Error ? squashed : new Error(String(squashed))
-        renderCrashView(
-          { error, model, message: maybeMessage },
-          crash,
-          container,
-          vnodeSlot,
-          manageDocument,
-        )
-        settlePendingCommit()
-      })
+    const crashWith = effect (
+      cause: Cause<never>,
+      maybeMessage: Option<Message>,
+    ): void!! => {
+      if (status.isCrashed) {
+        return
+      }
+      status.isCrashed = true
+      // NOTE: the crash view should appear at once, not animate in from
+      // a snapshot of the state that crashed.
+      skipPendingViewTransition()
+      const model = readLiveModel()
+      const squashed = Cause.squash(cause)
+      const error = squashed instanceof Error
+        ? squashed
+        : new Error(String(squashed))
+      renderCrashView(
+        { error, model, message: maybeMessage },
+        crash,
+        container,
+        vnodeSlot,
+        manageDocument,
+      )
+      settlePendingCommit()
+    }
 
     // NOTE: `maybeLastDirtyMessage` holds the most recent dirtying Message,
     // so slow render-phase callbacks during high-rate bursts attribute to
@@ -351,7 +346,7 @@ export const makeRenderer = <Model, Message>({
       enqueueMessage(message as Message)
     }
 
-    const dispatchAsync = (message: unknown): Effect.Effect<void> =>
+    const dispatchAsync = (message: unknown): void!! =>
       /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
       enqueueMessageEffect(message as Message)
 
@@ -364,7 +359,12 @@ export const makeRenderer = <Model, Message>({
     // unmounted Submodels (e.g. an entry removed from a list) are
     // dropped from the registry via snabbdom `postdestroy` hooks
     // attached by `h.submodel` to each child vnode.
-    const boundaryRegistry: BoundaryRegistry = createHtmlBoundaryRegistry()
+    const boundaryRegistry: BoundaryRegistry = try Effect.orDie(
+      Effect.try({
+        try: () => createHtmlBoundaryRegistry(),
+        catch: (error) => error,
+      }),
+    )
 
     // NOTE: callers set `isRenderingFrame` before calling this and clear
     // it after. Without it, a Message dispatched while the patch is still
@@ -373,9 +373,9 @@ export const makeRenderer = <Model, Message>({
     // tree's unmount callbacks don't dispatch into live history.
     const renderSync = (
       model: Model,
-      maybeMessage: Option.Option<Message>,
+      maybeMessage: Option<Message>,
       dispatchService: typeof Dispatch.Service,
-      renderContext: Context.Context<never>,
+      renderContext: Context<never>,
       renderMode: RenderMode,
     ): void => {
       const maybeLiveRender = Option.liftPredicate(
@@ -428,8 +428,8 @@ export const makeRenderer = <Model, Message>({
         maybeLiveSlowPatch,
         () => {
           if (
-            Option.isNone(maybeCurrentVNode) &&
-            pendingHydrationRoot !== null
+            Option.isNone(maybeCurrentVNode)
+            && pendingHydrationRoot !== null
           ) {
             const hydrationRoot = pendingHydrationRoot
             pendingHydrationRoot = null
@@ -478,7 +478,7 @@ export const makeRenderer = <Model, Message>({
         applyDocumentMetadata(nextDocument, patchedVNode.elm)
       }
 
-      if (import.meta.hot) {
+      if (isHot) {
         duplicateIdScanner?.schedule(patchedVNode.elm)
       }
     }
@@ -492,34 +492,37 @@ export const makeRenderer = <Model, Message>({
     // acquisition access to the live Model.
     const render = (
       model: Model,
-      maybeMessage: Option.Option<Message>,
+      maybeMessage: Option<Message>,
       dispatchService: typeof Dispatch.Service = dispatch,
       renderMode: RenderMode = 'Live',
-    ) =>
-      Effect.gen(function* () {
-        status.isRenderingFrame = true
-        const renderContext = yield* Effect.context<never>()
-        if (renderMode === 'Replay') {
-          beginReplayHtmlRender()
-        }
-        renderSync(
-          model,
-          maybeMessage,
-          dispatchService,
-          renderContext,
-          renderMode,
-        )
-      }).pipe(
-        Effect.ensuring(
-          Effect.sync(() => {
-            status.isRenderingFrame = false
-            endReplayHtmlRender()
-            drainPendingMessages()
-          }),
-        ),
-        Effect.provideService(Dispatch, dispatchService),
-        Effect.provideService(MountTracker, mountTracker),
-        Effect.provideService(MountRuntime, mountRuntime),
+    ): void!! =>
+      Effect.ensuring(
+        effect {
+          provide Dispatch = dispatchService, MountTracker = mountTracker, MountRuntime = mountRuntime {
+            status.isRenderingFrame = true
+            const renderContext = try Effect.context<never>()
+            if (renderMode === 'Replay') {
+              try Effect.orDie(
+                Effect.try({
+                  try: () => beginReplayHtmlRender(),
+                  catch: (error) => error,
+                }),
+              )
+            }
+            renderSync(
+              model,
+              maybeMessage,
+              dispatchService,
+              renderContext,
+              renderMode,
+            )
+          }
+        },
+        Effect.sync(() => {
+          status.isRenderingFrame = false
+          endReplayHtmlRender()
+          drainPendingMessages()
+        }),
       )
 
     const liveRenderContext = Context.add(
@@ -576,7 +579,7 @@ export const makeRenderer = <Model, Message>({
         setViewState('Live')
         attachRenderedMounts()
       } catch (error) {
-        Effect.runFork(crashWith(Cause.die(error), maybeLastDirtyMessage))
+        runFork(crashWith(Cause.die(error), maybeLastDirtyMessage))
       } finally {
         status.isRenderingFrame = false
       }
@@ -650,10 +653,10 @@ export const makeRenderer = <Model, Message>({
           // so its callback cannot repaint inside the stale transition
           // even if it arrives after resume has published `Live`.
           if (
-            status.isRuntimeDisposed ||
-            status.isCrashed ||
-            isPausedNow() ||
-            readViewState() === 'Paused'
+            status.isRuntimeDisposed
+            || status.isCrashed
+            || isPausedNow()
+            || readViewState() === 'Paused'
           ) {
             settlePendingCommit()
             return
@@ -678,7 +681,7 @@ export const makeRenderer = <Model, Message>({
     const renderFramePlain = (): void => {
       // NOTE: retain the scheduled frame's pending commit while the drain waits.
       if (isLiveModelBehindQueue()) {
-        requestAnimationFrame(renderFramePlain)
+        requestFrame(renderFramePlain)
         return
       }
       isRenderFrameScheduled = false
@@ -739,7 +742,7 @@ export const makeRenderer = <Model, Message>({
       }
       isRenderFrameScheduled = true
       commitNotifier.markCommitPending()
-      requestAnimationFrame(renderFramePlain)
+      requestFrame(renderFramePlain)
     }
 
     const devToolsRenderBridge: DevToolsRenderBridge = {
@@ -750,71 +753,72 @@ export const makeRenderer = <Model, Message>({
       // OnMount releases the replay acquisition before starting the
       // live action. Also discards mount events fired during the render
       // so they don't get attributed to the next user-initiated dispatch.
-      renderReplay: model =>
-        Effect.gen(function* () {
-          /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
-          const replayedModel = model as Model
-          const previousRenderedModel = lastRenderedModel
-          // NOTE: a Mount surviving from the live view must observe
-          // Paused before the historical patch can expose different
-          // DOM. Mounts inserted by that patch capture this state when
-          // acquired, so asynchronous setup cannot skip Paused even if
-          // it consumes the Stream only after the live view returns.
-          setViewState('Paused')
-          // NOTE: a transition still animating belongs to the live
-          // state this replay is about to paint over. Left running it
-          // animates a dead snapshot across the replayed DOM.
-          skipPendingViewTransition()
-          const replayRenderExit = yield* Effect.exit(
-            render(replayedModel, Option.none(), noOpDispatch, 'Replay'),
-          )
-          if (Exit.isFailure(replayRenderExit)) {
-            drainMountEvents()
-            if (isPausedNow()) {
-              // NOTE: the failed patch may already have changed the
-              // DOM. Repaint the Model at the store's previous paused
-              // index before returning the failure. If that Model no
-              // longer renders either, resume the store so its normal
-              // live frame becomes the single recovery path.
-              const rollbackExit = yield* Effect.exit(
-                render(
-                  previousRenderedModel,
-                  Option.none(),
-                  noOpDispatch,
-                  'Replay',
-                ),
-              )
-              drainMountEvents()
-              if (Exit.isFailure(rollbackExit)) {
-                yield* resumeDevTools
-              }
-            } else {
-              // NOTE: a failed first jump leaves the store live. Keep
-              // Mounts Paused through the recovery patch, which
-              // publishes Live only after the live DOM is restored.
-              yield* Effect.sync(() => scheduleRenderFrame(true))
-            }
-            return yield* Effect.failCause(replayRenderExit.cause)
-          }
+      renderReplay: effect model => {
+        /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
+        const replayedModel = model as Model
+        const previousRenderedModel = lastRenderedModel
+        // NOTE: a Mount surviving from the live view must observe
+        // Paused before the historical patch can expose different
+        // DOM. Mounts inserted by that patch capture this state when
+        // acquired, so asynchronous setup cannot skip Paused even if
+        // it consumes the Stream only after the live view returns.
+        setViewState('Paused')
+        // NOTE: a transition still animating belongs to the live
+        // state this replay is about to paint over. Left running it
+        // animates a dead snapshot across the replayed DOM.
+        skipPendingViewTransition()
+        const replayRenderExit = try exit(
+          render(replayedModel, Option.none(), noOpDispatch, 'Replay'),
+        )
+        if (Exit.isFailure(replayRenderExit)) {
           drainMountEvents()
-          // NOTE: a replay paints a past Model, so it owns the DOM on
-          // screen until the next live frame. Leaving
-          // `lastRenderedModel` on the pre-pause Model would hand the
-          // `viewTransition` predicate a `previousModel` describing a
-          // DOM that no longer exists, and the frame `resume`
-          // schedules would animate the wrong direction out of the
-          // wrong snapshot.
-          lastRenderedModel = replayedModel
-          // NOTE: the Message that dirtied the pre-pause frame does not
-          // describe this repaint. Clearing it means the frame `resume`
-          // schedules renders plainly, matching the documented rule
-          // that time-travel never animates.
-          maybeLastDirtyMessage = Option.none()
-        }),
+          if (isPausedNow()) {
+            // NOTE: the failed patch may already have changed the
+            // DOM. Repaint the Model at the store's previous paused
+            // index before returning the failure. If that Model no
+            // longer renders either, resume the store so its normal
+            // live frame becomes the single recovery path.
+            const rollbackExit = try exit(
+              render(
+                previousRenderedModel,
+                Option.none(),
+                noOpDispatch,
+                'Replay',
+              ),
+            )
+            drainMountEvents()
+            if (Exit.isFailure(rollbackExit)) {
+              try resumeDevTools
+            }
+          } else {
+            // NOTE: a failed first jump leaves the store live. Keep
+            // Mounts Paused through the recovery patch, which
+            // publishes Live only after the live DOM is restored.
+            scheduleRenderFrame(true)
+          }
+          return try Effect.failCause(replayRenderExit.cause)
+        }
+        drainMountEvents()
+        // NOTE: a replay paints a past Model, so it owns the DOM on
+        // screen until the next live frame. Leaving
+        // `lastRenderedModel` on the pre-pause Model would hand the
+        // `viewTransition` predicate a `previousModel` describing a
+        // DOM that no longer exists, and the frame `resume`
+        // schedules would animate the wrong direction out of the
+        // wrong snapshot.
+        lastRenderedModel = replayedModel
+        // NOTE: the Message that dirtied the pre-pause frame does not
+        // describe this repaint. Clearing it means the frame `resume`
+        // schedules renders plainly, matching the documented rule
+        // that time-travel never animates.
+        maybeLastDirtyMessage = Option.none()
+      },
       // NOTE: `resume` calls this after a jumpTo render attached DOM
       // listeners to `noOpDispatch`. Scheduling a frame renders the
       // live model with live dispatch and rebinds listeners.
-      markRenderPending: Effect.sync(() => scheduleRenderFrame(true)),
+      markRenderPending: effect {
+        scheduleRenderFrame(true)
+      },
     }
 
     return {
@@ -825,4 +829,4 @@ export const makeRenderer = <Model, Message>({
       skipPendingViewTransition,
       devToolsRenderBridge,
     }
-  })
+  }

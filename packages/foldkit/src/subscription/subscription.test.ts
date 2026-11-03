@@ -9,7 +9,7 @@ import {
 } from 'effect'
 import { describe, expect, expectTypeOf, it } from 'vitest'
 
-import { defineTaggedUnion } from '../schema/index.js'
+import { defineTaggedUnion } from '../schema/index.vibe'
 import {
   type GatedDependencies,
   type Subscriptions,

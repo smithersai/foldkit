@@ -24,8 +24,8 @@ import {
   __htmlBuilder,
   __clearRuntime as clearHtmlRuntime,
   __setRuntime as setHtmlRuntime,
-} from './index.js'
-import type { MountRenderOwner } from './runtimeSingleton.js'
+} from './index.vibe'
+import type { MountRenderOwner } from './runtimeSingleton.vibe'
 
 const patch = init([
   attributesModule,

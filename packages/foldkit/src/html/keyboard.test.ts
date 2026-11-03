@@ -4,12 +4,12 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { defineMessageUnion } from '../message/index.js'
 import { MountTracker } from '../mount/index.vibe'
 import { Dispatch } from '../runtime/index.js'
-import { type HtmlBuilder, __htmlBuilder } from './index.js'
+import { type HtmlBuilder, __htmlBuilder } from './index.vibe'
 import {
   type DispatchSync,
   clearRuntime,
   setRuntime,
-} from './runtimeSingleton.js'
+} from './runtimeSingleton.vibe'
 
 const setUpRuntime = (dispatched: Array<unknown>): void => {
   const dispatchSync: DispatchSync = message => {

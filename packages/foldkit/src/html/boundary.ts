@@ -1,4 +1,4 @@
-import type { DispatchSync } from './runtimeSingleton.js'
+import type { DispatchSync } from './runtimeSingleton.vibe'
 
 /** Wrapping descriptor stored per Submodel boundary. */
 export type WrapDescriptor = Readonly<{

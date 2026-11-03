@@ -1,7 +1,7 @@
 import { Option, Schema } from 'effect'
 import { describe, expect, it } from 'vitest'
 
-import { defineMessageUnion, taggedStruct } from '../schema/index.js'
+import { defineMessageUnion, taggedStruct } from '../schema/index.vibe'
 import {
   indexMessageSchemaDocument,
   narrowToVariant,

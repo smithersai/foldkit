@@ -3,12 +3,12 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { MountTracker } from '../mount/index.vibe'
 import { Dispatch } from '../runtime/index.js'
-import { __htmlBuilder } from './index.js'
+import { __htmlBuilder } from './index.vibe'
 import {
   type DispatchSync,
   clearRuntime,
   setRuntime,
-} from './runtimeSingleton.js'
+} from './runtimeSingleton.vibe'
 
 /**
  * Pins that attribute handlers apply their effect when the element is

@@ -10,6 +10,14 @@ import {
   resolveBoundaryDispatchThunk,
   resolveMountBoundaryDispatch,
 } from './boundary.js'
+import {
+  clearRuntime as plainClearRuntime,
+  getCurrentFrame as plainGetCurrentFrame,
+  pushBoundary as plainPushBoundary,
+  requireBoundary as plainRequireBoundary,
+  requireFrame,
+  stack,
+} from './runtimeSingleton.plain.js'
 
 /** Synchronous message dispatcher provided to view-time element constructors. */
 export type DispatchSync = (message: unknown) => void
@@ -31,21 +39,6 @@ export type Frame = Readonly<{
   boundaryRegistry: BoundaryRegistry
   boundaryId: BoundaryId
 }>
-
-const stack: Array<Frame> = []
-
-const requireFrame = (): Frame => {
-  const frame = stack[stack.length - 1]
-  if (frame === undefined) {
-    throw new Error(
-      'Foldkit: html element constructors must be called inside a runtime-driven ' +
-        'render. The element was built outside a view, or foldkit was loaded as ' +
-        'more than one instance (a bundler split foldkit and @foldkit/ui into ' +
-        'separate copies).',
-    )
-  }
-  return frame
-}
 
 /** Pushes a new dispatch and runtime context onto the singleton stack. The
  *  runtime calls this before invoking a user `view`, and any test or
@@ -78,22 +71,7 @@ export const setRuntime = (
  *  and registry, but uses a different boundary. Used by `h.submodel` to
  *  enter a child Submodel's wrapping context. Must be paired with
  *  {@link clearRuntime}. */
-export const pushBoundary = (boundaryId: BoundaryId): void => {
-  const parent = stack[stack.length - 1]
-  if (parent === undefined) {
-    throw new Error(
-      'Foldkit: pushBoundary called without an active runtime frame',
-    )
-  }
-  stack.push({
-    outerDispatch: parent.outerDispatch,
-    mountOuterDispatch: parent.mountOuterDispatch,
-    mountRenderOwner: parent.mountRenderOwner,
-    runtimeContext: parent.runtimeContext,
-    boundaryRegistry: parent.boundaryRegistry,
-    boundaryId,
-  })
-}
+export const pushBoundary: (boundaryId: BoundaryId) => void = plainPushBoundary
 
 /** Pushes a fully-specified frame, ignoring whatever is currently on the
  *  stack. Used by `h.submodel`'s slot-callback wrapping so the wrapped
@@ -119,17 +97,7 @@ export const pushFrame = (frame: Frame): void => {
  *  Throws when called on an empty stack. That signals an unmatched
  *  push/pop pair somewhere upstream and would silently corrupt later
  *  renders if it slid by. */
-export const clearRuntime = (): void => {
-  if (stack.length === 0) {
-    throw new Error(
-      'Foldkit: clearRuntime called on an empty runtime stack. This means ' +
-        'a `pushBoundary` or `setRuntime` was not paired with `clearRuntime` ' +
-        '(or vice versa) upstream. Likely a bug in a custom Submodel ' +
-        'integration or view-time helper.',
-    )
-  }
-  stack.pop()
-}
+export const clearRuntime: () => void = plainClearRuntime
 
 /** Returns the current dispatcher. For frames in the root boundary, this
  *  is the runtime's actual dispatch; for nested Submodel boundaries, this
@@ -219,18 +187,10 @@ export const requireRuntimeContext = (): Context.Context<never> => {
 /** Returns the current frame's boundary registry and boundary id. Used by
  *  `h.submodel` to register wrapping descriptors and compute child
  *  boundary ids. Throws when called outside of a runtime frame. */
-export const requireBoundary = (): Readonly<{
+export const requireBoundary: () => Readonly<{
   registry: BoundaryRegistry
   boundaryId: BoundaryId
-}> => {
-  const frame = stack[stack.length - 1]
-  if (frame === undefined) {
-    throw new Error(
-      'Foldkit: h.submodel must be called inside a runtime-driven render',
-    )
-  }
-  return { registry: frame.boundaryRegistry, boundaryId: frame.boundaryId }
-}
+}> = plainRequireBoundary
 
 /** Returns the full current frame, used by `h.submodel` to snapshot the
  *  parent's context before pushing a child boundary. The snapshot is
@@ -238,12 +198,4 @@ export const requireBoundary = (): Readonly<{
  *  full frame via {@link pushFrame} when invoked, instead of inheriting
  *  from whatever happens to be on the stack at invocation time. Throws
  *  when called outside of a runtime frame. */
-export const getCurrentFrame = (): Frame => {
-  const frame = stack[stack.length - 1]
-  if (frame === undefined) {
-    throw new Error(
-      'Foldkit: getCurrentFrame called without an active runtime frame',
-    )
-  }
-  return frame
-}
+export const getCurrentFrame: () => Frame = plainGetCurrentFrame

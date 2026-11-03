@@ -14,8 +14,8 @@ import {
   registerBoundaryWrap,
   resolveMountBoundaryDispatch,
 } from './boundary.js'
-import { __htmlBuilder } from './index.js'
-import { createKeyedLazy, createLazy } from './lazy.js'
+import { __htmlBuilder } from './index.vibe'
+import { createKeyedLazy, createLazy } from './lazy.vibe'
 import {
   type DispatchSync,
   clearRuntime,
@@ -23,7 +23,7 @@ import {
   requireDispatch,
   requireMountDispatch,
   setRuntime,
-} from './runtimeSingleton.js'
+} from './runtimeSingleton.vibe'
 import {
   type AnySubmodelView,
   type SubmodelConfig,

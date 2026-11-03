@@ -1,4 +1,4 @@
-export type { RoutingConfig } from './browserListeners.js'
+export type { RoutingConfig } from './browserListeners.vibe'
 
 export type {
   CrashConfig,
@@ -43,7 +43,7 @@ export type {
   ElementInit,
 } from './makeElement.vibe'
 
-export type { MakeRuntimeReturn } from './runtime.js'
+export type { MakeRuntimeReturn } from './runtime.vibe'
 
 export { SlowPhase, defaultSlowCallback } from './slowPhase.vibe'
 
@@ -57,9 +57,9 @@ export type {
   SlowViewContext,
 } from './slowPhase.vibe'
 
-export { embed, hydrate, run } from './start.js'
+export { embed, hydrate, run } from './start.vibe'
 
-export type { HydrateOptions, RunOptions } from './start.js'
+export type { HydrateOptions, RunOptions } from './start.vibe'
 
 export type {
   ViewTransitionConfig,

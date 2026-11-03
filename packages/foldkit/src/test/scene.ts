@@ -20,20 +20,20 @@ import type {
 } from '../customElement/index.vibe'
 import { serializedStylePropertyName } from '../domReflection.js'
 import type { File } from '../file/index.js'
-import type { FoldkitMountMarker } from '../html/index.js'
+import type { FoldkitMountMarker } from '../html/index.vibe'
 import {
   FOLDKIT_MOUNT_KEY,
   FileHandlerSymbol,
   __clearRuntime as clearHtmlRuntime,
   __htmlBuilder as htmlBuilderFor,
   __setRuntime as setHtmlRuntime,
-} from '../html/index.js'
+} from '../html/index.vibe'
 import type {
   Document,
   Html,
   HtmlBuilder,
   KeyboardModifiers,
-} from '../html/index.js'
+} from '../html/index.vibe'
 import type { Entry as ManagedResourceEntry } from '../managedResource/index.js'
 import { MountTracker } from '../mount/index.vibe'
 import type { MountDefinition } from '../mount/index.vibe'

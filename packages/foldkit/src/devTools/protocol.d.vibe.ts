@@ -56,7 +56,7 @@ export declare const MAX_DISPATCH_BATCH_SIZE = 100;
 /** A request from the MCP server. The Vite plugin handles
  * `Request.RequestListRuntimes`; it forwards every other request to a browser
  * runtime. */
-export declare const Request: import("../schema/index.ts").TaggedUnion<{
+export declare const Request: import("../schema/index.vibe").TaggedUnion<{
     readonly RequestGetModel: {
         maybePath: Schema.OptionFromNullOr<Schema.String>;
         expand: Schema.Boolean;
@@ -112,7 +112,7 @@ export declare const MessageTagCount: Schema.Struct<{
 /** The value on one side of a Model diff. `DiffValue.Present` carries the
  * value. `DiffValue.Absent` means the path does not exist on that side, which
  * keeps a missing path distinct from a path whose value is `null`. */
-export declare const DiffValue: import("../schema/index.ts").TaggedUnion<{
+export declare const DiffValue: import("../schema/index.vibe").TaggedUnion<{
     readonly Absent: {};
     readonly Present: {
         value: Schema.Unknown;
@@ -123,13 +123,13 @@ export type DiffValue = typeof DiffValue.Type;
 /** One changed path in a Model diff. `before` is the value at `fromIndex`, `after` the value at `toIndex`. */
 export declare const ModelDiffChange: Schema.Struct<{
     readonly path: Schema.String;
-    readonly before: import("../schema/index.ts").TaggedUnion<{
+    readonly before: import("../schema/index.vibe").TaggedUnion<{
         readonly Absent: {};
         readonly Present: {
             value: Schema.Unknown;
         };
     }>;
-    readonly after: import("../schema/index.ts").TaggedUnion<{
+    readonly after: import("../schema/index.vibe").TaggedUnion<{
         readonly Absent: {};
         readonly Present: {
             value: Schema.Unknown;
@@ -152,7 +152,7 @@ export declare const MessageSchemaIndex: Schema.Struct<{
 }>;
 /** The result of requesting the app's Message Schema. It is either a compact
  * index of Message variants or the JSON Schema document for one variant. */
-export declare const MessageSchemaResult: import("../schema/index.ts").TaggedUnion<{
+export declare const MessageSchemaResult: import("../schema/index.vibe").TaggedUnion<{
     readonly MessageSchemaIndexResult: {
         index: Schema.Struct<{
             readonly variants: Schema.$Array<Schema.Struct<{
@@ -169,7 +169,7 @@ export declare const MessageSchemaResult: import("../schema/index.ts").TaggedUni
 /** The result of requesting the app's Message Schema. */
 export type MessageSchemaResult = typeof MessageSchemaResult.Type;
 /** A response replying to a Request. */
-export declare const Response: import("../schema/index.ts").TaggedUnion<{
+export declare const Response: import("../schema/index.vibe").TaggedUnion<{
     readonly ResponseModel: {
         value: Schema.Unknown;
         atPath: Schema.String;
@@ -242,13 +242,13 @@ export declare const Response: import("../schema/index.ts").TaggedUnion<{
         toIndex: Schema.Number;
         changes: Schema.$Array<Schema.Struct<{
             readonly path: Schema.String;
-            readonly before: import("../schema/index.ts").TaggedUnion<{
+            readonly before: import("../schema/index.vibe").TaggedUnion<{
                 readonly Absent: {};
                 readonly Present: {
                     value: Schema.Unknown;
                 };
             }>;
-            readonly after: import("../schema/index.ts").TaggedUnion<{
+            readonly after: import("../schema/index.vibe").TaggedUnion<{
                 readonly Absent: {};
                 readonly Present: {
                     value: Schema.Unknown;
@@ -299,7 +299,7 @@ export declare const Response: import("../schema/index.ts").TaggedUnion<{
         hasInitModel: Schema.Boolean;
     };
     readonly ResponseMessageSchema: {
-        maybeResult: Schema.OptionFromNullOr<import("../schema/index.ts").TaggedUnion<{
+        maybeResult: Schema.OptionFromNullOr<import("../schema/index.vibe").TaggedUnion<{
             readonly MessageSchemaIndexResult: {
                 index: Schema.Struct<{
                     readonly variants: Schema.$Array<Schema.Struct<{
@@ -321,7 +321,7 @@ export declare const Response: import("../schema/index.ts").TaggedUnion<{
 /** A response replying to a Request. */
 export type Response = typeof Response.Type;
 /** A runtime lifecycle event used by the Vite plugin to track which browser tabs are connected. Not forwarded to MCP clients. */
-export declare const Event: import("../schema/index.ts").TaggedUnion<{
+export declare const Event: import("../schema/index.vibe").TaggedUnion<{
     readonly EventConnected: {
         runtime: Schema.Struct<{
             readonly connectionId: Schema.String;
@@ -339,7 +339,7 @@ export type Event = typeof Event.Type;
 export declare const RequestFrame: Schema.Struct<{
     readonly id: Schema.String;
     readonly maybeConnectionId: Schema.OptionFromNullOr<Schema.String>;
-    readonly request: import("../schema/index.ts").TaggedUnion<{
+    readonly request: import("../schema/index.vibe").TaggedUnion<{
         readonly RequestGetModel: {
             maybePath: Schema.OptionFromNullOr<Schema.String>;
             expand: Schema.Boolean;
@@ -391,7 +391,7 @@ export type RequestFrame = typeof RequestFrame.Type;
 /** A wire frame carrying a Response, correlated to a Request by id. */
 export declare const ResponseFrame: Schema.Struct<{
     readonly id: Schema.String;
-    readonly response: import("../schema/index.ts").TaggedUnion<{
+    readonly response: import("../schema/index.vibe").TaggedUnion<{
         readonly ResponseModel: {
             value: Schema.Unknown;
             atPath: Schema.String;
@@ -464,13 +464,13 @@ export declare const ResponseFrame: Schema.Struct<{
             toIndex: Schema.Number;
             changes: Schema.$Array<Schema.Struct<{
                 readonly path: Schema.String;
-                readonly before: import("../schema/index.ts").TaggedUnion<{
+                readonly before: import("../schema/index.vibe").TaggedUnion<{
                     readonly Absent: {};
                     readonly Present: {
                         value: Schema.Unknown;
                     };
                 }>;
-                readonly after: import("../schema/index.ts").TaggedUnion<{
+                readonly after: import("../schema/index.vibe").TaggedUnion<{
                     readonly Absent: {};
                     readonly Present: {
                         value: Schema.Unknown;
@@ -521,7 +521,7 @@ export declare const ResponseFrame: Schema.Struct<{
             hasInitModel: Schema.Boolean;
         };
         readonly ResponseMessageSchema: {
-            maybeResult: Schema.OptionFromNullOr<import("../schema/index.ts").TaggedUnion<{
+            maybeResult: Schema.OptionFromNullOr<import("../schema/index.vibe").TaggedUnion<{
                 readonly MessageSchemaIndexResult: {
                     index: Schema.Struct<{
                         readonly variants: Schema.$Array<Schema.Struct<{
@@ -544,7 +544,7 @@ export declare const ResponseFrame: Schema.Struct<{
 /** A wire frame carrying a runtime lifecycle event from the bridge to the Vite plugin. */
 export declare const EventFrame: Schema.Struct<{
     readonly maybeConnectionId: Schema.OptionFromNullOr<Schema.String>;
-    readonly event: import("../schema/index.ts").TaggedUnion<{
+    readonly event: import("../schema/index.vibe").TaggedUnion<{
         readonly EventConnected: {
             runtime: Schema.Struct<{
                 readonly connectionId: Schema.String;

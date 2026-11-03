@@ -1,16 +1,4 @@
-import {
-  Array,
-  Context,
-  Data,
-  Effect,
-  Fiber,
-  Function,
-  Option,
-  Predicate,
-  Record,
-  Schema,
-  Stream,
-} from 'effect'
+import { Array as EffectArray, Function as EffectFunction } from 'effect'
 
 import {
   restoreUncontrolledContent,
@@ -56,6 +44,18 @@ import { tagNameFromSelector } from '../tagName.js'
 import { VNode } from '../vdom.vibe'
 import { type ChildAttribute, isChildAttribute } from './childAttribute.vibe'
 import {
+  fallbackDispatch,
+  fallbackUnmountResolver,
+  refuseElement,
+} from './index.plain.js'
+import {
+  focusElementMatching,
+  isCustomEvent,
+  isElement,
+  isNode,
+  scheduleMicrotask,
+} from './index.platform.js'
+import {
   checkScheduledLeave,
   clearDragZoneAfterDrop,
   getDragZoneState,
@@ -74,14 +74,14 @@ import {
   requireRuntimeContext,
   requireUnmountResolver,
   setRuntime,
-} from './runtimeSingleton.js'
+} from './runtimeSingleton.vibe'
 import {
   type AnySubmodelView,
   type SubmodelConfig,
   submodel,
 } from './submodel.js'
 
-export { createKeyedLazy, createLazy } from './lazy.js'
+export { createKeyedLazy, createLazy } from './lazy.vibe'
 export {
   beginRender as __beginRender,
   createBoundaryRegistry as __createBoundaryRegistry,
@@ -164,8 +164,7 @@ const keyboardModifiers = (event: KeyboardEvent): KeyboardModifiers => ({
 })
 
 const skipImeCompositionKeydown =
-  (handle: (event: KeyboardEvent) => void) =>
-  (event: KeyboardEvent): void => {
+  (handle: (event: KeyboardEvent) => void) => (event: KeyboardEvent): void => {
     if (isImeCompositionKeydown(event)) {
       return
     }
@@ -175,22 +174,22 @@ const skipImeCompositionKeydown =
 
 const inputEventValue = (target: EventTarget | null): string => {
   if (
-    Predicate.hasProperty(target, 'value') &&
-    Predicate.isString(target.value)
+    Predicate.hasProperty(target, 'value')
+    && Predicate.isString(target.value)
   ) {
     return target.value
   }
 
   if (
-    Predicate.hasProperty(target, 'innerText') &&
-    Predicate.isString(target.innerText)
+    Predicate.hasProperty(target, 'innerText')
+    && Predicate.isString(target.innerText)
   ) {
     return target.innerText
   }
 
   if (
-    Predicate.hasProperty(target, 'textContent') &&
-    Predicate.isString(target.textContent)
+    Predicate.hasProperty(target, 'textContent')
+    && Predicate.isString(target.textContent)
   ) {
     return target.textContent
   }
@@ -202,12 +201,12 @@ const isEventTargetCurrentTarget = (event: Event): boolean =>
   event.target === event.currentTarget
 
 const isDevToolsFocusTarget = (target: EventTarget | null): boolean =>
-  target instanceof Element && target.id === DEVTOOLS_HOST_ID
+  isElement(target) && target.id === DEVTOOLS_HOST_ID
 
 const isFocusInsideCurrentTarget = (event: FocusEvent): boolean =>
-  event.currentTarget instanceof Element &&
-  event.relatedTarget instanceof Node &&
-  event.currentTarget.contains(event.relatedTarget)
+  isElement(event.currentTarget)
+  && isNode(event.relatedTarget)
+  && event.currentTarget.contains(event.relatedTarget)
 
 /** A virtual DOM element. Constructed synchronously by the element factories
  *  on {@link HtmlBuilder}. The runtime patches a `VNode` (or `null` to
@@ -232,11 +231,11 @@ export type EventPropagation = typeof EventPropagation.Type
 /** Declarative controls for an `OnClick` handler. Omitted
  *  fields keep the browser default, allow the click to bubble, and leave focus
  *  unchanged. */
-export const ClickOptions = Schema.Struct({
-  defaultAction: Schema.optional(DefaultAction),
-  propagation: Schema.optional(EventPropagation),
-  focusSelector: Schema.optional(Schema.String),
-})
+export schema ClickOptions {
+  defaultAction?: DefaultAction
+  propagation?: EventPropagation
+  focusSelector?: string
+}
 /** Declarative controls for an `OnClick` handler. Omitted
  *  fields keep the browser default, allow the click to bubble, and leave focus
  *  unchanged. */
@@ -523,7 +522,7 @@ type OnMountLifecycle = {
 }
 
 type OnMountState = {
-  fiber: Fiber.Fiber<void>
+  fiber: Fiber<void>
   lifecycle: OnMountLifecycle
   notifyEnded: () => void
   owner: MountRenderOwner
@@ -617,10 +616,10 @@ export type Attribute<Message> = Data.TaggedEnum<{
       screenX: number,
       screenY: number,
       pointerType: string,
-    ) => Option.Option<Message>
+    ) => Option<Message>
   }
   OnPointerLeave: {
-    readonly f: (pointerType: string) => Option.Option<Message>
+    readonly f: (pointerType: string) => Option<Message>
   }
   OnPointerDown: {
     readonly f: (
@@ -633,7 +632,7 @@ export type Attribute<Message> = Data.TaggedEnum<{
       clientY: number,
       pointerId: number,
       target: EventTarget | null,
-    ) => Option.Option<Message>
+    ) => Option<Message>
   }
   OnPointerUp: {
     readonly f: (
@@ -641,7 +640,7 @@ export type Attribute<Message> = Data.TaggedEnum<{
       screenY: number,
       pointerType: string,
       timeStamp: number,
-    ) => Option.Option<Message>
+    ) => Option<Message>
   }
   OnKeyDown: {
     readonly f: (key: string, modifiers: KeyboardModifiers) => Message
@@ -650,7 +649,7 @@ export type Attribute<Message> = Data.TaggedEnum<{
     readonly f: (
       key: string,
       modifiers: KeyboardModifiers,
-    ) => Option.Option<Message>
+    ) => Option<Message>
   }
   OnKeyDownSelf: {
     readonly f: (key: string, modifiers: KeyboardModifiers) => Message
@@ -659,13 +658,13 @@ export type Attribute<Message> = Data.TaggedEnum<{
     readonly f: (
       key: string,
       modifiers: KeyboardModifiers,
-    ) => Option.Option<Message>
+    ) => Option<Message>
   }
   OnKeyDownFocus: {
     readonly f: (
       key: string,
       modifiers: KeyboardModifiers,
-    ) => Option.Option<Readonly<{ focusSelector: string; message: Message }>>
+    ) => Option<Readonly<{ focusSelector: string; message: Message }>>
   }
   OnKeyUp: {
     readonly f: (key: string, modifiers: KeyboardModifiers) => Message
@@ -674,7 +673,7 @@ export type Attribute<Message> = Data.TaggedEnum<{
     readonly f: (
       key: string,
       modifiers: KeyboardModifiers,
-    ) => Option.Option<Message>
+    ) => Option<Message>
   }
   OnKeyPress: {
     readonly f: (key: string, modifiers: KeyboardModifiers) => Message
@@ -686,13 +685,13 @@ export type Attribute<Message> = Data.TaggedEnum<{
   OnInput: { readonly f: (value: string) => Message }
   OnChange: { readonly f: (value: string) => Message }
   OnBeforeInput: {
-    readonly f: (inputType: string, data: Option.Option<string>) => Message
+    readonly f: (inputType: string, data: Option<string>) => Message
   }
   OnBeforeInputPreventDefault: {
     readonly f: (
       inputType: string,
-      data: Option.Option<string>,
-    ) => Option.Option<Message>
+      data: Option<string>,
+    ) => Option<Message>
   }
   OnFileChange: {
     readonly f: (files: ReadonlyArray<File>) => Message
@@ -705,13 +704,13 @@ export type Attribute<Message> = Data.TaggedEnum<{
   OnCut: { readonly message: Message }
   OnPaste: { readonly message: Message }
   OnPastePreventDefault: {
-    readonly f: (text: string) => Option.Option<Message>
+    readonly f: (text: string) => Option<Message>
   }
   OnCopyText: { readonly text: string }
   OnCutText: { readonly text: string; readonly message: Message }
   OnCancel: { readonly message: Message }
   OnCancelPreventDefault: {
-    readonly maybeCustomEventMessage: Option.Option<Message>
+    readonly maybeCustomEventMessage: Option<Message>
   }
   OnToggle: { readonly f: (isOpen: boolean) => Message }
   OnContextMenu: { readonly message: Message }
@@ -971,7 +970,7 @@ export type Attribute<Message> = Data.TaggedEnum<{
   Prop: { readonly key: string; readonly value: unknown }
   OnCustomEvent: {
     readonly name: string
-    readonly f: (event: CustomEvent<unknown>) => Option.Option<Message>
+    readonly f: (event: CustomEvent<unknown>) => Option<Message>
   }
   OnMount: {
     readonly action: MountAction<Message, any>
@@ -1316,7 +1315,7 @@ type BuildContext = Readonly<{
   resolveUnmount: UnmountResolver
   boundaryMappers: ReadonlyArray<(message: unknown) => unknown>
   resolveMountDispatch?: MountDispatchResolver
-  getCapturedContext: () => Context.Context<never>
+  getCapturedContext: () => Context<never>
 }>
 
 const setData = <K extends keyof VNodeData>(
@@ -1516,9 +1515,9 @@ const NUMERIC_PROPERTY_RANGES: Readonly<
 }
 
 const numericPropertyRefusal = (propName: string, value: number): string =>
-  `[foldkit] ${propName} was given ${String(value)}, which a browser reads ` +
-  'differently depending on whether it arrives as parsed markup or as a ' +
-  'property assignment, and which can throw outright when assigned. '
+  `[foldkit] ${propName} was given ${String(value)}, which a browser reads `
+  + 'differently depending on whether it arrives as parsed markup or as a '
+  + 'property assignment, and which can throw outright when assigned. '
 
 const setNumericDataProp = (
   ctx: BuildContext,
@@ -1527,17 +1526,17 @@ const setNumericDataProp = (
 ): void => {
   const range = NUMERIC_PROPERTY_RANGES[propName]
   if (
-    range !== undefined &&
-    !(
-      Number.isInteger(value) &&
-      value >= range.minimum &&
-      value <= range.maximum
+    range !== undefined
+    && !(
+      Number.isInteger(value)
+      && value >= range.minimum
+      && value <= range.maximum
     )
   ) {
-    throw new Error(
-      numericPropertyRefusal(propName, value) +
-        `Use an integer from ${String(range.minimum)} to ` +
-        `${String(range.maximum)}.`,
+    refuseElement(
+      numericPropertyRefusal(propName, value)
+        + `Use an integer from ${String(range.minimum)} to `
+        + `${String(range.maximum)}.`,
     )
   }
   setDataProp(ctx, propName, value)
@@ -1549,7 +1548,7 @@ const setFiniteNumericDataProp = (
   value: number,
 ): void => {
   if (!Number.isFinite(value)) {
-    throw new Error(
+    refuseElement(
       numericPropertyRefusal(propName, value) + 'Use a finite number.',
     )
   }
@@ -1615,8 +1614,8 @@ const sanitizeUrl = (value: string): string => {
   if (match !== null) {
     const scheme = match[1]
     if (
-      scheme !== undefined &&
-      DANGEROUS_URL_SCHEMES.has(scheme.toLowerCase())
+      scheme !== undefined
+      && DANGEROUS_URL_SCHEMES.has(scheme.toLowerCase())
     ) {
       return ''
     }
@@ -1673,10 +1672,7 @@ const attributeHandlers: AttributeHandlers = {
       }
       const focusSelector = options?.focusSelector
       if (focusSelector !== undefined) {
-        const focusTarget = document.querySelector(focusSelector)
-        if (focusTarget instanceof HTMLElement) {
-          focusTarget.focus()
-        }
+        focusElementMatching(focusSelector)
       }
       ctx.dispatch(message)
     }),
@@ -1799,10 +1795,7 @@ const attributeHandlers: AttributeHandlers = {
         if (Option.isSome(maybeResult)) {
           event.preventDefault()
           const { focusSelector, message } = maybeResult.value
-          const focusTarget = document.querySelector(focusSelector)
-          if (focusTarget instanceof HTMLElement) {
-            focusTarget.focus()
-          }
+          focusElementMatching(focusSelector)
           ctx.dispatch(message)
         }
       }),
@@ -1894,8 +1887,8 @@ const attributeHandlers: AttributeHandlers = {
         /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
         const target = event.target as HTMLInputElement
         const files: ReadonlyArray<File> = target.files
-          ? Array.fromIterable(target.files)
-          : Array.empty()
+          ? EffectArray.fromIterable(target.files)
+          : EffectArray.empty()
         target.value = ''
         ctx.dispatch(toMessage(files))
       }, 'OnFileChange'),
@@ -1965,8 +1958,8 @@ const attributeHandlers: AttributeHandlers = {
       cancel: (event: Event) => {
         event.preventDefault()
         if (
-          event instanceof CustomEvent &&
-          Option.isSome(maybeCustomEventMessage)
+          isCustomEvent(event)
+          && Option.isSome(maybeCustomEventMessage)
         ) {
           ctx.dispatch(maybeCustomEventMessage.value)
         }
@@ -1996,7 +1989,7 @@ const attributeHandlers: AttributeHandlers = {
       dragenter: (event: Event) => {
         event.preventDefault()
         const zone = event.currentTarget
-        if (!(zone instanceof Element)) {
+        if (!isElement(zone)) {
           ctx.dispatch(message)
           return
         }
@@ -2010,13 +2003,13 @@ const attributeHandlers: AttributeHandlers = {
     updateDataOn(ctx, {
       dragleave: (event: Event) => {
         const zone = event.currentTarget
-        if (!(zone instanceof Element)) {
+        if (!isElement(zone)) {
           ctx.dispatch(message)
           return
         }
         const state = getDragZoneState(zone)
         if (processDragLeave(state, zone, event.target) === 'schedule') {
-          queueMicrotask(() => {
+          scheduleMicrotask(() => {
             if (checkScheduledLeave(state)) {
               ctx.dispatch(message)
             }
@@ -2042,7 +2035,7 @@ const attributeHandlers: AttributeHandlers = {
       drop: (event: Event) => {
         event.preventDefault()
         const zone = event.currentTarget
-        if (zone instanceof Element) {
+        if (isElement(zone)) {
           clearDragZoneAfterDrop(zone)
         }
         ctx.dispatch(message)
@@ -2055,12 +2048,12 @@ const attributeHandlers: AttributeHandlers = {
         /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
         const dragEvent = event as DragEvent
         const zone = dragEvent.currentTarget
-        if (zone instanceof Element) {
+        if (isElement(zone)) {
           clearDragZoneAfterDrop(zone)
         }
         const files: ReadonlyArray<File> = dragEvent.dataTransfer?.files
-          ? Array.fromIterable(dragEvent.dataTransfer.files)
-          : Array.empty()
+          ? EffectArray.fromIterable(dragEvent.dataTransfer.files)
+          : EffectArray.empty()
         ctx.dispatch(toMessage(files))
       }, 'OnDropFiles'),
     }),
@@ -2488,7 +2481,7 @@ const attributeHandlers: AttributeHandlers = {
   OnCustomEvent: ({ name, f: toMaybeMessage }, ctx: BuildContext) =>
     updateDataOn(ctx, {
       [name]: (event: Event) => {
-        if (event instanceof CustomEvent) {
+        if (isCustomEvent(event)) {
           const maybeMessage = toMaybeMessage(event)
 
           if (Option.isSome(maybeMessage)) {
@@ -2501,39 +2494,41 @@ const attributeHandlers: AttributeHandlers = {
     const capturedContext = ctx.getCapturedContext()
     const maybeTracker = Context.getOption(capturedContext, MountTracker)
     const maybeMountRuntime = Context.getOption(capturedContext, MountRuntime)
-    const resolveMountDispatch =
-      ctx.resolveMountDispatch ?? currentMountDispatchResolverOrFallback()
+    const resolveMountDispatch = ctx.resolveMountDispatch
+      ?? currentMountDispatchResolverOrFallback()
     const notifyStarted = Option.isSome(maybeTracker)
       ? () => maybeTracker.value.started(action.name, action.args)
-      : Function.constVoid
+      : EffectFunction.constVoid
     const notifyEnded = Option.isSome(maybeTracker)
       ? () => maybeTracker.value.ended(action.name, action.args)
-      : Function.constVoid
-    const markerWithArgs: FoldkitMountMarker =
-      action.args === undefined
-        ? { name: action.name }
-        : { name: action.name, args: action.args }
+      : EffectFunction.constVoid
+    const markerWithArgs: FoldkitMountMarker = action.args === undefined
+      ? { name: action.name }
+      : { name: action.name, args: action.args }
     const boundaryLift = ctx.boundaryMappers
-    const marker: FoldkitMountMarker = Array.isReadonlyArrayEmpty(boundaryLift)
-      ? markerWithArgs
-      : { ...markerWithArgs, messageMappers: boundaryLift }
-    /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
+    const marker: FoldkitMountMarker =
+      EffectArray.isReadonlyArrayEmpty(boundaryLift)
+        ? markerWithArgs
+        : {
+          ...markerWithArgs,
+          messageMappers: boundaryLift,
+        } /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
     ;(ctx.data as Record<string, unknown>)[FOLDKIT_MOUNT_KEY] = marker
     const existingDestroy = ctx.data.hook?.destroy
     ctx.data.hook = {
       ...ctx.data.hook,
       insert: vnode => {
-        if (vnode.elm instanceof Element) {
+        if (isElement(vnode.elm)) {
           const element = vnode.elm
           acquireMount(element)
         }
       },
       postpatch: (_previousVNode, vnode) => {
-        if (vnode.elm instanceof Element) {
+        if (isElement(vnode.elm)) {
           const state = onMountStates.get(vnode.elm)
           if (
-            state?.owner === 'Replay' &&
-            resolveMountDispatch.owner === 'Live'
+            state?.owner === 'Replay'
+            && resolveMountDispatch.owner === 'Live'
           ) {
             releaseMount(state)
             acquireMount(vnode.elm, state.fiber)
@@ -2544,11 +2539,11 @@ const attributeHandlers: AttributeHandlers = {
         if (existingDestroy !== undefined) {
           existingDestroy(vnode)
         }
-        if (vnode.elm instanceof Element) {
+        if (isElement(vnode.elm)) {
           const state = onMountStates.get(vnode.elm)
           if (state) {
             releaseMount(state)
-            Effect.runFork(Fiber.interrupt(state.fiber))
+            runFork(Fiber.interrupt(state.fiber))
             onMountStates.delete(vnode.elm)
           }
         }
@@ -2567,36 +2562,36 @@ const attributeHandlers: AttributeHandlers = {
 
     function acquireMount(
       element: Element,
-      previousFiber?: Fiber.Fiber<void>,
+      previousFiber?: Fiber<void>,
     ): void {
       const lifecycle: OnMountLifecycle = {
         isActive: true,
         isStarted: true,
       }
       const mountDispatch = resolveMountDispatch.resolve()
-      const viewStateChanges = Option.match(maybeMountRuntime, {
-        onNone: () => liveViewStateChanges,
-        onSome: mountRuntime => mountRuntime.captureViewStateChanges(),
-      })
+      const viewStateChanges = match (maybeMountRuntime) {
+        when Option.None: liveViewStateChanges;
+        when Option.Some(let mountRuntime): mountRuntime
+          .captureViewStateChanges();
+      }
       notifyStarted()
-      const runMount = Effect.suspend(() => {
+      const runMount = (effect {
         if (!lifecycle.isActive) {
-          return Effect.void
+          return
         }
-        return Stream.runForEach(action.f(element, viewStateChanges), message =>
-          Effect.sync(() => mountDispatch(message)),
+        try Stream.runForEach(
+          action.f(element, viewStateChanges),
+          effect (message) => mountDispatch(message),
         )
-      }).pipe(
-        Effect.catchCause(cause =>
-          Effect.sync(() => {
-            console.error(`[OnMount ${action.name}] unhandled failure`, cause)
-          }),
-        ),
-      )
-      const acquire =
-        previousFiber === undefined
-          ? runMount
-          : Fiber.interrupt(previousFiber).pipe(Effect.andThen(runMount))
+      })
+        |> Effect.catchCause(
+          %,
+          cause =>
+            Console.error(`[OnMount ${action.name}] unhandled failure`, cause),
+        )
+      const acquire = previousFiber === undefined
+        ? runMount
+        : (Fiber.interrupt(previousFiber) |> Effect.andThen(%, runMount))
       const fiber = Effect.runForkWith(capturedContext)(acquire)
       onMountStates.set(element, {
         fiber,
@@ -2631,32 +2626,6 @@ const applyAttribute = (
   handler(attribute, ctx)
 }
 
-// NOTE: tolerate the absence of a runtime frame. Static elements
-// (`h.code([h.Class('x')], ['text'])`) and prose fragments built at module
-// top level (`const fragment = inlineCode('foo')` at import time) must
-// construct without an active render frame. They never invoke the fallback
-// dispatcher because they have no event handlers; event-bearing Html
-// constructed outside a render reaches the fallback only at event-fire time,
-// which surfaces a clear error rather than failing at import time. The
-// fallbacks are module-level constants so element construction allocates no
-// per-element closures for them.
-const fallbackDispatch: DispatchSync = () => {
-  throw new Error(
-    'Foldkit: an event-bearing Html attribute fired without an ' +
-      'active runtime frame. This typically means an Html element ' +
-      'with event handlers (OnClick, OnInput, etc.) was constructed ' +
-      'at module top level outside of a view function.',
-  )
-}
-
-const fallbackUnmountResolver: UnmountResolver = () => () => {
-  throw new Error(
-    'Foldkit: an OnUnmount attribute fired without an active runtime ' +
-      'frame. This typically means an Html element with OnUnmount was ' +
-      'constructed at module top level outside of a view function.',
-  )
-}
-
 const currentDispatchOrFallback = (): DispatchSync => {
   try {
     return requireDispatch()
@@ -2681,7 +2650,7 @@ const currentMountDispatchResolverOrFallback = (): MountDispatchResolver => {
   }
 }
 
-const capturedContextOrEmpty = (): Context.Context<never> => {
+const capturedContextOrEmpty = (): Context<never> => {
   try {
     return requireRuntimeContext()
   } catch {
@@ -2705,17 +2674,16 @@ const applyControlledProps = (
   if (!vnode.elm) {
     return
   }
-  Array.forEach(controlledProps, ({ propName, value }) => {
-    const isOutputValue =
-      vnode.elm instanceof Element &&
-      vnode.elm.localName === 'output' &&
-      propName === 'value'
+  EffectArray.forEach(controlledProps, ({ propName, value }) => {
+    const isOutputValue = isElement(vnode.elm)
+      && vnode.elm.localName === 'output'
+      && propName === 'value'
     /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
     if (isOutputValue || (vnode.elm as any)[propName] !== value) {
       /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
       ;(vnode.elm as any)[propName] = value
     }
-    if (vnode.elm instanceof Element) {
+    if (isElement(vnode.elm)) {
       synchronizeControlledDefault(vnode.elm, propName, value)
     }
   })
@@ -2749,10 +2717,10 @@ const attachControlledContentOwnershipHook = (data: VNodeData): void => {
       const oldProperties = oldVnode.data?.props
       const properties = vnode.data?.props
       if (
-        oldProperties !== undefined &&
-        Object.hasOwn(oldProperties, 'value') &&
-        (properties === undefined || !Object.hasOwn(properties, 'value')) &&
-        vnode.elm instanceof Element
+        oldProperties !== undefined
+        && Object.hasOwn(oldProperties, 'value')
+        && (properties === undefined || !Object.hasOwn(properties, 'value'))
+        && isElement(vnode.elm)
       ) {
         restoreUncontrolledContent(vnode.elm, vnode)
       }
@@ -2791,9 +2759,9 @@ const buildVNodeData = <Message>(
       boundaryCtxByDispatch ??= new Map()
       let ctx = boundaryCtxByDispatch.get(item.dispatch)
       if (
-        ctx === undefined ||
-        (item.resolveMountDispatch !== undefined &&
-          ctx.resolveMountDispatch !== item.resolveMountDispatch)
+        ctx === undefined
+        || (item.resolveMountDispatch !== undefined
+          && ctx.resolveMountDispatch !== item.resolveMountDispatch)
       ) {
         ctx = {
           data,
@@ -2827,8 +2795,8 @@ const buildVNodeData = <Message>(
   }
 
   if (
-    sharedPostpatchProps !== undefined &&
-    Array.isReadonlyArrayNonEmpty(sharedPostpatchProps)
+    sharedPostpatchProps !== undefined
+    && EffectArray.isReadonlyArrayNonEmpty(sharedPostpatchProps)
   ) {
     attachPostpatchHook(data, sharedPostpatchProps)
   }
@@ -2896,14 +2864,14 @@ const assertSingleContentOwner = (
 ): void => {
   const lowerTagName = tagName.toLowerCase()
   if (
-    (lowerTagName === 'textarea' || lowerTagName === 'output') &&
-    data.props?.['value'] !== undefined &&
-    children.length > 0
+    (lowerTagName === 'textarea' || lowerTagName === 'output')
+    && data.props?.['value'] !== undefined
+    && children.length > 0
   ) {
-    throw new Error(
-      `[foldkit] <${lowerTagName}> was given both a controlled value and ` +
-        'children. Both own the element content, so a property assignment ' +
-        'replaces the child nodes the differ expects to patch. Keep one owner.',
+    refuseElement(
+      `[foldkit] <${lowerTagName}> was given both a controlled value and `
+        + 'children. Both own the element content, so a property assignment '
+        + 'replaces the child nodes the differ expects to patch. Keep one owner.',
     )
   }
   const properties = data.props
@@ -2914,54 +2882,54 @@ const assertSingleContentOwner = (
     ? 'h.InnerHTML'
     : 'a client-only innerHTML property'
   if (lowerTagName === 'textarea') {
-    throw new Error(
-      `[foldkit] <textarea> was given ${innerHtmlOwner}. Textarea content ` +
-        'must use h.Value because innerHTML stops updating the live value ' +
-        'after the browser marks the field dirty. Remove the innerHTML owner.',
+    refuseElement(
+      `[foldkit] <textarea> was given ${innerHtmlOwner}. Textarea content `
+        + 'must use h.Value because innerHTML stops updating the live value '
+        + 'after the browser marks the field dirty. Remove the innerHTML owner.',
     )
   }
   if (children.length > 0) {
-    throw new Error(
-      `[foldkit] <${lowerTagName}> was given both ${innerHtmlOwner} and children. ` +
-        'innerHTML owns the whole of an element\u2019s content, so the two ' +
-        'cannot both describe it: server rendering emits the raw HTML alone ' +
-        'for h.InnerHTML, while a browser property assignment replaces the ' +
-        'nodes the differ expects to patch. Keep one content owner.',
+    refuseElement(
+      `[foldkit] <${lowerTagName}> was given both ${innerHtmlOwner} and children. `
+        + 'innerHTML owns the whole of an element\u2019s content, so the two '
+        + 'cannot both describe it: server rendering emits the raw HTML alone '
+        + 'for h.InnerHTML, while a browser property assignment replaces the '
+        + 'nodes the differ expects to patch. Keep one content owner.',
     )
   }
   if (
-    CONTROLLED_CONTENT_ELEMENTS.has(lowerTagName) &&
-    data.props?.['value'] !== undefined
+    CONTROLLED_CONTENT_ELEMENTS.has(lowerTagName)
+    && data.props?.['value'] !== undefined
   ) {
-    throw new Error(
-      `[foldkit] <${lowerTagName}> was given both ${innerHtmlOwner} and a ` +
-        'controlled value. Both own this element\u2019s content, and they ' +
-        'disagree once the client reasserts the value. Keep one of them.',
+    refuseElement(
+      `[foldkit] <${lowerTagName}> was given both ${innerHtmlOwner} and a `
+        + 'controlled value. Both own this element\u2019s content, and they '
+        + 'disagree once the client reasserts the value. Keep one of them.',
     )
   }
   if (VOID_CONTENT_ELEMENTS.has(lowerTagName)) {
-    throw new Error(
-      `[foldkit] <${lowerTagName}> cannot hold content, so ${innerHtmlOwner} ` +
-        'on it ' +
-        'has no representation in served HTML. A browser can still build ' +
-        'child nodes from the property, which no server render reproduces. ' +
-        'Remove the innerHTML value.',
+    refuseElement(
+      `[foldkit] <${lowerTagName}> cannot hold content, so ${innerHtmlOwner} `
+        + 'on it '
+        + 'has no representation in served HTML. A browser can still build '
+        + 'child nodes from the property, which no server render reproduces. '
+        + 'Remove the innerHTML value.',
     )
   }
 }
 
 const assertSingleStyleOwner = (data: VNodeData): void => {
   if (
-    data.style === undefined ||
-    htmlAttributeValue(data.attrs, 'style') === undefined
+    data.style === undefined
+    || htmlAttributeValue(data.attrs, 'style') === undefined
   ) {
     return
   }
-  throw new Error(
-    '[foldkit] An element was given both h.Style and a raw ' +
-      "h.Attribute('style', ...). They are two owners of one declaration " +
-      'block, and CSS parsing can make one swallow or override the other. ' +
-      'Keep all inline declarations in one of them.',
+  refuseElement(
+    '[foldkit] An element was given both h.Style and a raw '
+      + "h.Attribute('style', ...). They are two owners of one declaration "
+      + 'block, and CSS parsing can make one swallow or override the other. '
+      + 'Keep all inline declarations in one of them.',
   )
 }
 
@@ -3003,17 +2971,18 @@ const assertDoubleIdlValue = (
   propName: string,
   value: unknown,
 ): void => {
-  const isRepresentable =
-    typeof value === 'number'
-      ? Number.isFinite(value)
-      : typeof value === 'string' &&
-        DECIMAL_NUMBER.test(value) &&
-        Number.isFinite(Number(value))
+  const isRepresentable = typeof value === 'number'
+    ? Number.isFinite(value)
+    : typeof value === 'string'
+      && DECIMAL_NUMBER.test(value)
+      && Number.isFinite(Number(value))
   if (!isRepresentable) {
-    throw new Error(
-      `[foldkit] <${tagName}> reads ${propName} as a number, and ` +
-        `${JSON.stringify(value)} is not one a browser reads the same way from ` +
-        'markup and from a property assignment. Use a finite decimal number.',
+    refuseElement(
+      `[foldkit] <${tagName}> reads ${propName} as a number, and `
+        + `${
+          JSON.stringify(value)
+        } is not one a browser reads the same way from `
+        + 'markup and from a property assignment. Use a finite decimal number.',
     )
   }
 }
@@ -3023,22 +2992,23 @@ const assertLongIdlValue = (
   propName: string,
   value: unknown,
 ): void => {
-  const parsed =
-    typeof value === 'number'
-      ? value
-      : typeof value === 'string' && DECIMAL_INTEGER.test(value)
-        ? Number(value)
-        : Number.NaN
+  const parsed = typeof value === 'number'
+    ? value
+    : typeof value === 'string' && DECIMAL_INTEGER.test(value)
+    ? Number(value)
+    : Number.NaN
   if (
-    !Number.isInteger(parsed) ||
-    parsed < SIGNED_LONG_MINIMUM ||
-    parsed > SIGNED_LONG_MAXIMUM
+    !Number.isInteger(parsed)
+    || parsed < SIGNED_LONG_MINIMUM
+    || parsed > SIGNED_LONG_MAXIMUM
   ) {
-    throw new Error(
-      `[foldkit] <${tagName}> reads ${propName} as an integer, and ` +
-        `${JSON.stringify(value)} is not one a browser reads the same way from ` +
-        'markup and from a property assignment. Use an integer from ' +
-        `${String(SIGNED_LONG_MINIMUM)} to ${String(SIGNED_LONG_MAXIMUM)}.`,
+    refuseElement(
+      `[foldkit] <${tagName}> reads ${propName} as an integer, and `
+        + `${
+          JSON.stringify(value)
+        } is not one a browser reads the same way from `
+        + 'markup and from a property assignment. Use an integer from '
+        + `${String(SIGNED_LONG_MINIMUM)} to ${String(SIGNED_LONG_MAXIMUM)}.`,
     )
   }
 }
@@ -3076,9 +3046,11 @@ const assertElementStateIsRepresentable = (
       assertLongIdlValue(lowerTagName, propName, value)
     }
     if (lowerTagName === 'input' && propName === 'size' && value === 0) {
-      throw new Error(
-        numericPropertyRefusal(propName, value) +
-          `Use an integer from 1 to ${String(SIGNED_LONG_MAXIMUM)} on an input.`,
+      refuseElement(
+        numericPropertyRefusal(propName, value)
+          + `Use an integer from 1 to ${
+            String(SIGNED_LONG_MAXIMUM)
+          } on an input.`,
       )
     }
     // A raw attribute and a typed builder that name the same attribute are two
@@ -3091,16 +3063,16 @@ const assertElementStateIsRepresentable = (
     // `CustomElement.define` property never conflicts with an attribute.
     const attributeName = reflectedAttributeName(propName)
     if (
-      attributeName !== undefined &&
-      !isClientOnlyProperty(props, propName) &&
-      htmlAttributeValue(data.attrs, attributeName) !== undefined
+      attributeName !== undefined
+      && !isClientOnlyProperty(props, propName)
+      && htmlAttributeValue(data.attrs, attributeName) !== undefined
     ) {
-      throw new Error(
-        `[foldkit] <${lowerTagName}> was given both a typed ${propName} and a ` +
-          `raw h.Attribute('${attributeName}', ...). They are two owners of ` +
-          'one attribute, and the state they describe together has no spelling ' +
-          'in served HTML: the property decides what is served while a fresh ' +
-          'render parses the attribute as the default too. Keep one of them.',
+      refuseElement(
+        `[foldkit] <${lowerTagName}> was given both a typed ${propName} and a `
+          + `raw h.Attribute('${attributeName}', ...). They are two owners of `
+          + 'one attribute, and the state they describe together has no spelling '
+          + 'in served HTML: the property decides what is served while a fresh '
+          + 'render parses the attribute as the default too. Keep one of them.',
       )
     }
   }
@@ -3108,11 +3080,11 @@ const assertElementStateIsRepresentable = (
   if (lowerTagName === 'input' && effectiveInputType(data) === 'file') {
     const value = props['value']
     if (typeof value === 'string' && value !== '') {
-      throw new Error(
-        '[foldkit] <input type="file"> was given a value. A file input takes ' +
-          'no value from markup or from the Model: the served attribute is ' +
-          'ignored and assigning the property throws InvalidStateError, so the ' +
-          'view crashes on a fresh render and on hydration. Drop the value.',
+      refuseElement(
+        '[foldkit] <input type="file"> was given a value. A file input takes '
+          + 'no value from markup or from the Model: the served attribute is '
+          + 'ignored and assigning the property throws InvalidStateError, so the '
+          + 'view crashes on a fresh render and on hydration. Drop the value.',
       )
     }
   }
@@ -3134,8 +3106,8 @@ const markUnreflectedHtmlPropertiesClientOnly = (
   }
   for (const propName of Object.keys(props)) {
     if (
-      reflectedAttributeName(propName) !== undefined &&
-      !isHtmlPropertyRepresentable(tagName, propName)
+      reflectedAttributeName(propName) !== undefined
+      && !isHtmlPropertyRepresentable(tagName, propName)
     ) {
       markClientOnlyProperty(props, propName)
     }
@@ -3164,20 +3136,20 @@ const assertForeignPropertiesAreRepresentable = (node: VNode): void => {
   if (props !== undefined) {
     for (const propName of Object.keys(props)) {
       if (
-        props[propName] === undefined ||
-        propName === 'innerHTML' ||
-        FOREIGN_REPRESENTABLE_PROPERTIES.has(propName) ||
-        reflectedAttributeName(propName) === undefined
+        props[propName] === undefined
+        || propName === 'innerHTML'
+        || FOREIGN_REPRESENTABLE_PROPERTIES.has(propName)
+        || reflectedAttributeName(propName) === undefined
       ) {
         continue
       }
-      throw new Error(
-        `[foldkit] <${tagNameFromSelector(node.sel ?? '')}> is in the SVG or ` +
-          `MathML namespace, where ${propName} is not a property the element ` +
-          'has. Assigning it on the client sets a value no attribute reflects, ' +
-          'or throws outright, while server rendering writes the attribute, so ' +
-          `the two disagree. Write it as h.Attribute('${propName}', ...), ` +
-          'which foreign content reads the same way on both sides.',
+      refuseElement(
+        `[foldkit] <${tagNameFromSelector(node.sel ?? '')}> is in the SVG or `
+          + `MathML namespace, where ${propName} is not a property the element `
+          + 'has. Assigning it on the client sets a value no attribute reflects, '
+          + 'or throws outright, while server rendering writes the attribute, so '
+          + `the two disagree. Write it as h.Attribute('${propName}', ...), `
+          + 'which foreign content reads the same way on both sides.',
       )
     }
   }
@@ -3202,9 +3174,9 @@ const buildElement = (
   }
   assertElementStateIsRepresentable(tagName, data)
   if (
-    tagName.toLowerCase() === 'select' ||
-    tagName.toLowerCase() === 'textarea' ||
-    tagName.toLowerCase() === 'output'
+    tagName.toLowerCase() === 'select'
+    || tagName.toLowerCase() === 'textarea'
+    || tagName.toLowerCase() === 'output'
   ) {
     attachControlledContentOwnershipHook(data)
   }
@@ -3219,23 +3191,19 @@ const createElement = <Message>(
   children: ReadonlyArray<Child> = [],
 ): Html => buildElement(tagName, buildVNodeData(attributes), children)
 
-const element =
-  <Message>() =>
-  (tagName: TagName) =>
-  (
-    attributes: ReadonlyArray<Attribute<Message> | ChildAttribute> = [],
-    children: ReadonlyArray<Child> = [],
-  ): Html =>
-    createElement(tagName, attributes, children)
+const element = <Message>() =>
+(tagName: TagName) =>
+(
+  attributes: ReadonlyArray<Attribute<Message> | ChildAttribute> = [],
+  children: ReadonlyArray<Child> = [],
+): Html => createElement(tagName, attributes, children)
 
-export const customElement =
-  <Message>() =>
-  (tagName: string) =>
-  (
-    attributes: ReadonlyArray<Attribute<Message> | ChildAttribute> = [],
-    children: ReadonlyArray<Child> = [],
-  ): Html =>
-    createElement(tagName, attributes, children)
+export const customElement = <Message>() =>
+(tagName: string) =>
+(
+  attributes: ReadonlyArray<Attribute<Message> | ChildAttribute> = [],
+  children: ReadonlyArray<Child> = [],
+): Html => createElement(tagName, attributes, children)
 
 const voidElement =
   <Message>() =>
@@ -3243,18 +3211,17 @@ const voidElement =
   (attributes: ReadonlyArray<Attribute<Message> | ChildAttribute> = []): Html =>
     createElement(tagName, attributes, [])
 
-const keyed =
-  <Message>(): KeyedFunction<Message> =>
-  (tagName: TagName) =>
-  (
-    key: PropertyKey,
-    attributes: ReadonlyArray<Attribute<Message> | ChildAttribute> = [],
-    children: ReadonlyArray<Child> = [],
-  ): Html => {
-    const data = buildVNodeData(attributes)
-    data.key = key
-    return buildElement(tagName, data, children)
-  }
+const keyed = <Message>(): KeyedFunction<Message> =>
+(tagName: TagName) =>
+(
+  key: PropertyKey,
+  attributes: ReadonlyArray<Attribute<Message> | ChildAttribute> = [],
+  children: ReadonlyArray<Child> = [],
+): Html => {
+  const data = buildVNodeData(attributes)
+  data.key = key
+  return buildElement(tagName, data, children)
+}
 
 type ElementFunction<Message> = (
   attributes: ReadonlyArray<Attribute<Message> | ChildAttribute>,
@@ -3290,8 +3257,7 @@ type KeyedTextValueElementFunction<Message> = (
 
 type KeyedFunction<Message> = <Name extends TagName>(
   tagName: Name,
-) => Name extends 'textarea'
-  ? KeyedTextValueElementFunction<Message>
+) => Name extends 'textarea' ? KeyedTextValueElementFunction<Message>
   : KeyedElementFunction<Message>
 
 type HtmlElements<Message> = {
@@ -3851,20 +3817,20 @@ type HtmlAttributes<Message> = {
       screenX: number,
       screenY: number,
       pointerType: string,
-    ) => Option.Option<Message>,
+    ) => Option<Message>,
   ) => {
     readonly _tag: 'OnPointerMove'
     readonly f: (
       screenX: number,
       screenY: number,
       pointerType: string,
-    ) => Option.Option<Message>
+    ) => Option<Message>
   }
   OnPointerLeave: (
-    toMaybeMessage: (pointerType: string) => Option.Option<Message>,
+    toMaybeMessage: (pointerType: string) => Option<Message>,
   ) => {
     readonly _tag: 'OnPointerLeave'
-    readonly f: (pointerType: string) => Option.Option<Message>
+    readonly f: (pointerType: string) => Option<Message>
   }
   /** Dispatches an optional Message on pointerdown. The final callback
    *  arguments identify the pointer and its originating target, so a parent
@@ -3880,7 +3846,7 @@ type HtmlAttributes<Message> = {
       clientY: number,
       pointerId: number,
       target: EventTarget | null,
-    ) => Option.Option<Message>,
+    ) => Option<Message>,
   ) => {
     readonly _tag: 'OnPointerDown'
     readonly f: (
@@ -3893,7 +3859,7 @@ type HtmlAttributes<Message> = {
       clientY: number,
       pointerId: number,
       target: EventTarget | null,
-    ) => Option.Option<Message>
+    ) => Option<Message>
   }
   OnPointerUp: (
     toMaybeMessage: (
@@ -3901,7 +3867,7 @@ type HtmlAttributes<Message> = {
       screenY: number,
       pointerType: string,
       timeStamp: number,
-    ) => Option.Option<Message>,
+    ) => Option<Message>,
   ) => {
     readonly _tag: 'OnPointerUp'
     readonly f: (
@@ -3909,7 +3875,7 @@ type HtmlAttributes<Message> = {
       screenY: number,
       pointerType: string,
       timeStamp: number,
-    ) => Option.Option<Message>
+    ) => Option<Message>
   }
   OnKeyDown: (
     toMessage: (key: string, modifiers: KeyboardModifiers) => Message,
@@ -3921,25 +3887,25 @@ type HtmlAttributes<Message> = {
     toMaybeFocusAndMessage: (
       key: string,
       modifiers: KeyboardModifiers,
-    ) => Option.Option<Readonly<{ focusSelector: string; message: Message }>>,
+    ) => Option<Readonly<{ focusSelector: string; message: Message }>>,
   ) => {
     readonly _tag: 'OnKeyDownFocus'
     readonly f: (
       key: string,
       modifiers: KeyboardModifiers,
-    ) => Option.Option<Readonly<{ focusSelector: string; message: Message }>>
+    ) => Option<Readonly<{ focusSelector: string; message: Message }>>
   }
   OnKeyDownPreventDefault: (
     toMaybeMessage: (
       key: string,
       modifiers: KeyboardModifiers,
-    ) => Option.Option<Message>,
+    ) => Option<Message>,
   ) => {
     readonly _tag: 'OnKeyDownPreventDefault'
     readonly f: (
       key: string,
       modifiers: KeyboardModifiers,
-    ) => Option.Option<Message>
+    ) => Option<Message>
   }
   OnKeyDownSelf: (
     toMessage: (key: string, modifiers: KeyboardModifiers) => Message,
@@ -3951,13 +3917,13 @@ type HtmlAttributes<Message> = {
     toMaybeMessage: (
       key: string,
       modifiers: KeyboardModifiers,
-    ) => Option.Option<Message>,
+    ) => Option<Message>,
   ) => {
     readonly _tag: 'OnKeyDownSelfPreventDefault'
     readonly f: (
       key: string,
       modifiers: KeyboardModifiers,
-    ) => Option.Option<Message>
+    ) => Option<Message>
   }
   OnKeyUp: (
     toMessage: (key: string, modifiers: KeyboardModifiers) => Message,
@@ -3969,13 +3935,13 @@ type HtmlAttributes<Message> = {
     toMaybeMessage: (
       key: string,
       modifiers: KeyboardModifiers,
-    ) => Option.Option<Message>,
+    ) => Option<Message>,
   ) => {
     readonly _tag: 'OnKeyUpPreventDefault'
     readonly f: (
       key: string,
       modifiers: KeyboardModifiers,
-    ) => Option.Option<Message>
+    ) => Option<Message>
   }
   OnKeyPress: (
     toMessage: (key: string, modifiers: KeyboardModifiers) => Message,
@@ -4025,22 +3991,22 @@ type HtmlAttributes<Message> = {
     readonly f: (value: string) => Message
   }
   OnBeforeInput: (
-    toMessage: (inputType: string, data: Option.Option<string>) => Message,
+    toMessage: (inputType: string, data: Option<string>) => Message,
   ) => {
     readonly _tag: 'OnBeforeInput'
-    readonly f: (inputType: string, data: Option.Option<string>) => Message
+    readonly f: (inputType: string, data: Option<string>) => Message
   }
   OnBeforeInputPreventDefault: (
     toMaybeMessage: (
       inputType: string,
-      data: Option.Option<string>,
-    ) => Option.Option<Message>,
+      data: Option<string>,
+    ) => Option<Message>,
   ) => {
     readonly _tag: 'OnBeforeInputPreventDefault'
     readonly f: (
       inputType: string,
-      data: Option.Option<string>,
-    ) => Option.Option<Message>
+      data: Option<string>,
+    ) => Option<Message>
   }
   OnFileChange: (toMessage: (files: ReadonlyArray<File>) => Message) => {
     readonly _tag: 'OnFileChange'
@@ -4075,10 +4041,10 @@ type HtmlAttributes<Message> = {
     readonly message: Message
   }
   OnPastePreventDefault: (
-    toMaybeMessage: (text: string) => Option.Option<Message>,
+    toMaybeMessage: (text: string) => Option<Message>,
   ) => {
     readonly _tag: 'OnPastePreventDefault'
-    readonly f: (text: string) => Option.Option<Message>
+    readonly f: (text: string) => Option<Message>
   }
   OnCopyText: (text: string) => {
     readonly _tag: 'OnCopyText'
@@ -4102,7 +4068,7 @@ type HtmlAttributes<Message> = {
    *  event. Native `cancel` events never dispatch a Message. */
   OnCancelPreventDefault: (customEventMessage?: Message) => {
     readonly _tag: 'OnCancelPreventDefault'
-    readonly maybeCustomEventMessage: Option.Option<Message>
+    readonly maybeCustomEventMessage: Option<Message>
   }
   OnToggle: (toMessage: (isOpen: boolean) => Message) => {
     readonly _tag: 'OnToggle'
@@ -4979,10 +4945,10 @@ const htmlAttributes = <Message>(): HtmlAttributes<Message> => ({
       screenX: number,
       screenY: number,
       pointerType: string,
-    ) => Option.Option<Message>,
+    ) => Option<Message>,
   ) => OnPointerMove({ f: toMaybeMessage }),
   OnPointerLeave: (
-    toMaybeMessage: (pointerType: string) => Option.Option<Message>,
+    toMaybeMessage: (pointerType: string) => Option<Message>,
   ) => OnPointerLeave({ f: toMaybeMessage }),
   OnPointerDown: (
     toMaybeMessage: (
@@ -4995,7 +4961,7 @@ const htmlAttributes = <Message>(): HtmlAttributes<Message> => ({
       clientY: number,
       pointerId: number,
       target: EventTarget | null,
-    ) => Option.Option<Message>,
+    ) => Option<Message>,
   ) => OnPointerDown({ f: toMaybeMessage }),
   OnPointerUp: (
     toMaybeMessage: (
@@ -5003,7 +4969,7 @@ const htmlAttributes = <Message>(): HtmlAttributes<Message> => ({
       screenY: number,
       pointerType: string,
       timeStamp: number,
-    ) => Option.Option<Message>,
+    ) => Option<Message>,
   ) => OnPointerUp({ f: toMaybeMessage }),
   OnKeyDown: (
     toMessage: (key: string, modifiers: KeyboardModifiers) => Message,
@@ -5012,7 +4978,7 @@ const htmlAttributes = <Message>(): HtmlAttributes<Message> => ({
     toMaybeMessage: (
       key: string,
       modifiers: KeyboardModifiers,
-    ) => Option.Option<Message>,
+    ) => Option<Message>,
   ) => OnKeyDownPreventDefault({ f: toMaybeMessage }),
   /**
    * Like `OnKeyDown`, but dispatches only when the keydown targets this
@@ -5048,7 +5014,7 @@ const htmlAttributes = <Message>(): HtmlAttributes<Message> => ({
     toMaybeMessage: (
       key: string,
       modifiers: KeyboardModifiers,
-    ) => Option.Option<Message>,
+    ) => Option<Message>,
   ) => OnKeyDownSelfPreventDefault({ f: toMaybeMessage }),
   /**
    * Keydown handler that, for a handled key, synchronously focuses the element
@@ -5076,7 +5042,7 @@ const htmlAttributes = <Message>(): HtmlAttributes<Message> => ({
     toMaybeFocusAndMessage: (
       key: string,
       modifiers: KeyboardModifiers,
-    ) => Option.Option<Readonly<{ focusSelector: string; message: Message }>>,
+    ) => Option<Readonly<{ focusSelector: string; message: Message }>>,
   ) => OnKeyDownFocus({ f: toMaybeFocusAndMessage }),
   OnKeyUp: (
     toMessage: (key: string, modifiers: KeyboardModifiers) => Message,
@@ -5085,7 +5051,7 @@ const htmlAttributes = <Message>(): HtmlAttributes<Message> => ({
     toMaybeMessage: (
       key: string,
       modifiers: KeyboardModifiers,
-    ) => Option.Option<Message>,
+    ) => Option<Message>,
   ) => OnKeyUpPreventDefault({ f: toMaybeMessage }),
   OnKeyPress: (
     toMessage: (key: string, modifiers: KeyboardModifiers) => Message,
@@ -5112,7 +5078,7 @@ const htmlAttributes = <Message>(): HtmlAttributes<Message> => ({
    * carry no text and therefore provide `None`.
    */
   OnBeforeInput: (
-    toMessage: (inputType: string, data: Option.Option<string>) => Message,
+    toMessage: (inputType: string, data: Option<string>) => Message,
   ) => OnBeforeInput({ f: toMessage }),
   /**
    * Handles cancelable `beforeinput` events before the browser mutates the
@@ -5134,8 +5100,8 @@ const htmlAttributes = <Message>(): HtmlAttributes<Message> => ({
   OnBeforeInputPreventDefault: (
     toMaybeMessage: (
       inputType: string,
-      data: Option.Option<string>,
-    ) => Option.Option<Message>,
+      data: Option<string>,
+    ) => Option<Message>,
   ) => OnBeforeInputPreventDefault({ f: toMaybeMessage }),
   OnFileChange: (toMessage: (files: ReadonlyArray<File>) => Message) =>
     OnFileChange({ f: toMessage }),
@@ -5165,7 +5131,7 @@ const htmlAttributes = <Message>(): HtmlAttributes<Message> => ({
    * ```
    */
   OnPastePreventDefault: (
-    toMaybeMessage: (text: string) => Option.Option<Message>,
+    toMaybeMessage: (text: string) => Option<Message>,
   ) => OnPastePreventDefault({ f: toMaybeMessage }),
   /**
    * Copy handler that synchronously writes `text` to the clipboard as
@@ -5544,10 +5510,11 @@ type MessageUniverse<Message> = Readonly<{
  * handlers resolve in the ancestor's boundary. Where no builder is in scope
  * at all, typically module scope, use {@link inertHtml}.
  */
-export type HtmlBuilder<Message> = MessageUniverse<Message> &
-  HtmlElements<Message> &
-  HtmlAttributes<Message> &
-  Readonly<{
+export type HtmlBuilder<Message> =
+  & MessageUniverse<Message>
+  & HtmlElements<Message>
+  & HtmlAttributes<Message>
+  & Readonly<{
     empty: null
     keyed: KeyedFunction<Message>
     submodel: <View extends AnySubmodelView>(

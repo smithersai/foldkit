@@ -10,12 +10,12 @@ import {
   type HtmlBuilder,
   __htmlBuilder as htmlBuilderFor,
   textDirectionToAttribute,
-} from '../../html/index.js'
+} from '../../html/index.vibe'
 import {
   type DispatchSync,
   clearRuntime,
   setRuntime,
-} from '../../html/runtimeSingleton.js'
+} from '../../html/runtimeSingleton.vibe'
 import {
   FOLDKIT_APP_ATTRIBUTE,
   FOLDKIT_FLAGS_ATTRIBUTE,

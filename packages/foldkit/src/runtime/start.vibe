@@ -1,5 +1,3 @@
-import { Cause, Effect, Fiber, Option, Predicate, Runtime, pipe } from 'effect'
-
 import { BrowserRuntime } from '@effect/platform-browser'
 
 import { buildIdOrInjected } from '../buildToken.js'
@@ -12,19 +10,20 @@ import {
 } from './hostConnector.vibe'
 import type { BootMode } from './hydrationHandoff.vibe'
 import { resolvePreservedModel } from './modelPreservationBridge.js'
-import { type MakeRuntimeReturn, runtimeInternals } from './runtime.js'
+import { type MakeRuntimeReturn, runtimeInternals } from './runtime.vibe'
+import { failEmbed } from './start.plain.js'
 
 /** Client-only startup input for an application that declares Flags. Pass it
  *  to `run` or `embed`; `hydrate` instead decodes the exact Flags value
  *  embedded by the server render.
  */
 export type RunOptions<Flags, Resources = never> = Readonly<{
-  flags: Effect.Effect<Flags, never, Resources>
+  flags: Flags!never!Resources
 }>
 
 type RuntimeProgram = Readonly<{
   runtimeId: string
-  start: (preservedModel?: unknown) => Effect.Effect<void>
+  start: (preservedModel?: unknown) => void!!
   ports: Ports | undefined
 }>
 
@@ -34,24 +33,24 @@ export const __startProgram = (
   program: RuntimeProgram,
   preservedModel: unknown,
   bootMode: BootMode,
-  flags?: Effect.Effect<unknown, never, any>,
+  flags?: unknown!never!any,
   buildId?: string,
-): Effect.Effect<void> => {
+): void!! => {
   const internals = runtimeInternals.get(program)
   if (Predicate.isUndefined(internals)) {
-    return Effect.die(
+    return die(
       new Error(
-        '[foldkit] Runtime boot expects a program created by ' +
-          'makeApplication or makeElement.',
+        '[foldkit] Runtime boot expects a program created by '
+          + 'makeApplication or makeElement.',
       ),
     )
   }
 
   if (bootMode === 'Hydrate' && internals.kind !== 'Application') {
-    return Effect.die(
+    return die(
       new Error(
-        '[foldkit] Runtime.hydrate expects a program created by ' +
-          'makeApplication.',
+        '[foldkit] Runtime.hydrate expects a program created by '
+          + 'makeApplication.',
       ),
     )
   }
@@ -68,36 +67,33 @@ export const __startProgram = (
 /** Reports unhandled non-interrupt Causes using Effect's runtime policy.
  * @internal */
 export const __reportUnhandledCause = <E>(
-  cause: Cause.Cause<E>,
-): Effect.Effect<void> => {
+  cause: Cause<E>,
+): void!! => {
   if (Cause.hasInterruptsOnly(cause)) {
     return Effect.void
   }
 
   return Runtime.getErrorReported(Cause.squash(cause))
-    ? Effect.logError(cause)
+    ? logError(cause)
     : Effect.void
 }
 
 const withUnhandledCauseReporting = <A, E, R>(
-  effect: Effect.Effect<A, E, R>,
-): Effect.Effect<A, E, R> => Effect.tapCause(effect, __reportUnhandledCause)
+  effect: A!E!R,
+): A!E!R => Effect.tapCause(effect, __reportUnhandledCause)
 
 const startProgram = (
   program: RuntimeProgram,
   bootMode: BootMode,
-  flags?: Effect.Effect<unknown, never, any>,
+  flags?: unknown!!any,
   buildId?: string,
 ): void => {
   BrowserRuntime.runMain(
     withUnhandledCauseReporting(
-      provideBrowserScheduler(
-        Effect.flatMap(
-          resolvePreservedModel(program.runtimeId),
-          preservedModel =>
-            __startProgram(program, preservedModel, bootMode, flags, buildId),
-        ),
-      ),
+      provideBrowserScheduler(effect {
+        const preservedModel = try resolvePreservedModel(program.runtimeId)
+        try __startProgram(program, preservedModel, bootMode, flags, buildId)
+      }),
     ),
     { disableErrorReporting: true },
   )
@@ -228,16 +224,16 @@ export function embed<P extends Ports | undefined = undefined>(
 ): EmbedHandle<P> {
   const internals = runtimeInternals.get(program)
   if (Predicate.isUndefined(internals)) {
-    throw new Error(
+    failEmbed(
       '[foldkit] embed expects a program created by makeApplication or makeElement.',
     )
   }
 
   if (internals.isEmbedActive) {
-    throw new Error(
-      '[foldkit] This program is already embedded. Dispose the existing ' +
-        'handle first, or create a separate program: each program owns one ' +
-        'container.',
+    failEmbed(
+      '[foldkit] This program is already embedded. Dispose the existing '
+        + 'handle first, or create a separate program: each program owns one '
+        + 'container.',
     )
   }
   internals.isEmbedActive = true
@@ -249,23 +245,20 @@ export function embed<P extends Ports | undefined = undefined>(
   // old one is still tearing down: the teardown finalizer is what puts the
   // container element back in the DOM. Awaiting the previous fiber's exit
   // sequences the two.
-  const startEffect = pipe(
-    Option.match(internals.maybeActiveFiber, {
-      onNone: () => Effect.void,
-      onSome: previousFiber => Effect.asVoid(Fiber.await(previousFiber)),
-    }),
-    Effect.andThen(resolvePreservedModel(program.runtimeId)),
-    Effect.flatMap(preservedModel =>
-      internals.startWith(
-        Option.some(connector),
-        preservedModel,
-        'Fresh',
-        options?.flags,
-      ),
-    ),
-  )
+  const startEffect = effect {
+    if (internals.maybeActiveFiber is Option.Some(let previousFiber)) {
+      try Fiber.await(previousFiber)
+    }
+    const preservedModel = try resolvePreservedModel(program.runtimeId)
+    try internals.startWith(
+      Option.some(connector),
+      preservedModel,
+      'Fresh',
+      options?.flags,
+    )
+  }
 
-  const fiber = Effect.runFork(
+  const fiber = runFork(
     withUnhandledCauseReporting(provideBrowserScheduler(startEffect)),
   )
   internals.maybeActiveFiber = Option.some(fiber)
@@ -278,7 +271,7 @@ export function embed<P extends Ports | undefined = undefined>(
     isHandleDisposed = true
     connector.dispose()
     internals.isEmbedActive = false
-    Effect.runFork(Fiber.interrupt(fiber))
+    runFork(Fiber.interrupt(fiber))
   }
 
   const ports = buildPortHandles(program.ports, connector)

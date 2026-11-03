@@ -1,4 +1,4 @@
-import { taggedStruct } from '../schema/index.ts'
+import { taggedStruct } from '../schema/index.vibe'
 
 /** A 2D point in canvas-local coordinates. */
 export schema Point {

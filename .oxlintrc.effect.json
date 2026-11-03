@@ -27,8 +27,8 @@
     {
       "files": [
         "packages/foldkit/src/command/index.vibe",
-        "packages/foldkit/src/html/index.ts",
-        "packages/foldkit/src/route/parser.ts",
+        "packages/foldkit/src/html/index.vibe",
+        "packages/foldkit/src/route/parser.vibe",
         "packages/foldkit/src/runtime/hydrationHandoff.vibe",
         "packages/foldkit/src/runtime/hydrationHandoff.platform.ts",
         "packages/foldkit/src/runtime/managedResourceFibers.vibe"
@@ -38,7 +38,7 @@
       }
     },
     {
-      "files": ["packages/foldkit/src/runtime/resourceProvider.ts"],
+      "files": ["packages/foldkit/src/runtime/resourceProvider.vibe"],
       "rules": {
         "effecttsgo/unsafe-effect-type-assertion": "off"
       }
@@ -51,9 +51,9 @@
     },
     {
       "files": [
-        "packages/foldkit/src/devTools/webSocketBridge.ts",
-        "packages/foldkit/src/runtime/runtime.ts",
-        "packages/foldkit/src/experimental/server/server.ts"
+        "packages/foldkit/src/devTools/webSocketBridge.vibe",
+        "packages/foldkit/src/runtime/runtime.vibe",
+        "packages/foldkit/src/experimental/server/server.vibe"
       ],
       "rules": {
         "effecttsgo/schema-sync-in-effect": "off"

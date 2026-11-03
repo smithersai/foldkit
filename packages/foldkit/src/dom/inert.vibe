@@ -1,6 +1,11 @@
-import { Array, Effect, Number, Option, Predicate, Result, pipe } from 'effect'
+import { Array as EffectArray, Number as EffectNumber, pipe } from 'effect'
 
 import { afterCommit } from '../render/render.vibe'
+import {
+  isDocumentBody,
+  isHTMLElement,
+  queryElement,
+} from './inert.platform.js'
 
 const inertState = {
   originals: new Map<
@@ -16,7 +21,7 @@ type InertAttribute = 'aria-hidden' | 'inert'
 
 const markInert = (element: HTMLElement): (() => void) => {
   const count = inertState.counts.get(element) ?? 0
-  inertState.counts.set(element, Number.increment(count))
+  inertState.counts.set(element, EffectNumber.increment(count))
 
   if (count === 0) {
     inertState.originals.set(element, {
@@ -50,7 +55,7 @@ const markNotInert = (element: HTMLElement): void => {
 
     inertState.counts.delete(element)
   } else {
-    inertState.counts.set(element, Number.decrement(count))
+    inertState.counts.set(element, EffectNumber.decrement(count))
   }
 }
 
@@ -79,22 +84,23 @@ const recordCurrentAttribute = (
 const resolveElements = (
   selectors: ReadonlyArray<string>,
 ): ReadonlyArray<HTMLElement> =>
-  Array.filterMap(selectors, selector =>
+  EffectArray.filterMap(selectors, selector =>
     Result.liftPredicate(
-      document.querySelector(selector),
-      (element): element is HTMLElement => element instanceof HTMLElement,
+      queryElement(selector),
+      isHTMLElement,
       () => undefined,
-    ),
-  )
+    ))
 
 const ancestorsUpToBody = (element: HTMLElement): ReadonlyArray<HTMLElement> =>
-  Array.unfold(element.parentElement, current =>
-    Predicate.isNotNull(current)
-      ? Option.some([
+  EffectArray.unfold(
+    element.parentElement,
+    current =>
+      Predicate.isNotNull(current)
+        ? Option.some([
           current,
-          current === document.body ? null : current.parentElement,
+          isDocumentBody(current) ? null : current.parentElement,
         ])
-      : Option.none(),
+        : Option.none(),
   )
 
 const inertableSiblings = (
@@ -103,12 +109,15 @@ const inertableSiblings = (
 ): ReadonlyArray<HTMLElement> =>
   pipe(
     parent.children,
-    Array.fromIterable,
-    Array.filterMap(child =>
-      child instanceof HTMLElement &&
-      !Array.some(allowedElements, allowed => child.contains(allowed))
+    EffectArray.fromIterable,
+    EffectArray.filterMap(child =>
+      isHTMLElement(child)
+        && !EffectArray.some(
+          allowedElements,
+          allowed => child.contains(allowed),
+        )
         ? Result.succeed(child)
-        : Result.failVoid,
+        : Result.failVoid
     ),
   )
 
@@ -196,7 +205,7 @@ const releaseStoredCleanups = (id: string): void => {
   }
 
   inertState.cleanups.delete(id)
-  Array.forEach(cleanupFunctions, cleanup => cleanup())
+  EffectArray.forEach(cleanupFunctions, cleanup => cleanup())
 }
 
 /**
@@ -215,29 +224,25 @@ const releaseStoredCleanups = (id: string): void => {
  * Dom.inertOthers('my-menu', ['#menu-button', '#menu-items'])
  * ```
  */
-export const inertOthers = (
+export const inertOthers = effect (
   id: string,
   allowedSelectors: ReadonlyArray<string>,
-): Effect.Effect<void> =>
-  Effect.gen(function* () {
-    const request = yield* Effect.sync(() => {
-      const nextRequest = Symbol()
-      inertState.requests.set(id, nextRequest)
-      return nextRequest
-    })
+): void!! => {
+  const request = Symbol()
+  inertState.requests.set(id, request)
 
-    yield* afterCommit
+  try afterCommit
 
-    if (inertState.requests.get(id) !== request) {
-      return
-    }
+  if (inertState.requests.get(id) !== request) {
+    return
+  }
 
-    const allowedElements = resolveElements(allowedSelectors)
-    const dispose = isolateOutsideElements(allowedElements)
+  const allowedElements = resolveElements(allowedSelectors)
+  const dispose = isolateOutsideElements(allowedElements)
 
-    releaseStoredCleanups(id)
-    inertState.cleanups.set(id, [dispose])
-  })
+  releaseStoredCleanups(id)
+  inertState.cleanups.set(id, [dispose])
+}
 
 /**
  * Restores all elements previously marked inert by `inertOthers` for the
@@ -249,8 +254,7 @@ export const inertOthers = (
  * Dom.restoreInert('my-menu')
  * ```
  */
-export const restoreInert = (id: string): Effect.Effect<void> =>
-  Effect.sync(() => {
-    inertState.requests.delete(id)
-    releaseStoredCleanups(id)
-  })
+export const restoreInert = effect (id: string): void!! => {
+  inertState.requests.delete(id)
+  releaseStoredCleanups(id)
+}

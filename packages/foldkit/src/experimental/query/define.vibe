@@ -3,7 +3,7 @@ import {
   type KeyedQueryConfig,
   type SyncFields,
   defineKeyedQuery,
-} from './keyedQuery.ts'
+} from './keyedQuery.vibe'
 import { type Query, type QueryConfig, defineQuery } from './query.vibe'
 
 type DefineConfig =

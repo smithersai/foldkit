@@ -1,5 +1,5 @@
 import type { ManagedResourceConfig } from '../managedResource/index.ts'
-import type { ManagedResourceRef } from './resourceProvider.ts'
+import type { ManagedResourceRef } from './resourceProvider.vibe'
 
 /**
  * Forks one fiber per Managed Resource into the runtime scope. Each fiber

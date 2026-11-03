@@ -1,8 +1,14 @@
-import { Option, String } from 'effect'
+import { String as EffectString } from 'effect'
 
 import { OptionExt, StringExt } from '../effectExtensions/index.js'
 import { UrlRequest } from '../navigation/urlRequest.vibe'
 import { Url } from '../url/index.vibe'
+import {
+  addDocumentClickListener,
+  addWindowListener,
+  currentHref,
+  isElement,
+} from './browserListeners.platform.js'
 
 /** Configuration for URL routing with handlers for URL requests and URL changes. */
 export type RoutingConfig<Message> = Readonly<{
@@ -34,10 +40,7 @@ const addPopStateListener = <Message>(
     dispatch(routingConfig.onUrlChange(locationToUrl()))
   }
 
-  window.addEventListener('popstate', onPopState)
-  return () => {
-    window.removeEventListener('popstate', onPopState)
-  }
+  return addWindowListener('popstate', onPopState)
 }
 
 export const addLinkClickListener = <Message>(
@@ -46,8 +49,8 @@ export const addLinkClickListener = <Message>(
 ): (() => void) => {
   const onLinkClick = (event: MouseEvent) => {
     const isNonPrimaryButton = event.button !== 0
-    const isModifierKeyPressed =
-      event.metaKey || event.ctrlKey || event.shiftKey || event.altKey
+    const isModifierKeyPressed = event.metaKey || event.ctrlKey
+      || event.shiftKey || event.altKey
     const isDefaultPrevented = event.defaultPrevented
 
     if (isNonPrimaryButton || isModifierKeyPressed || isDefaultPrevented) {
@@ -55,7 +58,7 @@ export const addLinkClickListener = <Message>(
     }
 
     const eventTarget = event.target
-    if (!(eventTarget instanceof Element)) {
+    if (!isElement(eventTarget)) {
       return
     }
 
@@ -66,12 +69,12 @@ export const addLinkClickListener = <Message>(
 
     const { value: link } = maybeLink
     const { href } = link
-    if (String.isEmpty(href)) {
+    if (EffectString.isEmpty(href)) {
       return
     }
 
-    const isNonSelfTarget =
-      !String.isEmpty(link.target) && link.target !== '_self'
+    const isNonSelfTarget = !EffectString.isEmpty(link.target)
+      && link.target !== '_self'
     const isDownloadLink = link.hasAttribute('download')
 
     if (isNonSelfTarget || isDownloadLink) {
@@ -81,7 +84,7 @@ export const addLinkClickListener = <Message>(
     event.preventDefault()
 
     const linkUrl = new URL(href)
-    const currentUrl = new URL(window.location.href)
+    const currentUrl = new URL(currentHref())
 
     if (linkUrl.origin !== currentUrl.origin) {
       dispatch(routingConfig.onUrlRequest(UrlRequest.External({ href })))
@@ -95,10 +98,7 @@ export const addLinkClickListener = <Message>(
     )
   }
 
-  document.addEventListener('click', onLinkClick)
-  return () => {
-    document.removeEventListener('click', onLinkClick)
-  }
+  return addDocumentClickListener(onLinkClick)
 }
 
 const addProgrammaticNavigationListener = <Message>(
@@ -109,10 +109,7 @@ const addProgrammaticNavigationListener = <Message>(
     dispatch(routingConfig.onUrlChange(locationToUrl()))
   }
 
-  window.addEventListener('foldkit:urlchange', onProgrammaticNavigation)
-  return () => {
-    window.removeEventListener('foldkit:urlchange', onProgrammaticNavigation)
-  }
+  return addWindowListener('foldkit:urlchange', onProgrammaticNavigation)
 }
 
 const urlToFoldkitUrl = (url: URL): Url => {
@@ -128,4 +125,4 @@ const urlToFoldkitUrl = (url: URL): Url => {
   }
 }
 
-const locationToUrl = (): Url => urlToFoldkitUrl(new URL(window.location.href))
+const locationToUrl = (): Url => urlToFoldkitUrl(new URL(currentHref()))

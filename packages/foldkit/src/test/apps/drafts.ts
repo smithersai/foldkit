@@ -1,7 +1,7 @@
 import { Effect, Schema } from 'effect'
 
 import * as Command from '../../command/index.vibe'
-import type { Document, HtmlBuilder } from '../../html/index.js'
+import type { Document, HtmlBuilder } from '../../html/index.vibe'
 import { defineMessageUnion } from '../../message/index.js'
 import { modifyFields } from '../../struct/index.vibe'
 import type * as Update from '../../update/index.js'

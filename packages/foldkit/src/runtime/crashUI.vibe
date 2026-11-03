@@ -6,7 +6,7 @@ import {
   __htmlBuilder as htmlBuilderFor,
   inertHtml as ih,
   __setRuntime as setHtmlRuntime,
-} from '../html/index.ts'
+} from '../html/index.vibe'
 import { MountTracker } from '../mount/index.vibe'
 import { VNode, __patchVNode } from '../vdom.vibe'
 import { Dispatch } from './dispatch.vibe'

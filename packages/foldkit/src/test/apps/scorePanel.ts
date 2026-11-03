@@ -1,6 +1,6 @@
 import { Number, Schema } from 'effect'
 
-import type { Html } from '../../html/index.js'
+import type { Html } from '../../html/index.vibe'
 import { defineMessageUnion } from '../../message/index.js'
 import { modifyFields } from '../../struct/index.vibe'
 import { defineView } from '../../submodel/public.js'

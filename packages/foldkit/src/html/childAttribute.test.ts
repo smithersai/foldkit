@@ -12,12 +12,12 @@ import {
   createBoundaryRegistry,
 } from './boundary.js'
 import { type ChildAttribute, childAttributes } from './childAttribute.vibe'
-import { type Html, __htmlBuilder } from './index.js'
+import { type Html, __htmlBuilder } from './index.vibe'
 import {
   type DispatchSync,
   clearRuntime,
   setRuntime,
-} from './runtimeSingleton.js'
+} from './runtimeSingleton.vibe'
 import {
   type AnySubmodelView,
   type SubmodelConfig,

@@ -1,4 +1,4 @@
-import { type KeyedQuery, type KeyedQueryConfig, type SyncFields } from './keyedQuery.ts';
+import { type KeyedQuery, type KeyedQueryConfig, type SyncFields } from './keyedQuery.vibe';
 import { type Query, type QueryConfig } from './query.vibe';
 /**
  * Defines a Submodel that fetches data and retains it in the application

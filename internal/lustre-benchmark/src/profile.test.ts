@@ -5,7 +5,7 @@ import { describe, it } from 'vitest'
 
 // Internal API not on the public surface but needed by the profile harness
 // to capture the runtime's sync dispatcher.
-import { __requireDispatch } from '../../../packages/foldkit/src/html/index.js'
+import { __requireDispatch } from '../../../packages/foldkit/src/html/index.vibe'
 import { view as optimisedView } from './main.optimised.vibe'
 import { Message, Model, update as baseUpdate, init } from './main.vibe'
 import type { Todo } from './main.vibe'

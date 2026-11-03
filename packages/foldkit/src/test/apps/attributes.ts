@@ -1,5 +1,5 @@
-import { customElement } from '../../html/index.js'
-import type { Attribute, Html, HtmlBuilder } from '../../html/index.js'
+import { customElement } from '../../html/index.vibe'
+import type { Attribute, Html, HtmlBuilder } from '../../html/index.vibe'
 import { defineMessageUnion } from '../../message/index.js'
 import type * as Update from '../../update/index.js'
 

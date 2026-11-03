@@ -9,12 +9,12 @@ import {
   beginRender,
   createBoundaryRegistry,
 } from './html/boundary.js'
-import { Prop, __htmlBuilder, customElement } from './html/index.js'
+import { Prop, __htmlBuilder, customElement } from './html/index.vibe'
 import {
   type DispatchSync,
   clearRuntime,
   setRuntime,
-} from './html/runtimeSingleton.js'
+} from './html/runtimeSingleton.vibe'
 import { __elementSignature, __hydrateVNode } from './hydrate.vibe'
 import { defineMessageUnion } from './message/index.js'
 import { type VNode, h as snabbdomH, toVNode } from './snabbdom/index.js'

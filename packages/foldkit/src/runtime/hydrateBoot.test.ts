@@ -2,12 +2,12 @@ import { Effect, Fiber, Option, Schema } from 'effect'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { renderToString } from '../experimental/server/server.vibe'
-import type { Document } from '../html/index.js'
-import { __htmlBuilder } from '../html/index.js'
+import type { Document } from '../html/index.vibe'
+import { __htmlBuilder } from '../html/index.vibe'
 import { defineMessageUnion } from '../message/index.js'
 import type * as Update from '../update/index.js'
 import { makeApplication } from './makeApplication.vibe'
-import { __startProgram, hydrate, run } from './start.js'
+import { __startProgram, hydrate, run } from './start.vibe'
 
 const Message = defineMessageUnion({
   ClickedIncrement: {},

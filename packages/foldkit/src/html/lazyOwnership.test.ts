@@ -3,9 +3,9 @@ import { afterEach, expect, it, vi } from 'vitest'
 
 import { type VNode, __patchVNode } from '../vdom.vibe'
 import { beginRender, createBoundaryRegistry } from './boundary.js'
-import { __htmlBuilder } from './index.js'
+import { __htmlBuilder } from './index.vibe'
 import { createLazy } from './public.js'
-import { clearRuntime, setRuntime } from './runtimeSingleton.js'
+import { clearRuntime, setRuntime } from './runtimeSingleton.vibe'
 
 const requiredVNode = (node: VNode | string | null | undefined): VNode => {
   if (node === undefined || node === null || typeof node === 'string') {
