@@ -1,7 +1,7 @@
 export const rawByPath = import.meta.glob<string>(
   [
-    '../snippet/*.{vibe,ts,tsx,elm,json,html,sh,txt}',
-    '!../snippet/*.d.vibe.ts',
+    '../snippet/*.{vibe,vibex,ts,tsx,elm,json,html,sh,txt}',
+    '!../snippet/*.d.{vibe,vibex}.ts',
   ],
   {
     query: '?raw',
@@ -12,8 +12,8 @@ export const rawByPath = import.meta.glob<string>(
 
 export const highlightedByPath = import.meta.glob<string>(
   [
-    '../snippet/*.{vibe,ts,tsx,elm,json,html,sh,txt}',
-    '!../snippet/*.d.vibe.ts',
+    '../snippet/*.{vibe,vibex,ts,tsx,elm,json,html,sh,txt}',
+    '!../snippet/*.d.{vibe,vibex}.ts',
   ],
   { query: '?highlighted', import: 'default', eager: true },
 )

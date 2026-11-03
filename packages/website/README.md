@@ -46,3 +46,5 @@ are run as stored programs. Debounced playground writes keep their catch handler
 inside the cold program passed to `FiberMap.run`. Regression properties compare
 509 write models with the original TypeScript callback, including replacements,
 CSS refreshes and failures.
+
+Snippet discovery accepts `.vibex` alongside `.vibe`, retaining the basename lookup, native excerpt notice, raw copy text and native syntax highlighting. Generated declaration sidecars stay out of the displayed snippets. This display support does not compile JSX snippets or establish compiler support for `.vibex`.

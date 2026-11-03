@@ -51,7 +51,7 @@ const shikiThemes = {
 }
 
 const highlightLanguage = (filePath: string): string => {
-  if (filePath.endsWith('.vibe')) {
+  if (filePath.endsWith('.vibe') || filePath.endsWith('.vibex')) {
     return 'vibe'
   }
   if (filePath.endsWith('.tsx')) {
@@ -661,6 +661,7 @@ const EXAMPLE_SLUG_SET: Set<string> = new Set(exampleSlugs)
 
 export const EXAMPLE_FILE_EXTENSIONS: ReadonlySet<string> = new Set([
   '.vibe',
+  '.vibex',
   '.ts',
   '.tsx',
   '.css',
@@ -670,7 +671,7 @@ export const EXAMPLE_FILE_EXTENSIONS: ReadonlySet<string> = new Set([
 
 const langFromExtension = (filePath: string): string => {
   const extension = extname(filePath)
-  if (extension === '.vibe') {
+  if (extension === '.vibe' || extension === '.vibex') {
     return 'vibe'
   }
   if (extension === '.tsx') {

@@ -18,11 +18,12 @@ type SnippetEntry = readonly [string, Snippet]
 
 const snippetName = (path: string): Option<string> =>
   Arr.last(Str.split(path, '/')).map(
-    Str.replace(/\.(?:vibe|ts|tsx|elm|json|html|sh|txt)$/, ''),
+    Str.replace(/\.(?:vibe|vibex|ts|tsx|elm|json|html|sh|txt)$/, ''),
   )
 
 const snippetLanguage = (path: string): string => match (path) {
-  when let value and if (value.endsWith('.vibe')): 'vibe';
+  when let value and if (value.endsWith('.vibe') || value.endsWith('.vibex')):
+    'vibe';
   when let value and if (value.endsWith('.tsx')): 'tsx';
   when let value and if (value.endsWith('.ts')): 'typescript';
   when let value and if (value.endsWith('.elm')): 'elm';
