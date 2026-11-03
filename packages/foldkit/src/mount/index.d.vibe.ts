@@ -15,7 +15,6 @@ export declare class MountTracker extends MountTracker_base {
  *  it represents the current live Model. `Paused` means time travel has
  *  installed a historical view while the live application continues running. */
 export declare const ViewState: Schema.Literals<readonly ["Live", "Paused"]>;
-export type ViewState = typeof ViewState.Type;
 declare const MountRuntime_base: Context.ServiceClass<MountRuntime, "@foldkit/MountRuntime", {
     readonly captureViewStateChanges: () => Stream.Stream<ViewState>;
 }>;
@@ -128,10 +127,6 @@ export declare const liveViewStateChanges: Stream.Stream<ViewState>;
  * Cleanup composes via `Effect.acquireRelease` inside the Effect: registered
  * finalizers run when the element unmounts. The Mount's scope stays open
  * across the element's full lifetime, even after the Effect completes.
- * Acquisition is uninterruptible by default. For asynchronous setup that
- * must stop when the element unmounts, pass `{ interruptible: true }` as
- * the third argument to `Effect.acquireRelease`. Construct the resource
- * after the interruptible wait so cancellation leaves no handle to release.
  *
  * At least one result Message schema is required. The Effect's success
  * type is `Schema.Schema.Type<Messages[number]>`; without a declared
@@ -383,4 +378,6 @@ export declare const mapMessage: {
     <A, B>(f: (message: A) => B): <E>(action: MountAction<A, E>) => MountAction<B, E>;
     <A, B, E>(action: MountAction<A, E>, f: (message: A) => B): MountAction<B, E>;
 };
+/** The state of the DOM currently owned by the Foldkit renderer. */
+export type ViewState = typeof ViewState.Type;
 export {};

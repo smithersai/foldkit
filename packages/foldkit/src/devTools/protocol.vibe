@@ -263,3 +263,24 @@ export const RelayRecord = Schema.Struct({
 })
 /** Decoded record for a running DevTools MCP relay. */
 export type RelayRecord = typeof RelayRecord.Type
+
+/** Metadata about a single keyframe. */
+export type KeyframeInfo = typeof KeyframeInfo.Type
+
+/** Metadata about a connected browser runtime. */
+export type RuntimeInfo = typeof RuntimeInfo.Type
+
+/** One row of a Message-tag histogram. */
+export type MessageTagCount = typeof MessageTagCount.Type
+
+/** One changed path in a Model diff. */
+export type ModelDiffChange = typeof ModelDiffChange.Type
+
+/** One variant entry in a `MessageSchemaIndex`. */
+export type MessageSchemaIndexEntry = typeof MessageSchemaIndexEntry.Type
+
+/** A flat directory of every top-level Message variant. */
+export type MessageSchemaIndex = typeof MessageSchemaIndex.Type
+
+/** A wire frame carrying a Response, correlated to a Request by id. */
+export type ResponseFrame = typeof ResponseFrame.Type

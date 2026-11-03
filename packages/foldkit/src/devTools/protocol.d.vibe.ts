@@ -45,14 +45,12 @@ export type SerializedEntry = typeof SerializedEntry.Type;
 export declare const KeyframeInfo: Schema.Struct<{
     readonly index: Schema.Number;
 }>;
-export type KeyframeInfo = typeof KeyframeInfo.Type;
 /** Metadata about a connected browser runtime. */
 export declare const RuntimeInfo: Schema.Struct<{
     readonly connectionId: Schema.String;
     readonly url: Schema.String;
     readonly title: Schema.String;
 }>;
-export type RuntimeInfo = typeof RuntimeInfo.Type;
 /** The largest batch `RequestDispatchMessages` accepts. Matches the DevTools store's default history size, so a batch cannot evict its own earliest entries before the caller reads them back. The runtime rejects a larger batch with `ResponseError`, and MCP clients reject it earlier still, at their own input boundary. */
 export declare const MAX_DISPATCH_BATCH_SIZE = 100;
 /** A request from the MCP server. The Vite plugin handles
@@ -111,7 +109,6 @@ export declare const MessageTagCount: Schema.Struct<{
     readonly tag: Schema.String;
     readonly count: Schema.Number;
 }>;
-export type MessageTagCount = typeof MessageTagCount.Type;
 /** The value on one side of a Model diff. `DiffValue.Present` carries the
  * value. `DiffValue.Absent` means the path does not exist on that side, which
  * keeps a missing path distinct from a path whose value is `null`. */
@@ -139,14 +136,12 @@ export declare const ModelDiffChange: Schema.Struct<{
         };
     }>;
 }>;
-export type ModelDiffChange = typeof ModelDiffChange.Type;
 /** One variant entry in a `MessageSchemaIndex`. `payloadFields` lists the variant's payload property names (excluding `_tag`); `unionFields` lists the subset of those properties whose schemas are themselves `_tag`-discriminated unions. A Submodel-wrapper variant always shows up with `unionFields: ['message']`, but the same flag also catches plain tagged-union value types like `UrlRequest = Internal | External`. Either way, the agent will need to pick a variant when filling these fields. */
 export declare const MessageSchemaIndexEntry: Schema.Struct<{
     readonly tag: Schema.String;
     readonly payloadFields: Schema.$Array<Schema.String>;
     readonly unionFields: Schema.$Array<Schema.String>;
 }>;
-export type MessageSchemaIndexEntry = typeof MessageSchemaIndexEntry.Type;
 /** A flat directory of every top-level Message variant the runtime accepts, designed to fit in an agent context regardless of Message-union size. Use the tag names to make a follow-up `RequestGetMessageSchema` with `maybeVariantTag` set to fetch the full JSON Schema for one variant. */
 export declare const MessageSchemaIndex: Schema.Struct<{
     readonly variants: Schema.$Array<Schema.Struct<{
@@ -155,7 +150,6 @@ export declare const MessageSchemaIndex: Schema.Struct<{
         readonly unionFields: Schema.$Array<Schema.String>;
     }>>;
 }>;
-export type MessageSchemaIndex = typeof MessageSchemaIndex.Type;
 /** The result of requesting the app's Message Schema. It is either a compact
  * index of Message variants or the JSON Schema document for one variant. */
 export declare const MessageSchemaResult: import("../schema/index.ts").TaggedUnion<{
@@ -547,7 +541,6 @@ export declare const ResponseFrame: Schema.Struct<{
         };
     }>;
 }>;
-export type ResponseFrame = typeof ResponseFrame.Type;
 /** A wire frame carrying a runtime lifecycle event from the bridge to the Vite plugin. */
 export declare const EventFrame: Schema.Struct<{
     readonly maybeConnectionId: Schema.OptionFromNullOr<Schema.String>;
@@ -586,3 +579,17 @@ export declare const RelayRecord: Schema.Struct<{
 }>;
 /** Decoded record for a running DevTools MCP relay. */
 export type RelayRecord = typeof RelayRecord.Type;
+/** Metadata about a single keyframe. */
+export type KeyframeInfo = typeof KeyframeInfo.Type;
+/** Metadata about a connected browser runtime. */
+export type RuntimeInfo = typeof RuntimeInfo.Type;
+/** One row of a Message-tag histogram. */
+export type MessageTagCount = typeof MessageTagCount.Type;
+/** One changed path in a Model diff. */
+export type ModelDiffChange = typeof ModelDiffChange.Type;
+/** One variant entry in a `MessageSchemaIndex`. */
+export type MessageSchemaIndexEntry = typeof MessageSchemaIndexEntry.Type;
+/** A flat directory of every top-level Message variant. */
+export type MessageSchemaIndex = typeof MessageSchemaIndex.Type;
+/** A wire frame carrying a Response, correlated to a Request by id. */
+export type ResponseFrame = typeof ResponseFrame.Type;
