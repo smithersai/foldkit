@@ -14,7 +14,7 @@ import {
   devCommand,
   installCommand,
   runScriptCommand,
-} from './packages.ts'
+} from './packages.vibe'
 
 type FilePath = string
 type FileContent = string

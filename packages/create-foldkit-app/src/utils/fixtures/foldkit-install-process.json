@@ -1,0 +1,6 @@
+{
+  "seed": 413969,
+  "runs": 500,
+  "packageManagers": ["pnpm", "npm", "yarn", "bun"],
+  "outcomes": ["success", "exit-failure", "spawn-error", "interrupt"]
+}

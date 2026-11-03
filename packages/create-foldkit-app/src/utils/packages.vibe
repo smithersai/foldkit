@@ -1,9 +1,10 @@
+import { getSomes, sort } from 'effect/Array'
+import { ExperimentalNodeProcess } from 'vibelang-runtime/experimental/platform-node'
+import { runCommand } from './packages-command.vibe'
+
 import {
-  Array,
-  Data,
   Effect,
   FileSystem,
-  Match,
   Option,
   Order,
   Path,
@@ -11,8 +12,6 @@ import {
   Schema,
   pipe,
 } from 'effect'
-import { spawn } from 'node:child_process'
-import { fileURLToPath } from 'node:url'
 
 import { type Scaffold } from '../rendering.vibe'
 
@@ -43,33 +42,40 @@ export const runScriptCommand = (
   script: string,
 ): string => `${RUN_SCRIPT_PREFIXES[packageManager]} ${script}`
 
-const isWindows = process.platform === 'win32'
+const isWindows = runSync(effect {
+  provide ExperimentalNodeProcess.layer {
+    return (try (try Experimental.Process.Process).platform) === 'win32'
+  }
+})
 
 const StringRecord = Schema.Record(Schema.String, Schema.String)
 
-const PackageJson = Schema.Struct({
-  dependencies: StringRecord.pipe(
-    Schema.withDecodingDefaultKey(Effect.succeed({})),
-  ),
-  devDependencies: StringRecord.pipe(
-    Schema.withDecodingDefaultKey(Effect.succeed({})),
-  ),
-})
+const DefaultDependencies = StringRecord.pipe(
+  Schema.withDecodingDefaultKey(Effect.succeed({})),
+)
+const DefaultDevDependencies = StringRecord.pipe(
+  Schema.withDecodingDefaultKey(Effect.succeed({})),
+)
 
-const ProjectPackageJson = Schema.Struct({
-  name: Schema.String,
-  version: Schema.String,
-  type: Schema.String,
-  scripts: StringRecord,
-})
+schema PackageJson {
+  readonly dependencies: DefaultDependencies
+  readonly devDependencies: DefaultDevDependencies
+}
 
-const ReleaseManifest = Schema.Struct({
-  schemaVersion: Schema.Literal(1),
-  channel: Schema.Literals(['stable', 'canary']),
-  sourceCommit: Schema.String,
-  packages: StringRecord,
-  dependencies: StringRecord,
-})
+schema ProjectPackageJson {
+  readonly name: string
+  readonly version: string
+  readonly type: string
+  readonly scripts: StringRecord
+}
+
+schema ReleaseManifest {
+  readonly schemaVersion: 1
+  readonly channel: 'stable' | 'canary'
+  readonly sourceCommit: string
+  readonly packages: StringRecord
+  readonly dependencies: StringRecord
+}
 
 const TEMPLATE_DEV_DEPENDENCIES = [
   '@effect/tsgo',
@@ -86,13 +92,11 @@ const TEMPLATE_DEV_DEPENDENCIES = [
 
 const SERVER_RENDERING_DEV_DEPENDENCIES = ['@types/node']
 
-type UnresolvedSpec = Data.TaggedEnum<{
-  Keep: { readonly version: string }
-  Release: {}
-  Workspace: {}
-}>
-
-const UnresolvedSpec = Data.taggedEnum<UnresolvedSpec>()
+data UnresolvedSpec {
+  Keep { readonly version: string }
+  Release
+  Workspace
+}
 const { Keep, Release, Workspace } = UnresolvedSpec
 
 const toUnresolvedSpec = (spec: string): UnresolvedSpec => {
@@ -142,14 +146,11 @@ export const buildUnresolvedDevDeps = (
  * versions. An SPA scaffold reads from its chosen starter example; the SSG and
  * SSR scaffolds read from the reference apps their overlay files mirror.
  */
-export const dependencyExample = (scaffold: Scaffold): string =>
-  Match.value(scaffold).pipe(
-    Match.tagsExhaustive({
-      Spa: ({ example }) => example,
-      Ssg: () => 'ssg',
-      Ssr: () => 'ssr',
-    }),
-  )
+export const dependencyExample = (scaffold: Scaffold): string => match (scaffold) {
+  when { _tag: 'Spa', let example }: example;
+  when { _tag: 'Ssg' }: 'ssg';
+  when { _tag: 'Ssr' }: 'ssr';
+}
 
 /**
  * The devDependencies a scaffold needs beyond the template tooling and the
@@ -158,39 +159,43 @@ export const dependencyExample = (scaffold: Scaffold): string =>
  */
 export const scaffoldDevDependencies = (
   scaffold: Scaffold,
-): ReadonlyArray<string> =>
-  Match.value(scaffold).pipe(
-    Match.tagsExhaustive({
-      Spa: () => [],
-      Ssg: () => SERVER_RENDERING_DEV_DEPENDENCIES,
-      Ssr: () => SERVER_RENDERING_DEV_DEPENDENCIES,
-    }),
-  )
+): ReadonlyArray<string> => match (scaffold) {
+  when { _tag: 'Spa' }: [];
+  when { _tag: 'Ssg' }: SERVER_RENDERING_DEV_DEPENDENCIES;
+  when { _tag: 'Ssr' }: SERVER_RENDERING_DEV_DEPENDENCIES;
+}
 
 const getTemplateRoot = (currentDir: string) =>
-  Effect.gen(function* () {
-    const fs = yield* FileSystem.FileSystem
-    const path = yield* Path.Path
+  effect {
+    const fs = try FileSystem.FileSystem
+    const path = try Path.Path
     const bundledRoot = path.resolve(currentDir, '..', 'templates')
 
-    if (yield* fs.exists(bundledRoot)) {
+    if (try fs.exists(bundledRoot)) {
       return bundledRoot
     } else {
       return path.resolve(currentDir, '..', '..', 'templates')
     }
-  })
+  }
 
-const readReleaseManifest = Effect.gen(function* () {
-  const fs = yield* FileSystem.FileSystem
-  const path = yield* Path.Path
-  const currentDir = path.dirname(fileURLToPath(import.meta.url))
-  const templateRoot = yield* getTemplateRoot(currentDir)
-  const content = yield* fs.readFileString(
+const readReleaseManifest = effect {
+  const fs = try FileSystem.FileSystem
+  const path = try Path.Path
+  const currentDir = path.dirname(
+    try Effect.orDie(path.fromFileUrl(new URL(import.meta.url))),
+  )
+  const templateRoot = try getTemplateRoot(currentDir)
+  const content = try fs.readFileString(
     path.join(templateRoot, 'release.json'),
   )
 
-  return yield* Schema.decodeUnknownEffect(ReleaseManifest)(JSON.parse(content))
-})
+  return try Schema.decodeUnknownEffect(ReleaseManifest)(
+    try Effect.orDie(Effect.try({
+      try: () => JSON.parse(content),
+      catch: cause => cause,
+    })),
+  )
+}
 
 /**
  * The git ref in the Foldkit repository that matches a CLI release manifest.
@@ -200,17 +205,13 @@ const readReleaseManifest = Effect.gen(function* () {
  */
 export const foldkitSubtreeRef = (
   manifest: typeof ReleaseManifest.Type,
-): string =>
-  Match.value(manifest.channel).pipe(
-    Match.when('stable', () =>
-      Option.match(Record.get(manifest.packages, 'foldkit'), {
-        onNone: () => manifest.sourceCommit,
-        onSome: version => `foldkit@${version}`,
-      }),
-    ),
-    Match.when('canary', () => manifest.sourceCommit),
-    Match.exhaustive,
-  )
+): string => match (manifest.channel) {
+  when 'stable': match (Record.get(manifest.packages, 'foldkit')) {
+    when Option.None: manifest.sourceCommit;
+    when Option.Some(let version): `foldkit@${version}`;
+  };
+  when 'canary': manifest.sourceCommit;
+}
 
 /**
  * The subtree ref for the release manifest bundled with this CLI. The create
@@ -218,10 +219,10 @@ export const foldkitSubtreeRef = (
  * any files are created, then prints it in the success message so the user
  * vendors the Foldkit repository at the release the scaffold installs.
  */
-export const readFoldkitSubtreeRef = Effect.map(
-  readReleaseManifest,
-  foldkitSubtreeRef,
-)
+export const readFoldkitSubtreeRef = effect {
+  const manifest = try readReleaseManifest
+  return foldkitSubtreeRef(manifest)
+}
 
 const releaseVersions = (manifest: typeof ReleaseManifest.Type) =>
   Record.union(
@@ -233,49 +234,63 @@ const releaseVersions = (manifest: typeof ReleaseManifest.Type) =>
 const resolveReleaseVersion = (
   versions: Record<string, string>,
   name: string,
-) =>
-  Option.match(Record.get(versions, name), {
-    onNone: () => Effect.fail(`The CLI release does not declare ${name}.`),
-    onSome: Effect.succeed,
-  })
+): string!string => match (Record.get(versions, name)) {
+  when Option.None: effect {
+    throw `The CLI release does not declare ${name}.`
+  };
+  when Option.Some(let version): effect {
+    return version
+  };
+}
 
 const resolveEntry = (
   versions: Record<string, string>,
   name: string,
   spec: UnresolvedSpec,
-) =>
-  Match.value(spec).pipe(
-    Match.withReturnType<
-      Effect.Effect<Option.Option<readonly [string, string]>, string>
-    >(),
-    Match.tagsExhaustive({
-      Keep: ({ version }) => Effect.succeed(Option.some([name, version])),
-      Release: () =>
-        Effect.map(resolveReleaseVersion(versions, name), version =>
-          Option.some([name, version]),
-        ),
-      Workspace: () =>
-        Effect.succeed(
-          Option.map(Record.get(versions, name), version => [name, version]),
-        ),
-    }),
-  )
+): Option.Option<readonly [string, string]>!string =>
+  match (spec) {
+    when { _tag: 'Keep', let version }: do {
+      const result: Option.Option<readonly [string, string]> = Option.some([
+        name,
+        version,
+      ])
+      effect {
+        return result
+      }
+    };
+    when { _tag: 'Release' }: do {
+      const resolved = resolveReleaseVersion(versions, name)
+      effect {
+        const version = try resolved
+        return Option.some<readonly [string, string]>([name, version])
+      }
+    };
+    when { _tag: 'Workspace' }: do {
+      const result = Option.map(
+        Record.get(versions, name),
+        (version): readonly [string, string] => [name, version],
+      )
+      effect {
+        return result
+      }
+    };
+  }
 
 const resolveSpecs = (
   versions: Record<string, string>,
   unresolved: Record<string, UnresolvedSpec>,
 ) =>
-  Effect.gen(function* () {
+  effect {
     const entries = Record.toEntries(unresolved)
 
-    const resolved = yield* Effect.forEach(
+    const resolved = try Effect.forEach(
       entries,
       ([name, spec]) => resolveEntry(versions, name, spec),
       { concurrency: 'unbounded' },
     )
 
-    return Record.fromEntries(Array.getSomes(resolved))
-  })
+    return Record.fromEntries(getSomes(resolved))
+  }
 
 const byPackageName = Order.mapInput(
   Order.String,
@@ -288,56 +303,61 @@ const sortDependencies = (
   pipe(
     dependencies,
     Record.toEntries,
-    Array.sort(byPackageName),
+    sort(byPackageName),
     Record.fromEntries,
   )
 
 const readExamplePackageJson = (
   example: string,
   maybeDependencyManifestsDirectory: Option.Option<string>,
-) =>
-  Option.match(maybeDependencyManifestsDirectory, {
-    onNone: () =>
-      Effect.gen(function* () {
-        const fs = yield* FileSystem.FileSystem
-        const path = yield* Path.Path
-        const currentDir = path.dirname(fileURLToPath(import.meta.url))
-        const templateRoot = yield* getTemplateRoot(currentDir)
-        const content = yield* fs.readFileString(
-          path.join(templateRoot, 'examples', example, 'package.json'),
-        )
-
-        return yield* Schema.decodeUnknownEffect(PackageJson)(
-          JSON.parse(content),
-        )
-      }),
-    onSome: directory =>
-      Effect.gen(function* () {
-        const fs = yield* FileSystem.FileSystem
-        const path = yield* Path.Path
-        const content = yield* fs.readFileString(
-          path.join(directory, example, 'package.json'),
-        )
-
-        return yield* Schema.decodeUnknownEffect(PackageJson)(
-          JSON.parse(content),
-        )
-      }),
-  })
+) => match (maybeDependencyManifestsDirectory) {
+  when Option.None: effect {
+    const fs = try FileSystem.FileSystem
+    const path = try Path.Path
+    const currentDir = path.dirname(
+      try Effect.orDie(path.fromFileUrl(new URL(import.meta.url))),
+    )
+    const templateRoot = try getTemplateRoot(currentDir)
+    const content = try fs.readFileString(
+      path.join(templateRoot, 'examples', example, 'package.json'),
+    )
+    return try Schema.decodeUnknownEffect(PackageJson)(
+      try Effect.orDie(Effect.try({
+        try: () => JSON.parse(content),
+        catch: cause => cause,
+      })),
+    )
+  };
+  when Option.Some(let directory): effect {
+    const fs = try FileSystem.FileSystem
+    const path = try Path.Path
+    const content = try fs.readFileString(
+      path.join(directory, example, 'package.json'),
+    )
+    return try Schema.decodeUnknownEffect(PackageJson)(
+      try Effect.orDie(Effect.try({
+        try: () => JSON.parse(content),
+        catch: cause => cause,
+      })),
+    )
+  };
+}
 
 const writeManifest = (
   projectPath: string,
   dependencies: Record<string, string>,
   devDependencies: Record<string, string>,
 ) =>
-  Effect.gen(function* () {
-    const fs = yield* FileSystem.FileSystem
-    const path = yield* Path.Path
+  effect {
+    const fs = try FileSystem.FileSystem
+    const path = try Path.Path
 
     const packageJsonPath = path.join(projectPath, 'package.json')
-    const content = yield* fs.readFileString(packageJsonPath)
-    const packageJson = yield* Schema.decodeUnknownEffect(ProjectPackageJson)(
-      JSON.parse(content),
+    const content = try fs.readFileString(packageJsonPath)
+    const packageJson = try Schema.decodeUnknownEffect(ProjectPackageJson)(
+      try Effect.orDie(
+        Effect.try({ try: () => JSON.parse(content), catch: cause => cause }),
+      ),
     )
 
     const updated = {
@@ -346,44 +366,11 @@ const writeManifest = (
       devDependencies,
     }
 
-    yield* fs.writeFileString(
+    try fs.writeFileString(
       packageJsonPath,
       `${JSON.stringify(updated, null, 2)}\n`,
     )
-  })
-
-const runCommand = (
-  command: string,
-  args: ReadonlyArray<string>,
-  cwd: string,
-): Effect.Effect<void, Error> =>
-  Effect.callback<void, Error>(
-    (resume: (effect: Effect.Effect<void, Error>) => void) => {
-      const child = spawn(command, [...args], {
-        cwd,
-        shell: isWindows,
-        stdio: 'inherit',
-      })
-
-      child.on('error', error => resume(Effect.fail(error)))
-
-      child.on('exit', code => {
-        if (code === 0) {
-          resume(Effect.void)
-        } else {
-          resume(Effect.fail(new Error(`${command} exited with code ${code}`)))
-        }
-      })
-      // NOTE: SIGTERM only — the Effect.callback finalizer is sync so we
-      // can't escalate to SIGKILL. On Windows with shell:true the signal
-      // hits cmd.exe but doesn't propagate to the package manager.
-      return Effect.sync(() => {
-        if (child.exitCode === null && !child.killed) {
-          child.kill()
-        }
-      })
-    },
-  )
+  }
 
 export const installDependencies = (
   projectPath: string,
@@ -391,19 +378,19 @@ export const installDependencies = (
   scaffold: Scaffold,
   maybeDependencyManifestsDirectory: Option.Option<string>,
 ) =>
-  Effect.gen(function* () {
-    const releaseManifest = yield* readReleaseManifest
+  effect {
+    const releaseManifest = try readReleaseManifest
     const versions = releaseVersions(releaseManifest)
-    const examplePackageJson = yield* readExamplePackageJson(
+    const examplePackageJson = try readExamplePackageJson(
       dependencyExample(scaffold),
       maybeDependencyManifestsDirectory,
     )
 
-    const dependencies = yield* resolveSpecs(
+    const dependencies = try resolveSpecs(
       versions,
       buildUnresolvedDeps(examplePackageJson.dependencies),
     )
-    const devDependencies = yield* resolveSpecs(
+    const devDependencies = try resolveSpecs(
       versions,
       buildUnresolvedDevDeps(
         examplePackageJson.devDependencies,
@@ -411,11 +398,11 @@ export const installDependencies = (
       ),
     )
 
-    yield* writeManifest(
+    try writeManifest(
       projectPath,
       sortDependencies(dependencies),
       sortDependencies(devDependencies),
     )
 
-    yield* runCommand(packageManager, ['install'], projectPath)
-  })
+    try runCommand(packageManager, ['install'], projectPath, isWindows)
+  }

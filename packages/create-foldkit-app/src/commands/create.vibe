@@ -14,7 +14,7 @@ import {
   devCommand,
   installDependencies,
   readFoldkitSubtreeRef,
-} from '../utils/packages.ts'
+} from '../utils/packages.vibe'
 import { validateProjectName } from '../validateName.vibe'
 
 type CreateInput = Readonly<{

@@ -12,7 +12,7 @@ import {
   foldkitSubtreeRef,
   installCommand,
   scaffoldDevDependencies,
-} from './packages.js'
+} from './packages.vibe'
 
 describe('buildUnresolvedDeps', () => {
   it('keeps third-party versions and defers every workspace package to the CLI release manifest', () => {
