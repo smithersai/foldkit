@@ -46,3 +46,8 @@ the adapter can locate the client output recorded by the manifest.
 For a Vite application built with a root-relative `base` such as `/app/`, pass
 the same value as `basePath`. The adapter serves client files only under that
 path and preserves it in URLs passed to the Fetch handler.
+
+The adapter uses VibeLang internally and keeps the same TypeScript entry point.
+Response bodies acquire their reader immediately and cancel it when a client
+closes the response. Constructing `serve(options)` reads `options.port` once;
+startup reads the remaining options when the returned program runs.

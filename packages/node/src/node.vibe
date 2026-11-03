@@ -1,9 +1,16 @@
+import { Path } from 'effect'
+import {
+  createServer,
+  requestAtUrl,
+  responseHeaders,
+  toNodeResponseBody,
+} from './node.platform.ts'
+
 import {
   Config,
   Effect,
   FileSystem,
   Layer,
-  Match,
   Option,
   PlatformError,
   Predicate,
@@ -18,27 +25,25 @@ import {
   HttpStaticServer,
 } from 'effect/http'
 import { Server } from 'foldkit/experimental'
-import { readFile } from 'node:fs/promises'
-import { createServer } from 'node:http'
-import { dirname, isAbsolute, posix, relative, resolve, sep } from 'node:path'
-import { Readable } from 'node:stream'
-import { ReadableStream } from 'node:stream/web'
-import { pathToFileURL } from 'node:url'
 
-import { NodeHttpServer, NodeHttpServerRequest } from '@effect/platform-node'
+import {
+  NodeHttpServer,
+  NodeHttpServerRequest,
+  NodePath,
+} from '@effect/platform-node'
 
 const DEFAULT_MANIFEST_PATH = 'dist/server/foldkit.build.json'
 const INVALID_ORIGIN_MESSAGE =
   'origin must be an HTTP or HTTPS origin without credentials, path, query, or fragment'
 const ORIGIN_SYNTAX = /^https?:\/\/[^/?#\\\s@]+\/?$/i
 
-const FoldkitBuildManifest = Schema.Struct({
-  schemaVersion: Schema.Literals([1]),
-  client: Schema.String,
-  server: Schema.String,
-  serverEntry: Schema.String,
-  prerendered: Schema.Array(Schema.String),
-})
+schema FoldkitBuildManifest {
+  readonly schemaVersion: 1
+  readonly client: string
+  readonly server: string
+  readonly serverEntry: string
+  readonly prerendered: ReadonlyArray<string>
+}
 
 type FoldkitBuildManifest = typeof FoldkitBuildManifest.Type
 
@@ -101,57 +106,55 @@ const hostSettledResponse = () =>
   )
 
 const isPublicOriginUrl = (url: URL): boolean =>
-  (url.protocol === 'http:' || url.protocol === 'https:') &&
-  url.username === '' &&
-  url.password === '' &&
-  url.pathname === '/' &&
-  url.search === '' &&
-  url.hash === ''
+  (url.protocol === 'http:' || url.protocol === 'https:')
+  && url.username === ''
+  && url.password === ''
+  && url.pathname === '/'
+  && url.search === ''
+  && url.hash === ''
 
 const originFrom = (origin: string) =>
-  Effect.gen(function* () {
+  effect {
     if (!ORIGIN_SYNTAX.test(origin)) {
-      return yield* Effect.fail(new Error(INVALID_ORIGIN_MESSAGE))
+      throw new Error(INVALID_ORIGIN_MESSAGE)
     }
 
-    const url = yield* Effect.try({
+    const url = try Effect.try({
       try: () => new URL(origin),
       catch: () => new Error(INVALID_ORIGIN_MESSAGE),
     })
 
     if (!isPublicOriginUrl(url)) {
-      return yield* Effect.fail(new Error(INVALID_ORIGIN_MESSAGE))
+      throw new Error(INVALID_ORIGIN_MESSAGE)
     }
 
     return url.origin
-  })
+  }
 
 const isRootRelativeBasePath = (basePath: string, url: URL): boolean =>
-  basePath.startsWith('/') &&
-  !basePath.startsWith('//') &&
-  !basePath.includes('\\') &&
-  basePath.endsWith('/') &&
-  url.origin === 'http://localhost' &&
-  url.search === '' &&
-  url.hash === ''
+  basePath.startsWith('/')
+  && !basePath.startsWith('//')
+  && !basePath.includes('\\')
+  && basePath.endsWith('/')
+  && url.origin === 'http://localhost'
+  && url.search === ''
+  && url.hash === ''
 
 const basePathFrom = (basePath: string | undefined) =>
-  Effect.gen(function* () {
+  effect {
     const resolvedBasePath = basePath ?? '/'
-    const url = yield* Effect.try({
+    const url = try Effect.try({
       try: () => new URL(resolvedBasePath, 'http://localhost'),
       catch: () =>
         new Error('basePath must be a root-relative path ending with `/`'),
     })
 
     if (!isRootRelativeBasePath(resolvedBasePath, url)) {
-      return yield* Effect.fail(
-        new Error('basePath must be a root-relative path ending with `/`'),
-      )
+      throw new Error('basePath must be a root-relative path ending with `/`')
     }
 
     return url.pathname
-  })
+  }
 
 const staticPathFor = (
   pathname: string,
@@ -167,15 +170,15 @@ const staticPathFor = (
 }
 
 const decodeManifest = (content: string) =>
-  Effect.gen(function* () {
-    const parsed = yield* Effect.try({
+  effect {
+    const parsed = try Effect.try({
       try: () => JSON.parse(content),
       catch: cause =>
         new Error('foldkit.build.json is not valid JSON', { cause }),
     })
 
-    return yield* Schema.decodeUnknownEffect(FoldkitBuildManifest)(parsed)
-  })
+    return try Schema.decodeUnknownEffect(FoldkitBuildManifest)(parsed)
+  }
 
 const buildPaths = (
   manifestPath: string,
@@ -185,9 +188,9 @@ const buildPaths = (
   const serverDirectory = dirname(manifestPath)
   const normalizedServerDirectory = posix.normalize(manifest.server)
   if (
-    rootDirectory === undefined &&
-    (normalizedServerDirectory === '..' ||
-      normalizedServerDirectory.startsWith('../'))
+    rootDirectory === undefined
+    && (normalizedServerDirectory === '..'
+      || normalizedServerDirectory.startsWith('../'))
   ) {
     return Effect.fail(
       new Error(
@@ -195,10 +198,9 @@ const buildPaths = (
       ),
     )
   }
-  const resolvedRootDirectory =
-    rootDirectory === undefined
-      ? resolve(serverDirectory, relative(manifest.server, '.'))
-      : resolve(process.cwd(), rootDirectory)
+  const resolvedRootDirectory = rootDirectory === undefined
+    ? resolve(serverDirectory, relative(manifest.server, '.'))
+    : resolve(resolve(), rootDirectory)
   const expectedServerDirectory = resolve(
     resolvedRootDirectory,
     manifest.server,
@@ -221,22 +223,23 @@ const readBuildPaths = (
   manifestPath: string,
   rootDirectory: string | undefined,
 ) =>
-  Effect.gen(function* () {
-    const content = yield* Effect.tryPromise({
-      try: () => readFile(manifestPath, 'utf8'),
-      catch: cause =>
+  effect {
+    const fileSystem = try FileSystem.FileSystem
+    const content = try fileSystem.readFileString(manifestPath).pipe(
+      Effect.mapError(cause =>
         new Error(`could not read Foldkit build manifest at ${manifestPath}`, {
-          cause,
-        }),
-    })
-    const manifest = yield* decodeManifest(content)
+          cause: cause.reason.cause,
+        })
+      ),
+    )
+    const manifest = try decodeManifest(content)
 
-    return yield* buildPaths(manifestPath, manifest, rootDirectory)
-  })
+    return try buildPaths(manifestPath, manifest, rootDirectory)
+  }
 
 const loadFetchHandler = (fetchHandlerPath: string) =>
-  Effect.gen(function* () {
-    const loaded = yield* Effect.tryPromise({
+  effect {
+    const loaded = try Effect.tryPromise({
       try: () => import(pathToFileURL(fetchHandlerPath).href),
       catch: cause =>
         new Error(
@@ -246,30 +249,28 @@ const loadFetchHandler = (fetchHandlerPath: string) =>
     })
 
     if (!isFetchModule(loaded)) {
-      return yield* Effect.fail(
-        new Error(
-          `${fetchHandlerPath} must default-export a Web fetch handler`,
-        ),
+      throw new Error(
+        `${fetchHandlerPath} must default-export a Web fetch handler`,
       )
     }
 
     return loaded.default
-  })
+  }
 
 const fetchResponse = (
   app: FetchHandler,
   request: HttpServerRequest.HttpServerRequest,
   requestUrl: string,
 ) =>
-  Effect.gen(function* () {
-    const signal = yield* Effect.abortSignal
-    const webRequest = yield* HttpServerRequest.toWeb(request, { signal })
+  effect {
+    const signal = try Effect.abortSignal
+    const webRequest = try HttpServerRequest.toWeb(request, { signal })
     // NOTE: A rejected Fetch handler promise is an unhandled application
     // defect. Expected application failures should be returned as Responses.
-    const response = yield* Effect.promise(() =>
-      app.fetch(new Request(requestUrl, webRequest)),
+    const response = try Effect.promise(() =>
+      app.fetch(requestAtUrl(requestUrl, webRequest))
     )
-    const headers = new Headers(response.headers)
+    const headers = try sync((response) => responseHeaders(response), response)
     const setCookieHeaders = headers.getSetCookie()
     headers.delete('set-cookie')
     const nodeResponse = NodeHttpServerRequest.toServerResponse(request)
@@ -287,57 +288,42 @@ const fetchResponse = (
       return HttpServerResponse.empty(responseOptions)
     }
 
-    const webReader = response.body.getReader()
-    const nodeBody = Readable.fromWeb(
-      new ReadableStream<Uint8Array>({
-        async pull(controller) {
-          const chunk = await webReader.read()
-          if (chunk.done) {
-            controller.close()
-          } else {
-            controller.enqueue(chunk.value)
-          }
-        },
-        cancel: reason => webReader.cancel(reason),
-      }),
+    const responseBody = response.body
+    const nodeBody = try sync(
+      (responseBody, nodeResponse, signal) =>
+        toNodeResponseBody(responseBody, nodeResponse, signal),
+      responseBody,
+      nodeResponse,
+      signal,
     )
-    const destroyBody = () => nodeBody.destroy()
-    nodeResponse.once('close', destroyBody)
-    nodeBody.once('close', () => nodeResponse.off('close', destroyBody))
-    if (signal.aborted) {
-      nodeBody.destroy()
-    }
 
     return HttpServerResponse.raw(nodeBody, responseOptions)
-  })
+  }
 
 const confinedStaticFiles = (clientDirectory: string) =>
-  Effect.gen(function* () {
-    const fileSystem = yield* FileSystem.FileSystem
-    const httpPlatform = yield* HttpPlatform.HttpPlatform
-    const root = yield* fileSystem.realPath(clientDirectory)
+  effect {
+    const fileSystem = try FileSystem.FileSystem
+    const httpPlatform = try HttpPlatform.HttpPlatform
+    const root = try fileSystem.realPath(clientDirectory)
 
     const confinedRealPath = (path: string) =>
-      Effect.gen(function* () {
-        const canonicalPath = yield* fileSystem.realPath(path)
+      effect {
+        const canonicalPath = try fileSystem.realPath(path)
         const fromRoot = relative(root, canonicalPath)
-        const isContained =
-          fromRoot === '' ||
-          (fromRoot !== '..' &&
-            !fromRoot.startsWith(`..${sep}`) &&
-            !isAbsolute(fromRoot))
+        const isContained = fromRoot === ''
+          || (fromRoot !== '..'
+            && !fromRoot.startsWith(`..${sep}`)
+            && !isAbsolute(fromRoot))
         if (isContained) {
           return canonicalPath
         }
-        return yield* Effect.fail(
-          PlatformError.systemError({
-            _tag: 'NotFound',
-            module: 'FileSystem',
-            method: 'realPath',
-            pathOrDescriptor: path,
-          }),
-        )
-      })
+        throw PlatformError.systemError({
+          _tag: 'NotFound',
+          module: 'FileSystem',
+          method: 'realPath',
+          pathOrDescriptor: path,
+        })
+      }
 
     const confinedFileSystem = FileSystem.FileSystem.of({
       ...fileSystem,
@@ -347,33 +333,32 @@ const confinedStaticFiles = (clientDirectory: string) =>
       ...httpPlatform,
       fileResponse: (path, options) =>
         Effect.flatMap(confinedRealPath(path), canonicalPath =>
-          httpPlatform.fileResponse(canonicalPath, options),
-        ),
+          httpPlatform.fileResponse(canonicalPath, options)),
     })
 
-    return yield* HttpStaticServer.make({ root, index: undefined }).pipe(
+    return try HttpStaticServer.make({ root, index: undefined }).pipe(
       Effect.provideService(FileSystem.FileSystem, confinedFileSystem),
       Effect.provideService(HttpPlatform.HttpPlatform, confinedPlatform),
     )
-  })
+  }
 
 const makeHandler = (options: ServeOptions, port: number) =>
-  Effect.gen(function* () {
-    const origin = yield* originFrom(
+  effect {
+    const origin = try originFrom(
       Option.getOrElse(
-        yield* options.origin,
+        try options.origin,
         () => `http://localhost:${globalThis.String(port)}`,
       ),
     )
 
     const manifestPath = resolve(
-      process.cwd(),
+      resolve(),
       options.manifestPath ?? DEFAULT_MANIFEST_PATH,
     )
-    const paths = yield* readBuildPaths(manifestPath, options.rootDirectory)
-    const basePath = yield* basePathFrom(options.basePath)
-    const app = yield* loadFetchHandler(paths.fetchHandlerPath)
-    const staticFiles = yield* confinedStaticFiles(paths.clientDirectory)
+    const paths = try readBuildPaths(manifestPath, options.rootDirectory)
+    const basePath = try basePathFrom(options.basePath)
+    const app = try loadFetchHandler(paths.fetchHandlerPath)
+    const staticFiles = try confinedStaticFiles(paths.clientDirectory)
 
     return HttpServerRequest.HttpServerRequest.use(request => {
       const requestUrl = Server.resolveRequestUrl(request.url, origin)
@@ -387,34 +372,22 @@ const makeHandler = (options: ServeOptions, port: number) =>
       })
 
       const staticPath = staticPathFor(resolved.pathname, basePath)
-      const staticRequest =
-        staticPath === undefined
-          ? undefined
-          : request.modify({ url: `${staticPath}${resolved.search}` })
+      const staticRequest = staticPath === undefined
+        ? undefined
+        : request.modify({ url: `${staticPath}${resolved.search}` })
 
-      const response = Match.value(fetchRequest.method).pipe(
-        Match.whenOr('GET', 'HEAD', () => {
-          if (
-            staticRequest === undefined ||
-            Server.resolvesToIndexHtml(staticRequest.url)
-          ) {
-            return fetchResponse(app, fetchRequest, requestUrl)
-          }
-
-          return staticFiles.pipe(
+      const response = match (fetchRequest.method) {
+        when 'GET' or 'HEAD': staticRequest === undefined
+            || Server.resolvesToIndexHtml(staticRequest.url)
+          ? fetchResponse(app, fetchRequest, requestUrl)
+          : staticFiles.pipe(
             Effect.catchIf(isRouteNotFound, () =>
-              fetchResponse(app, fetchRequest, requestUrl),
-            ),
-          )
-        }),
-        Match.orElse(() => {
-          if (Server.isHostSettledMethod(fetchRequest.method)) {
-            return Effect.succeed(hostSettledResponse())
-          }
-
-          return fetchResponse(app, fetchRequest, requestUrl)
-        }),
-      )
+              fetchResponse(app, fetchRequest, requestUrl)),
+          );
+        default: Server.isHostSettledMethod(fetchRequest.method)
+          ? Effect.succeed(hostSettledResponse())
+          : fetchResponse(app, fetchRequest, requestUrl);
+      }
 
       return Effect.provideService(
         response,
@@ -422,12 +395,13 @@ const makeHandler = (options: ServeOptions, port: number) =>
         staticRequest ?? fetchRequest,
       )
     }).pipe(Effect.interruptible)
-  })
+  }
 
 const serverLayer = (options: ServeOptions, port: number) =>
   Layer.unwrap(
-    Effect.map(makeHandler(options, port), handler =>
-      HttpServer.serve(handler),
+    Effect.map(
+      makeHandler(options, port),
+      handler => HttpServer.serve(handler),
     ),
   ).pipe(
     HttpServer.withLogAddress,
@@ -441,5 +415,25 @@ const serverLayer = (options: ServeOptions, port: number) =>
  * and HEAD requests, and sends every other application request to the emitted
  * Web Fetch handler. Interrupting the returned Effect closes the HTTP server.
  */
-export const serve = (options: ServeOptions) =>
-  Effect.flatMap(options.port, port => Layer.launch(serverLayer(options, port)))
+export const serve = (options: ServeOptions): never!(
+  Config.ConfigError | Error | PlatformError.PlatformError | Schema.SchemaError | HttpServerError.ServeError
+) => {
+  const configuredPort = options.port
+  return effect {
+    const port = try configuredPort
+    return try Layer.launch(serverLayer(options, port))
+  }
+}
+
+const path = runSync(effect {
+  provide NodePath.layer {
+    return try Path.Path
+  }
+})
+const { dirname, isAbsolute, relative, resolve, sep } = path
+const posix = runSync(effect {
+  provide NodePath.layerPosix {
+    return try Path.Path
+  }
+})
+const pathToFileURL = (value: string): URL => runSync(path.toFileUrl(value))

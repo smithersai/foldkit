@@ -2245,6 +2245,9 @@ importers:
       '@effect/platform-node':
         specifier: 4.1.1
         version: 4.1.1(effect@4.1.1)(redis@6.2.1(@opentelemetry/api@1.9.0))
+      vibelang-runtime:
+        specifier: file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-4a7e790005b5.tgz
+        version: file:.vibelang-toolchain/vibelang-runtime-0.0.11-4a7e790005b5.tgz(@effect/platform-browser@4.1.1(effect@4.1.1))(@effect/platform-node@4.1.1(effect@4.1.1)(redis@6.2.1(@opentelemetry/api@1.9.0)))(effect@4.1.1)
     devDependencies:
       '@types/node':
         specifier: 26.4.0
@@ -2261,6 +2264,12 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vibelang:
+        specifier: file:../../.vibelang-toolchain/vibelang-0.0.11-6a4c55d7d3ae.tgz
+        version: file:.vibelang-toolchain/vibelang-0.0.11-6a4c55d7d3ae.tgz(effect@4.1.1)
+      vibelang-vite:
+        specifier: file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a43d2b04075f.tgz
+        version: file:.vibelang-toolchain/vibelang-vite-0.0.11-a43d2b04075f.tgz(vibelang@file:.vibelang-toolchain/vibelang-0.0.11-6a4c55d7d3ae.tgz(effect@4.1.1))(vite@8.3.1(patch_hash=7da63ac16413df0a99d8d0cfc4ebf0aa05d61ea7501a5726e78e9467b5eac558)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
       vitest:
         specifier: ^4.1.11
         version: 4.1.11(@opentelemetry/api@1.9.0)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(happy-dom@20.14.5)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(patch_hash=7da63ac16413df0a99d8d0cfc4ebf0aa05d61ea7501a5726e78e9467b5eac558)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))

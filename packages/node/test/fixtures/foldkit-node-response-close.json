@@ -1,0 +1,6 @@
+{
+  "seed": 413970,
+  "runs": 500,
+  "maxEvents": 12,
+  "events": ["response-close", "abort", "destroy"]
+}
