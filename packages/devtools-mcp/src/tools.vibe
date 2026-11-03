@@ -9,7 +9,7 @@ import {
   type ListedRuntime,
   type RelayClient,
   errorReason,
-} from './relayClient.ts'
+} from './relayClient.vibe'
 
 const RUNTIME_ID_DESCRIPTION =
   'Optional connection id of a specific Foldkit runtime. Defaults to the most recently connected runtime of the most recently started dev server. Call `foldkit_list_runtimes` to find runtimes in other applications, each with its `projectRoot`.'

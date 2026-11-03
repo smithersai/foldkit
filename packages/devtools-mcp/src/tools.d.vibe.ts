@@ -1,5 +1,5 @@
 import { Effect } from 'effect';
-import { type RelayClient } from './relayClient.ts';
+import { type RelayClient } from './relayClient.vibe';
 type ToolResult = Readonly<{
     content: ReadonlyArray<Readonly<{
         type: 'text';

@@ -12,7 +12,7 @@ import {
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js'
 import { runInit } from './install.ts'
-import { makeRelayClient } from './relayClient.ts'
+import { makeRelayClient } from './relayClient.vibe'
 import {
   configuredRelayUrl,
   loadSettings,
