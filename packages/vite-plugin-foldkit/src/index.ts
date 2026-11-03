@@ -29,12 +29,11 @@ export type {
   FoldkitBuildOptions,
   FoldkitPrerenderOptions,
 } from './build.vibe'
+export { FOLDKIT_FETCH_MODULE_ID, foldkitBuild } from './buildPlugin.js'
 export {
-  FOLDKIT_FETCH_MODULE_ID,
   FoldkitBuildManifest,
   FoldkitBuildMetadata,
-  foldkitBuild,
-} from './buildPlugin.js'
+} from '#vibelang/emitted/src/build'
 export type { FoldkitSsrOptions } from './ssr.vibe'
 export { foldkitSsr } from './ssrPlugin.js'
 export {

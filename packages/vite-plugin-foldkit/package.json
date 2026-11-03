@@ -74,6 +74,11 @@
     "node": ">=20.19.0"
   },
   "imports": {
+    "#vibelang/emitted/src/build": {
+      "vibelang-source": "./src/build.vibe",
+      "types": "./dist/build.d.ts",
+      "default": "./dist/build.js"
+    },
     "#vibelang/emitted/src/devServer": {
       "vibelang-source": "./src/devServer.vibe",
       "types": "./src/devServer.d.vibe.ts",
@@ -93,6 +98,11 @@
       "vibelang-source": "./src/relayRegistryTrust.vibe",
       "types": "./src/relayRegistryTrust.d.vibe.ts",
       "default": "./dist/relayRegistryTrust.js"
+    },
+    "#vibelang/emitted/src/ssr": {
+      "vibelang-source": "./src/ssr.vibe",
+      "types": "./dist/ssr.d.ts",
+      "default": "./dist/ssr.js"
     },
     "#vibelang/emitted/src/ssrRender": {
       "vibelang-source": "./src/ssrRender.vibe",

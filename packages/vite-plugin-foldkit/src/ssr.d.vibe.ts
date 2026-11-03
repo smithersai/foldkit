@@ -1,3 +1,5 @@
+import type { ServerResponse } from 'node:http';
+import type { Connect, ViteDevServer } from 'vite';
 export { foldkitSsr } from './ssrPlugin.ts';
 /** Options for serving server-rendered pages from the Vite dev server. */
 export type FoldkitSsrOptions = Readonly<{
@@ -49,3 +51,36 @@ export type FoldkitSsrOptions = Readonly<{
      */
     quietStandDown?: boolean;
 }>;
+export declare const requestTargetMiddleware: (server: ViteDevServer, options: FoldkitSsrOptions, requestUrls: WeakMap<Connect.IncomingMessage, string>, render: Connect.NextHandleFunction) => Connect.NextHandleFunction;
+type HeaderValue = string | number | ReadonlyArray<string> | undefined;
+type HeaderMutation = Readonly<{
+    name: string;
+    before: HeaderValue;
+    after: HeaderValue;
+}>;
+type HeaderWriteTracking = Readonly<{
+    names: ReadonlySet<string>;
+    stop: () => void;
+}>;
+export type CorsResponseState = Readonly<{
+    mutations: ReadonlyArray<HeaderMutation>;
+    tracking: HeaderWriteTracking;
+}>;
+/** A Vite CORS middleware layer and the handler it installed. */
+export type ViteCorsLayer = Readonly<{
+    layer: Connect.ServerStackItem;
+    handle: Connect.HandleFunction;
+}>;
+/**
+ * Vite's CORS middleware on the dev server's stack, the ownership boundary the
+ * host wraps, or `undefined` on a Vite whose stack has none.
+ */
+export declare const findViteCorsLayer: (server: ViteDevServer) => ViteCorsLayer | undefined;
+/**
+ * Vite's CORS handler wrapped at the ownership boundary: the request target
+ * is validated first, preflights Vite does not own pass through, and the
+ * headers CORS wrote are recorded so the render middleware can restore the
+ * application's own.
+ */
+export declare const wrapCorsHandle: (viteCors: Connect.HandleFunction, server: ViteDevServer, options: FoldkitSsrOptions, requestUrls: WeakMap<Connect.IncomingMessage, string>, stateByRequest: WeakMap<Connect.IncomingMessage, CorsResponseState>) => Connect.NextHandleFunction;
+export declare const renderMiddleware: (server: ViteDevServer, options: FoldkitSsrOptions, requestUrls: WeakMap<Connect.IncomingMessage, string>, stateByRequest: WeakMap<Connect.IncomingMessage, CorsResponseState>) => (nodeRequest: Connect.IncomingMessage, nodeResponse: ServerResponse, next: Connect.NextFunction) => void;

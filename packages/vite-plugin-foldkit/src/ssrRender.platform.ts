@@ -1,7 +1,6 @@
 // The platform code of ssrRender.vibe, which a .vibe file does not import as a
 // value (EK4402): Node's stream adapter for a request body.
 
-import { Predicate } from 'effect'
 import { Readable } from 'node:stream'
 import { trusted } from 'vibelang-runtime'
 import type { Connect } from 'vite'
@@ -9,17 +8,14 @@ import type { Connect } from 'vite'
 // `Request` construction throws only on a malformed URL, which the host
 // validated before rendering: a programmer error, so the call is trusted.
 export const toWebRequest = trusted(
-  (requestUrl: string, nodeRequest: Connect.IncomingMessage): Request => {
+  (
+    requestUrl: string,
+    nodeRequest: Connect.IncomingMessage,
+    headerEntries: ReadonlyArray<readonly [name: string, value: string]>,
+  ): Request => {
     const headers = new Headers()
-    for (const [name, value] of Object.entries(nodeRequest.headers)) {
-      if (Predicate.isString(value)) {
-        headers.set(name, value)
-      }
-      if (Array.isArray(value)) {
-        for (const item of value) {
-          headers.append(name, item)
-        }
-      }
+    for (const [name, value] of headerEntries) {
+      headers.append(name, value)
     }
 
     const method = nodeRequest.method ?? 'GET'

@@ -1,4 +1,3 @@
-import { Predicate, Schema } from 'effect'
 import type {
   DocumentAssets,
   DocumentRenderer,
@@ -19,69 +18,27 @@ import type {
 
 import type {
   FoldkitBuildApi,
+  FoldkitBuildMetadata,
   FoldkitBuildOptions,
   FoldkitPrerenderOptions,
 } from './build.vibe'
 
-// `vite build` integration: the build plugin, the manifest schemas and the
-// path helpers. Its hooks and helpers throw on a misconfiguration, and a plain
-// function that throws stays TypeScript (Will, 2026-10-31).
+import {
+  classifyBuiltUrl,
+  configuredInputs,
+  encodeBuildManifest,
+  isDocumentRenderer,
+  makeBuildManifest,
+  makeBuildMetadata,
+} from '#vibelang/emitted/src/build'
+
+// `vite build` integration: the build plugin and the path helpers. Its hooks
+// and helpers throw on a misconfiguration, and a plain function that throws
+// stays TypeScript (Will, 2026-10-31). The manifest schemas and the helpers
+// that classify what the build sees are VibeLang in build.vibe.
 
 /** Vite module id of the fetch handler Foldkit emits as the server entry. */
 export const FOLDKIT_FETCH_MODULE_ID = 'virtual:foldkit/fetch'
-
-/**
- * What an `ssr.build` build produced, written beside the server bundle.
- *
- * An SSR host serves generated paths as files and sends requests without a
- * matching file to the server entry. A static-only SSG host serves the files
- * and leaves other paths as misses.
- */
-export const FoldkitBuildManifest = Schema.Struct({
-  /**
-   * The shape of this document. A consumer decodes before reading and refuses
-   * a version it does not know, so a manifest written by a newer Foldkit is a
-   * clear refusal rather than a field silently read as undefined.
-   */
-  schemaVersion: Schema.Literals([1]),
-  /**
-   * Where the browser build was written, as a POSIX path relative to the Vite
-   * root. Relative and normalized so a manifest survives being moved with the
-   * build it describes.
-   */
-  client: Schema.String,
-  /** Where the server build was written, on the same terms as {@link client}. */
-  server: Schema.String,
-  /** The server build's entry file, relative to `server`. */
-  serverEntry: Schema.String,
-  /** Every path this build generated a page for, in the order it generated. */
-  prerendered: Schema.Array(Schema.String),
-})
-
-/**
- * The decoded shape of `foldkit.build.json`.
- *
- * A deployment host decodes the manifest before using it. The Schema rejects
- * unknown versions rather than letting the host read missing fields.
- */
-export type FoldkitBuildManifest = typeof FoldkitBuildManifest.Type
-
-/** Completed application build data for an in-process deployment integration. */
-export const FoldkitBuildMetadata = Schema.Struct({
-  /** Absolute resolved Vite application root. */
-  root: Schema.String,
-  /** Absolute resolved browser output directory. */
-  clientDirectory: Schema.String,
-  /** Absolute resolved server output directory. */
-  serverDirectory: Schema.String,
-  /** Absolute path to the emitted fetch handler. */
-  serverEntry: Schema.String,
-  /** Portable data also written to `foldkit.build.json`. */
-  manifest: FoldkitBuildManifest,
-})
-
-/** The serializable, frozen snapshot of a completed Foldkit build. */
-export type FoldkitBuildMetadata = typeof FoldkitBuildMetadata.Type
 
 const MANIFEST_SCHEMA_VERSION = 1
 
@@ -356,30 +313,29 @@ const collectDocumentAssets = (
       return fileName
     }
 
-    const builtUrl = config.experimental.renderBuiltUrl?.(fileName, {
-      hostId: 'index.html',
-      hostType: 'html',
-      type: 'asset',
-      ssr: false,
-    })
+    const builtUrl = classifyBuiltUrl(
+      config.experimental.renderBuiltUrl?.(fileName, {
+        hostId: 'index.html',
+        hostType: 'html',
+        type: 'asset',
+        ssr: false,
+      }),
+    )
 
-    if (Predicate.isString(builtUrl)) {
-      if (!builtUrl.startsWith('/') && !/^https?:\/\//.test(builtUrl)) {
+    switch (builtUrl._tag) {
+      case 'Usable':
+        return builtUrl.url
+      case 'NotAbsolute':
         throw new Error(
           '[foldkit] renderBuiltUrl must return an absolute URL or root-relative URL for document assets.',
         )
-      }
-
-      return builtUrl
+      case 'Dynamic':
+        throw new Error(
+          '[foldkit] document assets cannot use runtime or relative renderBuiltUrl results.',
+        )
+      case 'FromBase':
+        return `${config.base}${encodeURI(fileName).replace(/[?#]/g, encodeURIComponent)}`
     }
-
-    if (builtUrl?.runtime !== undefined || builtUrl?.relative === true) {
-      throw new Error(
-        '[foldkit] document assets cannot use runtime or relative renderBuiltUrl results.',
-      )
-    }
-
-    return `${config.base}${encodeURI(fileName).replace(/[?#]/g, encodeURIComponent)}`
   }
 
   return Object.freeze({
@@ -489,7 +445,7 @@ export const foldkitBuild = (
       )
     }
 
-    if (!Predicate.isFunction(entry.renderDocument)) {
+    if (!isDocumentRenderer(entry.renderDocument)) {
       throw new Error(
         `[foldkit] "${entryFileName}" exports no renderDocument function.`,
       )
@@ -561,7 +517,7 @@ export const foldkitBuild = (
       )
     }
 
-    const manifest = FoldkitBuildManifest.make({
+    const manifest = makeBuildManifest({
       schemaVersion: MANIFEST_SCHEMA_VERSION,
       client: manifestPath(builder.config.root, clientDirectory),
       server: manifestPath(builder.config.root, serverDirectory),
@@ -571,11 +527,11 @@ export const foldkitBuild = (
 
     await writeFile(
       resolve(serverDirectory, MANIFEST_FILE_NAME),
-      `${JSON.stringify(Schema.encodeSync(FoldkitBuildManifest)(manifest), undefined, 2)}\n`,
+      encodeBuildManifest(manifest),
     )
     builder.config.logger.info(`  wrote ${MANIFEST_FILE_NAME}`)
 
-    const completedMetadata = FoldkitBuildMetadata.make({
+    const completedMetadata = makeBuildMetadata({
       root: builder.config.root,
       clientDirectory,
       serverDirectory,
@@ -613,9 +569,7 @@ export const foldkitBuild = (
           metadata = undefined
 
           const { input } = this.environment.config.build.rolldownOptions
-          const inputs = Predicate.isString(input)
-            ? [input]
-            : Object.values(input ?? {})
+          const inputs = configuredInputs(input)
 
           if (
             !inputs.includes(CLIENT_MODULE_ID) ||

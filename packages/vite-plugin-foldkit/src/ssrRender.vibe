@@ -1,5 +1,6 @@
 import * as Server from 'foldkit/experimental/server'
 import { NodeFileSystem, NodePath } from '@effect/platform-node'
+import type { IncomingHttpHeaders } from 'node:http'
 import type { Connect, ViteDevServer } from 'vite'
 
 import type { FoldkitSsrOptions } from './ssr.vibe'
@@ -14,6 +15,21 @@ const isEntryModule = (
   Predicate.isObject(loadedModule)
   && Predicate.hasProperty(loadedModule, 'renderPage')
   && Predicate.isFunction(loadedModule.renderPage)
+
+// The request's header fields as name/value pairs, one pair per repeated
+// value, the shape `Headers.append` takes.
+const requestHeaderEntries = (
+  headers: IncomingHttpHeaders,
+): ReadonlyArray<readonly [name: string, value: string]> =>
+  Object.entries(headers).flatMap(([name, value]) => {
+    if (Predicate.isString(value)) {
+      return [[name, value] as const]
+    }
+    if (Array.isArray(value)) {
+      return value.map((item) => [name, item] as const)
+    }
+    return []
+  })
 
 const renderRequest = effect (
   server: ViteDevServer,
@@ -44,7 +60,11 @@ const renderRequest = effect (
     async (entry: Server.EntryModule, request: globalThis.Request) =>
       entry.renderPage(request),
     loadedModule,
-    toWebRequest(requestUrl, nodeRequest),
+    toWebRequest(
+      requestUrl,
+      nodeRequest,
+      requestHeaderEntries(nodeRequest.headers),
+    ),
   )
 
   if (result._tag === 'Responded') {
