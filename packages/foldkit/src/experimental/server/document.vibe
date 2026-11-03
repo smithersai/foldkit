@@ -1,5 +1,5 @@
 import { escapeAttributeValue } from './serialize.vibe'
-import type { RenderedApplication } from './server.ts'
+import type { RenderedApplication } from './server.vibe'
 import { injectIntoTemplate } from './template.ts'
 
 /** Browser assets supplied to the server entry's document renderer.

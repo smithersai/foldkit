@@ -3,7 +3,7 @@ import { expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import { Rendered, Responded, toResponse } from './entry.js'
+import { Rendered, Responded, toResponse } from './entry.vibe'
 
 const TEMPLATE =
   '<!doctype html><html><head><title>Old</title></head>' +

@@ -15,7 +15,7 @@ import {
   FOLDKIT_APP_ATTRIBUTE,
   FOLDKIT_FLAGS_ATTRIBUTE,
   renderToString as renderToStringWithOptions,
-} from './server.js'
+} from './server.vibe'
 
 const h = __htmlBuilder<never>()
 const unrestrictedTextarea = customElement<never>()('textarea')

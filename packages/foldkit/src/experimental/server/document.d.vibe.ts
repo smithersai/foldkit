@@ -1,5 +1,5 @@
 import { Schema } from 'effect';
-import type { RenderedApplication } from './server.ts';
+import type { RenderedApplication } from './server.vibe';
 /** Browser assets supplied to the server entry's document renderer.
  *
  * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.

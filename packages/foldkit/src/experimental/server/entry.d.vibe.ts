@@ -1,47 +1,30 @@
-import { Match } from 'effect'
-
-import type { DocumentRenderer } from './document.vibe'
-import type { RenderedApplication } from './server.js'
-import {
-  type InjectIntoTemplateOptions,
-  injectIntoTemplate,
-} from './template.js'
-
+import type { DocumentRenderer } from './document.vibe';
+import type { RenderedApplication } from './server.vibe';
+import { type InjectIntoTemplateOptions } from './template.js';
 /** Optional HTTP metadata for a rendered application.
  *
  * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
  */
 export type ResponseOptions = Readonly<{
-  status?: number
-  headers?: HeadersInit
-}>
-
+    status?: number;
+    headers?: HeadersInit;
+}>;
 /** A server entry result whose application markup still needs a document.
  *
  * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
  */
 export type Rendered = Readonly<{
-  _tag: 'Rendered'
-  application: RenderedApplication
-  status?: number
-  headers?: HeadersInit
-}>
-
+    _tag: 'Rendered';
+    application: RenderedApplication;
+    status?: number;
+    headers?: HeadersInit;
+}>;
 /** Constructs a rendered server entry result with optional HTTP status and
  * headers.
  *
  * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
  */
-export const Rendered = (
-  application: RenderedApplication,
-  options?: ResponseOptions,
-): Rendered => ({
-  _tag: 'Rendered',
-  application,
-  ...(options?.status !== undefined ? { status: options.status } : {}),
-  ...(options?.headers !== undefined ? { headers: options.headers } : {}),
-})
-
+export declare const Rendered: (application: RenderedApplication, options?: ResponseOptions) => Rendered;
 /** A server entry result that bypasses application rendering and returns a
  * complete Web `Response`, such as a redirect or another non-page response to
  * a page request. A dedicated data API belongs on a separate backend rather
@@ -51,25 +34,19 @@ export const Rendered = (
  * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
  */
 export type Responded = Readonly<{
-  _tag: 'Responded'
-  response: Response
-}>
-
+    _tag: 'Responded';
+    response: Response;
+}>;
 /** Constructs a complete Web `Response` server entry result.
  *
  * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
  */
-export const Responded = (response: Response): Responded => ({
-  _tag: 'Responded',
-  response,
-})
-
+export declare const Responded: (response: Response) => Responded;
 /** The result of handling one request through a Foldkit server entry.
  *
  * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
  */
-export type EntryResult = Rendered | Responded
-
+export type EntryResult = Rendered | Responded;
 /** The module shape a Foldkit server entry exports for hosts to call: one Web
  * `Request` in, one delivery result out.
  *
@@ -83,18 +60,15 @@ export type EntryResult = Rendered | Responded
  * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
  */
 export type EntryModule = Readonly<{
-  renderPage: (request: Request) => Promise<EntryResult>
-}>
-
+    renderPage: (request: Request) => Promise<EntryResult>;
+}>;
 /** The server entry shape used when the application renders the complete HTML document.
  *
  * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
  */
-export type DocumentEntryModule = EntryModule &
-  Readonly<{
-    renderDocument: DocumentRenderer
-  }>
-
+export type DocumentEntryModule = EntryModule & Readonly<{
+    renderDocument: DocumentRenderer;
+}>;
 /** Turns a server entry result into the Web `Response` a host sends. Supply a
  * document renderer, or an HTML template for a host that owns one. Rendered
  * applications default to status 200 with a UTF-8 HTML content type. Complete
@@ -102,29 +76,4 @@ export type DocumentEntryModule = EntryModule &
  *
  * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
  */
-export const toResponse = (
-  document: string | ((application: RenderedApplication) => string),
-  result: EntryResult,
-  options?: InjectIntoTemplateOptions,
-): Response =>
-  Match.value(result).pipe(
-    Match.tagsExhaustive({
-      Responded: ({ response }) => response,
-      Rendered: rendered => {
-        const headers = new Headers(rendered.headers)
-        if (!headers.has('content-type')) {
-          headers.set('content-type', 'text/html; charset=utf-8')
-        }
-
-        return new Response(
-          typeof document === 'function'
-            ? document(rendered.application)
-            : injectIntoTemplate(document, rendered.application, options),
-          {
-            status: rendered.status ?? 200,
-            headers,
-          },
-        )
-      },
-    }),
-  )
+export declare const toResponse: (document: string | ((application: RenderedApplication) => string), result: EntryResult, options?: InjectIntoTemplateOptions) => Response;

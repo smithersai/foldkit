@@ -1,14 +1,9 @@
-import {
-  Array,
-  Context,
-  Data,
-  Effect,
-  Option,
-  Predicate,
-  Schema,
-  String,
-  pipe,
-} from 'effect'
+// Structural checks on rendered markup for `server.vibe`: what HTML parsing
+// does to the served root, hydration handoff markers, framing, `<noscript>`
+// modes and document structure. A check reports a refusal by throwing, and a
+// plain function in VibeLang does not throw, so these live in plain
+// TypeScript: `renderToString` runs them inside `Effect.try`, and
+// `injectIntoTemplate` calls the `__assert` exports directly.
 import type { DefaultTreeAdapterMap } from 'parse5'
 import {
   html as Parse5Html,
@@ -17,27 +12,13 @@ import {
   parseFragment,
 } from 'parse5'
 
-import {
-  HYDRATION_BUILD_ATTRIBUTE,
-  buildIdOrInjected,
-} from '../../buildToken.js'
+import { HYDRATION_BUILD_ATTRIBUTE } from '../../buildToken.js'
 import {
   MATHML_NAMESPACE,
   SVG_NAMESPACE,
   parsedAttributeName,
 } from '../../domReflection.js'
-import { beginRender, createBoundaryRegistry } from '../../html/boundary.js'
-import {
-  type Document,
-  type HtmlBuilder,
-  __htmlBuilder as htmlBuilderFor,
-  textDirectionToAttribute,
-} from '../../html/index.js'
-import {
-  type DispatchSync,
-  clearRuntime,
-  setRuntime,
-} from '../../html/runtimeSingleton.js'
+import type { Document } from '../../html/index.js'
 import {
   FOLDKIT_APP_ATTRIBUTE,
   FOLDKIT_FLAGS_ATTRIBUTE,
@@ -49,14 +30,8 @@ import {
 import { hasTrustedInnerHtml } from '../../propertyProvenance.js'
 import type { VNode } from '../../snabbdom/vnode.js'
 import { tagNameFromSelector } from '../../tagName.js'
-import type { Return as UpdateReturn } from '../../update/index.js'
-import { Url, fromString } from '../../url/index.vibe'
-import { type ParsedFragmentModes, parseFragmentModes } from './fragment.js'
-import {
-  controlledValueContent,
-  escapeAttributeValue,
-  serializeHtml,
-} from './serialize.vibe'
+import type { ParsedFragmentModes } from './fragment.js'
+import { controlledValueContent } from './serialize.vibe'
 
 const HTML_NAMESPACE = 'http://www.w3.org/1999/xhtml'
 
@@ -242,10 +217,11 @@ const assertStructureMatches = (parsed: Parse5Element, vnode: VNode): void => {
   if (parsedChildren.length !== vnodeChildren.length) {
     throw structureMismatch(parsed)
   }
-  for (const [parsedChild, vnodeChild] of Array.zip(
-    parsedChildren,
-    vnodeChildren,
-  )) {
+  for (const [index, parsedChild] of parsedChildren.entries()) {
+    const vnodeChild = vnodeChildren[index]
+    if (vnodeChild === undefined) {
+      throw structureMismatch(parsed)
+    }
     if (parsedChild.kind !== vnodeChild.kind) {
       throw structureMismatch(parsed)
     }
@@ -306,7 +282,7 @@ const buildDivFragmentContext = (): Parse5Element => {
   }
   return onlyChild
 }
-const DIV_FRAGMENT_CONTEXT = buildDivFragmentContext()
+export const DIV_FRAGMENT_CONTEXT: Parse5Element = buildDivFragmentContext()
 
 // After serialization, confirm the root closes cleanly. An unterminated element
 // inside the root (an unclosed `<textarea>`, `<script>`, `<style>`, comment, or
@@ -382,8 +358,9 @@ const traversableContent = (
   ) {
     const content = element.content
     if (
-      Predicate.isObject(content) &&
-      Predicate.hasProperty(content, 'childNodes')
+      typeof content === 'object' &&
+      content !== null &&
+      'childNodes' in content
     ) {
       /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
       return content as Readonly<{ childNodes: ReadonlyArray<Parse5ChildNode> }>
@@ -401,10 +378,11 @@ const parsedChildrenAgree = (
   if (scriptedChildren.length !== unscriptedChildren.length) {
     return false
   }
-  for (const [scriptedChild, unscriptedChild] of Array.zip(
-    scriptedChildren,
-    unscriptedChildren,
-  )) {
+  for (const [index, scriptedChild] of scriptedChildren.entries()) {
+    const unscriptedChild = unscriptedChildren[index]
+    if (unscriptedChild === undefined) {
+      return false
+    }
     if (scriptedChild.kind !== unscriptedChild.kind) {
       return false
     }
@@ -506,7 +484,9 @@ const assertInnerHtmlContextMatches = (
   )
 }
 
-const assertNoscriptModesAgree = (fragments: ParsedFragmentModes): void => {
+export const assertNoscriptModesAgree = (
+  fragments: ParsedFragmentModes,
+): void => {
   if (parsedChildrenAgree(fragments.scripted, fragments.unscripted)) {
     return
   }
@@ -696,7 +676,7 @@ export const __assertNoDocumentStructureEscape = (html: string): void => {
   )
 }
 
-const assertRootClosesCleanly = (html: string): void => {
+export const assertRootClosesCleanly = (html: string): void => {
   if (closesCleanly(html, true) && closesCleanly(html, false)) {
     return
   }
@@ -725,7 +705,7 @@ const DOCUMENT_STRUCTURE_TAGS: ReadonlySet<string> = new Set([
   'html',
 ])
 
-const assertRootIsNotDocumentStructure = (
+export const assertRootIsNotDocumentStructure = (
   root: NonNullable<Document['body']>,
 ): void => {
   const tagName = tagNameFromSelector(root.sel ?? '').toLowerCase()
@@ -837,7 +817,7 @@ const assertNodeDoesNotAuthorReservedContent = (node: VNode): void => {
   }
 }
 
-const assertViewDoesNotAuthorReservedContent = (root: VNode): void => {
+export const assertViewDoesNotAuthorReservedContent = (root: VNode): void => {
   const pendingNodes: globalThis.Array<VNode> = [root]
   for (
     let node = pendingNodes.pop();
@@ -850,8 +830,8 @@ const assertViewDoesNotAuthorReservedContent = (root: VNode): void => {
 
     if (children !== undefined) {
       for (let index = children.length - 1; index >= 0; index--) {
-        const child = Array.getUnsafe(children, index)
-        if (typeof child !== 'string') {
+        const child = children[index]
+        if (child !== undefined && typeof child !== 'string') {
           pendingNodes.push(child)
         }
       }
@@ -880,15 +860,14 @@ const elementsCarrying = (
   )
 
 const assertNoReservedHandoffMarkers = (root: Parse5Element): void => {
-  const maybeMarker = Array.findFirst(
-    Array.fromIterable(RESERVED_HANDOFF_ATTRIBUTES),
+  const marker = [...RESERVED_HANDOFF_ATTRIBUTES].find(
     attributeName => elementsCarrying(root, attributeName).length > 0,
   )
-  if (Option.isNone(maybeMarker)) {
+  if (marker === undefined) {
     return
   }
   throw new Error(
-    `[foldkit] Static output contains ${maybeMarker.value}, which is reserved for ` +
+    `[foldkit] Static output contains ${marker}, which is reserved for ` +
       'Foldkit\u2019s server-to-client hydration handoff. A render that no ' +
       'client will hydrate must not carry hydration markers.',
   )
@@ -954,7 +933,7 @@ const parsedRootOf = (
 // reshaped subtree, so without it a dropped subtree is simply lost, with nothing
 // left to notice. What stays conditional is the marker check below: only a
 // hydratable render emits a stamp for the parser to move.
-const assertParsedRootMatchesView = (
+export const assertParsedRootMatchesView = (
   fragment: DefaultTreeAdapterMap['documentFragment'],
   root: NonNullable<Document['body']>,
 ): void => {
@@ -963,7 +942,7 @@ const assertParsedRootMatchesView = (
   assertStructureMatches(parsed, root)
 }
 
-const assertSingleStampedRoot = (
+export const assertSingleStampedRoot = (
   fragment: DefaultTreeAdapterMap['documentFragment'],
   runtimeId: string,
   buildId: string,
@@ -997,519 +976,4 @@ const assertSingleStampedRoot = (
     )
   }
   assertStructureMatches(only, root)
-}
-
-export { FOLDKIT_APP_ATTRIBUTE, FOLDKIT_FLAGS_ATTRIBUTE }
-
-const DEFAULT_RUNTIME_ID = 'app'
-
-/** The server render of one request: the body markup and the `Document` head
- *  fields for the document renderer or a custom host's template. Hydratable output
- *  contains a stamped root and, when the application declares Flags, its
- *  payload script. Static output carries no handoff markers.
- *
- * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
- */
-export type RenderedApplication = Readonly<{
-  html: string
-  title: string
-  lang?: string
-  dir?: 'ltr' | 'rtl' | 'auto'
-  canonical?: string
-  ogUrl?: string
-}>
-
-/** Failure of a routing render whose `url` option cannot be parsed.
- *
- * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
- */
-export class InvalidUrl extends Data.TaggedError('InvalidUrl')<{
-  url: string
-}> {}
-
-/** Failure producing the Flags payload: the Schema encode step rejected the
- *  Flags value, the encoded value could not be serialized to JSON, or the
- *  encoded value could not be decoded back for the hydration-consistent
- *  render.
- *
- * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
- */
-export class FlagsEncodeError extends Data.TaggedError('FlagsEncodeError')<{
-  cause: unknown
-}> {}
-
-/** Failure serializing the view-produced vnode tree to safe HTML.
- *
- * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
- */
-export class SerializationError extends Data.TaggedError('SerializationError')<{
-  cause: unknown
-}> {}
-
-/** Failure of a render whose `runtimeId` is empty.
- *
- * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
- */
-export class InvalidRuntimeId extends Data.TaggedError('InvalidRuntimeId')<{
-  runtimeId: string
-}> {}
-
-/** Failure of a hydratable render whose view did not return an element root.
- * Text, comments, and an empty body cannot carry the hydration marker the
- * client runtime uses to adopt the server-rendered DOM.
- *
- * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
- */
-export class InvalidHydrationRoot extends Data.TaggedError(
-  'InvalidHydrationRoot',
-)<{
-  rootKind: 'Empty' | 'Text' | 'Comment'
-}> {}
-
-/** Failure of a hydratable render that has no build id. Hydration
- * compares the id on the served root with the client's own to refuse a page
- * from another deployment, so a render that carries none has no such
- * protection. Build both artifacts together with `@foldkit/vite-plugin`, or
- * supply the same nonempty `buildId` explicitly when client and server builds
- * are orchestrated separately. A render that nothing will hydrate
- * (`isHydratable: false`) needs none.
- *
- * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
- */
-export class MissingBuildId extends Data.TaggedError('MissingBuildId')<{}> {}
-
-/** Union of the failures {@link renderToString} can produce.
- *
- * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
- */
-export type RenderError =
-  | MissingBuildId
-  | InvalidUrl
-  | FlagsEncodeError
-  | SerializationError
-  | InvalidRuntimeId
-  | InvalidHydrationRoot
-
-type InitReturn<Model, Message> = UpdateReturn<Model, Message, any>
-
-/** Server-side subset of a routing `makeApplication` config with Flags. The
- *  full application config is structurally assignable; `container`, `update`,
- *  and `subscriptions` play no part in a server render.
- *
- * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
- */
-export type RoutingApplicationConfigWithFlags<Model, Message, Flags> =
-  Readonly<{
-    Flags: Schema.Codec<Flags, any, never, never>
-    routing: unknown
-    init: (flags: Flags, url: Url) => InitReturn<Model, Message>
-    view: (model: Model, h: HtmlBuilder<Message>) => Document
-  }>
-
-/** Server-side subset of a routing `makeApplication` config without Flags.
- *
- * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
- */
-export type RoutingApplicationConfig<Model, Message> = Readonly<{
-  routing: unknown
-  init: (url: Url) => InitReturn<Model, Message>
-  view: (model: Model, h: HtmlBuilder<Message>) => Document
-}>
-
-/** Server-side subset of a non-routing `makeApplication` config with Flags.
- *
- * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
- */
-export type ApplicationConfigWithFlags<Model, Message, Flags> = Readonly<{
-  Flags: Schema.Codec<Flags, any, never, never>
-  init: (flags: Flags) => InitReturn<Model, Message>
-  view: (model: Model, h: HtmlBuilder<Message>) => Document
-}>
-
-/** Server-side subset of a non-routing `makeApplication` config.
- *
- * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
- */
-export type ApplicationConfig<Model, Message> = Readonly<{
-  init: () => InitReturn<Model, Message>
-  view: (model: Model, h: HtmlBuilder<Message>) => Document
-}>
-
-// Shared by both render shapes. `runtimeId` names the application in the root
-// stamp and Flags payload; it defaults to `'app'` and must be non-empty. It
-// also keys the preserved Model and scroll position. A document
-// may contain one hydratable root. Template injection and hydration refuse a
-// second root whether it carries the same id or a distinct one because runtime
-// ids do not divide ownership of document metadata and navigation listeners.
-
-type CommonRenderOptions = Readonly<{
-  runtimeId?: string
-}>
-
-/** Render options for output a client will hydrate, which is the default.
- *  Hydration compares the render's build id against the client's own before
- *  adopting any DOM, and a page carrying none has no such protection.
- *
- * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
- */
-export type HydratableRenderOptions = CommonRenderOptions &
-  Readonly<{
-    isHydratable?: true
-    /**
-     * The deployment this render belongs to, stamped on the root so hydration
-     * can refuse a page from a different one before adopting its DOM. Foldkit
-     * normally reads the identity compiled into the server artifact by
-     * `@foldkit/vite-plugin`. This explicit option is for integrations that
-     * cannot compile the shared identity into the artifact. Give the client
-     * the same public value.
-     */
-    buildId?: string
-  }>
-
-/** Render options for static markup nothing will hydrate. No build id applies,
- *  because no client will compare one.
- *
- * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
- */
-export type StaticRenderOptions = CommonRenderOptions &
-  Readonly<{
-    isHydratable: false
-    buildId?: undefined
-  }>
-
-/** Options for {@link renderToString}. `runtimeId` names the application in the
- *  root stamp and Flags payload; it defaults to `'app'` and must be non-empty.
- *  A nondefault `runtimeId` changes the root stamp and the keys used for Flags,
- *  Model, and scroll preservation. It does not permit a second hydratable
- *  application in one document.
- *
- *  A hydratable render (the default) uses the build identity compiled by
- *  `@foldkit/vite-plugin`. Pass `isHydratable: false` for static markup that
- *  nothing will hydrate, which takes no build id. The explicit `buildId`
- *  option supports integrations that cannot compile the shared identity into
- *  their artifacts.
- *
- * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
- */
-export type RenderOptions = HydratableRenderOptions | StaticRenderOptions
-
-/** Render options for a routing application, adding the request URL.
- *
- * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
- */
-export type RenderUrlOptions = RenderOptions &
-  Readonly<{
-    url: string
-  }>
-
-/** Render options for a Flags application, adding the per-request Flags.
- *
- * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
- */
-export type RenderFlagsOptions<Flags> = RenderOptions &
-  Readonly<{
-    flags: Flags
-  }>
-
-/** Render options for a routing Flags application: the request URL plus the
- *  per-request Flags.
- *
- * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
- */
-export type RenderUrlFlagsOptions<Flags> = RenderUrlOptions &
-  RenderFlagsOptions<Flags>
-
-const noOpDispatch: DispatchSync = () => {}
-
-// NOTE: the html builder reads its dispatch context from a process-wide
-// frame stack (`setRuntime` / `clearRuntime`) rather than an argument, so
-// this push/render/pop bracket must never interleave with another render's.
-// It cannot: JavaScript switches tasks only at async boundaries, and the
-// bracket is fully synchronous (`view` returns a Document without awaiting),
-// so it runs to completion before any other render can start. That atomicity
-// is why no per-request context (AsyncLocalStorage) is needed. The Scene
-// test harness and the client runtime drive a view the same way. A `view`
-// that suspended mid-render would break the invariant; views are pure and
-// cannot.
-const runView = <Model>(
-  view: (model: Model, h: HtmlBuilder<any>) => Document,
-  model: Model,
-): Document => {
-  const boundaryRegistry = createBoundaryRegistry()
-  beginRender(boundaryRegistry)
-  setRuntime(noOpDispatch, Context.empty(), boundaryRegistry)
-  try {
-    return view(model, htmlBuilderFor())
-  } finally {
-    clearRuntime()
-  }
-}
-
-// NOTE: `<` becomes `\u003c` inside the payload so no embedded value can
-// form a `</script>` sequence and close the element early. The escape is
-// JSON-native, so `JSON.parse` restores the original character during
-// hydration.
-const escapeJsonForScriptElement = (json: string): string =>
-  json.replace(/</g, '\\u003c')
-
-const flagsPayloadScript = (runtimeId: string, json: string): string =>
-  `<script type="application/json" ${FOLDKIT_FLAGS_ATTRIBUTE}="${escapeAttributeValue(runtimeId)}">${escapeJsonForScriptElement(json)}</script>`
-
-const encodeFlagsHandoff = <Flags>(
-  FlagsCodec: Schema.Codec<Flags, any, never, never>,
-  flags: Flags,
-  runtimeId: string,
-): Effect.Effect<
-  Readonly<{ payloadScript: string; hydrationFlags: Flags }>,
-  FlagsEncodeError
-> =>
-  Effect.gen(function* () {
-    const FlagsJsonCodec = Schema.toCodecJson(FlagsCodec)
-    const encodedFlags = yield* pipe(
-      flags,
-      Schema.encodeEffect(FlagsJsonCodec),
-      Effect.mapError(cause => new FlagsEncodeError({ cause })),
-    )
-    const json = yield* Effect.try({
-      try: () => JSON.stringify(encodedFlags),
-      catch: cause => new FlagsEncodeError({ cause }),
-    })
-    if (!Predicate.isString(json)) {
-      return yield* Effect.fail(
-        new FlagsEncodeError({
-          cause: new Error(
-            'Flags encoded to a value JSON cannot represent, so no payload can be embedded',
-          ),
-        }),
-      )
-    }
-    // NOTE: the hydrating client reconstructs Flags by parsing the payload
-    // JSON and decoding it synchronously, so the server render must call init
-    // with that same value. Decoding the in-memory encoded value instead would
-    // diverge wherever JSON is not the identity (a -0 serializes to 0, a
-    // non-finite number to null), and decoding through an Effect would accept an
-    // asynchronous codec the synchronous client cannot, deferring the failure to
-    // a client crash. Parsing json and decoding it the same synchronous way the
-    // client does avoids both: the served DOM matches the client's first render,
-    // and an incompatible codec fails here as a typed error.
-    const hydrationFlags = yield* Effect.try({
-      try: () => Schema.decodeUnknownSync(FlagsJsonCodec)(JSON.parse(json)),
-      catch: cause => new FlagsEncodeError({ cause }),
-    })
-    return {
-      payloadScript: flagsPayloadScript(runtimeId, json),
-      hydrationFlags,
-    }
-  })
-
-const parseUrl = (url: string): Effect.Effect<Url, InvalidUrl> =>
-  Option.match(fromString(url), {
-    onNone: () => Effect.fail(new InvalidUrl({ url })),
-    onSome: Effect.succeed,
-  })
-
-const validateHydrationRoot = (
-  body: Document['body'],
-): Effect.Effect<void, InvalidHydrationRoot> => {
-  if (body === null) {
-    return Effect.fail(new InvalidHydrationRoot({ rootKind: 'Empty' }))
-  }
-
-  if (body.sel === undefined || body.sel === '') {
-    return Effect.fail(new InvalidHydrationRoot({ rootKind: 'Text' }))
-  }
-
-  if (body.sel === '!') {
-    return Effect.fail(new InvalidHydrationRoot({ rootKind: 'Comment' }))
-  }
-
-  return Effect.void
-}
-
-/**
- * Renders a `makeApplication`-shaped config to an HTML string on the server.
- *
- * Resolves `init` for the request (with the given Flags and URL when the
- * config declares them), runs the pure `view` under a no-op dispatch frame,
- * and serializes the resulting `Document` body. For hydratable output, the
- * root element is stamped with {@link FOLDKIT_APP_ATTRIBUTE} and, when the
- * config declares `Flags`, the Schema-encoded Flags ride along in a JSON script
- * tag so a hydrating client boots from the same Model.
- *
- * Commands returned by `init` are not run: the rendered HTML is the
- * post-`init` state, and the client runs those Commands after hydration.
- *
- * A hydratable Flags render calls `init` with the encode-then-decode round
- * trip of the given Flags, the exact value the hydrating client will
- * reconstruct, so the served DOM and the client's first render agree by
- * construction even for codecs whose round trip is not the identity.
- *
- * Canonical metadata has no request URL default. The result includes
- * `canonical` only when the view supplies it. It includes `ogUrl` when the view
- * supplies it, or uses an explicit canonical when `ogUrl` is omitted. When a
- * field is absent from the result, `injectIntoTemplate` leaves the
- * corresponding tag in the template unchanged.
- *
- * Derive the canonical URL from the typed route in the Model. `Request.url`
- * gives routing applications the request to parse, but only the application
- * knows which route and query values identify the page.
- *
- * @example
- * ```typescript
- * const renderedApplication = yield* Server.renderToString(config, {
- *   url: request.url,
- *   flags: { theme },
- * })
- * ```
- *
- * @experimental Ships from `foldkit/experimental/server`; expect breaking changes while the API settles.
- */
-export function renderToString<Model, Message, Flags>(
-  config: RoutingApplicationConfigWithFlags<Model, Message, Flags>,
-  options: RenderUrlFlagsOptions<Flags>,
-): Effect.Effect<RenderedApplication, RenderError>
-export function renderToString<Model, Message>(
-  config: RoutingApplicationConfig<Model, Message>,
-  options: RenderUrlOptions,
-): Effect.Effect<RenderedApplication, RenderError>
-export function renderToString<Model, Message, Flags>(
-  config: ApplicationConfigWithFlags<Model, Message, Flags>,
-  options: RenderFlagsOptions<Flags>,
-): Effect.Effect<RenderedApplication, RenderError>
-export function renderToString<Model, Message>(
-  config: ApplicationConfig<Model, Message>,
-  options?: RenderOptions,
-): Effect.Effect<RenderedApplication, RenderError>
-export function renderToString(
-  config: Readonly<{
-    Flags?: Schema.Codec<unknown, any, never, never>
-    routing?: unknown
-    init: (...initArguments: ReadonlyArray<any>) => InitReturn<unknown, any>
-    view: (model: any, h: HtmlBuilder<any>) => Document
-  }>,
-  options?: RenderOptions &
-    Readonly<{
-      url?: string
-      flags?: unknown
-    }>,
-): Effect.Effect<RenderedApplication, RenderError> {
-  return Effect.gen(function* () {
-    const runtimeId = options?.runtimeId ?? DEFAULT_RUNTIME_ID
-    if (runtimeId === '') {
-      return yield* Effect.fail(
-        new InvalidRuntimeId({
-          runtimeId,
-        }),
-      )
-    }
-    const hasRouting = config.routing !== undefined
-    const FlagsCodec = config.Flags
-    const isHydratable = options?.isHydratable ?? true
-
-    // A hydratable render must say which deployment it came from. The Vite
-    // plugin compiles that identity into Foldkit when it coordinates the client
-    // and server artifacts. Separately built artifacts must receive the same
-    // explicit value. With neither source, refusing keeps an unstamped page
-    // from being mistaken for this deployment.
-    const configuredBuildId = buildIdOrInjected(options?.buildId)
-    const isConfiguredBuildId =
-      Predicate.isString(configuredBuildId) &&
-      !String.isEmpty(configuredBuildId)
-
-    if (isHydratable && !isConfiguredBuildId) {
-      return yield* Effect.fail(new MissingBuildId())
-    }
-
-    const buildId = isConfiguredBuildId ? configuredBuildId : ''
-
-    const url = hasRouting ? yield* parseUrl(options?.url ?? '') : undefined
-
-    const flagsHandoff =
-      isHydratable && FlagsCodec !== undefined
-        ? yield* encodeFlagsHandoff(FlagsCodec, options?.flags, runtimeId)
-        : undefined
-    const flagsForInit =
-      flagsHandoff !== undefined ? flagsHandoff.hydrationFlags : options?.flags
-
-    const initReturn = ((): InitReturn<unknown, any> => {
-      if (FlagsCodec !== undefined) {
-        return hasRouting
-          ? config.init(flagsForInit, url)
-          : config.init(flagsForInit)
-      }
-      return hasRouting ? config.init(url) : config.init()
-    })()
-    const nextDocument = runView(config.view, initReturn.model)
-
-    if (isHydratable) {
-      yield* validateHydrationRoot(nextDocument.body)
-    }
-
-    const rootHtml = yield* Effect.try({
-      try: () => {
-        // Checked for every render, hydratable or not: static markup is placed
-        // into a document the same way, so a document-structure root is
-        // rearranged by the parser either way.
-        if (nextDocument.body !== null) {
-          assertRootIsNotDocumentStructure(nextDocument.body)
-          assertViewDoesNotAuthorReservedContent(nextDocument.body)
-        }
-        // The build id rides on the root so hydration can refuse a page from
-        // another deployment before it adopts any of its DOM.
-        const html = serializeHtml(
-          nextDocument.body,
-          isHydratable
-            ? {
-                rootAttributes: {
-                  [FOLDKIT_APP_ATTRIBUTE]: runtimeId,
-                  [HYDRATION_BUILD_ATTRIBUTE]: buildId,
-                },
-                emitHydrationMarkers: true,
-              }
-            : {},
-        )
-        // Framing is checked for every render, hydratable or not. Static markup
-        // is placed into a document the same way, so a root that does not close
-        // cleanly swallows whatever the host writes after it either way.
-        assertRootClosesCleanly(html)
-        const fragments = parseFragmentModes(DIV_FRAGMENT_CONTEXT, html)
-        assertNoscriptModesAgree(fragments)
-        __assertNoDeclarativeShadowRoot(fragments)
-        __assertNoDocumentStructureEscape(html)
-        __assertNoLiveBaseElement(fragments)
-        if (nextDocument.body !== null) {
-          if (isHydratable) {
-            assertSingleStampedRoot(
-              fragments.scripted,
-              runtimeId,
-              buildId,
-              nextDocument.body,
-            )
-          } else {
-            assertParsedRootMatchesView(fragments.scripted, nextDocument.body)
-          }
-        }
-        return html
-      },
-      catch: cause => new SerializationError({ cause }),
-    })
-
-    const flagsPayload =
-      flagsHandoff !== undefined ? flagsHandoff.payloadScript : ''
-
-    const resolvedOgUrl = nextDocument.ogUrl ?? nextDocument.canonical
-
-    return {
-      html: `${rootHtml}${flagsPayload}`,
-      title: nextDocument.title,
-      ...(nextDocument.lang !== undefined ? { lang: nextDocument.lang } : {}),
-      ...(nextDocument.dir !== undefined
-        ? { dir: textDirectionToAttribute(nextDocument.dir) }
-        : {}),
-      ...(nextDocument.canonical !== undefined
-        ? { canonical: nextDocument.canonical }
-        : {}),
-      ...(resolvedOgUrl !== undefined ? { ogUrl: resolvedOgUrl } : {}),
-    }
-  })
 }

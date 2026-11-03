@@ -13,7 +13,7 @@ import {
   __assertNoDeclarativeShadowRoot,
   __assertNoDocumentStructureEscape,
   __assertNoLiveBaseElement,
-} from './server.js'
+} from './server.vibe'
 
 const DEFAULT_CONTAINER_ID = 'root'
 
