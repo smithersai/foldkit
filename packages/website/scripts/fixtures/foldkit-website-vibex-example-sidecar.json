@@ -1,0 +1,17 @@
+{
+  "spec": "VIP-39 and VIP-27: native sources use .d.vibe.ts and .d.vibex.ts declaration sidecars; a source browser must show the source and omit these generated compatibility files.",
+  "files": [
+    "src/main.vibex",
+    "src/main.d.vibex.ts",
+    "src/view.vibe",
+    "src/view.d.vibe.ts",
+    "src/original.ts",
+    "src/original.d.ts"
+  ],
+  "visible": [
+    "src/main.vibex",
+    "src/view.vibe",
+    "src/original.ts",
+    "src/original.d.ts"
+  ]
+}

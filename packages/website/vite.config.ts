@@ -720,6 +720,7 @@ const collectSourceFiles = async (
         entry.isFile() &&
         EXAMPLE_FILE_EXTENSIONS.has(extname(entry.name)) &&
         !entry.name.endsWith('.d.vibe.ts') &&
+        !entry.name.endsWith('.d.vibex.ts') &&
         !entry.parentPath.includes('node_modules') &&
         !entry.name.startsWith('vitest-setup'),
     )
