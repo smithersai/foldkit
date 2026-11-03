@@ -59,7 +59,8 @@ const validateMarkdownPluginOptions = effect (
     for (const [islandName, attributesSchema] of Object.entries(islands)) {
       if (!isSchemaStruct(attributesSchema)) {
         throw new InvalidPluginOptions({
-          message: `Island "${islandName}" in markdown plugin options must map to a Schema struct describing its attributes.`,
+          message:
+            `Island "${islandName}" in markdown plugin options must map to a Schema struct describing its attributes.`,
         })
       }
     }
@@ -173,7 +174,9 @@ export const markdown = (options: MarkdownPluginOptions = {}): Plugin => {
       const { document, maybeFrontmatter } = runSync(
         parseWithValidatedOptions(source, validatedOptions),
       )
-      const documentExport = `export default ${JSON.stringify(encodeDocument(document))}`
+      const documentExport = `export default ${
+        JSON.stringify(encodeDocument(document))
+      }`
       // NOTE: `frontmatter` is emitted for every module, `undefined` when the
       // document has no frontmatter block, so the export always exists and the
       // `*.md` ambient declaration cannot promise an export a module lacks.
@@ -182,7 +185,8 @@ export const markdown = (options: MarkdownPluginOptions = {}): Plugin => {
         when Option.None: 'undefined';
       }
       return {
-        code: `${documentExport}\nexport const frontmatter = ${frontmatterExport}`,
+        code:
+          `${documentExport}\nexport const frontmatter = ${frontmatterExport}`,
         map: null,
       }
     },

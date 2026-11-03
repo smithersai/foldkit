@@ -73,13 +73,10 @@ export const parseFrontmatter = effect (
 
   for (const { line, lineIndex } of entryLines) {
     const location = sourceLocation(maybePosition, lineIndex + 1)
-    const [, fieldName = '', rawFieldValue = ''] = match (
-      Effect.String.match(FRONTMATTER_ENTRY_PATTERN)(line)
-    ) {
+    const [, fieldName = '', rawFieldValue = ''] = match (Effect.String.match(FRONTMATTER_ENTRY_PATTERN)(line)) {
       when Option.Some(let entry): entry;
       when Option.None: throw new InvalidFrontmatter({
-        message:
-          `Invalid frontmatter entry${location}. `
+        message: `Invalid frontmatter entry${location}. `
           + 'Frontmatter supports flat `key: value` pairs of strings only. '
           + 'Nesting, lists, and multi-line values are not supported.',
       });
@@ -106,11 +103,10 @@ export const validateFrontmatter = effect (
   parsed: ParsedFrontmatterFields,
   maybePosition: Position | undefined,
 ): void!InvalidFields => {
-  const fieldLocation = (fieldName: string): string =>
-    match (Option.fromNullishOr(parsed.fieldLineOffsets.get(fieldName))) {
-      when Option.Some(let lineOffset): sourceLocation(maybePosition, lineOffset);
-      when Option.None: sourceLocation(maybePosition, 0);
-    }
+  const fieldLocation = (fieldName: string): string => match (Option.fromNullishOr(parsed.fieldLineOffsets.get(fieldName))) {
+    when Option.Some(let lineOffset): sourceLocation(maybePosition, lineOffset);
+    when Option.None: sourceLocation(maybePosition, 0);
+  }
 
   try checkFields({
     schema: definition,

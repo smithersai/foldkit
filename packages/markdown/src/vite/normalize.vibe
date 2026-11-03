@@ -71,7 +71,8 @@ type DirectiveNode = Readonly<{
 }>
 
 const UNSUPPORTED_GUIDANCE: Readonly<globalThis.Record<string, string>> = {
-  html: 'Raw HTML is not part of the markdown vocabulary. Use an island directive to render custom views.',
+  html:
+    'Raw HTML is not part of the markdown vocabulary. Use an island directive to render custom views.',
   textDirective:
     'Inline directives are not supported. Use a leaf directive (`::Name`) on its own line, or a container directive (`:::Name`).',
   linkReference:
@@ -82,7 +83,8 @@ const UNSUPPORTED_GUIDANCE: Readonly<globalThis.Record<string, string>> = {
     'Reference-style link definitions are not supported. Use inline links (`[text](url)`).',
   footnoteReference: 'Footnotes are not supported.',
   footnoteDefinition: 'Footnotes are not supported.',
-  yaml: 'Frontmatter is not supported without a `frontmatter` schema in the markdown plugin options. Pass one to enable it, or keep document metadata in application code.',
+  yaml:
+    'Frontmatter is not supported without a `frontmatter` schema in the markdown plugin options. Pass one to enable it, or keep document metadata in application code.',
   'leaf directive label':
     'Leaf directive labels (`::Name[label]`) are not supported. Pass information through attributes (`::Name{label="..."}`) instead.',
 }
@@ -99,11 +101,12 @@ const sourceLocation = (
 }
 
 const unsupported = effect (node: PositionedNode): never!UnsupportedMarkdown => {
-  const guidance =
-    UNSUPPORTED_GUIDANCE[node.type]
+  const guidance = UNSUPPORTED_GUIDANCE[node.type]
     ?? 'It is outside the @foldkit/markdown vocabulary.'
   throw new UnsupportedMarkdown({
-    message: `Unsupported markdown node "${node.type}"${sourceLocation(node)}. ${guidance}`,
+    message: `Unsupported markdown node "${node.type}"${
+      sourceLocation(node)
+    }. ${guidance}`,
   })
 }
 
@@ -136,8 +139,7 @@ const toSafeUrl = effect (
     && !SAFE_URL_SCHEME_PATTERN.test(compactUrl)
   ) {
     throw new UnsupportedMarkdown({
-      message:
-        `Unsupported URL scheme in "${url}"${sourceLocation(node)}. `
+      message: `Unsupported URL scheme in "${url}"${sourceLocation(node)}. `
         + 'Link and image URLs may be relative, or use the http:, https:, mailto:, or tel: schemes.',
     })
   }
@@ -172,15 +174,16 @@ effect function toInline(node: PhrasingContent): Inline!UnsupportedMarkdown {
   }
 }
 
-const toAlignment = (align: 'left' | 'right' | 'center' | null): Alignment =>
-  match (align) {
-    when 'left': 'Left';
-    when 'center': 'Center';
-    when 'right': 'Right';
-    default: 'None';
-  }
+const toAlignment = (align: 'left' | 'right' | 'center' | null): Alignment => match (align) {
+  when 'left': 'Left';
+  when 'center': 'Center';
+  when 'right': 'Right';
+  default: 'None';
+}
 
-effect function toTableCell(cell: MdastTableCell): TableCell!UnsupportedMarkdown {
+effect function toTableCell(
+  cell: MdastTableCell,
+): TableCell!UnsupportedMarkdown {
   return TableCell({
     content: try forEach(cell.children, (child) => toInline(child)),
   })
@@ -220,10 +223,14 @@ effect function validateIslandAttributes(
     values: attributes,
     memberNounPlural: 'attributes',
     unknownField: (attributeName, allowedDescription) =>
-      `Unknown attribute "${attributeName}" for island "${directive.name}"${sourceLocation(directive)}. `
+      `Unknown attribute "${attributeName}" for island "${directive.name}"${
+        sourceLocation(directive)
+      }. `
       + allowedDescription,
     invalidValues: (detail) =>
-      `Invalid attributes for island "${directive.name}"${sourceLocation(directive)}. ${detail}`,
+      `Invalid attributes for island "${directive.name}"${
+        sourceLocation(directive)
+      }. ${detail}`,
   })
 }
 
@@ -282,25 +289,31 @@ effect function toBlock(
       maybeMeta: Option.fromNullishOr(meta),
       value,
     });
-    when { type: 'list', let ordered, let start, let children, let position }: do {
-      const items = try forEach(children, (item) => toListItem(item, options))
-      Effect.Array.isArrayNonEmpty(items)
-        ? List({
+    when { type: 'list', let ordered, let start, let children, let position }:
+      do {
+        const items = try forEach(
+          children,
+          (item) => toListItem(item, options),
+        )
+        Effect.Array.isArrayNonEmpty(items)
+          ? List({
             isOrdered: ordered === true,
             maybeStartNumber: Option.fromNullishOr(start),
             items,
           })
-        : try unsupported({ type: 'list', position })
-    };
+          : try unsupported({ type: 'list', position })
+      };
     when { type: 'blockquote', let children }: Blockquote({
       blocks: try forEach(children, (child) => toBlock(child, options)),
     });
     when { type: 'thematicBreak' }: ThematicBreak();
-    when { type: 'table', let children, let align, let position }: try toTable({
-      children,
-      align,
-      position,
-    });
+    when { type: 'table', let children, let align, let position }: try toTable(
+      {
+        children,
+        align,
+        position,
+      },
+    );
     when { type: 'leafDirective', let name, let attributes, let children, let position }:
       Effect.Array.isArrayEmpty(children)
         ? try toIsland({ name, attributes, position }, [], options)

@@ -32,16 +32,14 @@ const maybeInvalidFieldName = (
   error: Schema.SchemaError,
 ): Option.Option<string> => {
   const { issue } = error
-  const leadingIssue =
-    issue instanceof SchemaIssue.Composite
-      ? Effect.Array.head(issue.issues)
-      : Option.some(issue)
+  const leadingIssue = issue instanceof SchemaIssue.Composite
+    ? Effect.Array.head(issue.issues)
+    : Option.some(issue)
   return Option.filter(
     Option.flatMap(leadingIssue, (issue) =>
       issue instanceof SchemaIssue.Pointer
         ? Effect.Array.head(issue.path)
-        : Option.none(),
-    ),
+        : Option.none()),
     Predicate.isString,
   )
 }
