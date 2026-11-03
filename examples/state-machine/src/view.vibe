@@ -17,7 +17,7 @@ import {
   editionName,
   isReviewReady,
   promoToMaybeDiscount,
-} from './main.ts'
+} from './main.vibe'
 
 // VIEW
 

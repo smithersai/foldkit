@@ -1,15 +1,4 @@
-import {
-  Array,
-  Duration,
-  Effect,
-  Match,
-  Number,
-  Option,
-  Schema,
-  String,
-  flow,
-  pipe,
-} from 'effect'
+import { Array as Arr, Number as Num, String as Str, flow, pipe } from 'effect'
 import { Command, Runtime, Update } from 'foldkit'
 import { Machine } from 'foldkit/experimental'
 import { otherwise, to, when } from 'foldkit/experimental/machine'
@@ -21,10 +10,10 @@ import { RadioGroup } from '@foldkit/ui'
 
 // MODEL
 
-export const Discount = Schema.Struct({
-  code: Schema.String,
-  percentOff: Schema.Number,
-})
+export schema Discount {
+  code: string
+  percentOff: number
+}
 
 export const Promo = defineTaggedUnion({
   NoPromo: {},
@@ -58,11 +47,10 @@ export const CheckoutState = defineTaggedUnion({
   Cancelled: { isShippingRequired: Schema.Boolean },
 })
 
-export const TransitionLogEntry = Schema.Struct({
-  id: Schema.Number,
-  summary: Schema.String,
-})
-export type TransitionLogEntry = typeof TransitionLogEntry.Type
+export schema TransitionLogEntry {
+  id: number
+  summary: string
+}
 
 const EDITION_RADIO_GROUP_ID = 'edition'
 
@@ -79,13 +67,12 @@ export const editionName = (isShippingRequired: boolean): string =>
 
 export const EditionRadioGroup = RadioGroup.create()
 
-export const Model = Schema.Struct({
-  checkout: CheckoutState,
-  editionRadioGroup: RadioGroup.Model,
-  transitionLog: Schema.Array(TransitionLogEntry),
-  nextTransitionLogId: Schema.Number,
-})
-export type Model = typeof Model.Type
+export schema Model {
+  checkout: CheckoutState
+  editionRadioGroup: RadioGroup.Model
+  transitionLog: ReadonlyArray<TransitionLogEntry>
+  nextTransitionLogId: number
+}
 
 // MESSAGE
 
@@ -114,24 +101,24 @@ export const PlaceOrder = Command.define('PlaceOrder', {
   args: { isShippingRequired: Schema.Boolean },
   messages: [Message.SucceededPlaceOrder],
   execute: ({ isShippingRequired }) =>
-    Effect.gen(function* () {
-      yield* Effect.sleep(PLACE_ORDER_DELAY)
+    effect {
+      try Effect.sleep(PLACE_ORDER_DELAY)
       return Message.SucceededPlaceOrder({
         orderId: isShippingRequired ? 'SHIP-1001' : 'DIGI-1001',
       })
-    }),
+    },
 })
 
 // MACHINE
 
-const PROMO_DISCOUNTS: ReadonlyArray<typeof Discount.Type> = [
+const PROMO_DISCOUNTS: ReadonlyArray<Discount> = [
   { code: 'READER10', percentOff: 10 },
   { code: 'SIGNAL20', percentOff: 20 },
 ]
 
 export const promoToMaybeDiscount = (
   promo: typeof Promo.Type,
-): Option.Option<typeof Discount.Type> =>
+): Option<Discount> =>
   Match.value(promo).pipe(
     Match.tags({ AppliedPromo: appliedPromo => appliedPromo.discount }),
     Match.option,
@@ -143,14 +130,14 @@ export const isReviewReady = (
 
 export const reviewToMaybeDiscount = (
   review: typeof CheckoutState.Review.Type,
-): Option.Option<typeof Discount.Type> => {
+): Option<Discount> => {
   const normalizedCode = pipe(
     review.promoCodeInput,
-    String.trim,
-    String.toUpperCase,
+    Str.trim,
+    Str.toUpperCase,
   )
 
-  return Array.findFirst(
+  return Arr.findFirst(
     PROMO_DISCOUNTS,
     discount => discount.code === normalizedCode,
   )
@@ -350,47 +337,38 @@ export const TRANSITION_LOG_LIMIT = 20
 
 const resultToTransitionSummary = (
   result: Machine.TransitionResult<typeof CheckoutState.Type, Message>,
-): string =>
-  Match.value(result).pipe(
-    Match.tagsExhaustive({
-      Transitioned: ({ from, messageTag, target }) =>
-        `${from} -> ${target} on ${messageTag}`,
-      Ignored: ({ messageTag, stateTag }) =>
-        `${messageTag} ignored in ${stateTag}`,
-    }),
-  )
+): string => match (result) {
+  when { _tag: "Transitioned", let from, let messageTag, let target }:
+    `${from} -> ${target} on ${messageTag}`;
+  when { _tag: "Ignored", let messageTag, let stateTag }:
+    `${messageTag} ignored in ${stateTag}`;
+}
 
-const stepMachine =
-  (message: Message) =>
-  (model: Model): UpdateReturn => {
-    const result = checkoutMachine.step(model.checkout, message)
+const stepMachine = (message: Message) => (model: Model): UpdateReturn => {
+  const result = checkoutMachine.step(model.checkout, message)
 
-    const { state: nextCheckout } = result
+  const { state: nextCheckout } = result
 
-    const transitionCommands = Match.value(result).pipe(
-      Match.tagsExhaustive({
-        Transitioned: ({ commands }) => commands,
-        Ignored: () => [],
-      }),
-    )
-
-    const transitionLogEntry: TransitionLogEntry = {
-      id: model.nextTransitionLogId,
-      summary: resultToTransitionSummary(result),
-    }
-
-    return {
-      model: modifyFields(model, {
-        checkout: () => nextCheckout,
-        transitionLog: flow(
-          Array.prepend(transitionLogEntry),
-          Array.take(TRANSITION_LOG_LIMIT),
-        ),
-        nextTransitionLogId: Number.increment,
-      }),
-      commands: transitionCommands,
-    }
+  const transitionLogEntry: TransitionLogEntry = {
+    id: model.nextTransitionLogId,
+    summary: resultToTransitionSummary(result),
   }
+
+  return {
+    model: modifyFields(model, {
+      checkout: () => nextCheckout,
+      transitionLog: flow(
+        Arr.prepend(transitionLogEntry),
+        Arr.take(TRANSITION_LOG_LIMIT),
+      ),
+      nextTransitionLogId: Num.increment,
+    }),
+    commands: match (result) {
+      when { _tag: 'Transitioned', let commands }: commands;
+      when { _tag: 'Ignored' }: [];
+    },
+  }
+}
 
 const foldEditionRadioGroupOutMessage = RadioGroup.OutMessage.match<
   Update.Step<Model, Message>
@@ -412,25 +390,9 @@ const foldEditionRadioGroup = Update.foldChild({
   foldOutMessage: foldEditionRadioGroupOutMessage,
 })
 
-export const update = (model: Model, message: Message) =>
-  Match.value(message).pipe(
-    Match.withReturnType<UpdateReturn>(),
-    Match.tag('GotEditionRadioGroupMessage', ({ message }) =>
-      foldEditionRadioGroup(model, message),
-    ),
-    Match.tag(
-      'ClickedContinue',
-      'ClickedBack',
-      'ClickedCancel',
-      'ClickedPlaceOrder',
-      'ClickedStartOver',
-      'ToggledPaymentMethod',
-      'SelectedEdition',
-      'ToggledTermsAccepted',
-      'UpdatedPromoCode',
-      'SubmittedPromoCode',
-      'SucceededPlaceOrder',
-      () => stepMachine(message)(model),
-    ),
-    Match.exhaustive,
-  )
+export const update = (model: Model, message: Message): UpdateReturn => match (message) {
+  when { _tag: 'GotEditionRadioGroupMessage', let message }:
+    foldEditionRadioGroup(model, message);
+  when { _tag: 'ClickedContinue' or 'ClickedBack' or 'ClickedCancel' or 'ClickedPlaceOrder' or 'ClickedStartOver' or 'ToggledPaymentMethod' or 'SelectedEdition' or 'ToggledTermsAccepted' or 'UpdatedPromoCode' or 'SubmittedPromoCode' or 'SucceededPlaceOrder' }:
+    stepMachine(message)(model);
+}

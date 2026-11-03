@@ -1,7 +1,7 @@
-import { Effect } from 'effect'
 import { Server } from 'foldkit/experimental'
 
 import { readCountCookie } from './cookie.vibe'
+import { preflightResponse } from './entryServerResponse.ts'
 import { Flags, init, view } from './main.vibe'
 
 export const renderDocument = Server.renderDocument
@@ -21,20 +21,16 @@ const flagsForRequest = (cookieHeader: string): Flags => ({
 // so this is where an application's CORS policy goes: it can allow one origin
 // for one route and refuse it for another, which no host-level setting could
 // express. This example allows nothing and only reports what it forwards.
-const preflightResponse = (): Response =>
-  new Response(null, {
-    status: 204,
-    headers: { allow: Server.HOST_METHOD_ANSWERS.allow },
-  })
-
 export const renderPage = (request: Request): Promise<Server.EntryResult> =>
   Effect.runPromise(
-    Effect.gen(function* () {
+    effect {
       if (request.method === 'OPTIONS') {
-        return Server.Responded(preflightResponse())
+        return Server.Responded(
+          try sync(preflightResponse, Server.HOST_METHOD_ANSWERS.allow),
+        )
       }
 
-      const renderedApplication = yield* Server.renderToString(
+      const renderedApplication = try Server.renderToString(
         { Flags, init, view },
         {
           flags: flagsForRequest(request.headers.get('cookie') ?? ''),
@@ -48,5 +44,5 @@ export const renderPage = (request: Request): Promise<Server.EntryResult> =>
           'x-content-type-options': 'nosniff',
         },
       })
-    }),
+    },
   )

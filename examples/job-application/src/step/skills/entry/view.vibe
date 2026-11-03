@@ -6,7 +6,7 @@ import { Button } from '@foldkit/ui'
 
 import { ProficiencyLevel } from '../../../domain/index.ts'
 import { Field } from '../../../view/index.ts'
-import { Message, type Model, ProficiencyRadioGroup } from './entry.ts'
+import { Message, type Model, ProficiencyRadioGroup } from './entry.vibe'
 
 export const view = Submodel.defineView<Model, Message>((model, h): Html => {
   const nameView = Field.input(

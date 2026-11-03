@@ -3,8 +3,8 @@ import { modifyFields } from 'foldkit/struct'
 import { Tabs } from '@foldkit/ui'
 
 import type { Post, PostDetail, Stats } from './data.vibe'
-import type { Model } from './main.ts'
-import { PostDetailData, PostsData, StatsData, TABS_ID } from './main.ts'
+import type { Model } from './main.vibe'
+import { PostDetailData, PostsData, StatsData, TABS_ID } from './main.vibe'
 
 export const FETCHED_AT = 1_750_000_000_000
 

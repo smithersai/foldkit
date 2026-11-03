@@ -1,5 +1,5 @@
 import type { Post, PostDetail, Stats } from './data.vibe';
-import type { Model } from './main.ts';
+import type { Model } from './main.vibe';
 export declare const FETCHED_AT = 1750000000000;
 export declare const fixturePosts: ReadonlyArray<Post>;
 export declare const firstPostDetail: PostDetail;

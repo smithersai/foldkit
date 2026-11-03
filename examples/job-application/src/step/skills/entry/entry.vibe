@@ -1,4 +1,3 @@
-import { Option, Schema } from 'effect'
 import { Update } from 'foldkit'
 import {
   Field,
@@ -29,8 +28,9 @@ const validateName = validate(nameRules)
 export const proficiencyRadioGroupId = (entryId: string): string =>
   `${entryId}-proficiency`
 
-export const ProficiencyRadioGroup =
-  RadioGroup.create<ProficiencyLevel.ProficiencyLevel>()
+export const ProficiencyRadioGroup = RadioGroup.create<
+  ProficiencyLevel.ProficiencyLevel
+>()
 
 export const Model = Schema.Struct({
   id: Schema.String,
@@ -77,9 +77,9 @@ const foldProficiencyRadioGroupOutMessage = RadioGroup.OutMessage.match<
   Update.Step<Model, Message>,
   RadioGroup.OutMessage<ProficiencyLevel.ProficiencyLevel>
 >({
-  Selected:
-    ({ value }) =>
-    model => ({ model: modifyFields(model, { proficiency: () => value }) }),
+  Selected: ({ value }) => model => ({
+    model: modifyFields(model, { proficiency: () => value }),
+  }),
 })
 
 const foldProficiencyRadioGroup = Update.foldChild({

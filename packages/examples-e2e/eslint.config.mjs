@@ -3,6 +3,7 @@ import tsPlugin from '@typescript-eslint/eslint-plugin'
 import tsParser from '@typescript-eslint/parser'
 
 export default [
+  { ignores: ['**/.vibelang/js/**'] },
   { ignores: ['**/*.d.vibe.ts'] },
   {
     ...js.configs.recommended,

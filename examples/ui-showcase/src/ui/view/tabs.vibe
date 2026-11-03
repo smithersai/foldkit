@@ -1,4 +1,4 @@
-import { Array, Match } from 'effect'
+import { Array as Arr } from 'effect'
 import { Submodel } from 'foldkit'
 import type { Html, HtmlBuilder } from 'foldkit/html'
 
@@ -86,13 +86,11 @@ const elmPanel = (h: HtmlBuilder<UiMessage>): Html => {
   )
 }
 
-const panelFor = (tab: DemoTab, h: HtmlBuilder<UiMessage>): Html =>
-  Match.value(tab).pipe(
-    Match.when('Foldkit', () => foldkitPanel(h)),
-    Match.when('React', () => reactPanel(h)),
-    Match.when('Elm', () => elmPanel(h)),
-    Match.exhaustive,
-  )
+const panelFor = (tab: DemoTab, h: HtmlBuilder<UiMessage>): Html => match (tab) {
+  when 'Foldkit': foldkitPanel(h);
+  when 'React': reactPanel(h);
+  when 'Elm': elmPanel(h);
+}
 
 export const view = Submodel.defineView<UiModel, UiMessage>(
   (model, h): Html => {
@@ -110,11 +108,11 @@ export const view = Submodel.defineView<UiModel, UiMessage>(
               h.button(
                 [...tab.tab, h.Class(horizontalButtonClassName)],
                 [h.span([], [tab.value])],
-              ),
+              )
             ),
           ),
-          ...Array.map(
-            Array.filter(tabs, tab => tab.index === activeIndex),
+          ...Arr.map(
+            Arr.filter(tabs, tab => tab.index === activeIndex),
             tab =>
               h.div(
                 [...tab.panel, h.Class(horizontalPanelClassName)],
@@ -138,11 +136,11 @@ export const view = Submodel.defineView<UiModel, UiMessage>(
               h.button(
                 [...tab.tab, h.Class(verticalButtonClassName)],
                 [h.span([], [tab.value])],
-              ),
+              )
             ),
           ),
-          ...Array.map(
-            Array.filter(tabs, tab => tab.index === activeIndex),
+          ...Arr.map(
+            Arr.filter(tabs, tab => tab.index === activeIndex),
             tab =>
               h.div(
                 [...tab.panel, h.Class(verticalPanelClassName)],

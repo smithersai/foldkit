@@ -1,4 +1,3 @@
-import { Effect } from 'effect'
 import { Server } from 'foldkit/experimental'
 
 import { init, view } from './main.vibe'
@@ -12,5 +11,5 @@ export const renderPage = (request: Request): Promise<Server.EntryResult> =>
     Server.renderToString(
       { routing: {}, init, view },
       { url: request.url },
-    ).pipe(Effect.map(Server.Rendered)),
+    ) |> Effect.map(%, Server.Rendered),
   )

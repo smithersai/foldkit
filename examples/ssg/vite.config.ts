@@ -13,7 +13,7 @@ export default defineConfig({
     foldkit({
       devToolsMcpPort: 9993,
       ssr: {
-        serverEntry: '/src/entry.server.ts',
+        serverEntry: '/src/entry.server.vibe',
         clientEntry: '/src/entry.ts',
         build: { prerender: { origin: 'https://example.com' } },
       },

@@ -1,15 +1,4 @@
-import {
-  Array,
-  Clock,
-  Duration,
-  Effect,
-  HashMap,
-  Match,
-  Option,
-  Schema,
-  Stream,
-  pipe,
-} from 'effect'
+import { Array as Arr, pipe } from 'effect'
 import { AsyncData, Command, Runtime, Subscription, Update } from 'foldkit'
 import { Document, Html, HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -32,17 +21,17 @@ export const TABS_ID = 'api-cache-tabs'
 
 // MODEL
 
-const FetchedPosts = Schema.Struct({
-  posts: Schema.Array(Post),
-  fetchedAt: Schema.Number,
-})
+schema FetchedPosts {
+  posts: ReadonlyArray<Post>
+  fetchedAt: number
+}
 
-const FetchedPostDetail = Schema.Struct({
-  detail: PostDetail,
-  fetchedAt: Schema.Number,
-})
+schema FetchedPostDetail {
+  detail: PostDetail
+  fetchedAt: number
+}
 
-const FetchedStats = Schema.Struct({ stats: Stats, fetchedAt: Schema.Number })
+schema FetchedStats { stats: Stats; fetchedAt: number }
 
 export const PostsData = AsyncData.Schema(FetchedPosts, Schema.String)
 export const PostDetailData = AsyncData.Schema(FetchedPostDetail, Schema.String)
@@ -52,8 +41,7 @@ type PostsData = typeof PostsData.schema.Type
 type PostDetailData = typeof PostDetailData.schema.Type
 type StatsData = typeof StatsData.schema.Type
 
-const Tab = Schema.Literals(['Posts', 'Stats'])
-type Tab = typeof Tab.Type
+schema Tab = 'Posts' | 'Stats'
 
 const tabValues: ReadonlyArray<Tab> = Tab.literals
 
@@ -97,27 +85,25 @@ type UpdateReturn = Update.Return<Model, Message>
 
 const applyPostsTransition = (
   model: Model,
-  maybeNextPosts: Option.Option<PostsData>,
-): UpdateReturn =>
-  Option.match(maybeNextPosts, {
-    onNone: () => ({ model }),
-    onSome: nextPosts => ({
-      model: modifyFields(model, { posts: () => nextPosts }),
-      commands: [FetchPosts()],
-    }),
-  })
+  maybeNextPosts: Option<PostsData>,
+): UpdateReturn => match (maybeNextPosts) {
+  when Option.None: ({ model });
+  when Option.Some(let nextPosts): ({
+    model: modifyFields(model, { posts: () => nextPosts }),
+    commands: [FetchPosts()],
+  });
+}
 
 const applyStatsTransition = (
   model: Model,
-  maybeNextStats: Option.Option<StatsData>,
-): UpdateReturn =>
-  Option.match(maybeNextStats, {
-    onNone: () => ({ model }),
-    onSome: nextStats => ({
-      model: modifyFields(model, { stats: () => nextStats }),
-      commands: [FetchStats()],
-    }),
-  })
+  maybeNextStats: Option<StatsData>,
+): UpdateReturn => match (maybeNextStats) {
+  when Option.None: ({ model });
+  when Option.Some(let nextStats): ({
+    model: modifyFields(model, { stats: () => nextStats }),
+    commands: [FetchStats()],
+  });
+}
 
 const setPostDetail = (postId: string, postDetail: PostDetailData) =>
   HashMap.set(postId, postDetail)
@@ -125,32 +111,23 @@ const setPostDetail = (postId: string, postDetail: PostDetailData) =>
 const activateTab = (model: Model, tab: Tab): UpdateReturn => {
   const modelWithActiveTab = modifyFields(model, { activeTab: () => tab })
 
-  return Match.value(tab).pipe(
-    Match.withReturnType<UpdateReturn>(),
-    Match.when('Posts', () =>
-      applyPostsTransition(
-        modelWithActiveTab,
-        AsyncData.loadIfMissing(modelWithActiveTab.posts),
-      ),
-    ),
-    Match.when('Stats', () =>
-      applyStatsTransition(
-        modelWithActiveTab,
-        AsyncData.loadIfMissing(modelWithActiveTab.stats),
-      ),
-    ),
-    Match.exhaustive,
-  )
+  return match (tab) {
+    when 'Posts': applyPostsTransition(
+      modelWithActiveTab,
+      AsyncData.loadIfMissing(modelWithActiveTab.posts),
+    );
+    when 'Stats': applyStatsTransition(
+      modelWithActiveTab,
+      AsyncData.loadIfMissing(modelWithActiveTab.stats),
+    );
+  }
 }
 
 const foldTabsOutMessage = Tabs.OutMessage.match<
   Update.Step<Model, Message>,
   Tabs.OutMessage<Tab>
 >({
-  Selected:
-    ({ value }) =>
-    model =>
-      activateTab(model, value),
+  Selected: ({ value }) => model => activateTab(model, value),
 })
 
 const foldTabs = Update.foldChild({
@@ -170,15 +147,15 @@ export const update = (model: Model, message: Message) =>
         maybeSelectedPostId: () => Option.some(postId),
       })
 
-      return Option.match(HashMap.get(model.postDetailById, postId), {
-        onNone: () => ({
+      return match (HashMap.get(model.postDetailById, postId)) {
+        when Option.None: ({
           model: modifyFields(selectedModel, {
             postDetailById: setPostDetail(postId, PostDetailData.Loading()),
           }),
           commands: [FetchPostDetail({ postId })],
-        }),
-        onSome: () => ({ model: selectedModel }),
-      })
+        });
+        when Option.Some: ({ model: selectedModel });
+      }
     },
 
     ClickedBackToPosts: () => ({
@@ -241,11 +218,11 @@ export const init: Runtime.ApplicationInit<Model, Message> = () => ({
 export const FetchPosts = Command.define('FetchPosts', {
   messages: [Message.SettledFetchPosts],
   execute: pipe(
-    Effect.gen(function* () {
-      const posts = yield* fetchPosts
-      const fetchedAt = yield* Clock.currentTimeMillis
+    effect {
+      const posts = try fetchPosts
+      const fetchedAt = try Clock.currentTimeMillis
       return FetchedPosts.make({ posts, fetchedAt })
-    }),
+    },
     Effect.result,
     Effect.map(result => Message.SettledFetchPosts({ result })),
   ),
@@ -256,11 +233,11 @@ export const FetchPostDetail = Command.define('FetchPostDetail', {
   messages: [Message.SettledFetchPostDetail],
   execute: ({ postId }) =>
     pipe(
-      Effect.gen(function* () {
-        const detail = yield* fetchPostDetail(postId)
-        const fetchedAt = yield* Clock.currentTimeMillis
+      effect {
+        const detail = try fetchPostDetail(postId)
+        const fetchedAt = try Clock.currentTimeMillis
         return FetchedPostDetail.make({ detail, fetchedAt })
-      }),
+      },
       Effect.result,
       Effect.map(result => Message.SettledFetchPostDetail({ postId, result })),
     ),
@@ -269,11 +246,11 @@ export const FetchPostDetail = Command.define('FetchPostDetail', {
 export const FetchStats = Command.define('FetchStats', {
   messages: [Message.SettledFetchStats],
   execute: pipe(
-    Effect.gen(function* () {
-      const stats = yield* fetchStats
-      const fetchedAt = yield* Clock.currentTimeMillis
+    effect {
+      const stats = try fetchStats
+      const fetchedAt = try Clock.currentTimeMillis
       return FetchedStats.make({ stats, fetchedAt })
-    }),
+    },
     Effect.result,
     Effect.map(result => Message.SettledFetchStats({ result })),
   ),
@@ -286,8 +263,8 @@ export const subscriptions = Subscription.make<Model, Message>()(entry => ({
     { isObservingStats: Schema.Boolean },
     {
       modelToDependencies: model => ({
-        isObservingStats:
-          model.activeTab === 'Stats' && AsyncData.hasData(model.stats),
+        isObservingStats: model.activeTab === 'Stats'
+          && AsyncData.hasData(model.stats),
       }),
       dependenciesToStream: ({ isObservingStats }) =>
         Stream.when(
@@ -297,7 +274,9 @@ export const subscriptions = Subscription.make<Model, Message>()(entry => ({
             Stream.drop(1),
             Stream.map(Message.TickedRevalidateStats),
           ),
-          Effect.sync(() => isObservingStats),
+          effect {
+            return isObservingStats
+          },
         ),
     },
   ),
@@ -337,29 +316,27 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => ({
                   [
                     h.div(
                       [...tablist, h.Class('flex gap-2')],
-                      Array.map(tabs, tabInfo =>
+                      Arr.map(tabs, tabInfo =>
                         h.keyed('button')(
                           tabInfo.value,
                           [...tabInfo.tab, h.Class(tabButtonClassName)],
                           [tabInfo.value],
-                        ),
-                      ),
+                        )),
                     ),
                     ...pipe(
                       tabs,
-                      Array.filter(tabInfo => tabInfo.isActive),
-                      Array.map(tabInfo =>
+                      Arr.filter(tabInfo => tabInfo.isActive),
+                      Arr.map(tabInfo =>
                         h.keyed('div')(
                           tabInfo.value,
                           [...tabInfo.panel, h.Class('flex flex-col gap-4')],
                           [
-                            Match.value(tabInfo.value).pipe(
-                              Match.when('Posts', () => postsTabView(model, h)),
-                              Match.when('Stats', () => statsTabView(model, h)),
-                              Match.exhaustive,
-                            ),
+                            match (tabInfo.value) {
+                              when 'Posts': postsTabView(model, h);
+                              when 'Stats': statsTabView(model, h);
+                            },
                           ],
-                        ),
+                        )
                       ),
                     ),
                   ],
@@ -387,17 +364,16 @@ const headerView = (h: HtmlBuilder<Message>): Html =>
     ],
   )
 
-const postsTabView = (model: Model, h: HtmlBuilder<Message>): Html =>
-  Option.match(model.maybeSelectedPostId, {
-    onNone: () =>
-      h.section([h.Class('flex flex-col gap-4')], [postsListView(model, h)]),
-    onSome: postId =>
-      h.keyed('section')(
-        postId,
-        [h.Class('flex flex-col gap-4')],
-        [postDetailView(model, postId, h)],
-      ),
-  })
+const postsTabView = (model: Model, h: HtmlBuilder<Message>): Html => match (model.maybeSelectedPostId) {
+  when Option.None: h.section([h.Class('flex flex-col gap-4')], [
+    postsListView(model, h),
+  ]);
+  when Option.Some(let postId): h.keyed('section')(
+    postId,
+    [h.Class('flex flex-col gap-4')],
+    [postDetailView(model, postId, h)],
+  );
+}
 
 const postsListView = (model: Model, h: HtmlBuilder<Message>): Html => {
   const isPending = AsyncData.isPending(model.posts)
@@ -441,12 +417,12 @@ const postsListView = (model: Model, h: HtmlBuilder<Message>): Html => {
           h.div(
             [h.Class('flex flex-col gap-4')],
             [
-              ...Option.match(AsyncData.getError(model.posts), {
-                onNone: () => [],
-                onSome: error => [
+              ...match (AsyncData.getError(model.posts)) {
+                when Option.None: [];
+                when Option.Some(let error): [
                   staleView(error, Message.ClickedRetryPosts(), h),
-                ],
-              }),
+                ];
+              },
               h.ul(
                 [h.Class('flex flex-col gap-2')],
                 postListItems(posts, model.postDetailById, h),
@@ -459,17 +435,17 @@ const postsListView = (model: Model, h: HtmlBuilder<Message>): Html => {
 }
 
 const isPostDetailCached = (
-  postDetailById: HashMap.HashMap<string, PostDetailData>,
+  postDetailById: HashMap<string, PostDetailData>,
   postId: string,
 ): boolean =>
   Option.exists(HashMap.get(postDetailById, postId), AsyncData.hasData)
 
 const postListItems = (
   posts: ReadonlyArray<Post>,
-  postDetailById: HashMap.HashMap<string, PostDetailData>,
+  postDetailById: HashMap<string, PostDetailData>,
   h: HtmlBuilder<Message>,
 ): ReadonlyArray<Html> =>
-  Array.map(posts, post =>
+  Arr.map(posts, post =>
     h.keyed('li')(
       post.id,
       [],
@@ -501,13 +477,13 @@ const postListItems = (
                   ),
                   isPostDetailCached(postDetailById, post.id)
                     ? h.span(
-                        [
-                          h.Class(
-                            'shrink-0 text-xs font-semibold text-emerald-700 bg-emerald-100 rounded-full px-2 py-1',
-                          ),
-                        ],
-                        ['Cached'],
-                      )
+                      [
+                        h.Class(
+                          'shrink-0 text-xs font-semibold text-emerald-700 bg-emerald-100 rounded-full px-2 py-1',
+                        ),
+                      ],
+                      ['Cached'],
+                    )
                     : h.empty,
                 ],
               ),
@@ -515,8 +491,7 @@ const postListItems = (
           h,
         ),
       ],
-    ),
-  )
+    ))
 
 const postDetailView = (
   model: Model,
@@ -556,16 +531,16 @@ const postDetailView = (
           h.div(
             [h.Class('flex flex-col gap-4')],
             [
-              ...Option.match(AsyncData.getError(postDetailData), {
-                onNone: () => [],
-                onSome: error => [
+              ...match (AsyncData.getError(postDetailData)) {
+                when Option.None: [];
+                when Option.Some(let error): [
                   staleView(
                     error,
                     Message.ClickedRetryPostDetail({ postId }),
                     h,
                   ),
-                ],
-              }),
+                ];
+              },
               postDetailCard(detail, fetchedAt, h),
             ],
           ),
@@ -588,7 +563,9 @@ const postDetailCard = (
       h.p(
         [h.Class('text-xs text-slate-400')],
         [
-          `Fetched at ${formatFetchedAt(fetchedAt)}. Future visits render instantly from the Model.`,
+          `Fetched at ${
+            formatFetchedAt(fetchedAt)
+          }. Future visits render instantly from the Model.`,
         ],
       ),
     ],
@@ -632,12 +609,12 @@ const statsTabView = (model: Model, h: HtmlBuilder<Message>): Html => {
           h.div(
             [h.Class('flex flex-col gap-4')],
             [
-              ...Option.match(AsyncData.getError(model.stats), {
-                onNone: () => [],
-                onSome: error => [
+              ...match (AsyncData.getError(model.stats)) {
+                when Option.None: [];
+                when Option.Some(let error): [
                   staleView(error, Message.ClickedRetryStats(), h),
-                ],
-              }),
+                ];
+              },
               statsCards(
                 stats,
                 fetchedAt,
@@ -674,11 +651,11 @@ const statsCards = (
           h.span([], [`Updated at ${formatFetchedAt(fetchedAt)}`]),
           ...(isRefreshing
             ? [
-                h.span(
-                  [h.Class('text-indigo-600 font-semibold')],
-                  ['Refreshing'],
-                ),
-              ]
+              h.span(
+                [h.Class('text-indigo-600 font-semibold')],
+                ['Refreshing'],
+              ),
+            ]
             : []),
         ],
       ),

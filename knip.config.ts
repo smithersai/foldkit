@@ -90,12 +90,12 @@ const config: { ignore?: string | string[]; [key: string]: unknown } = {
       ignoreDependencies: ['@foldkit/devtools', 'tailwindcss'],
     },
     'examples/ssr': {
-      entry: ['src/entry.ts', 'src/entry.server.ts'],
+      entry: ['src/entry.ts', 'src/entry.server.vibe'],
       ignoreFiles: ['vite.config.playground.ts'],
       ignoreDependencies: ['@effect/platform-node-shared', '@foldkit/devtools'],
     },
     'examples/ssg': {
-      entry: ['src/entry.ts', 'src/entry.server.ts'],
+      entry: ['src/entry.ts', 'src/entry.server.vibe'],
       ignoreFiles: ['vite.config.playground.ts'],
       ignoreDependencies: ['@foldkit/devtools'],
     },

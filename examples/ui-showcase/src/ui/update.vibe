@@ -38,7 +38,7 @@ import {
   ItemMultiListbox,
 } from './view/listbox.vibe'
 import { PlanRadioGroup } from './view/radioGroup.ts'
-import { DemoTabs } from './view/tabs.ts'
+import { DemoTabs } from './view/tabs.vibe'
 import { ROW_COUNT as VIRTUAL_LIST_ROW_COUNT } from './view/virtualList.vibe'
 
 const reorderColumns = (
