@@ -40,6 +40,7 @@
   },
   "files": [
     "dist",
+    "!dist/native",
     "recommended.json",
     "all.json"
   ],
