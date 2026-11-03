@@ -1,0 +1,218 @@
+import type { PlatformError } from 'effect'
+import type { ChildProcessSpawner } from 'effect/process'
+import {
+  RELAY_REGISTRY_DIRECTORY_NAME,
+  RELAY_REGISTRY_DIRECTORY_VARIABLE,
+  RelayRecord,
+} from 'foldkit/devtools-protocol'
+
+import {
+  homeDirectory,
+  isProcessAlive,
+  platform,
+  temporaryDirectory,
+} from './relayRegistry.platform.ts'
+import {
+  type RelayRegistryTrust,
+  windowsTempRootRefusal,
+} from './relayRegistryTrust.vibe'
+
+const RUNTIME_DIRECTORY_VARIABLE = 'XDG_RUNTIME_DIR'
+const RECORD_FILE_EXTENSION = '.json'
+
+const REGISTRY_DIRECTORY_MODE = 0o700
+const RECORD_FILE_MODE = 0o600
+const PENDING_RECORD_SUFFIX = '.pending'
+const RETIRING_RECORD_SUFFIX = '.retiring'
+
+type RelayRegistryServices = FileSystem.FileSystem | Path.Path
+
+export type RelayPublisherServices =
+  | RelayRegistryServices
+  | ChildProcessSpawner.ChildProcessSpawner
+
+export error RelayRegistryDirectoryRefused {
+  directory: string
+  reason: string
+}
+
+const decodeRelayRecord = Schema.decodeUnknownOption(
+  Schema.fromJsonString(RelayRecord),
+)
+const encodeRelayRecord = Schema.encodeUnknownSync(
+  Schema.fromJsonString(RelayRecord),
+)
+
+const defaultRegistryParent = (path: Path.Path): string =>
+  platform() === 'win32'
+    ? temporaryDirectory()
+    : path.join(homeDirectory(), '.cache')
+
+// A directory variable the environment cannot read is a defect, as before.
+const relayRegistryDirectory = effect (): string!!Path.Path => {
+  const path = try Path.Path
+  try {
+    const maybeConfigured = try Config.option(
+      Config.String(RELAY_REGISTRY_DIRECTORY_VARIABLE),
+    )
+    const maybeRuntimeDirectory = try Config.option(
+      Config.String(RUNTIME_DIRECTORY_VARIABLE),
+    )
+    return maybeConfigured.getOrElse(() =>
+      path.join(
+        maybeRuntimeDirectory.getOrElse(() => defaultRegistryParent(path)),
+        RELAY_REGISTRY_DIRECTORY_NAME,
+      )
+    )
+  } catch (error) {
+    return try die(error)
+  }
+}
+
+// A Windows registry outside the user's temporary directory is refused before
+// anything is written. The check is a plain path comparison.
+const locationRefusal = (directory: string): Option<string> =>
+  platform() === 'win32'
+    ? windowsTempRootRefusal(directory, temporaryDirectory())
+    : Option.none()
+
+const relayRecordPath = effect (
+  directory: string,
+  id: string,
+): string!!Path.Path => {
+  const path = try Path.Path
+  return path.join(
+    directory,
+    `${encodeURIComponent(id)}${RECORD_FILE_EXTENSION}`,
+  )
+}
+
+const readRecordFile = effect (
+  filePath: string,
+): Option<RelayRecord>!!FileSystem.FileSystem => {
+  const fileSystem = try FileSystem.FileSystem
+  try {
+    return decodeRelayRecord(try fileSystem.readFileString(filePath))
+  } catch {
+    return Option.none()
+  }
+}
+
+const recordFilePaths = effect (
+  directory: string,
+): ReadonlyArray<string>!!RelayRegistryServices => {
+  const fileSystem = try FileSystem.FileSystem
+  const path = try Path.Path
+  const fileNames: ReadonlyArray<string> = try (
+    fileSystem.readDirectory(directory) catch () => []
+  )
+  return Effect.Array.map(
+    Effect.Array.filter(
+      fileNames,
+      Effect.String.endsWith(RECORD_FILE_EXTENSION),
+    ),
+    fileName => path.join(directory, fileName),
+  )
+}
+
+// NOTE: A relay from an older plugin names its record by its root and can
+// republish that path between the rename and the read. A hard link restores
+// the republished record only if no newer record occupies the path.
+const retireStaleRecord = effect (
+  filePath: string,
+  record: RelayRecord,
+): void!!FileSystem.FileSystem => {
+  const fileSystem = try FileSystem.FileSystem
+  const retiringPath = `${filePath}.${
+    encodeURIComponent(record.id)
+  }${RETIRING_RECORD_SUFFIX}`
+  const wasRecordMoved = try (
+    fileSystem.rename(filePath, retiringPath).as(true) catch () => false
+  )
+
+  if (!wasRecordMoved) {
+    return
+  }
+
+  const maybeRetiringRecord = try readRecordFile(retiringPath)
+  const isOriginalRecord = maybeRetiringRecord.exists(
+    retiringRecord => retiringRecord.id === record.id,
+  )
+
+  if (!isOriginalRecord) {
+    try {
+      try fileSystem.link(retiringPath, filePath)
+    } catch {}
+  }
+
+  try {
+    try fileSystem.remove(retiringPath, { force: true })
+  } catch {}
+}
+
+const removeDeadRecords = effect (
+  directory: string,
+): void!!RelayRegistryServices => {
+  for (const filePath of try recordFilePaths(directory)) {
+    const maybeRecord = try readRecordFile(filePath)
+
+    if (maybeRecord is Option.Some(let record) && !isProcessAlive(record.pid)) {
+      try retireStaleRecord(filePath, record)
+    }
+  }
+}
+
+export const publishRelayRecord = effect (
+  record: RelayRecord,
+  trust: RelayRegistryTrust,
+): string!(PlatformError.PlatformError | RelayRegistryDirectoryRefused)!RelayPublisherServices => {
+  const fileSystem = try FileSystem.FileSystem
+  const directory = try relayRegistryDirectory()
+  if (locationRefusal(directory) is Option.Some(let reason)) {
+    throw new RelayRegistryDirectoryRefused({ directory, reason })
+  }
+
+  try fileSystem.makeDirectory(directory, {
+    recursive: true,
+    mode: REGISTRY_DIRECTORY_MODE,
+  })
+
+  const inspection = try trust.inspect(directory)
+
+  if (inspection.maybeRefusal is Option.Some(let refusal)) {
+    throw new RelayRegistryDirectoryRefused({ directory, reason: refusal })
+  }
+
+  const trustedDirectory = inspection.directory
+  try removeDeadRecords(trustedDirectory)
+
+  const recordPath = try relayRecordPath(trustedDirectory, record.id)
+  const pendingPath = `${recordPath}${PENDING_RECORD_SUFFIX}`
+  try fileSystem.writeFileString(pendingPath, encodeRelayRecord(record), {
+    flag: 'wx',
+    mode: RECORD_FILE_MODE,
+  })
+  try fileSystem.rename(pendingPath, recordPath)
+
+  return trustedDirectory
+}
+
+export const readRelayRecords:
+  ReadonlyArray<RelayRecord>!never!RelayRegistryServices = effect {
+    const directory = try relayRegistryDirectory()
+    const maybeRecords: Array<Option<RelayRecord>> = []
+    for (const filePath of try recordFilePaths(directory)) {
+      maybeRecords.push(try readRecordFile(filePath))
+    }
+
+    return Effect.Array.getSomes(maybeRecords)
+  }
+
+export const retireRelayRecord = effect (
+  id: string,
+  directory: string,
+): void!PlatformError.PlatformError!RelayRegistryServices => {
+  const fileSystem = try FileSystem.FileSystem
+  const recordPath = try relayRecordPath(directory, id)
+  try fileSystem.remove(recordPath, { force: true })
+}

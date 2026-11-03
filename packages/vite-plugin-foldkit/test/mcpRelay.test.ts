@@ -40,7 +40,7 @@ import {
   type RelayPublisherServices,
   publishRelayRecord,
   retireRelayRecord,
-} from '../src/relayRegistry.ts'
+} from '../src/relayRegistry.vibe'
 import {
   relayRegistryDirectoryRefusal,
   relayRegistryTrust,

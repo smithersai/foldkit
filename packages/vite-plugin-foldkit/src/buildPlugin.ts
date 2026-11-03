@@ -17,36 +17,15 @@ import type {
   ViteBuilder,
 } from 'vite'
 
-/** How a build materializes the URLs a server entry can render. */
-export type FoldkitPrerenderOptions = Readonly<{
-  /**
-   * The paths to generate. Defaults to the `prerenderPaths` the server entry
-   * exports, so the application names its own static routes.
-   */
-  paths?: ReadonlyArray<string>
-  /**
-   * The origin used for `Request.url` while generating, such as
-   * `'https://app.example'`. This option does not set canonical or Open Graph
-   * metadata. It affects those fields only when the server entry derives them
-   * from `Request.url`, in which case it should match the published origin.
-   */
-  origin?: string
-}>
+import type {
+  FoldkitBuildApi,
+  FoldkitBuildOptions,
+  FoldkitPrerenderOptions,
+} from './build.vibe'
 
-/** How `vite build` builds a server entry and what it generates from it. */
-export type FoldkitBuildOptions = Readonly<{
-  /** Root-relative browser script entry resolved by Vite, such as `'/src/entry.ts'`. Import stylesheets from this module. */
-  clientEntry: string
-  /** Where the browser build is written. */
-  clientOutDir?: string
-  /** Where the server build is written. */
-  serverOutDir?: string
-  /**
-   * Generate static HTML for a set of URLs after both builds. `true` takes the
-   * paths from the entry's `prerenderPaths` export.
-   */
-  prerender?: boolean | FoldkitPrerenderOptions
-}>
+// `vite build` integration: the build plugin, the manifest schemas and the
+// path helpers. Its hooks and helpers throw on a misconfiguration, and a plain
+// function that throws stays TypeScript (Will, 2026-10-31).
 
 /** Vite module id of the fetch handler Foldkit emits as the server entry. */
 export const FOLDKIT_FETCH_MODULE_ID = 'virtual:foldkit/fetch'
@@ -103,20 +82,6 @@ export const FoldkitBuildMetadata = Schema.Struct({
 
 /** The serializable, frozen snapshot of a completed Foldkit build. */
 export type FoldkitBuildMetadata = typeof FoldkitBuildMetadata.Type
-
-/** The `foldkit:build` plugin's public integration API. */
-export type FoldkitBuildApi = Readonly<{
-  /** Configured application source entry. */
-  serverEntry: string
-  /** Virtual module used to bundle the fetch handler. */
-  fetchModuleId: typeof FOLDKIT_FETCH_MODULE_ID
-  /**
-   * Read after a successful `await builder.buildApp()`. Throws before Foldkit
-   * finalizes or after another client or server build starts. Later plugin failures
-   * still require callers to await the full build successfully.
-   */
-  getBuildMetadata: () => FoldkitBuildMetadata
-}>
 
 const MANIFEST_SCHEMA_VERSION = 1
 

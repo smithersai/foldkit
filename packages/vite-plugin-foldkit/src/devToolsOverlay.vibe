@@ -1,13 +1,23 @@
-import { Option, Record, Schema } from 'effect'
-import { existsSync, readFileSync, realpathSync } from 'node:fs'
-import { dirname, join, resolve, sep } from 'node:path'
 import type { Plugin } from 'vite'
+
+import {
+  currentWorkingDirectory,
+  fileExists,
+  joinPath,
+  parentDirectory,
+  pathSegments,
+  readJsonFile,
+  realParentDirectory,
+  resolvePath,
+} from './devToolsOverlay.platform.ts'
 
 const DEV_TOOLS_PACKAGE_NAME = '@foldkit/devtools'
 const DEV_TOOLS_VITE_EXPORT = './vite'
 const DEV_TOOLS_OVERLAY_MODULE_ID = 'virtual:foldkit-devtools-overlay'
 const RESOLVED_DEV_TOOLS_OVERLAY_MODULE_ID = `\0${DEV_TOOLS_OVERLAY_MODULE_ID}`
-const DEV_TOOLS_VITE_IMPORT_SPECIFIER = `${DEV_TOOLS_PACKAGE_NAME}${DEV_TOOLS_VITE_EXPORT.slice(1)}`
+const DEV_TOOLS_VITE_IMPORT_SPECIFIER = `${DEV_TOOLS_PACKAGE_NAME}${
+  DEV_TOOLS_VITE_EXPORT.slice(1)
+}`
 const DEV_TOOLS_HOST_IMPORT_SPECIFIER = 'foldkit/devtools-host'
 const DEV_TOOLS_OVERLAY_MODULE_SOURCE = `
 import { overlay } from '${DEV_TOOLS_VITE_IMPORT_SPECIFIER}'
@@ -16,40 +26,36 @@ import { __setDevToolsOverlay } from '${DEV_TOOLS_HOST_IMPORT_SPECIFIER}'
 __setDevToolsOverlay(overlay)
 `
 
-const ApplicationPackageJson = Schema.Struct({
-  dependencies: Schema.optional(Schema.Record(Schema.String, Schema.String)),
-})
+schema ApplicationPackageJson {
+  dependencies?: Readonly<Record<string, string>>
+}
 
-const DevToolsPackageJson = Schema.Struct({
-  exports: Schema.optional(Schema.Record(Schema.String, Schema.Unknown)),
-})
+schema DevToolsPackageJson {
+  exports?: Readonly<Record<string, Schema.Unknown>>
+}
 
-const decodeApplicationPackageJson = Schema.decodeUnknownSync(
+const decodeApplicationPackageJson = Schema.decodeUnknownOption(
   ApplicationPackageJson,
 )
-const decodeDevToolsPackageJson = Schema.decodeUnknownSync(DevToolsPackageJson)
+const decodeDevToolsPackageJson = Schema.decodeUnknownOption(
+  DevToolsPackageJson,
+)
 
+// A manifest that cannot be read, parsed or decoded is absent.
 const readPackageJson = <A>(
-  decode: (raw: unknown) => A,
+  decode: (raw: unknown) => Option<A>,
   packageJsonPath: string,
-): Option.Option<A> => {
-  try {
-    return Option.some(
-      decode(JSON.parse(readFileSync(packageJsonPath, 'utf8'))),
-    )
-  } catch {
-    return Option.none()
-  }
-}
+): Option<A> =>
+  Option.fromUndefinedOr(readJsonFile(packageJsonPath)).flatMap(decode)
 
 const findDirectoryUpward = (
   directory: string,
   isMatch: (directory: string) => boolean,
-): Option.Option<string> => {
+): Option<string> => {
   if (isMatch(directory)) {
     return Option.some(directory)
   } else {
-    const parent = dirname(directory)
+    const parent = parentDirectory(directory)
     if (parent === directory) {
       return Option.none()
     } else {
@@ -66,19 +72,18 @@ const findDirectoryUpward = (
 const installedPackageJsonPath = (
   directory: string,
   packageName: string,
-): string => join(directory, 'node_modules', packageName, 'package.json')
+): string => joinPath(directory, 'node_modules', packageName, 'package.json')
 
 const findInstalledPackageJsonPath = (
   root: string,
   packageName: string,
-): Option.Option<string> =>
-  findDirectoryUpward(resolve(root), directory =>
-    existsSync(installedPackageJsonPath(directory, packageName)),
-  ).pipe(
-    Option.map(directory => installedPackageJsonPath(directory, packageName)),
-  )
+): Option<string> =>
+  findDirectoryUpward(
+    resolvePath(root),
+    directory => fileExists(installedPackageJsonPath(directory, packageName)),
+  ).map(directory => installedPackageJsonPath(directory, packageName))
 
-const findDevToolsPackageJsonPath = (root: string): Option.Option<string> =>
+const findDevToolsPackageJsonPath = (root: string): Option<string> =>
   findInstalledPackageJsonPath(root, DEV_TOOLS_PACKAGE_NAME)
 
 // NOTE: the virtual module imports `@foldkit/devtools/vite` statically, so an
@@ -86,28 +91,27 @@ const findDevToolsPackageJsonPath = (root: string): Option.Option<string> =>
 // than quietly skip the overlay. Injecting only when the export exists lets
 // the two packages be upgraded in either order.
 const hasDevToolsViteExport = (root: string): boolean =>
-  findDevToolsPackageJsonPath(root).pipe(
-    Option.flatMap(packageJsonPath =>
-      readPackageJson(decodeDevToolsPackageJson, packageJsonPath),
-    ),
-    Option.flatMapNullishOr(packageJson => packageJson.exports),
-    Option.exists(Record.has(DEV_TOOLS_VITE_EXPORT)),
-  )
+  findDevToolsPackageJsonPath(root)
+    .flatMap(packageJsonPath =>
+      readPackageJson(decodeDevToolsPackageJson, packageJsonPath)
+    )
+    .flatMapNullishOr(packageJson => packageJson.exports)
+    .exists(Record.has(DEV_TOOLS_VITE_EXPORT))
 
 // NOTE: Vite's `root` is where `index.html` lives, which is not always the
 // package directory (an app may serve from a subdirectory). Walking up to the
 // nearest manifest keeps dependency placement meaningful for those layouts.
 const applicationPackageJsonPath = (directory: string): string =>
-  join(directory, 'package.json')
+  joinPath(directory, 'package.json')
 
-const findApplicationPackageJsonPath = (root: string): Option.Option<string> =>
-  findDirectoryUpward(resolve(root), directory =>
-    existsSync(applicationPackageJsonPath(directory)),
-  ).pipe(Option.map(applicationPackageJsonPath))
+const findApplicationPackageJsonPath = (root: string): Option<string> =>
+  findDirectoryUpward(
+    resolvePath(root),
+    directory => fileExists(applicationPackageJsonPath(directory)),
+  ).map(applicationPackageJsonPath)
 
-const resolvePackageDirectory = Option.liftThrowable(
-  (packageJsonPath: string) => realpathSync(dirname(packageJsonPath)),
-)
+const resolvePackageDirectory = (packageJsonPath: string): Option<string> =>
+  Option.fromUndefinedOr(realParentDirectory(packageJsonPath))
 
 // NOTE: Vite serves linked packages from source rather than pre-bundling them.
 // A registry-installed package has a real path under `node_modules`, while a
@@ -117,21 +121,19 @@ const isPackageResolvedIntoNodeModules = (
   root: string,
   packageName: string,
 ): boolean =>
-  findInstalledPackageJsonPath(root, packageName).pipe(
-    Option.flatMap(resolvePackageDirectory),
-    Option.exists(packageDirectory =>
-      packageDirectory.split(sep).includes('node_modules'),
-    ),
-  )
+  findInstalledPackageJsonPath(root, packageName)
+    .flatMap(resolvePackageDirectory)
+    .exists(packageDirectory =>
+      pathSegments(packageDirectory).includes('node_modules')
+    )
 
 const isDevToolsProductionDependency = (root: string): boolean =>
-  findApplicationPackageJsonPath(root).pipe(
-    Option.flatMap(packageJsonPath =>
-      readPackageJson(decodeApplicationPackageJson, packageJsonPath),
-    ),
-    Option.flatMapNullishOr(packageJson => packageJson.dependencies),
-    Option.exists(Record.has(DEV_TOOLS_PACKAGE_NAME)),
-  )
+  findApplicationPackageJsonPath(root)
+    .flatMap(packageJsonPath =>
+      readPackageJson(decodeApplicationPackageJson, packageJsonPath)
+    )
+    .flatMapNullishOr(packageJson => packageJson.dependencies)
+    .exists(Record.has(DEV_TOOLS_PACKAGE_NAME))
 
 /**
  * Determines whether the Vite integration should include the DevTools overlay.
@@ -159,10 +161,10 @@ export const devToolsOverlayPlugin = (): Plugin => {
   return {
     name: 'foldkit:devtools-overlay',
     config: (userConfig, environment) => {
-      const root = userConfig.root ?? process.cwd()
+      const root = userConfig.root ?? currentWorkingDirectory()
       if (
-        environment.command !== 'serve' ||
-        !shouldInjectDevToolsOverlay(environment.command, root)
+        environment.command !== 'serve'
+        || !shouldInjectDevToolsOverlay(environment.command, root)
       ) {
         return undefined
       }

@@ -1,8 +1,8 @@
-import { Array, Option, Record, Schema, pipe } from 'effect'
-import { realpathSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { pipe } from 'effect'
 import { type UserConfig, searchForWorkspaceRoot } from 'vite'
 import { crawlFrameworkPkgs, findDepPkgJsonPath } from 'vitefu'
+
+import { toCrawlRoot, toRealPath } from './foldkitPackages.platform.ts'
 
 const FOLDKIT_SINGLETON_PACKAGES: ReadonlyArray<string> = [
   'foldkit',
@@ -18,7 +18,7 @@ const FOLDKIT_SINGLETON_PACKAGES: ReadonlyArray<string> = [
 export const isFoldkitSingletonPackageSpecifier = (
   specifier: string,
 ): boolean =>
-  Array.some(
+  Effect.Array.some(
     FOLDKIT_SINGLETON_PACKAGES,
     packageName =>
       specifier === packageName || specifier.startsWith(`${packageName}/`),
@@ -31,42 +31,19 @@ const decodeDependencyRecord = Schema.decodeUnknownOption(
   Schema.Record(Schema.String, Schema.Unknown),
 )
 
-const dependencyNames = (field: unknown): ReadonlyArray<string> =>
-  Option.match(decodeDependencyRecord(field), {
-    onNone: () => [],
-    onSome: Record.keys,
-  })
+const dependencyNames = (field: unknown): ReadonlyArray<string> => match (decodeDependencyRecord(field)) {
+  when Option.None: [];
+  when Option.Some(let dependencies): Record.keys(dependencies);
+}
 
 const dependsOnFoldkit = (
   packageJson: globalThis.Record<string, unknown>,
 ): boolean =>
   pipe(
     [packageJson['dependencies'], packageJson['peerDependencies']],
-    Array.flatMap(dependencyNames),
-    Array.some(isFoldkitPackageName),
+    Effect.Array.flatMap(dependencyNames),
+    Effect.Array.some(isFoldkitPackageName),
   )
-
-const toRealPath = (path: string): string => {
-  try {
-    return realpathSync(path)
-  } catch {
-    return path
-  }
-}
-
-const toCrawlRoot = (root: string, isPreservingSymlinks: boolean): string => {
-  const absoluteRoot = resolve(root)
-
-  // NOTE: The crawl and the dedupe lookup must start from the root Vite
-  // resolves from: the path as given under resolve.preserveSymlinks, and its
-  // realpath otherwise. Any other root makes them walk a different directory
-  // chain than Vite's resolver.
-  if (isPreservingSymlinks) {
-    return absoluteRoot
-  }
-
-  return toRealPath(absoluteRoot)
-}
 
 /** Finds the installed packages an application's server render must bundle
  * and the Foldkit packages Vite must deduplicate.
@@ -96,21 +73,21 @@ export const crawlFoldkitPackages = async (
     isSemiFrameworkPkgByJson: dependsOnFoldkit,
   })
 
-  const noExternal = Array.dedupe([
+  const noExternal = Effect.Array.dedupe([
     ...FOLDKIT_SINGLETON_PACKAGES,
     ...crawl.ssr.noExternal,
   ])
 
   const maybeResolvableSingletons = await Promise.all(
-    Array.map(FOLDKIT_SINGLETON_PACKAGES, async packageName =>
-      pipe(
-        await findDepPkgJsonPath(packageName, crawlRoot),
-        Option.fromUndefinedOr,
-        Option.as(packageName),
-      ),
+    Effect.Array.map(
+      FOLDKIT_SINGLETON_PACKAGES,
+      async packageName =>
+        Option.fromUndefinedOr(
+          await findDepPkgJsonPath(packageName, crawlRoot),
+        ).as(packageName),
     ),
   )
-  const dedupe = Array.getSomes(maybeResolvableSingletons)
+  const dedupe = Effect.Array.getSomes(maybeResolvableSingletons)
 
   return { dedupe, noExternal }
 }

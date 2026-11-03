@@ -14,7 +14,7 @@ import { describe, expect, it, onTestFinished } from 'vitest'
 import {
   devToolsOverlayPlugin,
   shouldInjectDevToolsOverlay,
-} from '../src/devToolsOverlay.ts'
+} from '../src/devToolsOverlay.vibe'
 import { foldkit } from '../src/index.ts'
 
 const COUNTER_ROOT = resolve(import.meta.dirname, '../../../examples/counter')

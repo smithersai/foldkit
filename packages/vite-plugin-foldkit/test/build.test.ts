@@ -14,7 +14,7 @@ import {
   foldkitBuild,
   manifestPath,
   renderTargetFor,
-} from '../src/build.ts'
+} from '../src/build.vibe'
 import { foldkitBuildToken } from '../src/buildToken.ts'
 import {
   type FoldkitBuildApi,

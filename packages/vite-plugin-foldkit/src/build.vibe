@@ -1,0 +1,63 @@
+import type {
+  FOLDKIT_FETCH_MODULE_ID,
+  FoldkitBuildMetadata,
+} from './buildPlugin.ts'
+
+export {
+  FOLDKIT_FETCH_MODULE_ID,
+  FoldkitBuildManifest,
+  FoldkitBuildMetadata,
+  foldkitBuild,
+  manifestPath,
+  renderTargetFor,
+} from './buildPlugin.ts'
+
+// The build plugin's hooks and its path helpers throw on a misconfiguration,
+// and a plain function that throws stays TypeScript (Will, 2026-10-31): they
+// live in buildPlugin.ts with the manifest schemas they encode. The option and
+// API types are declared here.
+
+/** How a build materializes the URLs a server entry can render. */
+export type FoldkitPrerenderOptions = Readonly<{
+  /**
+   * The paths to generate. Defaults to the `prerenderPaths` the server entry
+   * exports, so the application names its own static routes.
+   */
+  paths?: ReadonlyArray<string>
+  /**
+   * The origin used for `Request.url` while generating, such as
+   * `'https://app.example'`. This option does not set canonical or Open Graph
+   * metadata. It affects those fields only when the server entry derives them
+   * from `Request.url`, in which case it should match the published origin.
+   */
+  origin?: string
+}>
+
+/** How `vite build` builds a server entry and what it generates from it. */
+export type FoldkitBuildOptions = Readonly<{
+  /** Root-relative browser script entry resolved by Vite, such as `'/src/entry.ts'`. Import stylesheets from this module. */
+  clientEntry: string
+  /** Where the browser build is written. */
+  clientOutDir?: string
+  /** Where the server build is written. */
+  serverOutDir?: string
+  /**
+   * Generate static HTML for a set of URLs after both builds. `true` takes the
+   * paths from the entry's `prerenderPaths` export.
+   */
+  prerender?: boolean | FoldkitPrerenderOptions
+}>
+
+/** The `foldkit:build` plugin's public integration API. */
+export type FoldkitBuildApi = Readonly<{
+  /** Configured application source entry. */
+  serverEntry: string
+  /** Virtual module used to bundle the fetch handler. */
+  fetchModuleId: typeof FOLDKIT_FETCH_MODULE_ID
+  /**
+   * Read after a successful `await builder.buildApp()`. Throws before Foldkit
+   * finalizes or after another client or server build starts. Later plugin failures
+   * still require callers to await the full build successfully.
+   */
+  getBuildMetadata: () => FoldkitBuildMetadata
+}>

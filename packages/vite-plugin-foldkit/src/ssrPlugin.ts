@@ -1,9 +1,6 @@
 import { Array, Effect, Predicate } from 'effect'
 import * as Server from 'foldkit/experimental/server'
-import { readFile } from 'node:fs/promises'
 import type { ServerResponse } from 'node:http'
-import { resolve } from 'node:path'
-import { Readable } from 'node:stream'
 import type {
   Connect,
   DevEnvironment,
@@ -13,58 +10,13 @@ import type {
 } from 'vite'
 
 import { buildIdForCommand } from './buildToken.js'
+import type { FoldkitSsrOptions } from './ssr.vibe'
 
-/** Options for serving server-rendered pages from the Vite dev server. */
-export type FoldkitSsrOptions = Readonly<{
-  /**
-   * Module path of the server entry, resolved by Vite (e.g.
-   * `'/src/entry.server.ts'`). The module must export a `renderPage`
-   * function taking a Web `Request` and returning a
-   * `Promise<EntryResult>`.
-   */
-  serverEntry: string
-  /**
-   * Root-relative browser script entry for a code-rendered document. The server entry must
-   * also export `renderDocument(application, assets)`. When absent, the dev
-   * host uses `index.html` for a custom template-based build pipeline.
-   */
-  clientEntry?: string
-  /**
-   * The `id` of the empty container element in `index.html` the rendered
-   * markup replaces. Defaults to `'root'`.
-   */
-  containerId?: string
-  /**
-   * The origin the entry sees as `Request.url`, such as
-   * `'https://app.example'`. Defaults to the origin the dev server itself
-   * resolved from its own configuration.
-   *
-   * The origin is deployment configuration rather than something a request
-   * carries. A client chooses its own `Host` header, and Vite accepts IP
-   * literals and (with `allowedHosts`) arbitrary names, so deriving the origin
-   * from the request would let the client pick the redirects, canonical URLs,
-   * and cookie domains an entry builds from `Request.url`. Set this when the
-   * dev server sits behind a proxy or TLS terminator that serves a different
-   * public origin.
-   */
-  origin?: string
-  /**
-   * The deployment id compiled into a server entry when `foldkitSsr` is used
-   * as a standalone plugin. It defaults to `FOLDKIT_BUILD_ID`, or to the fixed
-   * development id in serve mode. The aggregate `foldkit` plugin supplies its
-   * top-level `buildId` here automatically.
-   *
-   * The value is public in rendered HTML, so it must not be a secret.
-   */
-  buildId?: string
-  /**
-   * Skip the stand-down warning when the `ssr` environment is not runnable.
-   * The aggregate plugin sets this when `ssr.build` is on, because production
-   * still needs `serverEntry` and the host is supposed to serve.
-   */
-  quietStandDown?: boolean
-}>
+import { renderPage } from '#vibelang/emitted/src/ssrRender'
 
+// The dev host's Connect middleware and the `foldkitSsr` plugin, whose hooks
+// throw on a misconfiguration. A plain function that throws stays TypeScript
+// (Will, 2026-10-31); the page renderer itself is VibeLang in ssrRender.vibe.
 // NOTE: Vite's `isRunnableDevEnvironment` is an `instanceof` check against the
 // plugin's own copy of Vite, and the server may have been created by another
 // copy, so it can call a runnable environment not runnable. The lazy `runner`
@@ -72,13 +24,6 @@ export type FoldkitSsrOptions = Readonly<{
 // invoking it.
 const isRunnable = (environment: DevEnvironment): boolean =>
   'runner' in environment
-
-const isEntryModule = (
-  loadedModule: unknown,
-): loadedModule is Server.EntryModule =>
-  Predicate.isObject(loadedModule) &&
-  Predicate.hasProperty(loadedModule, 'renderPage') &&
-  Predicate.isFunction(loadedModule.renderPage)
 
 // The origin the dev server serves, taken from the plugin option when the
 // deployment sets one and otherwise from the server's own resolved
@@ -110,36 +55,6 @@ const configuredOrigin = (
   return port === undefined
     ? DEV_SERVER_FALLBACK_ORIGIN
     : `${scheme}://localhost:${port}`
-}
-
-const toWebRequest = (
-  requestUrl: string,
-  nodeRequest: Connect.IncomingMessage,
-): Request => {
-  const headers = new Headers()
-  for (const [name, value] of Object.entries(nodeRequest.headers)) {
-    if (Predicate.isString(value)) {
-      headers.set(name, value)
-    }
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        headers.append(name, item)
-      }
-    }
-  }
-
-  const method = nodeRequest.method ?? 'GET'
-  const requestInit: RequestInit & { duplex?: 'half' } = { headers, method }
-
-  if (method !== 'GET' && method !== 'HEAD') {
-    // NOTE: Node and the DOM library declare structurally different
-    // ReadableStream interfaces even though Node's `Readable.toWeb` returns
-    // the Web stream implementation that `Request` consumes at runtime.
-    requestInit.body = Readable.toWeb(nodeRequest) as ReadableStream<Uint8Array>
-    requestInit.duplex = 'half'
-  }
-
-  return new Request(requestUrl, requestInit)
 }
 
 // NOTE: this middleware runs after Vite's modules and assets, so a request
@@ -265,80 +180,6 @@ const renderDecision = (
   }
   return 'Render'
 }
-
-const renderRequest = (
-  server: ViteDevServer,
-  options: FoldkitSsrOptions,
-  nodeRequest: Connect.IncomingMessage,
-  requestUrl: string,
-): Effect.Effect<Response> =>
-  Effect.gen(function* () {
-    const { pathname, search } = new URL(requestUrl)
-    const route = `${pathname}${search}`
-
-    const loadedModule = yield* Effect.promise(() =>
-      server.ssrLoadModule(options.serverEntry),
-    )
-
-    if (!isEntryModule(loadedModule)) {
-      return yield* Effect.die(
-        new Error(
-          `[foldkit] '${options.serverEntry}' does not export a renderPage function, so the dev server cannot render pages.`,
-        ),
-      )
-    }
-
-    const result = yield* Effect.promise(() =>
-      loadedModule.renderPage(toWebRequest(requestUrl, nodeRequest)),
-    )
-
-    if (result._tag === 'Responded') {
-      return result.response
-    }
-
-    if (options.clientEntry !== undefined) {
-      if (
-        !('renderDocument' in loadedModule) ||
-        !Predicate.isFunction(loadedModule.renderDocument)
-      ) {
-        return yield* Effect.die(
-          new Error(
-            `[foldkit] '${options.serverEntry}' must export renderDocument(application, assets) when clientEntry is configured.`,
-          ),
-        )
-      }
-
-      const assets = Server.DocumentAssets.make({
-        entryScript: options.clientEntry,
-        stylesheets: [],
-        modulePreloads: [],
-      })
-      const document = loadedModule.renderDocument(result.application, assets)
-      const transformed = yield* Effect.promise(() =>
-        server.transformIndexHtml(pathname, document, route),
-      )
-
-      return Server.toResponse(() => transformed, result)
-    }
-
-    const rawTemplate = yield* Effect.promise(() =>
-      readFile(resolve(server.config.root, 'index.html'), 'utf-8'),
-    )
-
-    // NOTE: Vite resolves template-relative URLs against the first argument;
-    // the template-based host's index lives at the root for nested page requests.
-    const template = yield* Effect.promise(() =>
-      server.transformIndexHtml('/index.html', rawTemplate, route),
-    )
-
-    return Server.toResponse(
-      template,
-      result,
-      options.containerId === undefined
-        ? {}
-        : { containerId: options.containerId },
-    )
-  })
 
 const varyHeaderValue = (
   value: string | number | Array<string> | undefined,
@@ -782,9 +623,7 @@ const renderMiddleware =
       return
     }
     const isNegotiated = decision === 'RenderNegotiated'
-    void Effect.runPromise(
-      renderRequest(server, options, nodeRequest, requestUrl),
-    )
+    void Effect.runPromise(renderPage(server, options, nodeRequest, requestUrl))
       .then(response =>
         sendWebResponse(response, nodeRequest, nodeResponse, isNegotiated),
       )

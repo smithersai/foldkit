@@ -8,5 +8,8 @@
     "rootDir": ".",
     "types": ["node"]
   },
-  "include": ["src", "test", "vitest.config.ts"]
+  "include": ["src", "test", "vitest.config.ts"],
+  "vibelang": {
+    "trustedPackages": ["foldkit", "vite", "ws", "@types/ws"]
+  }
 }

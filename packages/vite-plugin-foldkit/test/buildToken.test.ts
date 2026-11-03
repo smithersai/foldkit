@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 
 import { buildIdForCommand, resolveBuildId } from '../src/buildToken.ts'
 import { foldkit } from '../src/index.ts'
-import { foldkitSsr } from '../src/ssr.ts'
+import { foldkitSsr } from '../src/ssr.vibe'
 
 const FIXTURE_ROOT = resolve(import.meta.dirname, 'fixtures/ssr')
 const BUILD_CONFIG_ROOT = resolve(import.meta.dirname, 'fixtures/build-config')

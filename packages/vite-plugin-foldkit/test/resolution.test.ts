@@ -29,7 +29,7 @@ import {
 } from 'vite'
 import { describe, expect, it, onTestFinished } from 'vitest'
 
-import { crawlFoldkitPackages } from '../src/foldkitPackages.ts'
+import { crawlFoldkitPackages } from '../src/foldkitPackages.vibe'
 import { foldkit } from '../src/index.ts'
 import { readForcedEffectEntries } from './forcedEffectEntries.ts'
 

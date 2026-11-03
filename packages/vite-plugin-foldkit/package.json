@@ -74,10 +74,30 @@
     "node": ">=20.19.0"
   },
   "imports": {
+    "#vibelang/emitted/src/devServer": {
+      "vibelang-source": "./src/devServer.vibe",
+      "types": "./src/devServer.d.vibe.ts",
+      "default": "./dist/devServer.js"
+    },
+    "#vibelang/emitted/src/devToolsOverlay": {
+      "vibelang-source": "./src/devToolsOverlay.vibe",
+      "types": "./src/devToolsOverlay.d.vibe.ts",
+      "default": "./dist/devToolsOverlay.js"
+    },
+    "#vibelang/emitted/src/foldkitPackages": {
+      "vibelang-source": "./src/foldkitPackages.vibe",
+      "types": "./src/foldkitPackages.d.vibe.ts",
+      "default": "./dist/foldkitPackages.js"
+    },
     "#vibelang/emitted/src/relayRegistryTrust": {
       "vibelang-source": "./src/relayRegistryTrust.vibe",
       "types": "./src/relayRegistryTrust.d.vibe.ts",
       "default": "./dist/relayRegistryTrust.js"
+    },
+    "#vibelang/emitted/src/ssrRender": {
+      "vibelang-source": "./src/ssrRender.vibe",
+      "types": "./src/ssrRender.d.vibe.ts",
+      "default": "./dist/ssrRender.js"
     }
   }
 }
