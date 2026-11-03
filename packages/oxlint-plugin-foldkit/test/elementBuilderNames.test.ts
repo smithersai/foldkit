@@ -12,7 +12,15 @@ import { ELEMENT_BUILDER_NAMES } from '../src/elementBuilderNames.ts'
 // silently falling out of every rule that matches on the set.
 
 const here = dirname(fileURLToPath(import.meta.url))
-const htmlSource = join(here, '..', '..', 'foldkit', 'src', 'html', 'index.vibe')
+const htmlSource = join(
+  here,
+  '..',
+  '..',
+  'foldkit',
+  'src',
+  'html',
+  'index.vibe',
+)
 
 const ELEMENT_FUNCTION_TYPES = new Set([
   'ElementFunction',
