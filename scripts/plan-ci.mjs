@@ -75,6 +75,8 @@ const scaffoldServerRendering =
       'examples/ssr/package.json',
       'packages/examples-e2e/package.json',
       'scripts/check-scaffold-server-rendering.ts',
+      'scripts/check-scaffold-server-rendering.platform.mts',
+      'scripts/check-scaffold-server-rendering.vibe',
       'scripts/scaffold-dependencies.ts',
       'scripts/scaffold-dependencies.test.mjs',
     ],

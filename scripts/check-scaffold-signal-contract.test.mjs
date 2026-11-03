@@ -138,7 +138,7 @@ test('scaffold signals preserve terminal output and main finalization', async co
       text +
       ') } }'
     const nativeMain =
-      'const main = effect () => { try { try Console.log("READY"); try Effect.never } finally { const fileSystem = try FileSystem.FileSystem(); try fileSystem.writeFileString(' +
+      'const main = effect () => { try { try Console.log("READY"); try Effect.never } finally { const fileSystem = try FileSystem.FileSystem; try fileSystem.writeFileString(' +
       markerPath +
       ',' +
       text +

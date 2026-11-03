@@ -27,3 +27,9 @@ The scaffold helper regression test compares the current script with its immutab
 original source. Five deterministic properties exercise JSON, shim files, browser
 diagnostics and cleanup, and child stdin. Its native adapter omits the CLI entry
 only. These checks complement the complete SSR and SSG scaffold gate.
+
+`pnpm check:scaffold-server-rendering` generates an SSR and an SSG project with the packed
+CLI, builds each through its own build command and drives both in Chromium. The gate is
+VibeLang: commands, files, ports and HTTP go through Effect's services, and only the
+examples-e2e Playwright `require` and the host exit after a signal stay in
+`check-scaffold-server-rendering.platform.mts`. `--skip-build` reuses built packages.
