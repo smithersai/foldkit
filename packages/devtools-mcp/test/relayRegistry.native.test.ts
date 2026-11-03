@@ -11,7 +11,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
-import { discoverRelays } from '../src/relayRegistry.vibe'
+import { discoverRelays } from '../src/relayRegistry.ts'
 import {
   makeUncheckedRegistryReader,
   runWithNode,

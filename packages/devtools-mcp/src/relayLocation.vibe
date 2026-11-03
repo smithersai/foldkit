@@ -9,7 +9,7 @@ import {
   type RelayRegistryReader,
   type RelayRegistryServices,
   discoverRelays,
-} from './relayRegistry.vibe'
+} from './relayRegistry.ts'
 
 const LEGACY_DEFAULT_PORT = 9988
 const DEFAULT_HOST = 'localhost'

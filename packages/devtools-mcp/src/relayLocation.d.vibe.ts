@@ -1,6 +1,6 @@
 import { Effect, Option } from 'effect';
 import type { ChildProcessSpawner } from 'effect/process';
-import { type RelayRegistryReader, type RelayRegistryServices } from './relayRegistry.vibe';
+import { type RelayRegistryReader, type RelayRegistryServices } from './relayRegistry.ts';
 export type Settings = Readonly<{
     maybeConfiguredPort: Option.Option<string>;
     maybeConfiguredHost: Option.Option<string>;

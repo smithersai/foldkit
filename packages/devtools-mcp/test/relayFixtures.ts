@@ -14,7 +14,7 @@ import { resolveRelayTargets } from '../src/relayLocation.vibe'
 import {
   type RelayRegistryReader,
   makeRelayRegistryReader,
-} from '../src/relayRegistry.vibe'
+} from '../src/relayRegistry.ts'
 import { boundPort } from './boundPort.ts'
 import {
   RELAY_DIRECTORY_VARIABLE,
