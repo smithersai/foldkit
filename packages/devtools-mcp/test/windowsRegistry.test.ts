@@ -11,7 +11,7 @@ import { foldkit } from '@foldkit/vite-plugin'
 import {
   discoverRelays,
   makeRelayRegistryReader,
-} from '../src/relayRegistry.ts'
+} from '../src/relayRegistry.vibe'
 import {
   NOT_CONNECTED,
   POLL_TIMEOUT,

@@ -1,0 +1,19 @@
+{
+  "issue": "foldkit-58 and foldkit-134",
+  "hosts": [
+    "localhost",
+    "::1",
+    "fe80::1%eth0",
+    "fe80::1%4294967296",
+    "::1%a-b",
+    "::1%a.b",
+    "::1%a:b",
+    "::1%💩",
+    "::ffff:192.0.2.1",
+    "::ffff:192.0.2.01",
+    "[::1]",
+    "::1%"
+  ],
+  "seed": 413955,
+  "note": "Bare NetAddress parsing must not replace Node's distinct scoped-IPv6 grammar. The configured branch builds one success array eagerly; configuration remains cold across program runs."
+}

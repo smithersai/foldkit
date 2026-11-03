@@ -20,7 +20,7 @@ import {
   discoverRelays,
   isWithinRoot,
   makeRelayRegistryReader,
-} from '../src/relayRegistry.ts'
+} from '../src/relayRegistry.vibe'
 import {
   RELAY_DIRECTORY_VARIABLE,
   RUNTIME_DIRECTORY_VARIABLE,
