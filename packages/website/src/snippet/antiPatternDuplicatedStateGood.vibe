@@ -1,0 +1,13 @@
+// ✅ Good: the Model stores the source values and derives the result.
+
+schema Item { id: string; name: string }
+
+schema Model {
+  items: ReadonlyArray<Item>
+  query: string
+}
+
+const visibleItems = (model: Model) =>
+  model.items.filter(item =>
+    item.name.toLowerCase().includes(model.query.toLowerCase())
+  )

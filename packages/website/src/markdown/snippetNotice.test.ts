@@ -91,6 +91,16 @@ describe('snippet excerpt boundaries', () => {
     expect(panel.rawCode).toBe(sourceFor(corpus.nativeSnippet))
   })
 
+  test.each(corpus.reconvertedSnippets)(
+    'labels re-converted native excerpt %s without changing its copied source',
+    name => {
+      const [panel] = render([{ name, label: 'Re-converted excerpt' }])
+      if (!panel) throw new Error('Re-converted snippet did not render')
+      expectNotice(panel, EXCERPT_NOTICE)
+      expect(panel.rawCode).toBe(sourceFor(name))
+    },
+  )
+
   test.each(corpus.foreignSnippets)(
     'labels the foreign browser lines in %s without hiding them',
     name => {
@@ -118,6 +128,7 @@ describe('snippet excerpt boundaries', () => {
   test('keeps notices, raw source, titles and copy identities through repeated generated islands', () => {
     const names = [
       corpus.nativeSnippet,
+      ...corpus.reconvertedSnippets,
       ...corpus.foreignSnippets,
       ...corpus.nonNativeSnippets,
     ]
@@ -141,7 +152,10 @@ describe('snippet excerpt boundaries', () => {
             expect(panel.rawCode).toBe(sourceFor(name))
             if (corpus.foreignSnippets.includes(name)) {
               expectNotice(panel, FOREIGN_NOTICE)
-            } else if (name === corpus.nativeSnippet) {
+            } else if (
+              name === corpus.nativeSnippet ||
+              corpus.reconvertedSnippets.includes(name)
+            ) {
               expectNotice(panel, EXCERPT_NOTICE)
             }
           })

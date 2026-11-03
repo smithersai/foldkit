@@ -14,7 +14,8 @@
     "slowConfig",
     "subscriptionFromEvent",
     "subscriptionOrganizationChild",
-    "subscriptionOrganizationComposing"
+    "subscriptionOrganizationComposing",
+    "lintNoImpureCallAtDecisionTime"
   ],
   "foreignWitness": {
     "name": "domFilteredEvent",
@@ -24,7 +25,8 @@
   "nonNativeSnippets": [
     "atomCompareAtomAsync",
     "comparisonElmTest",
-    "uiMenuBasic",
-    "lintNoImpureCallAtDecisionTime"
-  ]
+    "uiTextareaBasic",
+    "comparisonReactApp"
+  ],
+  "reconvertedSnippets": ["uiMenuBasic"]
 }
