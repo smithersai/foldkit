@@ -1,24 +1,37 @@
-import { clsx } from 'clsx'
 import {
-  Array,
-  Context,
-  Effect,
-  Function,
-  HashMap,
-  HashSet,
-  Match,
-  Number,
-  Option,
-  Order,
-  Predicate,
-  Record,
-  Schema,
-  Stream,
-  String,
-  SubscriptionRef,
-  pipe,
-} from 'effect'
-import { KeyValueStore } from 'effect/persistence'
+  contains as arrayContains,
+  dedupe as arrayDedupe,
+  filter as arrayFilter,
+  findFirstIndex as arrayFindFirstIndex,
+  flatMap as arrayFlatMap,
+  forEach as arrayForEach,
+  get as arrayGet,
+  head as arrayHead,
+  isReadonlyArrayNonEmpty as arrayIsReadonlyArrayNonEmpty,
+  join as arrayJoin,
+  length as arrayLength,
+  map as arrayMap,
+  match as arrayMatch,
+  reverse as arrayReverse,
+  sort as arraySort,
+  take as arrayTake,
+} from 'effect/Array'
+import { identity as functionIdentity } from 'effect/Function'
+import {
+  increment as numberIncrement,
+  isLessThan as numberIsLessThan,
+} from 'effect/Number'
+import {
+  isNonEmpty as stringIsNonEmpty,
+  replace as stringReplace,
+} from 'effect/String'
+import { Clipboard } from '@effect/platform-browser'
+import {
+  ExperimentalBrowserDocument,
+  ExperimentalBrowserMediaQuery,
+} from 'vibelang-runtime/experimental/platform-browser'
+import { clsx } from 'clsx'
+import { pipe } from 'effect'
 import { Update } from 'foldkit'
 import * as Command from 'foldkit/command'
 import {
@@ -62,27 +75,38 @@ const SubmodelFilterListbox = Listbox.create<string>()
 
 // MODEL
 
-const DisplayCommand = Schema.Struct({
-  name: Schema.String,
-  args: Schema.Option(Schema.Record(Schema.String, Schema.Unknown)),
-  maybeSubmodelPath: Schema.Option(Schema.Array(Schema.String)),
-})
+const DisplayCommandArgsCodec = Schema.Option(
+  Schema.Record(Schema.String, Schema.Unknown),
+)
+const DisplayCommandPathCodec = Schema.Option(Schema.Array(Schema.String))
 
-const DisplayMount = Schema.Struct({
-  name: Schema.String,
-  args: Schema.Option(Schema.Record(Schema.String, Schema.Unknown)),
-})
+schema DisplayCommand {
+  readonly name: string
+  readonly args: DisplayCommandArgsCodec
+  readonly maybeSubmodelPath: DisplayCommandPathCodec
+}
 
-const DisplayEntry = Schema.Struct({
-  tag: Schema.String,
-  submodelPath: Schema.Array(Schema.String),
-  maybeLeafTag: Schema.Option(Schema.String),
-  commands: Schema.Array(DisplayCommand),
-  mountStarts: Schema.Array(DisplayMount),
-  mountEnds: Schema.Array(DisplayMount),
-  timestamp: Schema.Number,
-  isModelChanged: Schema.Boolean,
-})
+const DisplayMountArgsCodec = Schema.Option(
+  Schema.Record(Schema.String, Schema.Unknown),
+)
+
+schema DisplayMount {
+  readonly name: string
+  readonly args: DisplayMountArgsCodec
+}
+
+const DisplayEntryLeafCodec = Schema.Option(Schema.String)
+
+schema DisplayEntry {
+  readonly tag: string
+  readonly submodelPath: ReadonlyArray<string>
+  readonly maybeLeafTag: DisplayEntryLeafCodec
+  readonly commands: ReadonlyArray<DisplayCommand>
+  readonly mountStarts: ReadonlyArray<DisplayMount>
+  readonly mountEnds: ReadonlyArray<DisplayMount>
+  readonly timestamp: number
+  readonly isModelChanged: boolean
+}
 
 const CopyState = defineTaggedUnion({
   Copying: { requestId: Schema.Number },
@@ -94,8 +118,7 @@ const SUBMODEL_FILTER_ID = 'dt-submodel-filter'
 const FLATTEN_SWITCH_ID = 'dt-flatten-switch'
 const SCRUBBER_SLIDER_ID = 'dt-scrubber'
 
-const InspectorTab = Schema.Literals(['Model', 'Message', 'Commands', 'Mounts'])
-type InspectorTab = typeof InspectorTab.Type
+schema InspectorTab = 'Model' | 'Message' | 'Commands' | 'Mounts'
 const INSPECTOR_TABS: ReadonlyArray<InspectorTab> = InspectorTab.literals
 const InspectorTabs = Tabs.create<InspectorTab>()
 
@@ -114,60 +137,66 @@ const UnknownByReference = Schema.Unknown.pipe(
   Schema.overrideToEquivalence(() => (a, b) => a === b),
 )
 
-const Screen = Schema.Literals(['Messages', 'Settings'])
-type Screen = typeof Screen.Type
+schema Screen = 'Messages' | 'Settings'
 
-const Model = Schema.Struct({
-  isOpen: Schema.Boolean,
-  isMobile: Schema.Boolean,
-  screen: Screen,
-  entries: Schema.Array(DisplayEntry),
-  initCommands: Schema.Array(DisplayCommand),
-  initMountStarts: Schema.Array(DisplayMount),
-  startIndex: Schema.Number,
-  isPaused: Schema.Boolean,
-  pausedAtIndex: Schema.Number,
-  selectedIndex: Schema.Number,
-  isFollowingLatest: Schema.Boolean,
-  isFollowingTop: Schema.Boolean,
-  maybeInspectedModel: Schema.Option(UnknownByReference),
-  maybeInspectedMessage: Schema.Option(UnknownByReference),
-  submodelTags: Schema.Array(Schema.String),
-  maybeSubmodelFilter: Schema.Option(Schema.String),
-  isFlattened: Schema.Boolean,
-  submodelFilterListbox: Listbox.Model,
-  expandedPaths: Schema.HashSet(Schema.String),
-  changedPaths: Schema.HashSet(Schema.String),
-  affectedPaths: Schema.HashSet(Schema.String),
-  copyStates: Schema.HashMap(Schema.String, CopyState),
-  nextCopyRequestId: Schema.Number,
-  maybePendingScrubIndex: Schema.Option(Schema.Number),
-  inspectorTabs: Tabs.Model,
-  activeInspectorTab: InspectorTab,
-  // NOTE: empirically, inlining `Slider.Model` here throws
-  // "Cannot read properties of undefined (reading 'ast')" when running slider
-  // tests, because slider imports html → runtime → overlay, and overlay
-  // references Slider.Model mid-cycle. Schema.suspend defers the read until after
-  // the cycle resolves. Inlining Listbox.Model works in practice but goes
-  // through the same import chain; the exact cause of the asymmetry isn't
-  // pinned down. Suspend is the conservative fix until the runtime ↔ overlay
-  // cycle is broken at the source.
-  scrubberSlider: Schema.suspend((): typeof Slider.Model => Slider.Model),
-  scrubberValue: Schema.Number,
-})
+// The runtime, overlay and Slider imports form a cycle. Preserve the delayed
+// Slider.Model read: eagerly reading it here breaks the Slider tests.
+const ScrubberSliderCodec = Schema.suspend((): typeof Slider.Model =>
+  Slider.Model
+)
+
+const InspectedModelCodec = Schema.Option(UnknownByReference)
+const InspectedMessageCodec = Schema.Option(UnknownByReference)
+const SubmodelFilterCodec = Schema.Option(Schema.String)
+const ExpandedPathsCodec = Schema.HashSet(Schema.String)
+const ChangedPathsCodec = Schema.HashSet(Schema.String)
+const AffectedPathsCodec = Schema.HashSet(Schema.String)
+const CopyStatesCodec = Schema.HashMap(Schema.String, CopyState)
+const PendingScrubCodec = Schema.Option(Schema.Number)
+
+schema Model {
+  readonly isOpen: boolean
+  readonly isMobile: boolean
+  readonly screen: Screen
+  readonly entries: ReadonlyArray<DisplayEntry>
+  readonly initCommands: ReadonlyArray<DisplayCommand>
+  readonly initMountStarts: ReadonlyArray<DisplayMount>
+  readonly startIndex: number
+  readonly isPaused: boolean
+  readonly pausedAtIndex: number
+  readonly selectedIndex: number
+  readonly isFollowingLatest: boolean
+  readonly isFollowingTop: boolean
+  readonly maybeInspectedModel: InspectedModelCodec
+  readonly maybeInspectedMessage: InspectedMessageCodec
+  readonly submodelTags: ReadonlyArray<string>
+  readonly maybeSubmodelFilter: SubmodelFilterCodec
+  readonly isFlattened: boolean
+  readonly submodelFilterListbox: Listbox.Model
+  readonly expandedPaths: ExpandedPathsCodec
+  readonly changedPaths: ChangedPathsCodec
+  readonly affectedPaths: AffectedPathsCodec
+  readonly copyStates: CopyStatesCodec
+  readonly nextCopyRequestId: number
+  readonly maybePendingScrubIndex: PendingScrubCodec
+  readonly inspectorTabs: Tabs.Model
+  readonly activeInspectorTab: InspectorTab
+  readonly scrubberSlider: ScrubberSliderCodec
+  readonly scrubberValue: number
+}
 type Model = typeof Model.Type
 
-const Flags = Schema.Struct({
-  isOpen: Schema.Boolean,
-  isMobile: Schema.Boolean,
-  isFlattened: Schema.Boolean,
-  entries: Schema.Array(DisplayEntry),
-  initCommands: Schema.Array(DisplayCommand),
-  initMountStarts: Schema.Array(DisplayMount),
-  startIndex: Schema.Number,
-  isPaused: Schema.Boolean,
-  pausedAtIndex: Schema.Number,
-})
+schema Flags {
+  isOpen: boolean
+  isMobile: boolean
+  isFlattened: boolean
+  entries: ReadonlyArray<DisplayEntry>
+  initCommands: ReadonlyArray<DisplayCommand>
+  initMountStarts: ReadonlyArray<DisplayMount>
+  startIndex: number
+  isPaused: boolean
+  pausedAtIndex: number
+}
 
 // MESSAGE
 
@@ -240,15 +269,13 @@ const DEVTOOLS_STORAGE_KEY = 'foldkit-devtools'
 const NO_COMMANDS: ReadonlyArray<typeof DisplayCommand.Type> = []
 const NO_MOUNTS: ReadonlyArray<typeof DisplayMount.Type> = []
 
-const formatTimeDelta = (deltaMs: number): string =>
-  Match.value(deltaMs).pipe(
-    Match.when(0, () => '0ms'),
-    Match.when(
-      Number.isLessThan(MILLIS_PER_SECOND),
-      ms => `+${Math.round(ms)}ms`,
-    ),
-    Match.orElse(ms => `+${(ms / MILLIS_PER_SECOND).toFixed(1)}s`),
-  )
+const formatTimeDelta = (deltaMs: number): string => match (deltaMs) {
+  when 0: '0ms';
+  when let ms and if (numberIsLessThan(MILLIS_PER_SECOND)(ms)): `+${
+    Math.round(ms)
+  }ms`;
+  when let ms: `+${(ms / MILLIS_PER_SECOND).toFixed(1)}s`;
+}
 
 const MESSAGE_LIST_SELECTOR = '.message-list'
 
@@ -275,16 +302,16 @@ const computeSubmodelTags = (
 ): ReadonlyArray<string> =>
   pipe(
     entries,
-    Array.flatMap(({ submodelPath }) => submodelPath),
-    Array.dedupe,
-    Array.sort(Order.String),
+    arrayFlatMap(({ submodelPath }) => submodelPath),
+    arrayDedupe,
+    arraySort(Order.String),
   )
 
 const submodelSegmentLabel = (tag: string): string =>
-  pipe(tag, String.replace(/^Got/, ''), String.replace(/Message$/, ''))
+  pipe(tag, stringReplace(/^Got/, ''), stringReplace(/Message$/, ''))
 
 const formatSubmodelPath = (submodelPath: ReadonlyArray<string>): string =>
-  pipe(submodelPath, Array.map(submodelSegmentLabel), Array.join(' › '))
+  pipe(submodelPath, arrayMap(submodelSegmentLabel), arrayJoin(' › '))
 
 const toDisplayCommand = (
   command: CommandRecord,
@@ -300,7 +327,7 @@ const toDisplayMount = (mount: MountRecord): typeof DisplayMount.Type => ({
 })
 
 const toDisplayEntries = ({ entries }: StoreState) =>
-  Array.map(entries, entry => {
+  arrayMap(entries, entry => {
     const { submodelPath, maybeLeafTag } = extractSubmodelInfo(
       entry.tag,
       entry.message,
@@ -309,9 +336,9 @@ const toDisplayEntries = ({ entries }: StoreState) =>
       tag: entry.tag,
       submodelPath,
       maybeLeafTag,
-      commands: Array.map(entry.commands, toDisplayCommand),
-      mountStarts: Array.map(entry.mountStarts, toDisplayMount),
-      mountEnds: Array.map(entry.mountEnds, toDisplayMount),
+      commands: arrayMap(entry.commands, toDisplayCommand),
+      mountStarts: arrayMap(entry.mountStarts, toDisplayMount),
+      mountEnds: arrayMap(entry.mountEnds, toDisplayMount),
       timestamp: entry.timestamp,
       isModelChanged: entry.isModelChanged,
     }
@@ -319,8 +346,8 @@ const toDisplayEntries = ({ entries }: StoreState) =>
 
 const toDisplayState = (state: StoreState) => ({
   entries: toDisplayEntries(state),
-  initCommands: Array.map(state.initCommands, toDisplayCommand),
-  initMountStarts: Array.map(state.initMountStarts, toDisplayMount),
+  initCommands: arrayMap(state.initCommands, toDisplayCommand),
+  initMountStarts: arrayMap(state.initMountStarts, toDisplayMount),
   startIndex: state.startIndex,
   isPaused: state.isPaused,
   pausedAtIndex: state.pausedAtIndex,
@@ -332,55 +359,59 @@ const objectPreview = (value: Record<string, unknown>): string =>
   pipe(
     value,
     Record.keys,
-    Array.filter(key => key !== '_tag'),
-    Array.match({
+    arrayFilter(key => key !== '_tag'),
+    arrayMatch({
       onEmpty: () => '{}',
       onNonEmpty: keys => {
         const preview = pipe(
           keys,
-          Array.take(MAX_PREVIEW_KEYS),
-          Array.join(', '),
+          arrayTake(MAX_PREVIEW_KEYS),
+          arrayJoin(', '),
         )
-        return Array.length(keys) > MAX_PREVIEW_KEYS
+        return arrayLength(keys) > MAX_PREVIEW_KEYS
           ? `{ ${preview}, … }`
           : `{ ${preview} }`
       },
     }),
   )
 
-const collapsedPreview = (value: unknown): string =>
-  Match.value(value).pipe(
-    Match.when(globalThis.Array.isArray, array => `(${array.length})`),
-    Match.when(Predicate.isObject, objectPreview),
-    Match.orElse(() => ''),
-  )
+const collapsedPreview = (value: unknown): string => match (value) {
+  when let array and if (globalThis.Array.isArray(array)): `(${array.length})`;
+  when let object and if (Predicate.isObject(object)): objectPreview(object);
+  default: '';
+}
 
-const serializePayload = (value: unknown): Effect.Effect<string, Error> =>
-  Effect.try({
-    try: () => {
-      const serialized = JSON.stringify(
-        toInspectableValue(value),
-        null,
-        JSON_INDENT,
-      )
-
-      if (serialized === undefined) {
-        throw new Error('Payload cannot be represented as JSON')
-      }
-
-      return serialized
-    },
-    catch: () => new Error('Failed to serialize payload'),
-  })
+const serializePayload = (value: unknown): string!Error =>
+  effect {
+    const serialized = try Effect.try({
+      try: () => JSON.stringify(toInspectableValue(value), null, JSON_INDENT),
+      catch: () => new Error('Failed to serialize payload'),
+    })
+    if (serialized === undefined) {
+      throw new Error('Failed to serialize payload')
+    }
+    return serialized
+  }
 
 const taggedPayload = (
   name: string,
-  args: Option.Option<Record<string, unknown>>,
+  args: Option<Record<string, unknown>>,
 ): Record<string, unknown> =>
-  Option.match(args, {
-    onNone: () => ({ _tag: name }),
-    onSome: argsValue => ({ ...argsValue, _tag: name }),
-  })
+  do {
+    const $optionSubject = args
+    const $optionHandlers: {
+      onNone: () => { _tag: string }
+      onSome: (argsValue: Record<string, unknown>) => { _tag: string }
+    } = {
+      onNone: () => ({ _tag: name }),
+      onSome: argsValue => ({ ...argsValue, _tag: name }),
+    }
+    const { onNone: $optionNone, onSome: $optionSome } = $optionHandlers
+    match ($optionSubject) {
+      when Option.Some(let $optionValue): $optionSome($optionValue);
+      default: $optionNone();
+    }
+  }
 
 // UPDATE
 
@@ -390,11 +421,9 @@ const foldInspectorTabsOutMessage = Tabs.OutMessage.match<
   Update.Step<Model, Message>,
   Tabs.OutMessage<InspectorTab>
 >({
-  Selected:
-    ({ value }) =>
-    model => ({
-      model: modifyFields(model, { activeInspectorTab: () => value }),
-    }),
+  Selected: ({ value }) => model => ({
+    model: modifyFields(model, { activeInspectorTab: () => value }),
+  }),
 })
 
 const foldInspectorTabs = Update.foldChild({
@@ -410,14 +439,11 @@ const foldSubmodelFilterOutMessage = Listbox.OutMessage.match<
   Update.Step<Model, Message>,
   Listbox.OutMessage<string>
 >({
-  Selected:
-    ({ value }) =>
-    model => ({
-      model: modifyFields(model, {
-        maybeSubmodelFilter: () =>
-          Option.liftPredicate(value, String.isNonEmpty),
-      }),
+  Selected: ({ value }) => model => ({
+    model: modifyFields(model, {
+      maybeSubmodelFilter: () => Option.liftPredicate(value, stringIsNonEmpty),
     }),
+  }),
 })
 
 const foldSubmodelFilter = Update.foldChild({
@@ -437,15 +463,13 @@ const foldSubmodelFilter = Update.foldChild({
 const foldScrubberSliderOutMessage = Slider.OutMessage.match<
   Update.Step<Model, Message>
 >({
-  ChangedValue:
-    ({ value }) =>
-    model => ({
-      model: modifyFields(model, {
-        scrubberValue: () => value,
-        maybePendingScrubIndex: () =>
-          Option.some(sliderValueToHostIndex(value, model.startIndex)),
-      }),
+  ChangedValue: ({ value }) => model => ({
+    model: modifyFields(model, {
+      scrubberValue: () => value,
+      maybePendingScrubIndex: () =>
+        Option.some(sliderValueToHostIndex(value, model.startIndex)),
     }),
+  }),
 })
 
 const foldScrubberSlider = Update.foldChild({
@@ -457,23 +481,22 @@ const foldScrubberSlider = Update.foldChild({
   foldOutMessage: foldScrubberSliderOutMessage,
 })
 
-class StoreService extends Context.Service<StoreService, DevToolsStore>()(
-  'foldkit/DevToolsStore',
-) {}
+service StoreService: DevToolsStore {
+  static readonly key = 'foldkit/DevToolsStore'
+}
 
-class ShadowRootService extends Context.Service<
-  ShadowRootService,
-  ShadowRoot
->()('foldkit/DevToolsShadowRoot') {}
+service ShadowRootService: ShadowRoot {
+  static readonly key = 'foldkit/DevToolsShadowRoot'
+}
 
 export const LockScroll = Command.define('LockScroll', {
   messages: [Message.CompletedLockScroll],
-  execute: lockScroll.pipe(Effect.as(Message.CompletedLockScroll())),
+  execute: lockScroll |> Effect.as(%, Message.CompletedLockScroll()),
 })
 
 export const UnlockScroll = Command.define('UnlockScroll', {
   messages: [Message.CompletedUnlockScroll],
-  execute: unlockScroll.pipe(Effect.as(Message.CompletedUnlockScroll())),
+  execute: unlockScroll |> Effect.as(%, Message.CompletedUnlockScroll()),
 })
 
 const maybeToggleScrollLock = (isEnabled: boolean, shouldLock: boolean) =>
@@ -482,14 +505,16 @@ const maybeToggleScrollLock = (isEnabled: boolean, shouldLock: boolean) =>
 const maybeLockScroll = (isOpen: boolean, isMobile: boolean) =>
   OptionExt.when(isOpen && isMobile, LockScroll())
 
-const DevToolsPersistedState = Schema.Struct({
-  isOpen: Schema.Boolean.pipe(
-    Schema.withDecodingDefault(Effect.succeed(false)),
-  ),
-  isFlattened: Schema.Boolean.pipe(
-    Schema.withDecodingDefault(Effect.succeed(false)),
-  ),
-})
+const PersistedOpenCodec = Schema.Boolean.pipe(
+  Schema.withDecodingDefault(Effect.succeed(false)),
+)
+const PersistedFlattenCodec = Schema.Boolean.pipe(
+  Schema.withDecodingDefault(Effect.succeed(false)),
+)
+schema DevToolsPersistedState {
+  readonly isOpen: PersistedOpenCodec
+  readonly isFlattened: PersistedFlattenCodec
+}
 type DevToolsPersistedState = typeof DevToolsPersistedState.Type
 const DevToolsPersistedStateJson = Schema.fromJsonString(DevToolsPersistedState)
 const DEFAULT_PERSISTED_STATE: DevToolsPersistedState = {
@@ -497,53 +522,55 @@ const DEFAULT_PERSISTED_STATE: DevToolsPersistedState = {
   isFlattened: false,
 }
 
-const readPersistedState: Effect.Effect<DevToolsPersistedState> = Effect.gen(
-  function* () {
-    const store = yield* KeyValueStore.KeyValueStore
-    const json = yield* Effect.fromOption(
-      Option.fromNullishOr(yield* store.get(DEVTOOLS_STORAGE_KEY)),
-    )
-    return yield* Schema.decodeEffect(DevToolsPersistedStateJson)(json)
-  },
-).pipe(
-  Effect.catch(() => Effect.succeed(DEFAULT_PERSISTED_STATE)),
-  Effect.provide(BrowserKeyValueStore.layerLocalStorage),
-)
+const readPersistedState: DevToolsPersistedState!! = (effect {
+  const store = try KeyValueStore.KeyValueStore
+  const json = try Effect.fromOption(
+    Option.fromNullishOr(try store.get(DEVTOOLS_STORAGE_KEY)),
+  )
+  return try Schema.decodeEffect(DevToolsPersistedStateJson)(json)
+})
+  |> Effect.catch(%, () => Effect.succeed(DEFAULT_PERSISTED_STATE))
+  |> Effect.provide(%, BrowserKeyValueStore.layerLocalStorage)
 
 export const PersistDevToolsState = Command.define('PersistDevToolsState', {
   args: { isOpen: Schema.Boolean, isFlattened: Schema.Boolean },
   messages: [Message.CompletedPersistDevToolsState],
   execute: ({ isOpen, isFlattened }) =>
-    Effect.gen(function* () {
-      const store = yield* KeyValueStore.KeyValueStore
-      const json = yield* Schema.encodeEffect(DevToolsPersistedStateJson)({
+    (effect {
+      const store = try KeyValueStore.KeyValueStore
+      const json = try Schema.encodeEffect(DevToolsPersistedStateJson)({
         isOpen,
         isFlattened,
       })
-      yield* store.set(DEVTOOLS_STORAGE_KEY, json)
-      return Message.CompletedPersistDevToolsState()
-    }).pipe(
-      Effect.catch(() =>
-        Effect.succeed(Message.CompletedPersistDevToolsState()),
-      ),
-      Effect.provide(BrowserKeyValueStore.layerLocalStorage),
-    ),
+      try store.set(DEVTOOLS_STORAGE_KEY, json)
+      return try Effect.orDie(Effect.try({
+        try: () => Message.CompletedPersistDevToolsState(),
+        catch: (error) => error,
+      }))
+    })
+    |> Effect.catch(%, () =>
+      Effect.succeed(Message.CompletedPersistDevToolsState()))
+    |> Effect.provide(%, BrowserKeyValueStore.layerLocalStorage),
 })
 
-const buildInspectionFromModel = (index: number, model: unknown) =>
-  Effect.gen(function* () {
-    const store = yield* StoreService
-    const maybeMessage = yield* store.getMessageAtIndex(index)
-    const diff = yield* store.getDiffAtIndex(index)
-    return Message.ReceivedInspectedState({ model, maybeMessage, ...diff })
-  })
+const buildInspectionFromModel = effect (index: number, model: unknown) => {
+  const store = try StoreService
+  const maybeMessage = try store.getMessageAtIndex(index)
+  const diff = try store.getDiffAtIndex(index)
+  return try Effect.orDie(
+    Effect.try({
+      try: () =>
+        Message.ReceivedInspectedState({ model, maybeMessage, ...diff }),
+      catch: (error) => error,
+    }),
+  )
+}
 
-const buildInspectionEffect = (index: number) =>
-  Effect.gen(function* () {
-    const store = yield* StoreService
-    const model = yield* store.getModelAtIndex(index)
-    return yield* buildInspectionFromModel(index, model)
-  })
+const buildInspectionEffect = effect (index: number) => {
+  const store = try StoreService
+  const model = try store.getModelAtIndex(index)
+  return try buildInspectionFromModel(index, model)
+}
 
 // NOTE: jump and inspect both need the model at `index`. Resolving it twice
 // (once to render the host, once to feed the inspector) replays the segment
@@ -555,11 +582,11 @@ export const JumpToAndInspect = Command.define('JumpToAndInspect', {
   args: { index: Schema.Number },
   messages: [Message.ReceivedInspectedState],
   execute: ({ index }) =>
-    Effect.gen(function* () {
-      const store = yield* StoreService
-      const model = yield* store.jumpTo(index)
-      return yield* buildInspectionFromModel(index, model)
-    }),
+    effect {
+      const store = try StoreService
+      const model = try store.jumpTo(index)
+      return try buildInspectionFromModel(index, model)
+    },
 })
 
 export const InspectState = Command.define('InspectState', {
@@ -570,29 +597,39 @@ export const InspectState = Command.define('InspectState', {
 
 export const InspectLatest = Command.define('InspectLatest', {
   messages: [Message.ReceivedInspectedState],
-  execute: Effect.gen(function* () {
-    const store = yield* StoreService
-    const state = yield* SubscriptionRef.get(store.stateRef)
-    return yield* buildInspectionEffect(latestEntryIndex(state))
-  }),
+  execute: effect {
+    const store = try StoreService
+    const state = try SubscriptionRef.get(store.stateRef)
+    return try buildInspectionEffect(latestEntryIndex(state))
+  },
 })
 
 export const Resume = Command.define('Resume', {
   messages: [Message.CompletedResume],
-  execute: Effect.gen(function* () {
-    const store = yield* StoreService
-    yield* store.resume
-    return Message.CompletedResume()
-  }),
+  execute: effect {
+    const store = try StoreService
+    try store.resume
+    return try Effect.orDie(
+      Effect.try({
+        try: () => Message.CompletedResume(),
+        catch: (error) => error,
+      }),
+    )
+  },
 })
 
 export const Clear = Command.define('Clear', {
   messages: [Message.CompletedClear],
-  execute: Effect.gen(function* () {
-    const store = yield* StoreService
-    yield* store.clear
-    return Message.CompletedClear()
-  }),
+  execute: effect {
+    const store = try StoreService
+    try store.clear
+    return try Effect.orDie(
+      Effect.try({
+        try: () => Message.CompletedClear(),
+        catch: (error) => error,
+      }),
+    )
+  },
 })
 
 export const CopyPayloadToClipboard = Command.define('CopyPayloadToClipboard', {
@@ -606,20 +643,28 @@ export const CopyPayloadToClipboard = Command.define('CopyPayloadToClipboard', {
     Message.FailedCopyPayloadToClipboard,
   ],
   execute: ({ targetId, requestId, payload }) =>
-    Effect.gen(function* () {
-      const text = yield* serializePayload(payload)
-      yield* Effect.tryPromise({
-        try: () => navigator.clipboard.writeText(text),
-        catch: () => new Error('Failed to copy payload to clipboard'),
-      })
-      return Message.SucceededCopyPayloadToClipboard({ targetId, requestId })
-    }).pipe(
-      Effect.catch(() =>
-        Effect.succeed(
-          Message.FailedCopyPayloadToClipboard({ targetId, requestId }),
-        ),
-      ),
-    ),
+    (effect {
+      const text = try serializePayload(payload)
+      provide Clipboard.layer {
+        const clipboard = try Clipboard.Clipboard
+        try clipboard.writeString(text).pipe(
+          Effect.mapError(() =>
+            new Error('Failed to copy payload to clipboard')
+          ),
+        )
+      }
+      return try Effect.orDie(
+        Effect.try({
+          try: () =>
+            Message.SucceededCopyPayloadToClipboard({ targetId, requestId }),
+          catch: (error) => error,
+        }),
+      )
+    })
+    |> Effect.catch(%, () =>
+      Effect.succeed(
+        Message.FailedCopyPayloadToClipboard({ targetId, requestId }),
+      )),
 })
 
 const COPY_INDICATOR_DURATION = '1 second'
@@ -630,27 +675,37 @@ export const WaitBeforeHidingCopyIndicator = Command.define(
     args: { targetId: Schema.String, requestId: Schema.Number },
     messages: [Message.CompletedWaitBeforeHidingCopyIndicator],
     execute: ({ targetId, requestId }) =>
-      Effect.sleep(COPY_INDICATOR_DURATION).pipe(
-        Effect.as(
-          Message.CompletedWaitBeforeHidingCopyIndicator({
-            targetId,
-            requestId,
-          }),
-        ),
+      sleep(COPY_INDICATOR_DURATION)
+      |> Effect.as(
+        %,
+        Message.CompletedWaitBeforeHidingCopyIndicator({
+          targetId,
+          requestId,
+        }),
       ),
   },
 )
 
 export const ScrollToTop = Command.define('ScrollToTop', {
   messages: [Message.CompletedScrollToTop],
-  execute: Effect.gen(function* () {
-    const shadow = yield* ShadowRootService
-    const messageList = shadow.querySelector(MESSAGE_LIST_SELECTOR)
-    if (messageList instanceof HTMLElement) {
+  execute: effect {
+    const shadow = try ShadowRootService
+    const messageList = try Effect.orDie(
+      Effect.try({
+        try: () => shadow.querySelector(MESSAGE_LIST_SELECTOR),
+        catch: (error) => error,
+      }),
+    )
+    if (currentDocumentService().isHTMLElement(messageList)) {
       messageList.scrollTop = 0
     }
-    return Message.CompletedScrollToTop()
-  }),
+    return try Effect.orDie(
+      Effect.try({
+        try: () => Message.CompletedScrollToTop(),
+        catch: (error) => error,
+      }),
+    )
+  },
 })
 
 const makeUpdate = (
@@ -659,12 +714,11 @@ const makeUpdate = (
   mode: DevToolsMode,
 ) => {
   const provideContext = <A, E>(
-    effect: Effect.Effect<A, E, StoreService | ShadowRootService>,
-  ): Effect.Effect<A, E, never> =>
-    effect.pipe(
-      Effect.provideService(StoreService, store),
-      Effect.provideService(ShadowRootService, shadow),
-    )
+    effect: A!E!(StoreService | ShadowRootService),
+  ): A!E =>
+    effect
+    |> Effect.provideService(%, StoreService, store)
+    |> Effect.provideService(%, ShadowRootService, shadow)
 
   const inspectLatest = Command.mapEffect(InspectLatest(), provideContext)
   const resume = Command.mapEffect(Resume(), provideContext)
@@ -696,12 +750,13 @@ const makeUpdate = (
       ClickedSettingsToggle: () => ({
         model: modifyFields(model, {
           screen: currentScreen =>
-            Match.value(currentScreen).pipe(
-              Match.withReturnType<Screen>(),
-              Match.when('Messages', () => 'Settings'),
-              Match.when('Settings', () => 'Messages'),
-              Match.exhaustive,
-            ),
+            do {
+              const $matchResult: Screen = match (currentScreen) {
+                when 'Messages': 'Settings';
+                when 'Settings': 'Messages';
+              }
+              $matchResult
+            },
         }),
       }),
       ToggledFlatten: ({ isFlattened }) => ({
@@ -721,21 +776,22 @@ const makeUpdate = (
         }
       },
       ClickedRow: ({ index }) =>
-        Match.value(mode).pipe(
-          Match.withReturnType<UpdateReturn>(),
-          Match.when('TimeTravel', () => ({
-            model,
-            commands: [jumpToAndInspect(index)],
-          })),
-          Match.when('Inspect', () => ({
-            model: modifyFields(model, {
-              selectedIndex: () => index,
-              isFollowingLatest: () => false,
-            }),
-            commands: [inspectState(index)],
-          })),
-          Match.exhaustive,
-        ),
+        do {
+          const $matchResult: UpdateReturn = match (mode) {
+            when 'TimeTravel': ({
+              model,
+              commands: [jumpToAndInspect(index)],
+            });
+            when 'Inspect': ({
+              model: modifyFields(model, {
+                selectedIndex: () => index,
+                isFollowingLatest: () => false,
+              }),
+              commands: [inspectState(index)],
+            });
+          }
+          $matchResult
+        },
       ClickedResume: () => ({
         model: modifyFields(model, {
           isFollowingTop: () => true,
@@ -759,7 +815,7 @@ const makeUpdate = (
         commands: [clear, inspectLatest, scrollToTop],
       }),
       ClickedFollowLatest: () => {
-        const latestIndex = Array.match(model.entries, {
+        const latestIndex = arrayMatch(model.entries, {
           onEmpty: () => INIT_INDEX,
           onNonEmpty: () => model.startIndex + model.entries.length - 1,
         })
@@ -835,19 +891,17 @@ const makeUpdate = (
         isPaused,
         pausedAtIndex,
       }) => {
-        const shouldFollowSelection = Match.value(mode).pipe(
-          Match.when('TimeTravel', () => !isPaused),
-          Match.when('Inspect', () => model.isFollowingLatest),
-          Match.exhaustive,
-        )
+        const shouldFollowSelection = match (mode) {
+          when 'TimeTravel': !isPaused;
+          when 'Inspect': model.isFollowingLatest;
+        }
 
-        const shouldFollowScroll = Match.value(mode).pipe(
-          Match.when('TimeTravel', () => !isPaused && model.isFollowingTop),
-          Match.when('Inspect', () => model.isFollowingTop),
-          Match.exhaustive,
-        )
+        const shouldFollowScroll = match (mode) {
+          when 'TimeTravel': !isPaused && model.isFollowingTop;
+          when 'Inspect': model.isFollowingTop;
+        }
 
-        const latestIndex = Array.match(entries, {
+        const latestIndex = arrayMatch(entries, {
           onEmpty: () => INIT_INDEX,
           onNonEmpty: () => startIndex + entries.length - 1,
         })
@@ -855,7 +909,7 @@ const makeUpdate = (
         const nextSubmodelTags = computeSubmodelTags(entries)
         const isFilterStale = Option.exists(
           model.maybeSubmodelFilter,
-          filterTag => !Array.contains(nextSubmodelTags, filterTag),
+          filterTag => !arrayContains(nextSubmodelTags, filterTag),
         )
 
         const sliderMax = entries.length
@@ -878,15 +932,15 @@ const makeUpdate = (
               shouldFollowSelection ? latestIndex : current,
             scrubberSlider: current =>
               Slider.reflectRange(current, { min: 0, max: sliderMax }),
-            scrubberValue: current =>
-              Match.value(model.scrubberSlider.dragState).pipe(
-                Match.tag('Dragging', () =>
-                  Slider.snapAndClamp(current, 0, sliderMax, 1),
-                ),
-                Match.orElse(() =>
-                  Slider.snapAndClamp(targetSliderValue, 0, sliderMax, 1),
-                ),
-              ),
+            scrubberValue: current => match (model.scrubberSlider.dragState) {
+              when { _tag: 'Dragging' }: Slider.snapAndClamp(
+                current,
+                0,
+                sliderMax,
+                1,
+              );
+              default: Slider.snapAndClamp(targetSliderValue, 0, sliderMax, 1);
+            },
           }),
           commands: [
             ...(shouldFollowSelection ? [inspectLatest] : []),
@@ -917,39 +971,39 @@ const makeUpdate = (
       CompletedScrollToTop: () => ({ model }),
       SucceededCopyPayloadToClipboard: ({ targetId, requestId }) =>
         Option.exists(
-          HashMap.get(model.copyStates, targetId),
-          state => state._tag === 'Copying' && state.requestId === requestId,
-        )
+            HashMap.get(model.copyStates, targetId),
+            state => state._tag === 'Copying' && state.requestId === requestId,
+          )
           ? {
-              model: modifyFields(model, {
-                copyStates: states =>
-                  HashMap.set(
-                    states,
-                    targetId,
-                    CopyState.Copied({ requestId }),
-                  ),
-              }),
-              commands: [
-                WaitBeforeHidingCopyIndicator({ targetId, requestId }),
-              ],
-            }
+            model: modifyFields(model, {
+              copyStates: states =>
+                HashMap.set(
+                  states,
+                  targetId,
+                  CopyState.Copied({ requestId }),
+                ),
+            }),
+            commands: [
+              WaitBeforeHidingCopyIndicator({ targetId, requestId }),
+            ],
+          }
           : { model },
       FailedCopyPayloadToClipboard: ({ targetId, requestId }) => ({
         model: Option.exists(
-          HashMap.get(model.copyStates, targetId),
-          state => state._tag === 'Copying' && state.requestId === requestId,
-        )
+            HashMap.get(model.copyStates, targetId),
+            state => state._tag === 'Copying' && state.requestId === requestId,
+          )
           ? modifyFields(model, { copyStates: HashMap.remove(targetId) })
           : model,
       }),
       CompletedWaitBeforeHidingCopyIndicator: ({ targetId, requestId }) => ({
         model: Option.exists(
-          HashMap.get(model.copyStates, targetId),
-          state => state._tag === 'Copied' && state.requestId === requestId,
-        )
+            HashMap.get(model.copyStates, targetId),
+            state => state._tag === 'Copied' && state.requestId === requestId,
+          )
           ? modifyFields(model, {
-              copyStates: HashMap.remove(targetId),
-            })
+            copyStates: HashMap.remove(targetId),
+          })
           : model,
       }),
     })
@@ -1028,7 +1082,7 @@ const makeView = (
   position: DevToolsPosition,
   mode: DevToolsMode,
   shadow: ShadowRoot,
-  maybeBanner: Option.Option<string>,
+  maybeBanner: Option<string>,
 ): ((model: Model, h: HtmlBuilder<Message>) => Html) => {
   let viewWithBuilder: ((model: Model) => Html) | undefined
 
@@ -1042,7 +1096,7 @@ const buildOverlayView = (
   position: DevToolsPosition,
   mode: DevToolsMode,
   shadow: ShadowRoot,
-  maybeBanner: Option.Option<string>,
+  maybeBanner: Option<string>,
   h: HtmlBuilder<Message>,
 ): ((model: Model) => Html) => {
   const lazyTreeNode = createKeyedLazy()
@@ -1055,25 +1109,30 @@ const buildOverlayView = (
   const leafSpan = (className: string, text: string): Html =>
     h.span([h.Class(className)], [text])
 
-  const leafValueView = (value: unknown): Html =>
-    Match.value(value).pipe(
-      Match.when(Predicate.isNull, () => leafSpan('json-null italic', 'null')),
-      Match.when(Predicate.isUndefined, () =>
-        leafSpan('json-null italic', 'undefined'),
-      ),
-      Match.when(Predicate.isString, stringValue =>
-        leafSpan('json-string', `"${stringValue}"`),
-      ),
-      Match.when(Predicate.isNumber, numberValue =>
-        leafSpan('json-number', globalThis.String(numberValue)),
-      ),
-      Match.when(Predicate.isBoolean, booleanValue =>
-        leafSpan('json-boolean', globalThis.String(booleanValue)),
-      ),
-      Match.orElse(unknownValue =>
-        leafSpan('json-null', globalThis.String(unknownValue)),
-      ),
-    )
+  const leafValueView = (value: unknown): Html => match (value) {
+    when let nullValue and if (Predicate.isNull(nullValue)): leafSpan(
+      'json-null italic',
+      'null',
+    );
+    when let undefinedValue and if (Predicate.isUndefined(undefinedValue)):
+      leafSpan('json-null italic', 'undefined');
+    when let stringValue and if (Predicate.isString(stringValue)): leafSpan(
+      'json-string',
+      `"${stringValue}"`,
+    );
+    when let numberValue and if (Predicate.isNumber(numberValue)): leafSpan(
+      'json-number',
+      globalThis.String(numberValue),
+    );
+    when let booleanValue and if (Predicate.isBoolean(booleanValue)): leafSpan(
+      'json-boolean',
+      globalThis.String(booleanValue),
+    );
+    when let unknownValue: leafSpan(
+      'json-null',
+      globalThis.String(unknownValue),
+    );
+  }
 
   const keyView = (key: string): Html =>
     h.span([h.Class('json-key')], [`${key}:\u00a0`])
@@ -1122,13 +1181,29 @@ const buildOverlayView = (
       maybeCopyState,
       state => state._tag === 'Copied',
     )
-    const ariaLabel = Option.match(maybeCopyState, {
-      onNone: () => `Copy ${subject} as JSON`,
-      onSome: CopyState.match({
-        Copying: () => `Copying ${subject} as JSON`,
-        Copied: () => `Copied ${subject} as JSON`,
-      }),
-    })
+    const ariaLabel = do {
+      const $optionSubject = maybeCopyState
+      const $optionHandlers: {
+        onNone: () => string
+        onSome: (
+          value: { readonly _tag: 'Copied'; readonly requestId: number } | {
+            readonly _tag: 'Copying'
+            readonly requestId: number
+          },
+        ) => string
+      } = {
+        onNone: () => `Copy ${subject} as JSON`,
+        onSome: CopyState.match({
+          Copying: () => `Copying ${subject} as JSON`,
+          Copied: () => `Copied ${subject} as JSON`,
+        }),
+      }
+      const { onNone: $optionNone, onSome: $optionSome } = $optionHandlers
+      match ($optionSubject) {
+        when Option.Some(let $optionValue): $optionSome($optionValue);
+        default: $optionNone();
+      }
+    }
 
     return h.span(
       [h.Class('dt-copy-control shrink-0')],
@@ -1215,9 +1290,9 @@ const buildOverlayView = (
     value: unknown
     treePath: string
     rootPath: string
-    expandedPaths: HashSet.HashSet<string>
-    changedPaths: HashSet.HashSet<string>
-    affectedPaths: HashSet.HashSet<string>
+    expandedPaths: HashSet<string>
+    changedPaths: HashSet<string>
+    affectedPaths: HashSet<string>
     depth: number
     key: string
     accumulator: globalThis.Array<FlatNode>
@@ -1241,8 +1316,8 @@ const buildOverlayView = (
     } = shared
     const isRoot = treePath === rootPath
     const nodeIsExpandable = isExpandable(value)
-    const isExpanded =
-      nodeIsExpandable && (isRoot || HashSet.has(expandedPaths, treePath))
+    const isExpanded = nodeIsExpandable
+      && (isRoot || HashSet.has(expandedPaths, treePath))
     const tag = isTagged(value) ? value._tag : ''
 
     accumulator.push({
@@ -1272,21 +1347,21 @@ const buildOverlayView = (
           treePath: `${treePath}.${arrayIndex}`,
           depth: childDepth,
           key: globalThis.String(arrayIndex),
-        }),
+        })
       )
     } else if (Predicate.isObject(value)) {
       pipe(
         value,
         Record.toEntries,
-        Array.filter(([entryKey]) => entryKey !== '_tag'),
-        Array.forEach(([entryKey, childValue]) =>
+        arrayFilter(([entryKey]) => entryKey !== '_tag'),
+        arrayForEach(([entryKey, childValue]) =>
           flattenTree({
             ...shared,
             value: childValue,
             treePath: `${treePath}.${entryKey}`,
             depth: childDepth,
             key: entryKey,
-          }),
+          })
         ),
       )
     }
@@ -1310,7 +1385,7 @@ const buildOverlayView = (
     if (!nodeIsExpandable) {
       const rowSegments: globalThis.Array<RowSegment> = [
         ...(hasDiffDot ? [RowSegment.DiffDotSegment()] : []),
-        ...(String.isNonEmpty(key)
+        ...(stringIsNonEmpty(key)
           ? [RowSegment.KeyLabelSegment({ key })]
           : []),
         RowSegment.LeafValueSegment({ value }),
@@ -1331,7 +1406,7 @@ const buildOverlayView = (
             segment._tag,
             [h.Class('contents')],
             [rowSegmentView(segment)],
-          ),
+          )
         ),
       )
     }
@@ -1345,8 +1420,8 @@ const buildOverlayView = (
     const rowSegments: globalThis.Array<RowSegment> = [
       ...(isRoot ? [] : [RowSegment.ArrowSegment({ isExpanded })]),
       ...(!isRoot && hasDiffDot ? [RowSegment.DiffDotSegment()] : []),
-      ...(String.isNonEmpty(key) ? [RowSegment.KeyLabelSegment({ key })] : []),
-      ...(String.isNonEmpty(tag) ? [RowSegment.TagLabelSegment({ tag })] : []),
+      ...(stringIsNonEmpty(key) ? [RowSegment.KeyLabelSegment({ key })] : []),
+      ...(stringIsNonEmpty(tag) ? [RowSegment.TagLabelSegment({ tag })] : []),
       RowSegment.PreviewSegment({ preview }),
     ]
 
@@ -1369,7 +1444,7 @@ const buildOverlayView = (
           segment._tag,
           [h.Class('contents')],
           [rowSegmentView(segment)],
-        ),
+        )
       ),
     )
   }
@@ -1391,10 +1466,10 @@ const buildOverlayView = (
   const treeView = (
     value: unknown,
     rootPath: string,
-    expandedPaths: HashSet.HashSet<string>,
-    changedPaths: HashSet.HashSet<string>,
-    affectedPaths: HashSet.HashSet<string>,
-    maybeRootLabel: Option.Option<string>,
+    expandedPaths: HashSet<string>,
+    changedPaths: HashSet<string>,
+    affectedPaths: HashSet<string>,
+    maybeRootLabel: Option<string>,
     indentRootChildren: boolean,
   ): Html => {
     const nodes: globalThis.Array<FlatNode> = []
@@ -1430,16 +1505,15 @@ const buildOverlayView = (
 
     const baseTimestamp = pipe(
       model.entries,
-      Array.head,
+      arrayHead,
       Option.match({
         onNone: () => 0,
         onSome: ({ timestamp }) => timestamp,
       }),
     )
 
-    return pipe(
-      Array.get(model.entries, selectedIndex - model.startIndex),
-      Option.map(entry => {
+    return arrayGet(model.entries, selectedIndex - model.startIndex)
+      .map(entry => {
         const delta = entry.timestamp - baseTimestamp
         const seconds = Math.floor(delta / MILLIS_PER_SECOND)
         const remainingMs = delta % MILLIS_PER_SECOND
@@ -1447,9 +1521,8 @@ const buildOverlayView = (
         return seconds > 0
           ? `+${seconds}s ${remainingMs.toFixed(1)}ms`
           : `+${remainingMs.toFixed(1)}ms`
-      }),
-      Option.getOrElse(() => ''),
-    )
+      })
+      .getOrElse(() => '')
   }
 
   const emptyInspectorView: Html = h.div(
@@ -1496,9 +1569,9 @@ const buildOverlayView = (
 
   const modelTabContent = (
     inspectedModel: unknown,
-    expandedPaths: HashSet.HashSet<string>,
-    changedPaths: HashSet.HashSet<string>,
-    affectedPaths: HashSet.HashSet<string>,
+    expandedPaths: HashSet<string>,
+    changedPaths: HashSet<string>,
+    affectedPaths: HashSet<string>,
     selectedIndex: number,
     copyStates: Model['copyStates'],
   ): Html =>
@@ -1525,10 +1598,10 @@ const buildOverlayView = (
 
   const unwrapToLeaf = (message: unknown): unknown => {
     if (
-      isTagged(message) &&
-      GOT_MESSAGE_PATTERN.test(message._tag) &&
-      Predicate.hasProperty(message, 'message') &&
-      Predicate.isNotUndefined(message.message)
+      isTagged(message)
+      && GOT_MESSAGE_PATTERN.test(message._tag)
+      && Predicate.hasProperty(message, 'message')
+      && Predicate.isNotUndefined(message.message)
     ) {
       return unwrapToLeaf(message.message)
     } else {
@@ -1538,7 +1611,7 @@ const buildOverlayView = (
 
   const unwrapIfFiltered = (
     message: unknown,
-    maybeSubmodelFilter: Option.Option<string>,
+    maybeSubmodelFilter: Option<string>,
   ): unknown => {
     if (Option.isNone(maybeSubmodelFilter)) {
       return message
@@ -1566,72 +1639,82 @@ const buildOverlayView = (
   }
 
   const messageTabContent = (
-    maybeInspectedMessage: Option.Option<unknown>,
-    maybeSubmodelFilter: Option.Option<string>,
+    maybeInspectedMessage: Option<unknown>,
+    maybeSubmodelFilter: Option<string>,
     isFlattened: boolean,
-    expandedPaths: HashSet.HashSet<string>,
+    expandedPaths: HashSet<string>,
     timestamp: string,
     selectedIndex: number,
     copyStates: Model['copyStates'],
   ): Html =>
-    Option.match(maybeInspectedMessage, {
-      onNone: noMessageView,
-      onSome: rawMessage => {
-        const message = isFlattened
-          ? unwrapToLeaf(rawMessage)
-          : unwrapIfFiltered(rawMessage, maybeSubmodelFilter)
+    do {
+      const $optionSubject = maybeInspectedMessage
+      const $optionHandlers: {
+        onNone: () => Html
+        onSome: (rawMessage: unknown) => Html
+      } = {
+        onNone: noMessageView,
+        onSome: rawMessage => {
+          const message = isFlattened
+            ? unwrapToLeaf(rawMessage)
+            : unwrapIfFiltered(rawMessage, maybeSubmodelFilter)
 
-        return h.div(
-          [h.Class('flex flex-col flex-1 min-h-0 min-w-0')],
-          [
-            h.div(
-              [
-                h.Class(
-                  'flex items-center justify-between px-2 py-1 border-b text-2xs text-dt-muted font-mono shrink-0',
-                ),
-              ],
-              [
-                h.span([], [timestamp]),
-                copyPayloadButtonView(
-                  message,
-                  `Message:${selectedIndex}:${isFlattened}:${Option.getOrElse(maybeSubmodelFilter, () => 'All')}`,
-                  copyStates,
-                  'Message payload',
-                ),
-              ],
-            ),
-            h.div(
-              [h.Class('flex flex-col flex-1 min-h-0 min-w-0 pt-1 pl-1')],
-              [
-                treeView(
-                  message,
-                  'root',
-                  expandedPaths,
-                  HashSet.empty(),
-                  HashSet.empty(),
-                  Option.none(),
-                  false,
-                ),
-              ],
-            ),
-          ],
-        )
-      },
-    })
+          return h.div(
+            [h.Class('flex flex-col flex-1 min-h-0 min-w-0')],
+            [
+              h.div(
+                [
+                  h.Class(
+                    'flex items-center justify-between px-2 py-1 border-b text-2xs text-dt-muted font-mono shrink-0',
+                  ),
+                ],
+                [
+                  h.span([], [timestamp]),
+                  copyPayloadButtonView(
+                    message,
+                    `Message:${selectedIndex}:${isFlattened}:${
+                      Option.getOrElse(maybeSubmodelFilter, () => 'All')
+                    }`,
+                    copyStates,
+                    'Message payload',
+                  ),
+                ],
+              ),
+              h.div(
+                [h.Class('flex flex-col flex-1 min-h-0 min-w-0 pt-1 pl-1')],
+                [
+                  treeView(
+                    message,
+                    'root',
+                    expandedPaths,
+                    HashSet.empty(),
+                    HashSet.empty(),
+                    Option.none(),
+                    false,
+                  ),
+                ],
+              ),
+            ],
+          )
+        },
+      }
+      const { onNone: $optionNone, onSome: $optionSome } = $optionHandlers
+      match ($optionSubject) {
+        when Option.Some(let $optionValue): $optionSome($optionValue);
+        default: $optionNone();
+      }
+    }
 
   const selectedHistoryIndex = (model: Model): number => {
-    const lastIndex = Array.match(model.entries, {
+    const lastIndex = arrayMatch(model.entries, {
       onEmpty: () => INIT_INDEX,
       onNonEmpty: () => model.startIndex + model.entries.length - 1,
     })
 
-    return Match.value(mode).pipe(
-      Match.when('TimeTravel', () =>
-        model.isPaused ? model.pausedAtIndex : lastIndex,
-      ),
-      Match.when('Inspect', () => model.selectedIndex),
-      Match.exhaustive,
-    )
+    return match (mode) {
+      when 'TimeTravel': model.isPaused ? model.pausedAtIndex : lastIndex;
+      when 'Inspect': model.selectedIndex;
+    }
   }
 
   const selectedCommands = (
@@ -1644,7 +1727,7 @@ const buildOverlayView = (
     } else {
       return pipe(
         model.entries,
-        Array.get(selectedIndex - model.startIndex),
+        arrayGet(selectedIndex - model.startIndex),
         Option.map(entry => entry.commands),
         Option.getOrElse(() => NO_COMMANDS),
       )
@@ -1654,7 +1737,7 @@ const buildOverlayView = (
   const flattenCommand = (
     command: typeof DisplayCommand.Type,
     index: number,
-    expandedPaths: HashSet.HashSet<string>,
+    expandedPaths: HashSet<string>,
   ): ReadonlyArray<FlatNode> => {
     const taggedValue = taggedPayload(command.name, command.args)
     const rootPath = `command-${index}`
@@ -1676,11 +1759,11 @@ const buildOverlayView = (
 
   const commandsTabContent = (
     commands: ReadonlyArray<typeof DisplayCommand.Type>,
-    expandedPaths: HashSet.HashSet<string>,
+    expandedPaths: HashSet<string>,
     selectedIndex: number,
     copyStates: Model['copyStates'],
   ): Html =>
-    Array.match(commands, {
+    arrayMatch(commands, {
       onEmpty: () =>
         h.div(
           [
@@ -1697,7 +1780,7 @@ const buildOverlayView = (
               'dt-payload-list flex flex-col flex-1 min-h-0 min-w-0 overflow-auto overscroll-none',
             ),
           ],
-          Array.map(commandList, (command, index) =>
+          arrayMap(commandList, (command, index) =>
             h.div(
               [h.Class('flex items-start px-2 py-1 border-b gap-1.5')],
               [
@@ -1705,35 +1788,51 @@ const buildOverlayView = (
                 h.div(
                   [h.Class('flex flex-col flex-1 min-w-0')],
                   [
-                    ...Option.match(command.maybeSubmodelPath, {
-                      onNone: () => [
-                        h.div(
-                          [h.Class('text-2xs text-dt-muted font-mono')],
-                          [
-                            h.span([h.AriaHidden(true)], ['…']),
-                            h.span(
-                              [h.Class('sr-only')],
-                              ['Destination pending'],
-                            ),
-                          ],
-                        ),
-                      ],
-                      onSome: submodelPath =>
-                        Array.match(submodelPath, {
-                          onEmpty: () => [],
-                          onNonEmpty: submodelPath => [
-                            h.div(
-                              [
-                                h.Class(
-                                  'text-2xs text-dt-muted font-mono truncate',
-                                ),
-                              ],
-                              [formatSubmodelPath(submodelPath)],
-                            ),
-                          ],
-                        }),
-                    }),
-                    ...Array.map(
+                    ...do {
+                      const $optionSubject$1 = command.maybeSubmodelPath
+                      const $optionHandlers$1: {
+                        onNone: () => Html[]
+                        onSome: (
+                          submodelPath: readonly string[],
+                        ) => never[] | Html[]
+                      } = {
+                        onNone: () => [
+                          h.div(
+                            [h.Class('text-2xs text-dt-muted font-mono')],
+                            [
+                              h.span([h.AriaHidden(true)], ['…']),
+                              h.span(
+                                [h.Class('sr-only')],
+                                ['Destination pending'],
+                              ),
+                            ],
+                          ),
+                        ],
+                        onSome: submodelPath =>
+                          arrayMatch(submodelPath, {
+                            onEmpty: () => [],
+                            onNonEmpty: submodelPath => [
+                              h.div(
+                                [
+                                  h.Class(
+                                    'text-2xs text-dt-muted font-mono truncate',
+                                  ),
+                                ],
+                                [formatSubmodelPath(submodelPath)],
+                              ),
+                            ],
+                          }),
+                      }
+                      const { onNone: $optionNone$1, onSome: $optionSome$1 } =
+                        $optionHandlers$1
+                      match ($optionSubject$1) {
+                        when Option.Some(let $optionValue$1): $optionSome$1(
+                          $optionValue$1,
+                        );
+                        default: $optionNone$1();
+                      }
+                    },
+                    ...arrayMap(
                       flattenCommand(command, index, expandedPaths),
                       renderFlatNode,
                     ),
@@ -1746,8 +1845,7 @@ const buildOverlayView = (
                   `Command ${index + 1} (${command.name}) payload`,
                 ),
               ],
-            ),
-          ),
+            )),
         ),
     })
 
@@ -1764,7 +1862,7 @@ const buildOverlayView = (
     } else {
       return pipe(
         model.entries,
-        Array.get(selectedIndex - model.startIndex),
+        arrayGet(selectedIndex - model.startIndex),
         Option.match({
           onNone: () => ({ starts: NO_MOUNTS, ends: NO_MOUNTS }),
           onSome: entry => ({
@@ -1780,7 +1878,7 @@ const buildOverlayView = (
     mount: typeof DisplayMount.Type,
     sectionLabel: string,
     index: number,
-    expandedPaths: HashSet.HashSet<string>,
+    expandedPaths: HashSet<string>,
   ): ReadonlyArray<FlatNode> => {
     const taggedValue = taggedPayload(mount.name, mount.args)
     const rootPath = `mount-${sectionLabel}-${index}`
@@ -1803,7 +1901,7 @@ const buildOverlayView = (
   const mountListSection = (
     label: string,
     mounts: ReadonlyArray<typeof DisplayMount.Type>,
-    expandedPaths: HashSet.HashSet<string>,
+    expandedPaths: HashSet<string>,
     selectedIndex: number,
     copyStates: Model['copyStates'],
   ): Html =>
@@ -1818,14 +1916,14 @@ const buildOverlayView = (
           ],
           [label],
         ),
-        ...Array.map(mounts, (mount, index) =>
+        ...arrayMap(mounts, (mount, index) =>
           h.div(
             [h.Class('flex items-start px-2 py-1 border-b gap-1.5')],
             [
               h.span([h.Class(indexClass)], [globalThis.String(index + 1)]),
               h.div(
                 [h.Class('flex flex-col flex-1 min-w-0')],
-                Array.map(
+                arrayMap(
                   flattenMount(mount, label, index, expandedPaths),
                   renderFlatNode,
                 ),
@@ -1837,21 +1935,19 @@ const buildOverlayView = (
                 `${label} Mount ${index + 1} (${mount.name}) payload`,
               ),
             ],
-          ),
-        ),
+          )),
       ],
     )
 
   const mountsTabContent = (
     starts: ReadonlyArray<typeof DisplayMount.Type>,
     ends: ReadonlyArray<typeof DisplayMount.Type>,
-    expandedPaths: HashSet.HashSet<string>,
+    expandedPaths: HashSet<string>,
     selectedIndex: number,
     copyStates: Model['copyStates'],
   ): Html => {
-    const hasAny =
-      Array.isReadonlyArrayNonEmpty(starts) ||
-      Array.isReadonlyArrayNonEmpty(ends)
+    const hasAny = arrayIsReadonlyArrayNonEmpty(starts)
+      || arrayIsReadonlyArrayNonEmpty(ends)
 
     if (!hasAny) {
       return h.div(
@@ -1871,27 +1967,27 @@ const buildOverlayView = (
         ),
       ],
       [
-        ...(Array.isReadonlyArrayNonEmpty(starts)
+        ...(arrayIsReadonlyArrayNonEmpty(starts)
           ? [
-              mountListSection(
-                'Started',
-                starts,
-                expandedPaths,
-                selectedIndex,
-                copyStates,
-              ),
-            ]
+            mountListSection(
+              'Started',
+              starts,
+              expandedPaths,
+              selectedIndex,
+              copyStates,
+            ),
+          ]
           : []),
-        ...(Array.isReadonlyArrayNonEmpty(ends)
+        ...(arrayIsReadonlyArrayNonEmpty(ends)
           ? [
-              mountListSection(
-                'Ended',
-                ends,
-                expandedPaths,
-                selectedIndex,
-                copyStates,
-              ),
-            ]
+            mountListSection(
+              'Ended',
+              ends,
+              expandedPaths,
+              selectedIndex,
+              copyStates,
+            ),
+          ]
           : []),
       ],
     )
@@ -1904,48 +2000,41 @@ const buildOverlayView = (
   ): Html => {
     const selectedIndex = selectedHistoryIndex(model)
 
-    return Match.value(tab).pipe(
-      Match.when('Model', () =>
-        lazyTabContent('Model', modelTabContent, [
-          inspectedModel,
-          model.expandedPaths,
-          model.changedPaths,
-          model.affectedPaths,
-          selectedIndex,
-          model.copyStates,
-        ]),
-      ),
-      Match.when('Message', () =>
-        lazyTabContent('Message', messageTabContent, [
-          model.maybeInspectedMessage,
-          model.maybeSubmodelFilter,
-          model.isFlattened,
-          model.expandedPaths,
-          inspectedTimestamp(model),
-          selectedIndex,
-          model.copyStates,
-        ]),
-      ),
-      Match.when('Commands', () =>
-        lazyTabContent('Commands', commandsTabContent, [
-          selectedCommands(model),
-          model.expandedPaths,
-          selectedIndex,
-          model.copyStates,
-        ]),
-      ),
-      Match.when('Mounts', () => {
+    return match (tab) {
+      when 'Model': lazyTabContent('Model', modelTabContent, [
+        inspectedModel,
+        model.expandedPaths,
+        model.changedPaths,
+        model.affectedPaths,
+        selectedIndex,
+        model.copyStates,
+      ]);
+      when 'Message': lazyTabContent('Message', messageTabContent, [
+        model.maybeInspectedMessage,
+        model.maybeSubmodelFilter,
+        model.isFlattened,
+        model.expandedPaths,
+        inspectedTimestamp(model),
+        selectedIndex,
+        model.copyStates,
+      ]);
+      when 'Commands': lazyTabContent('Commands', commandsTabContent, [
+        selectedCommands(model),
+        model.expandedPaths,
+        selectedIndex,
+        model.copyStates,
+      ]);
+      when 'Mounts': do {
         const { starts, ends } = selectedMountActivity(model)
-        return lazyTabContent('Mounts', mountsTabContent, [
+        lazyTabContent('Mounts', mountsTabContent, [
           starts,
           ends,
           model.expandedPaths,
           selectedIndex,
           model.copyStates,
         ])
-      }),
-      Match.exhaustive,
-    )
+      };
+    }
   }
 
   const inspectorPaneView = (model: Model): Html =>
@@ -1985,7 +2074,7 @@ const buildOverlayView = (
                           ),
                         ],
                         [h.span([], [tab.value])],
-                      ),
+                      )
                     ),
                   ),
                   ...tabs.map(tab =>
@@ -1999,17 +2088,31 @@ const buildOverlayView = (
                           : [h.Style({ display: 'none' })]),
                       ],
                       [
-                        Option.match(model.maybeInspectedModel, {
-                          onNone: () => emptyInspectorView,
-                          onSome: inspectedModel =>
-                            inspectorTabContent(
-                              model,
-                              tab.value,
-                              inspectedModel,
-                            ),
-                        }),
+                        do {
+                          const $optionSubject = model.maybeInspectedModel
+                          const $optionHandlers: {
+                            onNone: () => Html
+                            onSome: (inspectedModel: unknown) => Html
+                          } = {
+                            onNone: () => emptyInspectorView,
+                            onSome: inspectedModel =>
+                              inspectorTabContent(
+                                model,
+                                tab.value,
+                                inspectedModel,
+                              ),
+                          }
+                          const { onNone: $optionNone, onSome: $optionSome } =
+                            $optionHandlers
+                          match ($optionSubject) {
+                            when Option.Some(let $optionValue): $optionSome(
+                              $optionValue,
+                            );
+                            default: $optionNone();
+                          }
+                        },
                       ],
-                    ),
+                    )
                   ),
                 ],
               ),
@@ -2038,34 +2141,34 @@ const buildOverlayView = (
       [
         model.isOpen
           ? h.svg(
-              [
-                h.AriaHidden(true),
-                h.Xmlns('http://www.w3.org/2000/svg'),
-                h.Fill('none'),
-                h.ViewBox('0 0 24 24'),
-                h.StrokeWidth('1.5'),
-                h.Stroke('currentColor'),
-                h.Style({ width: '12px', height: '12px' }),
-              ],
-              [
-                h.path([
-                  h.StrokeLinecap('round'),
-                  h.StrokeLinejoin('round'),
-                  h.D('M6 18L18 6M6 6l12 12'),
-                ]),
-              ],
-            )
+            [
+              h.AriaHidden(true),
+              h.Xmlns('http://www.w3.org/2000/svg'),
+              h.Fill('none'),
+              h.ViewBox('0 0 24 24'),
+              h.StrokeWidth('1.5'),
+              h.Stroke('currentColor'),
+              h.Style({ width: '12px', height: '12px' }),
+            ],
+            [
+              h.path([
+                h.StrokeLinecap('round'),
+                h.StrokeLinejoin('round'),
+                h.D('M6 18L18 6M6 6l12 12'),
+              ]),
+            ],
+          )
           : h.div(
-              [
-                h.Class(
-                  clsx(
-                    'flex flex-col items-center gap-0.5 font-semibold tracking-wider leading-none',
-                    model.isPaused ? 'text-dt-bg' : 'text-dt-muted',
-                  ),
+            [
+              h.Class(
+                clsx(
+                  'flex flex-col items-center gap-0.5 font-semibold tracking-wider leading-none',
+                  model.isPaused ? 'text-dt-bg' : 'text-dt-muted',
                 ),
-              ],
-              [h.span([], ['D']), h.span([], ['E']), h.span([], ['V'])],
-            ),
+              ),
+            ],
+            [h.span([], ['D']), h.span([], ['E']), h.span([], ['V'])],
+          ),
       ],
     )
 
@@ -2105,7 +2208,7 @@ const buildOverlayView = (
   )
 
   const filterItemLabel = (item: string): string =>
-    String.isNonEmpty(item) ? submodelSegmentLabel(item) : 'All Messages'
+    stringIsNonEmpty(item) ? submodelSegmentLabel(item) : 'All Messages'
 
   const ARROW_UP = 'M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18'
 
@@ -2138,10 +2241,21 @@ const buildOverlayView = (
     )
 
   const submodelFilterView = (model: Model): Html => {
-    const buttonLabel = Option.match(model.maybeSubmodelFilter, {
-      onNone: () => 'All Messages',
-      onSome: submodelSegmentLabel,
-    })
+    const buttonLabel = do {
+      const $optionSubject = model.maybeSubmodelFilter
+      const $optionHandlers: {
+        onNone: () => string
+        onSome: (tag: string) => string
+      } = {
+        onNone: () => 'All Messages',
+        onSome: submodelSegmentLabel,
+      }
+      const { onNone: $optionNone, onSome: $optionSome } = $optionHandlers
+      match ($optionSubject) {
+        when Option.Some(let $optionValue): $optionSome($optionValue);
+        default: $optionNone();
+      }
+    }
 
     return h.submodel({
       slotId: 'submodel-filter',
@@ -2247,40 +2361,37 @@ const buildOverlayView = (
     )
 
   const headerView = (model: Model): Html => {
-    const { status, maybeAction } = Match.value(mode).pipe(
-      Match.withReturnType<
-        Readonly<{ status: Html; maybeAction: Option.Option<Html> }>
-      >(),
-      Match.when('TimeTravel', () =>
-        model.isPaused
-          ? {
-              status: h.span(
-                [h.Class(`${statusClass} text-dt-paused`)],
-                [
-                  model.pausedAtIndex === INIT_INDEX
-                    ? 'Paused (init)'
-                    : `Paused (${model.pausedAtIndex + 1})`,
-                ],
-              ),
-              maybeAction: Option.some(
-                h.button(
-                  [
-                    h.Class(actionButtonClass),
-                    h.OnClick(Message.ClickedResume()),
-                  ],
-                  ['Resume →'],
-                ),
-              ),
-            }
-          : {
-              status: h.span(
-                [h.Class(`${statusClass} text-dt-live font-medium`)],
-                ['Live'],
-              ),
-              maybeAction: Option.none(),
-            },
-      ),
-      Match.when('Inspect', () => ({
+    const { status, maybeAction }: Readonly<
+      { status: Html; maybeAction: Option<Html> }
+    > = match (mode) {
+      when 'TimeTravel': model.isPaused
+        ? {
+          status: h.span(
+            [h.Class(`${statusClass} text-dt-paused`)],
+            [
+              model.pausedAtIndex === INIT_INDEX
+                ? 'Paused (init)'
+                : `Paused (${model.pausedAtIndex + 1})`,
+            ],
+          ),
+          maybeAction: Option.some(
+            h.button(
+              [
+                h.Class(actionButtonClass),
+                h.OnClick(Message.ClickedResume()),
+              ],
+              ['Resume →'],
+            ),
+          ),
+        }
+        : {
+          status: h.span(
+            [h.Class(`${statusClass} text-dt-live font-medium`)],
+            ['Live'],
+          ),
+          maybeAction: Option.none(),
+        };
+      when 'Inspect': ({
         status: h.span(
           [h.Class(`${statusClass} text-dt-accent`)],
           [
@@ -2299,9 +2410,8 @@ const buildOverlayView = (
             ['Follow Latest →'],
           ),
         ),
-      })),
-      Match.exhaustive,
-    )
+      });
+    }
 
     const maybeClearHistoryButton = OptionExt.when(
       !model.isPaused,
@@ -2332,7 +2442,8 @@ const buildOverlayView = (
             [h.Class('pause-column')],
             isPausedHere ? [pauseIconView] : [],
           ),
-        ).pipe(Option.toArray),
+        )
+          .toArray(),
         h.span([h.Class('dot-column')]),
         h.span([h.Class(indexClass)]),
         h.span([h.Class('text-base text-dt-muted font-mono')], ['init']),
@@ -2379,7 +2490,8 @@ const buildOverlayView = (
             [h.Class('pause-column')],
             isPausedHere ? [pauseIconView] : [],
           ),
-        ).pipe(Option.toArray),
+        )
+          .toArray(),
         h.span(
           [h.Class('dot-column')],
           isModelChanged ? [inlineDiffDotView] : [],
@@ -2403,12 +2515,12 @@ const buildOverlayView = (
     selectedIndex: number,
     isPaused: boolean,
     pausedAtIndex: number,
-    maybeFilterTag: Option.Option<string>,
+    maybeFilterTag: Option<string>,
     isFlattened: boolean,
   ): Html => {
     const baseTimestamp = pipe(
       entries,
-      Array.head,
+      arrayHead,
       Option.match({
         onNone: () => 0,
         onSome: ({ timestamp }) => timestamp,
@@ -2425,19 +2537,31 @@ const buildOverlayView = (
       if (isFlattened) {
         return leafOrTag(entry)
       } else {
-        return Option.match(maybeFilterTag, {
-          onNone: () => entry.tag,
-          onSome: filterTag =>
-            pipe(
-              entry.submodelPath,
-              Array.findFirstIndex(pathTag => pathTag === filterTag),
-              Option.flatMap(filterIndex =>
-                Array.get(entry.submodelPath, Number.increment(filterIndex)),
+        return do {
+          const $optionSubject$1 = maybeFilterTag
+          const $optionHandlers$1: {
+            onNone: () => string
+            onSome: (filterTag: string) => string
+          } = {
+            onNone: () => entry.tag,
+            onSome: filterTag =>
+              pipe(
+                entry.submodelPath,
+                arrayFindFirstIndex(pathTag => pathTag === filterTag),
+                Option.flatMap(filterIndex =>
+                  arrayGet(entry.submodelPath, numberIncrement(filterIndex))
+                ),
+                Option.orElse(() => entry.maybeLeafTag),
+                Option.getOrElse(() => entry.tag),
               ),
-              Option.orElse(() => entry.maybeLeafTag),
-              Option.getOrElse(() => entry.tag),
-            ),
-        })
+          }
+          const { onNone: $optionNone$1, onSome: $optionSome$1 } =
+            $optionHandlers$1
+          match ($optionSubject$1) {
+            when Option.Some(let $optionValue$1): $optionSome$1($optionValue$1);
+            default: $optionNone$1();
+          }
+        }
       }
     }
 
@@ -2448,20 +2572,20 @@ const buildOverlayView = (
       }>
     > = pipe(
       entries,
-      Array.map((entry, arrayIndex) => ({
+      arrayMap((entry, arrayIndex) => ({
         entry,
         absoluteIndex: startIndex + arrayIndex,
       })),
       isFiltered
-        ? Array.filter(({ entry }) =>
-            Array.contains(entry.submodelPath, maybeFilterTag.value),
-          )
-        : Function.identity,
+        ? arrayFilter(({ entry }) =>
+          arrayContains(entry.submodelPath, maybeFilterTag.value)
+        )
+        : functionIdentity,
     )
 
     const messageRows = pipe(
       indexedEntries,
-      Array.map(({ entry, absoluteIndex }) => {
+      arrayMap(({ entry, absoluteIndex }) => {
         const isSelected = selectedIndex === absoluteIndex
         const isPausedHere = isPaused && pausedAtIndex === absoluteIndex
         const displayTag = displayTagFor(entry)
@@ -2479,7 +2603,7 @@ const buildOverlayView = (
           ],
         )
       }),
-      Array.reverse,
+      arrayReverse,
     )
 
     return h.ul(
@@ -2490,12 +2614,12 @@ const buildOverlayView = (
       isFiltered
         ? messageRows
         : [
-            ...messageRows,
-            initRowView(
-              isInitSelected,
-              isPaused && pausedAtIndex === INIT_INDEX,
-            ),
-          ],
+          ...messageRows,
+          initRowView(
+            isInitSelected,
+            isPaused && pausedAtIndex === INIT_INDEX,
+          ),
+        ],
     )
   }
 
@@ -2651,9 +2775,8 @@ const buildOverlayView = (
       ],
       [
         settingsToggleView(model.screen),
-        ...OptionExt.when(isScrubberVisible, scrubberView(model)).pipe(
-          Option.toArray,
-        ),
+        ...OptionExt.when(isScrubberVisible, scrubberView(model))
+          .toArray(),
       ],
     )
 
@@ -2661,7 +2784,7 @@ const buildOverlayView = (
 
   const messagesScreenView = (model: Model): Html => {
     const maybeSubmodelFilterView = OptionExt.when(
-      Array.isReadonlyArrayNonEmpty(model.submodelTags),
+      arrayIsReadonlyArrayNonEmpty(model.submodelTags),
       submodelFilterView(model),
     )
     const maybeScrollToTopPillView = OptionExt.when(
@@ -2685,13 +2808,10 @@ const buildOverlayView = (
     )
   }
 
-  const contentView = (model: Model): Html =>
-    Match.value(model.screen).pipe(
-      Match.withReturnType<Html>(),
-      Match.when('Messages', () => messagesScreenView(model)),
-      Match.when('Settings', () => settingsScreenView(model)),
-      Match.exhaustive,
-    )
+  const contentView = (model: Model): Html => match (model.screen) {
+    when 'Messages': messagesScreenView(model);
+    when 'Settings': settingsScreenView(model);
+  }
 
   const panelView = (model: Model): Html =>
     h.div(
@@ -2712,8 +2832,8 @@ const buildOverlayView = (
               ),
             ],
             [banner],
-          ),
-        ).pipe(Option.toArray),
+          ))
+          .toArray(),
         headerView(model),
         contentView(model),
         footerView(model),
@@ -2730,8 +2850,9 @@ const buildOverlayView = (
         ...OptionExt.when(
           model.isPaused && mode === 'TimeTravel',
           interactionBlocker(),
-        ).pipe(Option.toArray),
-        ...OptionExt.when(model.isOpen, panelView(model)).pipe(Option.toArray),
+        )
+          .toArray(),
+        ...OptionExt.when(model.isOpen, panelView(model)).toArray(),
         badgeView(model),
       ],
     )
@@ -2757,14 +2878,14 @@ const VIEW_TRANSITION_STYLE_ID = 'foldkit-devtools-view-transition'
  * there is nothing to gain by overriding it.
  *
  * These pseudo-elements live on the top-level document, which the overlay's own
- * shadow styles cannot reach, so the rule goes in `document.head`.
+ * shadow styles cannot reach, so the rule goes in `currentDocument().head`.
  */
 const installViewTransitionStyle = (): void => {
-  if (document.getElementById(VIEW_TRANSITION_STYLE_ID) !== null) {
+  if (currentDocument().getElementById(VIEW_TRANSITION_STYLE_ID) !== null) {
     return
   }
 
-  const style = document.createElement('style')
+  const style = currentDocument().createElement('style')
   style.id = VIEW_TRANSITION_STYLE_ID
   // NOTE: the UA composites these snapshots with `plus-lighter`, which is
   // right for a cross-fade and wrong for a snapshot held opaque: it adds to
@@ -2782,30 +2903,30 @@ const installViewTransitionStyle = (): void => {
   mix-blend-mode: normal;
 }
 `
-  document.head.appendChild(style)
+  currentDocument().head.appendChild(style)
 }
 
 const createShadowContainer = (): Readonly<{
   container: HTMLElement
   shadow: ShadowRoot
 }> => {
-  const existingHost = document.getElementById(DEVTOOLS_HOST_ID)
+  const existingHost = currentDocument().getElementById(DEVTOOLS_HOST_ID)
   if (existingHost) {
     existingHost.remove()
   }
 
   installViewTransitionStyle()
 
-  const host = document.createElement('div')
+  const host = currentDocument().createElement('div')
   host.id = DEVTOOLS_HOST_ID
   host.addEventListener(
     'pointerdown',
     event => {
-      const activeElement = document.activeElement
+      const activeElement = currentDocument().activeElement
       if (
-        activeElement !== null &&
-        activeElement !== host &&
-        activeElement !== document.body
+        activeElement !== null
+        && activeElement !== host
+        && activeElement !== currentDocument().body
       ) {
         event.preventDefault()
       }
@@ -2821,15 +2942,15 @@ const createShadowContainer = (): Readonly<{
   // moving this into the stylesheet reintroduces the fade with no other
   // symptom.
   host.style.viewTransitionName = VIEW_TRANSITION_NAME
-  document.body.appendChild(host)
+  currentDocument().body.appendChild(host)
 
   const shadow = host.attachShadow({ mode: 'open' })
 
-  const styleElement = document.createElement('style')
+  const styleElement = currentDocument().createElement('style')
   styleElement.textContent = overlayStyles
   shadow.appendChild(styleElement)
 
-  const container = document.createElement('div')
+  const container = currentDocument().createElement('div')
   shadow.appendChild(container)
 
   return { container, shadow }
@@ -2841,27 +2962,27 @@ export const createOverlay = (
   mode: DevToolsMode,
   maybeBanner: Option.Option<string>,
 ) =>
-  Effect.gen(function* () {
-    const { container, shadow } = yield* Effect.acquireRelease(
+  effect {
+    const { container, shadow } = try Effect.acquireRelease(
       Effect.sync(() => createShadowContainer()),
       createdShadowContainer =>
         Effect.sync(() => {
           createdShadowContainer.shadow.host.remove()
-          document.getElementById(VIEW_TRANSITION_STYLE_ID)?.remove()
+          currentDocument().getElementById(VIEW_TRANSITION_STYLE_ID)?.remove()
         }),
     )
     container.id = '__foldkit_devtools_overlay__'
 
-    const flags: Effect.Effect<typeof Flags.Type> = Effect.gen(function* () {
-      const storeState = yield* SubscriptionRef.get(store.stateRef)
-      const { isOpen, isFlattened } = yield* readPersistedState
+    const flags: Effect.Effect<typeof Flags.Type> = effect {
+      const storeState = try SubscriptionRef.get(store.stateRef)
+      const { isOpen, isFlattened } = try readPersistedState
       return {
         isOpen,
-        isMobile: window.matchMedia(MOBILE_BREAKPOINT_QUERY).matches,
+        isMobile: readMobileBreakpoint(),
         isFlattened,
         ...toDisplayState(storeState),
       }
-    })
+    }
 
     const init = (flags: typeof Flags.Type): UpdateReturn => {
       const { isFlattened, ...displayFlags } = flags
@@ -2923,5 +3044,28 @@ export const createOverlay = (
       freezeModel: false,
     })
 
-    yield* Effect.forkScoped(overlayRuntime.start())
+    try Effect.forkScoped(overlayRuntime.start())
+  }
+
+const currentDocument = (): Document =>
+  runSync(effect {
+    provide ExperimentalBrowserDocument.layer {
+      return try (try Experimental.Document.Document).current
+    }
+  })
+
+const currentDocumentService = (): Experimental.Document.Document =>
+  runSync(effect {
+    provide ExperimentalBrowserDocument.layer {
+      return try Experimental.Document.Document
+    }
+  })
+
+const readMobileBreakpoint = (): boolean =>
+  runSync(effect {
+    provide ExperimentalBrowserMediaQuery.layer {
+      return try (try Experimental.MediaQuery.MediaQuery).matches(
+        MOBILE_BREAKPOINT_QUERY,
+      )
+    }
   })
