@@ -1,5 +1,6 @@
 import * as Server from 'foldkit/experimental/server'
-import { NodeFileSystem, NodePath } from '@effect/platform-node'
+import * as NodeFileSystem from '@effect/platform-node/NodeFileSystem'
+import * as NodePath from '@effect/platform-node/NodePath'
 import type { IncomingHttpHeaders } from 'node:http'
 import type { Connect, ViteDevServer } from 'vite'
 

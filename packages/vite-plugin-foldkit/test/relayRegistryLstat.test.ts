@@ -29,49 +29,48 @@ const state = vi.hoisted(() => ({
     | 'symlink',
 }))
 
-vi.mock('@effect/platform-node', async importOriginal => {
-  const actual = await importOriginal<typeof import('@effect/platform-node')>()
+// The module itself, not the package root: relayRegistryTrust imports it by
+// subpath (the root loads redis), and NodeServices reaches the same module.
+vi.mock('@effect/platform-node/NodeFileSystem', async importOriginal => {
+  const actual =
+    await importOriginal<
+      typeof import('@effect/platform-node/NodeFileSystem')
+    >()
   const { Effect, FileSystem, Layer, Option } = await import('effect')
   return {
     ...actual,
-    NodeFileSystem: {
-      ...actual.NodeFileSystem,
-      layer: Layer.sync(FileSystem.FileSystem, () =>
-        FileSystem.makeNoop({
-          realPath: () => Effect.succeed(state.directory),
-          lstat: path =>
-            Effect.sync(() => {
-              const leaf = path === state.directory
-              if (leaf) state.calls++
-              const changed =
-                leaf &&
-                ((state.phase.startsWith('canonical') && state.calls >= 2) ||
-                  (state.phase.startsWith('confirmation') && state.calls >= 3))
-              return {
-                type:
-                  leaf && state.phase === 'symlink'
-                    ? 'SymbolicLink'
-                    : 'Directory',
-                dev:
-                  state.dev +
-                  (changed && state.phase.endsWith('Dev') ? 1n : 0n),
-                ino:
-                  state.phase === 'missing'
-                    ? Option.none()
-                    : Option.some(
-                        state.ino +
-                          (changed && !state.phase.endsWith('Dev') ? 1n : 0n),
-                      ),
-                mode: 0o700,
-                uid:
-                  state.phase === 'missingUid'
-                    ? Option.none()
-                    : Option.some(42),
-              } as Fs.File.Info
-            }),
-        }),
-      ),
-    },
+    layer: Layer.sync(FileSystem.FileSystem, () =>
+      FileSystem.makeNoop({
+        realPath: () => Effect.succeed(state.directory),
+        lstat: path =>
+          Effect.sync(() => {
+            const leaf = path === state.directory
+            if (leaf) state.calls++
+            const changed =
+              leaf &&
+              ((state.phase.startsWith('canonical') && state.calls >= 2) ||
+                (state.phase.startsWith('confirmation') && state.calls >= 3))
+            return {
+              type:
+                leaf && state.phase === 'symlink'
+                  ? 'SymbolicLink'
+                  : 'Directory',
+              dev:
+                state.dev + (changed && state.phase.endsWith('Dev') ? 1n : 0n),
+              ino:
+                state.phase === 'missing'
+                  ? Option.none()
+                  : Option.some(
+                      state.ino +
+                        (changed && !state.phase.endsWith('Dev') ? 1n : 0n),
+                    ),
+              mode: 0o700,
+              uid:
+                state.phase === 'missingUid' ? Option.none() : Option.some(42),
+            } as Fs.File.Info
+          }),
+      }),
+    ),
   }
 })
 
