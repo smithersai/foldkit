@@ -31,8 +31,7 @@
         "packages/foldkit/src/route/parser.ts",
         "packages/foldkit/src/runtime/hydrationHandoff.vibe",
         "packages/foldkit/src/runtime/hydrationHandoff.platform.ts",
-        "packages/foldkit/src/runtime/managedResourceFibers.vibe",
-        "packages/vite-plugin-foldkit/test/mcpRelay.test.ts"
+        "packages/foldkit/src/runtime/managedResourceFibers.vibe"
       ],
       "rules": {
         "effecttsgo/any-unknown-in-error-context": "off"
