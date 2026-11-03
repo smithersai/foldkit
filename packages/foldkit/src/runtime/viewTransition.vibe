@@ -1,4 +1,9 @@
-import { resolveStartViewTransition } from './viewTransition.platform.ts'
+import {
+  hasStartViewTransition,
+  isViewTransitionTypesSupported,
+  startTypedViewTransition,
+  startViewTransition,
+} from './viewTransition.platform.ts'
 
 /** Context passed to the `viewTransition` predicate before each live render.
  *
@@ -79,10 +84,20 @@ export type StartViewTransition = (
  *  renders. Transition types are newer than the API itself, so when the
  *  running browser only supports the callback form the types are dropped and
  *  the transition still runs untyped. */
-// NOTE: The detection reads the DOM API, so it lives unchanged in
-// viewTransition.platform.ts (VIP-33); this keeps its declaration.
-export const __resolveStartViewTransition: () => Option<StartViewTransition> =
-  resolveStartViewTransition
+// NOTE: The raw feature detection and the two ways of starting a transition
+// read the DOM API, so they live in viewTransition.platform.ts (VIP-33).
+export const __resolveStartViewTransition = (): Option<StartViewTransition> => {
+  if (!hasStartViewTransition()) {
+    return Option.none()
+  }
+
+  const isTypesSupported = isViewTransitionTypesSupported()
+
+  return Option.some((update, maybeTypes) => match (Option.filter(maybeTypes, () => isTypesSupported)) {
+    when Option.Some(let types): startTypedViewTransition(update, types);
+    when Option.None: startViewTransition(update);
+  })
+}
 
 /** Normalizes a `ViewTransitionDecision` into "skip" (`Option.none()`) or
  *  "transition, with these types" so the render path branches once. */

@@ -1,20 +1,21 @@
 import { afterCommit, afterPaint } from '../render/render.vibe'
 import { DialogRuntime } from './dialogRuntime.vibe'
+import { queryElement } from './dom.platform.ts'
 import {
   advanceFocusFrom,
   closeDialogElement,
-  queryElement,
   releaseDialogHygieneById,
   scrollElementIntoViewIfNotVisible,
   showDialogElement,
-} from './dom.platform.ts'
+} from './domBehavior.vibe'
 import { asDialogElement, asHtmlElement } from './domPredicates.platform.ts'
 import { ElementNotFound } from './error.vibe'
 import { unlockScroll } from './scrollLock.vibe'
 
-// NOTE: The dialog machinery, focus management and scrolling are DOM code, so
-// they live unchanged in dom.platform.ts (VIP-33); this module keeps the public
-// Effect API and reaches them through hatches.
+// NOTE: The dialog machinery, focus management and scrolling are plain
+// VibeLang in domBehavior.vibe, over the document reads and writes of
+// dom.platform.ts (VIP-33); this module keeps the public Effect API and
+// reaches them through hatches.
 
 const queryHTMLElement = effect (
   selector: string,

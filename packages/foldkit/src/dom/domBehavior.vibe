@@ -1,0 +1,555 @@
+import type { DialogRuntime } from './dialogRuntime.vibe'
+import {
+  activeElement,
+  dispatchCancelEvent,
+  documentBody,
+  documentContains,
+  documentNode,
+  makeMutationObserver,
+  observeBody,
+  onKeydown,
+  overflowYOf,
+  queryElement,
+} from './dom.platform.ts'
+import type { FocusDirection } from './dom.vibe'
+import {
+  asDialogElement,
+  asHtmlElement,
+  isDocumentFragmentNode,
+  isElementNode,
+  isHiddenInputElement,
+  isHtmlElementNode,
+} from './domPredicates.platform.ts'
+import { makeOutsideIsolation } from './inert.js'
+
+// The dialog stack, its modal isolation, focus trapping, return focus and
+// scrolling: the behavior behind dom.vibe's Commands. The document reads and
+// writes it needs come from dom.platform.ts and domPredicates.platform.ts
+// (VIP-33); dom.vibe runs these plain functions through hatches.
+
+export type ShowDialogOptions = Readonly<{
+  focusSelector?: string
+  isModal?: boolean
+  allowedOutsideSelectors?: ReadonlyArray<string>
+}>
+
+const BASE_DIALOG_Z_INDEX = 2147483600
+let openDialogCount = 0
+
+// NOTE: keyed by the dialog's id (string), not by the element object, because
+// the unmount backstop must reclaim these resources after the `<dialog>` has
+// already left the DOM (navigation away from a route-keyed subtree), when no
+// live element is addressable. Membership in this map is the per-dialog "holds
+// hygiene" flag, read-and-deleted to make release exactly-once.
+type DialogHygiene = Readonly<{
+  removeKeydownListener: () => void
+  unregisterOwner: (() => void) | undefined
+  returnFocus: HTMLElement | undefined
+}>
+
+const dialogHygieneById = new Map<string, DialogHygiene>()
+
+type OpenDialog = Readonly<{
+  id: string
+  element: HTMLDialogElement
+  isModal: boolean
+  allowedOutsideSelectors: ReadonlyArray<string>
+}>
+
+let openDialogStack: ReadonlyArray<OpenDialog> = []
+let modalIsolation: ReturnType<typeof makeOutsideIsolation> | undefined
+let modalObserver: MutationObserver | undefined
+let modalAllowedElements: ReadonlyArray<HTMLElement> = []
+let modalAllowedOutsideElements: ReadonlyArray<HTMLElement> = []
+let modalAllowedSelectors: ReadonlyArray<string> = []
+let modalAllowedAncestors = new Set<HTMLElement>()
+
+const containsAllowedSelector = (node: Node): boolean => {
+  if (!(isElementNode(node) || isDocumentFragmentNode(node))) {
+    return false
+  }
+
+  return Effect.Array.some(modalAllowedSelectors, (selector) => {
+    try {
+      return (
+        (isElementNode(node) && node.matches(selector))
+        || node.querySelector(selector) !== null
+      )
+    } catch {
+      return false
+    }
+  })
+}
+
+const containsCurrentAllowedElement = (node: Node): boolean =>
+  Effect.Array.some(modalAllowedElements, (element) => node.contains(element))
+
+const isRelevantModalMutation = (mutation: MutationRecord): boolean => {
+  if (
+    mutation.type === 'attributes'
+    && (mutation.attributeName === 'aria-hidden'
+      || mutation.attributeName === 'inert')
+  ) {
+    return (
+      isHtmlElementNode(mutation.target)
+      && modalIsolation?.contains(mutation.target) === true
+    )
+  }
+
+  if (mutation.type === 'attributes') {
+    return (
+      Effect.Array.some(
+        modalAllowedOutsideElements,
+        (element) => mutation.target.contains(element),
+      ) || containsAllowedSelector(mutation.target)
+    )
+  }
+
+  const changedNodes = [
+    ...Effect.Array.fromIterable(mutation.addedNodes),
+    ...Effect.Array.fromIterable(mutation.removedNodes),
+  ]
+
+  if (
+    isHtmlElementNode(mutation.target)
+    && modalAllowedAncestors.has(mutation.target)
+    && Effect.Array.some(changedNodes, isElementNode)
+  ) {
+    return true
+  }
+
+  return Effect.Array.some(
+    changedNodes,
+    (node) =>
+      containsCurrentAllowedElement(node) || containsAllowedSelector(node),
+  )
+}
+
+const ancestorsOfAllowedElements = (
+  allowedElements: ReadonlyArray<HTMLElement>,
+): Set<HTMLElement> => {
+  const ancestors = new Set<HTMLElement>()
+  const body = documentBody()
+
+  for (const allowedElement of allowedElements) {
+    let ancestor = allowedElement.parentElement
+
+    while (ancestor !== null) {
+      ancestors.add(ancestor)
+
+      if (ancestor === body) {
+        break
+      }
+
+      ancestor = ancestor.parentElement
+    }
+  }
+
+  return ancestors
+}
+
+const recordModalAttributeMutations = (
+  mutations: ReadonlyArray<MutationRecord>,
+): void => {
+  for (const mutation of mutations) {
+    if (
+      mutation.type === 'attributes'
+      && isHtmlElementNode(mutation.target)
+      && (mutation.attributeName === 'aria-hidden'
+        || mutation.attributeName === 'inert')
+    ) {
+      modalIsolation?.recordAttributeMutation(
+        mutation.target,
+        mutation.attributeName,
+      )
+    }
+  }
+}
+
+const synchronizeModalIsolation = (): void => {
+  if (modalObserver !== undefined) {
+    recordModalAttributeMutations(modalObserver.takeRecords())
+  }
+
+  modalObserver?.disconnect()
+
+  const maybeTopmostModal = Effect.Array.last(
+    Effect.Array.filter(openDialogStack, (dialog) => dialog.isModal),
+  )
+  if (Option.isNone(maybeTopmostModal)) {
+    modalObserver?.disconnect()
+    modalObserver = undefined
+    modalIsolation?.dispose()
+    modalIsolation = undefined
+    modalAllowedElements = []
+    modalAllowedOutsideElements = []
+    modalAllowedSelectors = []
+    modalAllowedAncestors = new Set()
+    return
+  }
+
+  const { allowedOutsideSelectors } = maybeTopmostModal.value
+  const dialogsAtOrAboveModal = Effect.Array.dropWhile(
+    openDialogStack,
+    (dialog) => dialog !== maybeTopmostModal.value,
+  )
+  const allowedOutsideElements = Effect.Array.filterMap(
+    allowedOutsideSelectors,
+    (selector) => {
+      try {
+        const outsideElement = asHtmlElement(queryElement(selector))
+        return outsideElement !== null
+          ? Result.succeed(outsideElement)
+          : Result.failVoid
+      } catch {
+        return Result.failVoid
+      }
+    },
+  )
+
+  const nextAllowedElements = [
+    ...Effect.Array.map(dialogsAtOrAboveModal, (dialog) => dialog.element),
+    ...allowedOutsideElements,
+  ]
+
+  modalIsolation ??= makeOutsideIsolation()
+  modalIsolation.update(nextAllowedElements)
+  modalAllowedElements = nextAllowedElements
+  modalAllowedOutsideElements = allowedOutsideElements
+  modalAllowedSelectors = allowedOutsideSelectors
+  modalAllowedAncestors = ancestorsOfAllowedElements(nextAllowedElements)
+
+  modalObserver ??= makeMutationObserver((mutations) => {
+    if (Effect.Array.some(mutations, isRelevantModalMutation)) {
+      recordModalAttributeMutations(mutations)
+      synchronizeModalIsolation()
+    }
+  })
+  observeBody(modalObserver)
+}
+
+const FOCUSABLE_SELECTOR = Effect.Array.join(
+  [
+    'a[href]:not([tabindex="-1"])',
+    'button:not([disabled]):not([tabindex="-1"])',
+    'input:not([disabled]):not([tabindex="-1"])',
+    'select:not([disabled]):not([tabindex="-1"])',
+    'textarea:not([disabled]):not([tabindex="-1"])',
+    '[tabindex]:not([tabindex="-1"])',
+  ],
+  ', ',
+)
+
+const isVisibleAndInteractiveElement = (element: HTMLElement): boolean =>
+  element.closest('[hidden], [inert]') === null
+  && element.checkVisibility({ visibilityProperty: true })
+
+const isFocusableElement = (element: Element): element is HTMLElement => {
+  const htmlElement = asHtmlElement(element)
+  if (htmlElement === null) {
+    return false
+  }
+
+  if (htmlElement.matches(':disabled')) {
+    return false
+  }
+
+  if (isHiddenInputElement(htmlElement)) {
+    return false
+  }
+
+  if (htmlElement.tabIndex < 0 && !htmlElement.hasAttribute('tabindex')) {
+    return false
+  }
+
+  return isVisibleAndInteractiveElement(htmlElement)
+}
+
+const focusableElementsWithin = (
+  root: ParentNode,
+): ReadonlyArray<HTMLElement> =>
+  Effect.Array.filter(
+    Effect.Array.fromIterable(root.querySelectorAll(FOCUSABLE_SELECTOR)),
+    isFocusableElement,
+  )
+
+const isValidReturnFocus = (element: HTMLElement): boolean => {
+  if (!documentContains(element)) {
+    return false
+  }
+
+  const dialog = asDialogElement(element)
+  if (dialog !== null) {
+    return dialog.open && isVisibleAndInteractiveElement(dialog)
+  }
+
+  return isFocusableElement(element)
+}
+
+const cancelDialogOnEscape = (
+  event: KeyboardEvent,
+  element: HTMLDialogElement,
+): void => {
+  if (event.defaultPrevented) {
+    return
+  }
+
+  event.preventDefault()
+  dispatchCancelEvent(element)
+}
+
+export const showDialogElement = (
+  element: HTMLDialogElement,
+  options: ShowDialogOptions | undefined,
+  maybeDialogRuntime: Option.Option<DialogRuntime.Shape>,
+): boolean => {
+  const { id } = element
+  const existingHygiene = dialogHygieneById.get(id)
+
+  if (existingHygiene !== undefined) {
+    return false
+  }
+
+  element.style.position = 'fixed'
+  element.style.inset = '0'
+
+  const previouslyFocused = asHtmlElement(activeElement())
+  const returnFocus =
+    previouslyFocused !== null && previouslyFocused !== documentBody()
+      ? previouslyFocused
+      : undefined
+
+  element.show()
+
+  openDialogCount = Effect.Number.increment(openDialogCount)
+  element.style.zIndex = String(BASE_DIALOG_Z_INDEX + openDialogCount)
+
+  openDialogStack = Effect.Array.append(
+    Effect.Array.filter(
+      openDialogStack,
+      (dialog) => dialog.element !== element,
+    ),
+    {
+      id,
+      element,
+      isModal: options?.isModal ?? false,
+      allowedOutsideSelectors: options?.allowedOutsideSelectors ?? [],
+    },
+  )
+
+  synchronizeModalIsolation()
+
+  const handleKeydown = (event: KeyboardEvent): void => {
+    if (!element.open) {
+      return
+    }
+
+    const isTopmost = Option.exists(
+      Effect.Array.last(openDialogStack),
+      (topmost) => topmost.element === element,
+    )
+    if (!isTopmost) {
+      return
+    }
+
+    match (event.key) {
+      when 'Escape': cancelDialogOnEscape(event, element);
+      when 'Tab': trapFocusWithinDialog(event, element);
+      default: undefined;
+    }
+  }
+
+  const removeKeydownListener = onKeydown(handleKeydown)
+  dialogHygieneById.set(id, {
+    removeKeydownListener,
+    unregisterOwner: Option.isSome(maybeDialogRuntime)
+      ? () => maybeDialogRuntime.value.unregister(id)
+      : undefined,
+    returnFocus,
+  })
+
+  if (Option.isSome(maybeDialogRuntime)) {
+    maybeDialogRuntime.value.register(id)
+  }
+
+  const focusTarget = findDialogFocusTarget(element, options?.focusSelector)
+  focusTarget.focus()
+
+  return true
+}
+
+const findDialogFocusTarget = (
+  dialog: HTMLDialogElement,
+  focusSelector: string | undefined,
+): HTMLElement => {
+  if (focusSelector !== undefined) {
+    const requestedFocusTarget = dialog.querySelector(focusSelector)
+    if (
+      requestedFocusTarget !== null
+      && isFocusableElement(requestedFocusTarget)
+    ) {
+      return requestedFocusTarget
+    }
+  }
+
+  return match (Effect.Array.head(focusableElementsWithin(dialog))) {
+    when Option.Some(let first): first;
+    when Option.None: dialog;
+  }
+}
+
+const trapFocusWithinDialog = (
+  event: KeyboardEvent,
+  dialog: HTMLDialogElement,
+): void => {
+  const focusable = focusableElementsWithin(dialog)
+  if (Effect.Array.isReadonlyArrayNonEmpty(focusable)) {
+    const first = Effect.Array.headNonEmpty(focusable)
+    const last = Effect.Array.lastNonEmpty(focusable)
+    const focused = activeElement()
+
+    if (event.shiftKey && focused === first) {
+      event.preventDefault()
+      last.focus()
+    } else if (!event.shiftKey && focused === last) {
+      event.preventDefault()
+      first.focus()
+    }
+  } else {
+    event.preventDefault()
+    dialog.focus()
+  }
+}
+
+export const closeDialogElement = (element: HTMLDialogElement): boolean => {
+  element.close()
+  return releaseDialogHygieneById(element.id)
+}
+
+export const releaseDialogHygieneById = (id: string): boolean => {
+  const hygiene = dialogHygieneById.get(id)
+  if (hygiene === undefined) {
+    return false
+  }
+
+  const maybeReleasedDialog = Effect.Array.findFirst(
+    openDialogStack,
+    (dialog) => dialog.id === id,
+  )
+  const isTopmost = Option.exists(
+    Effect.Array.last(openDialogStack),
+    (dialog) => dialog.id === id,
+  )
+
+  if (Option.isSome(maybeReleasedDialog)) {
+    for (const openDialog of openDialogStack) {
+      if (openDialog.id === id) {
+        continue
+      }
+
+      const openHygiene = dialogHygieneById.get(openDialog.id)
+      const openReturnFocus = openHygiene?.returnFocus
+
+      if (
+        openHygiene !== undefined
+        && openReturnFocus !== undefined
+        && maybeReleasedDialog.value.element.contains(openReturnFocus)
+      ) {
+        dialogHygieneById.set(openDialog.id, {
+          ...openHygiene,
+          returnFocus: hygiene.returnFocus,
+        })
+      }
+    }
+  }
+
+  openDialogStack = Effect.Array.filter(
+    openDialogStack,
+    (dialog) => dialog.id !== id,
+  )
+  synchronizeModalIsolation()
+  openDialogCount = Math.max(0, Effect.Number.decrement(openDialogCount))
+  hygiene.removeKeydownListener()
+  dialogHygieneById.delete(id)
+  hygiene.unregisterOwner?.()
+
+  const { returnFocus } = hygiene
+  if (
+    isTopmost
+    && returnFocus !== undefined
+    && isValidReturnFocus(returnFocus)
+  ) {
+    returnFocus.focus()
+  }
+
+  return true
+}
+
+const findScrollParent = (element: HTMLElement): Option.Option<HTMLElement> => {
+  let candidate = element.parentElement
+  while (candidate !== null) {
+    const overflowY = overflowYOf(candidate)
+    if (overflowY === 'scroll' || overflowY === 'auto') {
+      return Option.some(candidate)
+    }
+    candidate = candidate.parentElement
+  }
+  return Option.none()
+}
+
+const scrollIntoViewWithin = (
+  element: HTMLElement,
+  scrollParent: HTMLElement,
+  block: ScrollLogicalPosition,
+): void => {
+  const parentRect = scrollParent.getBoundingClientRect()
+  const elementRect = element.getBoundingClientRect()
+  const isFullyVisible = elementRect.top >= parentRect.top
+    && elementRect.bottom <= parentRect.bottom
+  if (!isFullyVisible) {
+    element.scrollIntoView({ block })
+  }
+}
+
+export const scrollElementIntoViewIfNotVisible = (
+  element: HTMLElement,
+  block: ScrollLogicalPosition,
+): void => match (findScrollParent(element)) {
+  when Option.None: element.scrollIntoView({ block });
+  when Option.Some(let scrollParent): scrollIntoViewWithin(
+    element,
+    scrollParent,
+    block,
+  );
+}
+
+export const advanceFocusFrom = (
+  reference: HTMLElement,
+  direction: FocusDirection,
+): boolean => {
+  const focusableElements = focusableElementsWithin(documentNode())
+
+  const referenceElementIndex = Effect.Array.findFirstIndex(
+    focusableElements,
+    Equal.equals(reference),
+  )
+
+  if (Option.isNone(referenceElementIndex)) {
+    return false
+  }
+
+  const offsetReferenceElementIndex = match (direction) {
+    when 'Next': Effect.Number.increment(referenceElementIndex.value);
+    when 'Previous': Effect.Number.decrement(referenceElementIndex.value);
+  }
+
+  const nextElement = Effect.Array.get(
+    focusableElements,
+    offsetReferenceElementIndex,
+  )
+
+  if (Option.isSome(nextElement)) {
+    nextElement.value.focus()
+  }
+  return true
+}
