@@ -33,7 +33,7 @@
     "test": "vitest run"
   },
   "peerDependencies": {
-    "effect": "4.1.0",
+    "effect": "4.1.1",
     "foldkit": ">=0.165.0",
     "vite": "^8.0.0"
   },
@@ -43,12 +43,12 @@
     "remark-gfm": "^4.0.1",
     "remark-parse": "^11.0.0",
     "unified": "^11.0.5",
-    "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-29428c7e2cb3.tgz"
+    "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-4a7e790005b5.tgz"
   },
   "devDependencies": {
     "@types/mdast": "^4.0.4",
     "@types/unist": "^3.0.3",
-    "effect": "4.1.0",
+    "effect": "4.1.1",
     "foldkit": "workspace:*",
     "happy-dom": "^20.14.5",
     "mdast-util-directive": "^3.1.0",
@@ -56,8 +56,8 @@
     "typescript": "^7.0.2",
     "vite": "^8.3.1",
     "vitest": "^4.1.11",
-    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-3fd0fe8dc126.tgz",
-    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-94168276647a.tgz"
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-6a4c55d7d3ae.tgz",
+    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a43d2b04075f.tgz"
   },
   "keywords": [
     "foldkit",

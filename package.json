@@ -102,12 +102,12 @@
   "devDependencies": {
     "@changesets/changelog-github": "^1.0.1",
     "@changesets/cli": "^3.0.3",
-    "@effect/platform-node": "4.1.0",
+    "@effect/platform-node": "4.1.1",
     "@effect/tsgo": "0.50.0",
     "@foldkit/oxlint-plugin": "workspace:*",
     "@types/node": "26.4.0",
     "@typescript/native": "npm:typescript@^7.0.2",
-    "effect": "4.1.0",
+    "effect": "4.1.1",
     "eslint": "^9.39.5",
     "fast-check": "^4.10.2",
     "foldkit": "workspace:*",
@@ -120,8 +120,8 @@
     "simple-git-hooks": "^2.14.0",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "typescript-eslint": "^8.69.0",
-    "vibelang": "file:./.vibelang-toolchain/vibelang-0.0.11-3fd0fe8dc126.tgz",
-    "vibelang-runtime": "file:./.vibelang-toolchain/vibelang-runtime-0.0.11-29428c7e2cb3.tgz",
+    "vibelang": "file:./.vibelang-toolchain/vibelang-0.0.11-6a4c55d7d3ae.tgz",
+    "vibelang-runtime": "file:./.vibelang-toolchain/vibelang-runtime-0.0.11-4a7e790005b5.tgz",
     "vite": "^8.3.1"
   },
   "simple-git-hooks": {
