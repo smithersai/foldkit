@@ -58,6 +58,9 @@
     "vitest": "^4.1.11",
     "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-6a4c55d7d3ae.tgz",
     "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a43d2b04075f.tgz",
-    "fast-check": "4.10.2"
+    "fast-check": "4.10.2",
+    "@effect/atom-react": "4.1.1",
+    "react": "19.3.0",
+    "@types/react": "19.3.0"
   }
 }

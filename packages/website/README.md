@@ -63,3 +63,12 @@ properties preserve TypeDoc getter evaluation, recursive heading text, Unicode,
 explicit heading IDs and opaque HTML identity, and reject typed wrong-result
 mutants. The source-collector regression creates a temporary native config at
 the website root; its filename pattern is included in the website project.
+
+The atom mutation and browser-listener comparison excerpt contains no JSX and
+uses `atomCompareAtomEffect.vibe`. The mutation remains a cold `effect function`;
+the listener uses `BrowserStream.fromEventListenerWindow` and its registry
+finalizer cancels the running stream. Differential properties compare the
+original atom's construction, exact service operations and result states across
+103 mutation models, plus listener acquisition, sharing, events and cleanup
+across 102 lifecycle models. Compiled omitted-operation and missing-cancellation
+mutants must fail those observations.

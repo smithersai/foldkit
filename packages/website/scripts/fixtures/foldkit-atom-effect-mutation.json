@@ -1,0 +1,6 @@
+{
+  "seed": 5311490,
+  "numRuns": 100,
+  "rule": "VIP-1 explicit effects preserve the original createTodoAtom service operation: construction and initial read stay cold; each sequential write invokes and runs exactly one operation with the same text; repeated and Unicode arguments and result tags match the original. Missing operation is rejected.",
+  "fixed": [[], [""], ["first", "repeat", "repeat", "café🔥"]]
+}
