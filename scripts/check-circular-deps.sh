@@ -38,7 +38,7 @@ for DIR in "${DIRS[@]}"; do
   fi
 
   OUTPUT=$(pnpm madge --circular --extensions ts,vibe,vibex --exclude '\.d\.ts$|\.d\.vibe\.ts$' "$DIR" 2>&1 || true)
-  CYCLES=$(echo "$OUTPUT" | grep -E '^\d+\)' || true)
+  CYCLES=$(echo "$OUTPUT" | grep -E '^[0-9]+\)' || true)
 
   if [ -z "$CYCLES" ]; then
     continue
