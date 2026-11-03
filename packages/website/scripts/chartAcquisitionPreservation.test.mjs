@@ -159,6 +159,7 @@ const run = async (implementation, data, interrupt) => {
   )
   expect(code).not.toContain("import('some-chart-library')")
   writeFileSync(file, code + '\nexport { MountChart };\n')
+  /** @type {import('foldkit/mount').MountDefinitionWithArgs<'MountChart', { data: import('effect/Schema').Array<import('effect/Schema').Number> }, unknown>} */
   const mount = (await import(pathToFileURL(file).href)).MountChart
 
   const events = () =>
@@ -170,7 +171,11 @@ const run = async (implementation, data, interrupt) => {
           .map(line => JSON.parse(line))
       : []
   const fiber = Effect.runFork(
-    Effect.scoped(Stream.runHead(mount({ data }).f({}, Stream.never))),
+    Effect.scoped(
+      Stream.runHead(
+        mount({ data }).f(document.createElement('div'), Stream.never),
+      ),
+    ),
   )
   let finished = false
   const completion = Effect.runPromise(Fiber.await(fiber)).then(exit => {
