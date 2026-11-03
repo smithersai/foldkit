@@ -24,15 +24,24 @@ const scriptSource = readFileSync(
   'utf8',
 )
 const base = mkdtempSync(join(tmpdir(), 'foldkit-build-examples-'))
+// `native` marks an example whose own build script selects Vite's native config
+// loader (its config imports a native module); the embed must pass the same
+// loader, and only for those examples, because the other configs still use
+// `__dirname` and only load through the bundling loader.
 const entries = [
-  { slug: 'spa-a', livePreview: 'Spa' },
-  { slug: 'spa-b', livePreview: 'Spa' },
-  { slug: 'static-a', livePreview: 'Prerendered' },
-  { slug: 'spa-c', livePreview: 'Spa' },
-  { slug: 'static-b', livePreview: 'Prerendered' },
-  { slug: 'play', livePreview: 'PlaygroundOnly' },
-  { slug: 'unavailable', livePreview: 'Unavailable' },
+  { slug: 'spa-a', livePreview: 'Spa', native: false },
+  { slug: 'spa-b', livePreview: 'Spa', native: true },
+  { slug: 'static-a', livePreview: 'Prerendered', native: true },
+  { slug: 'spa-c', livePreview: 'Spa', native: false },
+  { slug: 'static-b', livePreview: 'Prerendered', native: false },
+  { slug: 'play', livePreview: 'PlaygroundOnly', native: false },
+  { slug: 'unavailable', livePreview: 'Unavailable', native: true },
 ]
+const buildScript = e =>
+  e.native
+    ? 'node --import vibelang/register node_modules/vite/bin/vite.js build --configLoader native'
+    : 'vite build'
+const loaderArguments = e => (e.native ? ['--configLoader', 'native'] : [])
 const childSource = `import{appendFileSync,mkdirSync,writeFileSync}from'node:fs';import{join,basename}from'node:path';
 const slug=basename(process.cwd()),args=process.argv.slice(2),outIndex=args.indexOf('--outDir'),out=outIndex<0?join(process.cwd(),'dist/client'):args[outIndex+1];
 appendFileSync(process.env.PROBE_TRACE,JSON.stringify({kind:'start',slug,args,id:process.env.FOLDKIT_BUILD_ID??null})+'\\n');
@@ -78,16 +87,23 @@ function execute(source, ext, input) {
   writeFileSync(
     join(base, 'packages/website/src/page/example/meta.vibe'),
     'export const examples: ReadonlyArray<{slug:string;livePreview:"Spa"|"Prerendered"|"PlaygroundOnly"|"Unavailable"}> = ' +
-      JSON.stringify(entries) +
+      JSON.stringify(
+        entries.map(({ slug, livePreview }) => ({ slug, livePreview })),
+      ) +
       '\n',
   )
   writeFileSync(join(base, 'bin/pnpm'), '#!/usr/bin/env node\n' + childSource, {
     mode: 0o755,
   })
-  for (const e of entries)
+  for (const e of entries) {
     mkdirSync(join(base, 'examples', e.slug, 'dist/client'), {
       recursive: true,
     })
+    writeFileSync(
+      join(base, 'examples', e.slug, 'package.json'),
+      JSON.stringify({ scripts: { build: buildScript(e) } }),
+    )
+  }
   const out = join(base, 'packages/website/public/example-apps-embed')
   mkdirSync(out, { recursive: true })
   writeFileSync(join(out, 'old.txt'), 'old')
@@ -161,10 +177,11 @@ function check(input) {
       assert.deepEqual(row.args.slice(5), [
         '--outDir',
         join(base, 'packages/website/public/example-apps-embed', e.slug),
+        ...loaderArguments(e),
       ])
       assert.equal(row.id, input.id)
     } else {
-      assert.equal(row.args.length, 5)
+      assert.deepEqual(row.args.slice(5), loaderArguments(e))
       if (input.id !== null && input.id !== '') assert.equal(row.id, input.id)
       else
         assert.match(

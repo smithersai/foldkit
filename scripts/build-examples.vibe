@@ -113,6 +113,25 @@ const injectBridgeScript = effect (paths: BuildPaths, outputDir: string) => {
   try Console.log('  → injected bridge script')
 }
 
+// The embed runs each example's own Vite build with the embed's base and
+// output directory. The config loader stays the example's choice: a config that
+// imports a native module (personal-blog's island attributes) loads only through
+// Vite's native loader, which that example's build script already selects, while
+// the other configs still rely on `__dirname` and need the bundling loader.
+const NATIVE_CONFIG_LOADER = '--configLoader native'
+
+const configLoaderArguments = effect (exampleDir: string) => {
+  const fs = try FileSystem.FileSystem()
+  const path = try Path.Path()
+  const manifest = try fs.readFileString(
+    path.resolve(exampleDir, 'package.json'),
+  )
+    catch () => ''
+  return manifest.includes(NATIVE_CONFIG_LOADER)
+    ? ['--configLoader', 'native']
+    : []
+}
+
 const buildSpaExample = effect (
   exampleDir: string,
   slug: string,
@@ -125,6 +144,7 @@ const buildSpaExample = effect (
     `/example-apps-embed/${slug}/`,
     '--outDir',
     outputDir,
+    ...(try configLoaderArguments(exampleDir)),
   ])
 
 const buildPrerenderedExample = effect (
@@ -144,7 +164,13 @@ const buildPrerenderedExample = effect (
   try runExampleCommand(
     exampleDir,
     slug,
-    ['vite', 'build', '--base', `/example-apps-embed/${slug}/`],
+    [
+      'vite',
+      'build',
+      '--base',
+      `/example-apps-embed/${slug}/`,
+      ...(try configLoaderArguments(exampleDir)),
+    ],
     { FOLDKIT_BUILD_ID: id },
   )
   try checked(
