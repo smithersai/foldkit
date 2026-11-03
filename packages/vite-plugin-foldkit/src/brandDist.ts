@@ -4,7 +4,7 @@ import { join, sep } from 'node:path'
 import remapping from '@jridgewell/remapping'
 import { TraceMap } from '@jridgewell/trace-mapping'
 
-import { transformCode } from './viewIdentityTransform.js'
+import { transformCode } from './viewIdentityTransform.ts'
 
 const SYNTHETIC_ROOT = '/virtual'
 const SCRIPT_FILE_EXTENSION = '.js'

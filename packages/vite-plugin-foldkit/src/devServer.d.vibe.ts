@@ -2,7 +2,7 @@ import { Data, Effect, Queue } from 'effect';
 import { SecureRandom } from 'effect/crypto';
 import type { ViteDevServer, WebSocketClient } from 'vite';
 import { type WebSocket } from 'ws';
-import type { FoldkitPluginOptions } from './index.ts';
+import type { FoldkitPluginOptions } from './index.vibe';
 export type Event = Data.TaggedEnum<{
     PreserveModelReceived: {
         payload: unknown;

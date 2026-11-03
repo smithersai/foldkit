@@ -35,7 +35,7 @@ import { WebSocket } from 'ws'
 import { NodeServices } from '@effect/platform-node'
 import basicSsl from '@vitejs/plugin-basic-ssl'
 
-import { type FoldkitPluginOptions, foldkit } from '../src/index.ts'
+import { type FoldkitPluginOptions, foldkit } from '../src/index.vibe'
 import {
   type RelayPublisherServices,
   publishRelayRecord,
@@ -356,9 +356,11 @@ describe('DevTools MCP relay', () => {
       expect(await requestModel(client, 'marker')).toBeUndefined()
 
       const hotUpdate: HmrContext = {
-        file: join(PACKAGE_ROOT, 'src', 'index.ts'),
+        file: join(PACKAGE_ROOT, 'src', 'index.vibe'),
         timestamp: Date.now(),
-        modules: [await server.moduleGraph.ensureEntryFromUrl('/src/index.ts')],
+        modules: [
+          await server.moduleGraph.ensureEntryFromUrl('/src/index.vibe'),
+        ],
         read: () => '',
         server: replacedServer,
       }

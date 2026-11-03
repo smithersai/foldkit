@@ -1,4 +1,3 @@
-import { Array, ConfigProvider, Effect, Fiber, Layer, Queue } from 'effect'
 import { ExperimentalNodeProcess } from 'vibelang-runtime/experimental/platform-node'
 import type {
   EnvironmentOptions,
@@ -13,40 +12,34 @@ import * as NodeFileSystem from '@effect/platform-node/NodeFileSystem'
 import * as NodePath from '@effect/platform-node/NodePath'
 
 import type { FoldkitBuildOptions } from './build.vibe'
-import { foldkitBuild } from './buildPlugin.js'
-import { foldkitBuildToken } from './buildToken.js'
+import { foldkitBuildToken } from './buildToken.ts'
+import { Event, main } from './devServer.vibe'
+import { currentWorkingDirectory } from './devToolsOverlay.platform.ts'
+import { devToolsOverlayPlugin } from './devToolsOverlay.vibe'
+import { crawlFoldkitPackages } from './foldkitPackages.vibe'
+import { withSsrPlugins } from './index.plain.ts'
 import type { FoldkitSsrOptions } from './ssr.vibe'
-import { foldkitSsr } from './ssrPlugin.js'
-import { foldkitViewIdentity } from './viewIdentity.js'
+import { foldkitViewIdentity } from './viewIdentity.ts'
 
-import { Event, main } from '#vibelang/emitted/src/devServer'
-import { devToolsOverlayPlugin } from '#vibelang/emitted/src/devToolsOverlay'
-import { crawlFoldkitPackages } from '#vibelang/emitted/src/foldkitPackages'
-
-export { type BrandDistResult, brandDistDirectory } from './brandDist.js'
+export { type BrandDistResult, brandDistDirectory } from './brandDist.ts'
 export type {
   FoldkitBuildApi,
   FoldkitBuildOptions,
   FoldkitPrerenderOptions,
 } from './build.vibe'
-export { FOLDKIT_FETCH_MODULE_ID, foldkitBuild } from './buildPlugin.js'
-export {
-  FoldkitBuildManifest,
-  FoldkitBuildMetadata,
-} from '#vibelang/emitted/src/build'
+export { FOLDKIT_FETCH_MODULE_ID, foldkitBuild } from './buildPlugin.ts'
+export { FoldkitBuildManifest, FoldkitBuildMetadata } from './build.vibe'
 export type { FoldkitSsrOptions } from './ssr.vibe'
-export { foldkitSsr } from './ssrPlugin.js'
+export { foldkitSsr } from './ssrPlugin.ts'
 export {
   type ViewIdentityTransformResult,
   foldkitViewIdentity,
   transformViewIdentity,
-} from './viewIdentity.js'
+} from './viewIdentity.ts'
 
-// This entry stays TypeScript: `foldkit` is a plain public function that
-// throws on a misconfiguration (Will, 2026-10-31), the fixture Vite configs
-// bundle this file with esbuild (foldkit-98), and scripts/check-effect-prebundle
-// reads FORCE_INCLUDED_EFFECT_ENTRIES from this file's source text. The dev
-// server program it starts is VibeLang in devServer.vibe.
+// `foldkit` assembles the plugin set. Its SSR and build plugin selection,
+// which throws on a misconfiguration, is plain TypeScript in index.plain.ts
+// (Will, 2026-10-31). The dev server program it starts is in devServer.vibe.
 
 /** Options for the `foldkit` Vite plugin. */
 export type FoldkitPluginOptions = Readonly<{
@@ -69,32 +62,33 @@ export type FoldkitPluginOptions = Readonly<{
    * `ssr.serverEntry`. When `undefined` (the default), the dev server
    * serves the client entry only.
    */
-  ssr?: Omit<
-    FoldkitSsrOptions,
-    'buildId' | 'quietStandDown' | 'clientEntry' | 'containerId'
-  > &
-    (
+  ssr?:
+    & Omit<
+      FoldkitSsrOptions,
+      'buildId' | 'quietStandDown' | 'clientEntry' | 'containerId'
+    >
+    & (
       | Readonly<{
-          /** Root-relative browser script for the server entry's code-rendered document. */
-          clientEntry: string
-          containerId?: never
-          /**
-           * Build a Web `fetch` handler alongside the browser build, and generate
-           * static HTML from the server entry, inside this project's own
-           * `vite build`. The handler is the server bundle: Node and Workers
-           * both run it. `true` builds it with the default output directories
-           * and generates nothing.
-           *
-           * When this is absent, `vite build` builds the browser bundle only.
-           */
-          build?: boolean | Omit<FoldkitBuildOptions, 'clientEntry'>
-        }>
+        /** Root-relative browser script for the server entry's code-rendered document. */
+        clientEntry: string
+        containerId?: never
+        /**
+         * Build a Web `fetch` handler alongside the browser build, and generate
+         * static HTML from the server entry, inside this project's own
+         * `vite build`. The handler is the server bundle: Node and Workers
+         * both run it. `true` builds it with the default output directories
+         * and generates nothing.
+         *
+         * When this is absent, `vite build` builds the browser bundle only.
+         */
+        build?: boolean | Omit<FoldkitBuildOptions, 'clientEntry'>
+      }>
       | Readonly<{
-          /** Use a custom template-based development and build pipeline. */
-          clientEntry?: never
-          containerId?: string
-          build?: false
-        }>
+        /** Use a custom template-based development and build pipeline. */
+        clientEntry?: never
+        containerId?: string
+        build?: false
+      }>
     )
   /**
    * An explicit identity for the deployment this build belongs to. Foldkit
@@ -182,7 +176,7 @@ const shouldForceEffectEntries = (
   const consumer = config.consumer ?? (name === 'client' ? 'client' : 'server')
   const isClientEnvironment = consumer === 'client'
   const isDiscoveryEnabled = config.optimizeDeps?.noDiscovery === false
-  const isExplicitOptimizationEnabled = Array.isArrayNonEmpty(
+  const isExplicitOptimizationEnabled = Effect.Array.isArrayNonEmpty(
     config.optimizeDeps?.include ?? [],
   )
 
@@ -211,25 +205,35 @@ const relayRegistryLayer = Layer.provideMerge(
 )
 
 type MainRun = Readonly<{
-  events: Queue.Queue<Event>
-  fiber: Fiber.Fiber<void, never>
+  events: Queue<Event>
+  fiber: Fiber<void, never>
 }>
+
+// The dev server program with everything it needs: the relay's services and,
+// because the default ConfigProvider snapshots the environment, a fresh one
+// so a restarted server sees current values.
+const runMain = effect (
+  server: ViteDevServer,
+  events: Queue<Event>,
+  options: FoldkitPluginOptions,
+) => {
+  provide relayRegistryLayer, ConfigProvider.ConfigProvider = ConfigProvider.fromEnv() {
+    try Effect.scoped(main(server, events, options))
+  }
+}
 
 export const foldkit = (options: FoldkitPluginOptions = {}): Array<Plugin> => {
   // NOTE: During a Vite restart, old and new servers overlap. Separate queues
   // and fibers keep their events and shutdowns attached to the right server.
   const mainRuns = new WeakMap<ResolvedConfig, MainRun>()
 
-  const stopMain = (config: ResolvedConfig) =>
-    Effect.suspend(() => {
-      const run = mainRuns.get(config)
-      mainRuns.delete(config)
-      if (run === undefined) {
-        return Effect.void
-      } else {
-        return Fiber.interrupt(run.fiber)
-      }
-    })
+  const stopMain = effect (config: ResolvedConfig) => {
+    const run = mainRuns.get(config)
+    mainRuns.delete(config)
+    if (run !== undefined) {
+      try run.fiber.interrupt()
+    }
+  }
 
   const reloadPlugin: Plugin = {
     name: 'foldkit',
@@ -246,17 +250,7 @@ export const foldkit = (options: FoldkitPluginOptions = {}): Array<Plugin> => {
     },
     configureServer: server => {
       const events = Effect.runSync(Queue.unbounded<Event>())
-      // NOTE: The default ConfigProvider snapshots the environment. Create a
-      // fresh one so a restarted server sees current values.
-      const fiber = Effect.runFork(
-        Effect.scoped(main(server, events, options)).pipe(
-          Effect.provide(relayRegistryLayer),
-          Effect.provideService(
-            ConfigProvider.ConfigProvider,
-            ConfigProvider.fromEnv(),
-          ),
-        ),
-      )
+      const fiber = Effect.runFork(runMain(server, events, options))
       mainRuns.set(server.config, { events, fiber })
     },
     // NOTE: Middleware mode has no HTTP server to close. Vite still calls
@@ -287,7 +281,7 @@ export const foldkit = (options: FoldkitPluginOptions = {}): Array<Plugin> => {
     name: 'foldkit:resolution',
     config: async (userConfig, { command }) => {
       const foldkitPackages = await crawlFoldkitPackages(
-        userConfig.root ?? process.cwd(),
+        userConfig.root ?? currentWorkingDirectory(),
         command === 'build',
         userConfig,
       )
@@ -316,46 +310,11 @@ export const foldkit = (options: FoldkitPluginOptions = {}): Array<Plugin> => {
     }),
   }
 
-  const shared = [
+  return withSsrPlugins(options, [
     resolutionPlugin,
     ...foldkitBuildToken(options.buildId),
     foldkitViewIdentity(),
     devToolsOverlayPlugin(),
     reloadPlugin,
-  ]
-
-  if (options.ssr === undefined) {
-    return shared
-  }
-
-  const { build, ...ssr } = options.ssr
-  if (ssr.clientEntry !== undefined && ssr.containerId !== undefined) {
-    throw new Error(
-      '[foldkit] containerId belongs to an HTML template. A clientEntry build takes its complete document from renderDocument instead.',
-    )
-  }
-  const servePages = foldkitSsr({
-    ...ssr,
-    ...(options.buildId === undefined ? {} : { buildId: options.buildId }),
-    quietStandDown: build !== undefined && build !== false,
-  })
-
-  if (build === undefined || build === false) {
-    return [...shared, servePages]
-  }
-
-  if (ssr.clientEntry === undefined) {
-    throw new Error(
-      '[foldkit] ssr.build requires ssr.clientEntry to name the browser script and the server entry to export renderDocument.',
-    )
-  }
-
-  return [
-    ...shared,
-    servePages,
-    foldkitBuild(ssr.serverEntry, {
-      ...(build === true ? {} : build),
-      clientEntry: ssr.clientEntry,
-    }),
-  ]
+  ])
 }

@@ -2,7 +2,7 @@ import { connect } from 'node:net'
 import { createServer } from 'vite'
 import { expect, it } from 'vitest'
 
-import { foldkit } from '../src/index.ts'
+import { foldkit } from '../src/index.vibe'
 import {
   serverPort,
   useRelayRegistry,

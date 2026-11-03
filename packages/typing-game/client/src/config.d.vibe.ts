@@ -1,4 +1,4 @@
-import { Context, Layer } from "effect";
+import { Context, Layer } from 'effect';
 export interface ViteEnvConfigShape {
     readonly VITE_SERVER_URL: string;
 }

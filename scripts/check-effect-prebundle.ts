@@ -5,7 +5,7 @@ import * as ts from 'typescript'
 import { readForcedEffectEntries } from '../packages/vite-plugin-foldkit/test/forcedEffectEntries.ts'
 
 const FOLDKIT_DIST = 'packages/foldkit/dist'
-const PLUGIN_FILE = 'packages/vite-plugin-foldkit/src/index.ts'
+const PLUGIN_FILE = 'packages/vite-plugin-foldkit/src/index.vibe'
 const LIST_NAME = 'FORCE_INCLUDED_EFFECT_ENTRIES'
 
 // Check emitted runtime imports: VibeLang's implicit namespaces and direct

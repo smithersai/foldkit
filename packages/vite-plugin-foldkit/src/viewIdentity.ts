@@ -8,7 +8,7 @@ import {
   stripQuery,
   toPosixPath,
   transformCode,
-} from './viewIdentityTransform.js'
+} from './viewIdentityTransform.ts'
 
 const BRAND_MODULE_SPECIFIER = 'foldkit/brand'
 const FOLDKIT_PACKAGE_NAME = 'foldkit'

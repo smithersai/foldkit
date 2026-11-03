@@ -15,7 +15,7 @@ import {
   devToolsOverlayPlugin,
   shouldInjectDevToolsOverlay,
 } from '../src/devToolsOverlay.vibe'
-import { foldkit } from '../src/index.ts'
+import { foldkit } from '../src/index.vibe'
 
 const COUNTER_ROOT = resolve(import.meta.dirname, '../../../examples/counter')
 const HTML = `<!doctype html>

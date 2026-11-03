@@ -27,7 +27,7 @@ import {
   requestPresentsProof,
   requestPresentsToken,
 } from './devServer.platform.ts'
-import type { FoldkitPluginOptions } from './index.ts'
+import type { FoldkitPluginOptions } from './index.vibe'
 import {
   RelayRegistryDirectoryRefused,
   publishRelayRecord,

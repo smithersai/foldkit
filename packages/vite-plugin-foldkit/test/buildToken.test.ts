@@ -5,7 +5,7 @@ import { resolveConfig, build as viteBuild } from 'vite'
 import { afterEach, describe, expect, it } from 'vitest'
 
 import { buildIdForCommand, resolveBuildId } from '../src/buildToken.ts'
-import { foldkit } from '../src/index.ts'
+import { foldkit } from '../src/index.vibe'
 import { foldkitSsr } from '../src/ssr.vibe'
 
 const FIXTURE_ROOT = resolve(import.meta.dirname, 'fixtures/ssr')

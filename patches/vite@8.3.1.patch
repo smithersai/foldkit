@@ -1,7 +1,8 @@
 diff --git a/dist/node/chunks/node.js b/dist/node/chunks/node.js
+index ee0a227ca9d629a7b70a66cb328095bd309ea85e..0a412e0a1280e524599d43ee9c0b8718e835ef3f 100644
 --- a/dist/node/chunks/node.js
 +++ b/dist/node/chunks/node.js
-@@ -14491,12 +14491,18 @@
+@@ -14491,12 +14491,18 @@ const MAX_PORT = 65535;
  async function httpServerStart(httpServer, serverOptions) {
  	const { port: startPort, strictPort, host, logger } = serverOptions;
  	if (startPort === 0) {
@@ -26,7 +27,7 @@ diff --git a/dist/node/chunks/node.js b/dist/node/chunks/node.js
  	}
  	for (let port = startPort; port <= MAX_PORT; port++) {
  		const portAvailableOnWildcard = await isPortAvailable(port);
-@@ -28414,7 +28420,11 @@
+@@ -28414,7 +28420,11 @@ function runOptimizeDeps(environment, depsInfo) {
  			optimizerContext.cancelled = true;
  			const { context } = await preparedRun;
  			context?.cancel();
@@ -39,7 +40,7 @@ diff --git a/dist/node/chunks/node.js b/dist/node/chunks/node.js
  		},
  		result: runResult
  	};
-@@ -35573,6 +35583,7 @@
+@@ -35573,6 +35583,7 @@ function createDepsOptimizer(environment) {
  						} finally {
  							clearTimeout(scanTimer);
  						}
@@ -47,3 +48,25 @@ diff --git a/dist/node/chunks/node.js b/dist/node/chunks/node.js
  						const manuallyIncluded = Object.keys(manuallyIncludedDepsInfo);
  						discoveredDepsWhileScanning.push(...Object.keys(metadata.discovered).filter((dep) => !deps[dep] && !manuallyIncluded.includes(dep)));
  						for (const id of Object.keys(deps)) if (!metadata.discovered[id]) addMissingDep(id, deps[id]);
+@@ -37741,6 +37752,21 @@ async function bundleConfigFile(fileName, isESM) {
+ 		tsconfig: false,
+ 		plugins: [
+ 			!process.env.VITE_CONFIG_NATIVE_IGNORE_WARNING && createNativeConfigCompatPlugin(nativeIncompatibilities),
++			{
++				name: "externalize-vibelang",
++				resolveId: {
++					filter: { id: /\.vibex?$/ },
++					handler(id, importer) {
++						if (!importer) return;
++						const idFsPath = path.isAbsolute(id) ? id : id[0] === "." ? path.resolve(path.dirname(importer), id) : undefined;
++						if (idFsPath === undefined) return;
++						return {
++							id: isESM ? pathToFileURL(idFsPath).href : idFsPath,
++							external: true
++						};
++					}
++				}
++			},
+ 			{
+ 				name: "externalize-deps",
+ 				resolveId: {

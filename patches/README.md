@@ -88,6 +88,38 @@ that gap, checks HTTP responses, and exercises 100 generated collision sequences
 The named Foldkit corpus also covers strict automatic ports, bounded exhaustion,
 explicit port policies and an unchanged non-address error.
 
+The bundled config loader (the default for `vite build` and
+`resolveConfig`) bundles a config's import graph with rolldown, which has
+no parser for a VibeLang module: a config that imports
+`packages/vite-plugin-foldkit/src/index.vibe` (the build-config fixture,
+and the configs `test/resolution.test.ts` writes) failed with
+PARSE_ERROR inside the `.vibe` file. `--configLoader native` cannot be
+passed by a test that spawns `vite build`, and a config cannot select its
+own loader. The patch adds an `externalize-vibelang` plugin to
+`bundleConfigFile`: a relative or absolute `.vibe` or `.vibex` import is
+resolved to its file URL and left external, so the bundled config imports
+it through Node's loader, where `vibelang/register` compiles it.
+`vibelang({ register: true })` in `vitest.config.ts` hands that hook to
+every process a test starts. Without the hook the import fails as before
+(ERR_UNKNOWN_FILE_EXTENSION).
+
+## `rolldown@1.2.11`
+
+`parseSync` and `parse` from `rolldown/utils` (Vite re-exports them as
+`parseSync` and `parse`) infer the language from the file extension and
+read a `.vibe` file as JavaScript, so a type annotation is a parse error
+and the program comes back empty. `test/forcedEffectEntries.ts` in the
+Vite plugin reads `FORCE_INCLUDED_EFFECT_ENTRIES` from `src/index.vibe`
+this way, for `test/resolution.test.ts` and
+`scripts/check-effect-prebundle.ts`.
+
+The patch hands a `.vibe` or `.vibex` filename with no explicit `lang` to
+the VibeLang compiler (`vibelang --estree`, the source on stdin), the
+ESTree its ESLint parser reads, with typescript-estree's node shapes, and
+returns it in oxc's `{ program, module, comments, errors }` shape. It is
+the route the precinct patch below already uses. Refresh with
+`pnpm patch rolldown@1.2.11` and `pnpm patch-commit`.
+
 ## `precinct@12.3.2` and `filing-cabinet@5.5.1`
 
 `scripts/check-circular-deps.sh` runs madge, whose dependency detective

@@ -20,7 +20,7 @@ import {
 import { createServer as createHostViteServer } from 'vite-host'
 import { describe, expect, it, onTestFinished } from 'vitest'
 
-import { foldkit } from '../src/index.ts'
+import { foldkit } from '../src/index.vibe'
 import { foldkitSsr } from '../src/ssr.vibe'
 import { boundPort } from './boundPort.ts'
 

@@ -3,7 +3,7 @@ import { createServer } from 'vite'
 import { expect, it, onTestFinished } from 'vitest'
 import { WebSocket } from 'ws'
 
-import { type FoldkitPluginOptions, foldkit } from '../src/index.ts'
+import { type FoldkitPluginOptions, foldkit } from '../src/index.vibe'
 import {
   RELAY_PATH,
   openWebSocket,

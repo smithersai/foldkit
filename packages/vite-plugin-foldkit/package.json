@@ -79,16 +79,6 @@
       "types": "./dist/build.d.ts",
       "default": "./dist/build.js"
     },
-    "#vibelang/emitted/src/devServer": {
-      "vibelang-source": "./src/devServer.vibe",
-      "types": "./src/devServer.d.vibe.ts",
-      "default": "./dist/devServer.js"
-    },
-    "#vibelang/emitted/src/devToolsOverlay": {
-      "vibelang-source": "./src/devToolsOverlay.vibe",
-      "types": "./src/devToolsOverlay.d.vibe.ts",
-      "default": "./dist/devToolsOverlay.js"
-    },
     "#vibelang/emitted/src/foldkitPackages": {
       "vibelang-source": "./src/foldkitPackages.vibe",
       "types": "./src/foldkitPackages.d.vibe.ts",

@@ -49,4 +49,5 @@ patchedDependencies:
   filing-cabinet@5.5.1: patches/filing-cabinet@5.5.1.patch
   knip@6.38.0: patches/knip@6.38.0.patch
   precinct@12.3.2: patches/precinct@12.3.2.patch
+  rolldown@1.2.11: patches/rolldown@1.2.11.patch
   vite@8.3.1: patches/vite@8.3.1.patch

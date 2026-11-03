@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url'
 import { type InlineConfig, resolveConfig } from 'vite'
 import { expect, it } from 'vitest'
 
-import { foldkit } from '../src/index.ts'
+import { foldkit } from '../src/index.vibe'
 
 const directory = dirname(fileURLToPath(import.meta.url))
 const workspace = resolve(directory, '../../..')

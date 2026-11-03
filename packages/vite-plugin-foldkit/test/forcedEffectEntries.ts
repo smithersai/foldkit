@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { type ESTree, parseSync } from 'vite'
 
-const PLUGIN_SOURCE = resolve(import.meta.dirname, '../src/index.ts')
+const PLUGIN_SOURCE = resolve(import.meta.dirname, '../src/index.vibe')
 const FORCED_EFFECT_ENTRIES_NAME = 'FORCE_INCLUDED_EFFECT_ENTRIES'
 
 const findForcedEffectElements = (declaration: ESTree.VariableDeclarator) => {
