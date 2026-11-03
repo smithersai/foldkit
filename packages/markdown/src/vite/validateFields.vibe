@@ -1,6 +1,4 @@
-import { Option, Schema } from 'effect'
-
-import { validateFields as validateFieldsPlain } from './validateFields.plain.js'
+import { SchemaIssue } from 'effect'
 
 // FIELD VALIDATION
 
@@ -13,6 +11,78 @@ export type FieldsSchema =
   & Readonly<{ DecodingServices: never; EncodingServices: never }>
 
 /**
+ * What a field validation checks: the schema, the parsed string values, and
+ * the caller's phrasing for the two failures.
+ */
+export type ValidateFieldsConfig = Readonly<{
+  schema: FieldsSchema
+  values: Readonly<Record<string, string>>
+  memberNounPlural: string
+  unknownField: (fieldName: string, allowedDescription: string) => string
+  invalidValues: (
+    detail: string,
+    maybeFieldName: Option.Option<string>,
+  ) => string
+}>
+
+/** A record outside its schema, with the message the caller phrased. */
+export error InvalidFields { message: string }
+
+const maybeInvalidFieldName = (
+  error: Schema.SchemaError,
+): Option.Option<string> => {
+  const { issue } = error
+  const leadingIssue =
+    issue instanceof SchemaIssue.Composite
+      ? Effect.Array.head(issue.issues)
+      : Option.some(issue)
+  return Option.filter(
+    Option.flatMap(leadingIssue, (issue) =>
+      issue instanceof SchemaIssue.Pointer
+        ? Effect.Array.head(issue.path)
+        : Option.none(),
+    ),
+    Predicate.isString,
+  )
+}
+
+/**
+ * The validation as a program: names outside the schema and values the schema
+ * rejects both fail with `InvalidFields`, carrying the message the caller
+ * phrased. {@link validateFields} runs it for plain callers.
+ */
+export const checkFields = effect (
+  config: ValidateFieldsConfig,
+): void!InvalidFields => {
+  const allowedFieldNames = Object.keys(config.schema.fields)
+  const unknownFieldNames = Object.keys(config.values).filter(
+    (fieldName) => !allowedFieldNames.includes(fieldName),
+  )
+  if (Effect.Array.isArrayNonEmpty(unknownFieldNames)) {
+    const allowedDescription = Effect.Array.match(allowedFieldNames, {
+      onEmpty: () => `It takes no ${config.memberNounPlural}.`,
+      onNonEmpty: (names) =>
+        `Allowed ${config.memberNounPlural}: ${names.join(', ')}.`,
+    })
+    throw new InvalidFields({
+      message: config.unknownField(
+        Effect.Array.headNonEmpty(unknownFieldNames),
+        allowedDescription,
+      ),
+    })
+  }
+
+  Schema.decodeEffect(config.schema)(config.values) catch effect (error) => {
+    throw new InvalidFields({
+      message: config.invalidValues(
+        error.message,
+        maybeInvalidFieldName(error),
+      ),
+    })
+  }
+}
+
+/**
  * Validates a parsed string record against its schema: names outside the
  * schema and values the schema rejects both fail with an error the caller
  * phrases, and a rejected value's message also receives the failing field's
@@ -20,17 +90,5 @@ export type FieldsSchema =
  * attributes and frontmatter fields, so unknown-name detection and
  * decode-error wrapping cannot drift between the two.
  */
-// NOTE: It throws by contract, so the function itself stays plain TypeScript in
-// validateFields.plain.ts (Will, 2026-10-31); this keeps its public declaration.
-export const validateFields: (
-  config: Readonly<{
-    schema: FieldsSchema
-    values: Readonly<Record<string, string>>
-    memberNounPlural: string
-    unknownField: (fieldName: string, allowedDescription: string) => string
-    invalidValues: (
-      detail: string,
-      maybeFieldName: Option.Option<string>,
-    ) => string
-  }>,
-) => void = validateFieldsPlain
+export const validateFields = (config: ValidateFieldsConfig): void =>
+  runSync(checkFields(config))

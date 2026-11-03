@@ -1,8 +1,8 @@
 import { Option } from 'effect';
 import type { Plugin } from 'vite';
 import { MarkdownDocument } from '../ast/index.js';
-import type { FrontmatterDefinition } from './frontmatter.vibe';
-import type { NormalizeOptions } from './normalize.vibe';
+import { type FrontmatterDefinition } from './frontmatter.vibe';
+import { type NormalizeOptions } from './normalize.vibe';
 /** Options for {@link markdown}, {@link parseMarkdown}, and {@link parseMarkdownWithFrontmatter}. */
 export type MarkdownPluginOptions = NormalizeOptions & Readonly<{
     frontmatter?: FrontmatterDefinition | undefined;
@@ -12,6 +12,14 @@ export type ParsedMarkdown = Readonly<{
     document: MarkdownDocument;
     maybeFrontmatter: Option.Option<Readonly<Record<string, string>>>;
 }>;
+declare const InvalidPluginOptions_base: new <A extends Record<string, any> = {}>(args: import("effect/Types").VoidIfEmpty<{ readonly [P in keyof A as P extends "_tag" ? never : P]: A[P]; }>) => import("effect/Cause").YieldableError & {
+    readonly _tag: "InvalidPluginOptions";
+} & Readonly<A>;
+/** Plugin options outside the documented shape: a definition that is not a Schema struct. */
+export declare class InvalidPluginOptions extends InvalidPluginOptions_base<{
+    readonly message: string;
+}> {
+}
 /**
  * Parses markdown source into a typed {@link MarkdownDocument}. Throws on any
  * construct outside the markdown vocabulary, and on malformed options. The
@@ -38,3 +46,4 @@ export declare const parseMarkdownWithFrontmatter: (source: string, options?: Ma
  * document has no frontmatter block.
  */
 export declare const markdown: (options?: MarkdownPluginOptions) => Plugin;
+export {};

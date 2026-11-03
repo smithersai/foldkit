@@ -1,10 +1,10 @@
 import type { Position } from 'unist'
 
 import {
-  parseFrontmatterFields as parseFrontmatterFieldsPlain,
-  validateFrontmatterFields as validateFrontmatterFieldsPlain,
-} from './frontmatter.plain.js'
-import type { FieldsSchema } from './validateFields.vibe'
+  type FieldsSchema,
+  type InvalidFields,
+  checkFields,
+} from './validateFields.vibe'
 
 // FRONTMATTER
 
@@ -26,8 +26,106 @@ export type ParsedFrontmatterFields = Readonly<{
   fieldLineOffsets: ReadonlyMap<string, number>
 }>
 
-// NOTE: Both parsers throw by contract, so they stay plain TypeScript in
-// frontmatter.plain.ts (Will, 2026-10-31); these keep their public declarations.
+/** A frontmatter block outside the flat `key: value` shape. */
+export error InvalidFrontmatter { message: string }
+
+const FRONTMATTER_ENTRY_PATTERN = /^([A-Za-z][A-Za-z0-9_-]*):(.*)$/
+
+const sourceLocation = (
+  maybePosition: Position | undefined,
+  lineOffset: number,
+): string => {
+  const startLine = maybePosition?.start.line
+  if (startLine === undefined) {
+    return ''
+  } else {
+    return ` (line ${startLine + lineOffset})`
+  }
+}
+
+const isWrappedIn = (value: string, quote: string): boolean =>
+  value.length >= 2 && value.startsWith(quote) && value.endsWith(quote)
+
+const unquote = (value: string): string =>
+  isWrappedIn(value, '"') || isWrappedIn(value, "'")
+    ? value.slice(1, -1)
+    : value
+
+/**
+ * The parser as a program: one `key: value` pair per line, every value a
+ * string, failing with `InvalidFrontmatter` on nesting, lists, multi-line
+ * values and repeated fields. {@link parseFrontmatterFields} runs it for
+ * plain callers.
+ */
+export const parseFrontmatter = effect (
+  value: string,
+  maybePosition: Position | undefined,
+): ParsedFrontmatterFields!InvalidFrontmatter => {
+  // NOTE: collected in a Map so field names inherited from Object.prototype
+  // (`toString`, `constructor`) neither trip the duplicate check nor land
+  // anywhere but an own property of the returned record.
+  const fieldValues = new Map<string, string>()
+  const fieldLineOffsets = new Map<string, number>()
+
+  const entryLines = Effect.String.split(value, '\n')
+    .map((line, lineIndex) => ({ line, lineIndex }))
+    .filter(({ line }) => Effect.String.isNonEmpty(line.trim()))
+
+  for (const { line, lineIndex } of entryLines) {
+    const location = sourceLocation(maybePosition, lineIndex + 1)
+    const [, fieldName = '', rawFieldValue = ''] = match (
+      Effect.String.match(FRONTMATTER_ENTRY_PATTERN)(line)
+    ) {
+      when Option.Some(let entry): entry;
+      when Option.None: throw new InvalidFrontmatter({
+        message:
+          `Invalid frontmatter entry${location}. `
+          + 'Frontmatter supports flat `key: value` pairs of strings only. '
+          + 'Nesting, lists, and multi-line values are not supported.',
+      });
+    }
+    if (fieldValues.has(fieldName)) {
+      throw new InvalidFrontmatter({
+        message: `Duplicate frontmatter field "${fieldName}"${location}.`,
+      })
+    }
+    fieldValues.set(fieldName, unquote(rawFieldValue.trim()))
+    fieldLineOffsets.set(fieldName, lineIndex + 1)
+  }
+
+  return { fields: Object.fromEntries(fieldValues), fieldLineOffsets }
+}
+
+/**
+ * The validation as a program: unknown fields and values outside the schema
+ * fail with `InvalidFields`, naming the offender and its line.
+ * {@link validateFrontmatterFields} runs it for plain callers.
+ */
+export const validateFrontmatter = effect (
+  definition: FrontmatterDefinition,
+  parsed: ParsedFrontmatterFields,
+  maybePosition: Position | undefined,
+): void!InvalidFields => {
+  const fieldLocation = (fieldName: string): string =>
+    match (Option.fromNullishOr(parsed.fieldLineOffsets.get(fieldName))) {
+      when Option.Some(let lineOffset): sourceLocation(maybePosition, lineOffset);
+      when Option.None: sourceLocation(maybePosition, 0);
+    }
+
+  try checkFields({
+    schema: definition,
+    values: parsed.fields,
+    memberNounPlural: 'fields',
+    unknownField: (fieldName, allowedDescription) =>
+      `Unknown frontmatter field "${fieldName}"${fieldLocation(fieldName)}. `
+      + allowedDescription,
+    invalidValues: (detail, maybeFieldName) =>
+      `Invalid frontmatter${match (maybeFieldName) {
+        when Option.Some(let fieldName): fieldLocation(fieldName);
+        when Option.None: sourceLocation(maybePosition, 0);
+      }}. ${detail}`,
+  })
+}
 
 /**
  * Parses a frontmatter block's raw text into its string fields. The supported
@@ -35,18 +133,18 @@ export type ParsedFrontmatterFields = Readonly<{
  * string, with optional surrounding quotes for values that contain special
  * characters. Nesting, lists, and multi-line values all fail with guidance.
  */
-export const parseFrontmatterFields: (
+export const parseFrontmatterFields = (
   value: string,
   maybePosition: Position | undefined,
-) => ParsedFrontmatterFields = parseFrontmatterFieldsPlain
+): ParsedFrontmatterFields => runSync(parseFrontmatter(value, maybePosition))
 
 /**
  * Validates parsed frontmatter fields against the plugin's frontmatter schema.
  * Unknown fields and values outside the schema both fail with an error naming
  * the offender and its line, mirroring how island attributes are validated.
  */
-export const validateFrontmatterFields: (
+export const validateFrontmatterFields = (
   definition: FrontmatterDefinition,
   parsed: ParsedFrontmatterFields,
   maybePosition: Position | undefined,
-) => void = validateFrontmatterFieldsPlain
+): void => runSync(validateFrontmatter(definition, parsed, maybePosition))
