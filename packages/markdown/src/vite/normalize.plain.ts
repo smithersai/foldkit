@@ -35,18 +35,9 @@ import {
   Text,
   ThematicBreak,
 } from '../ast/index.js'
-import type { IslandDefinition, IslandDefinitions } from '../island/index.js'
-import { validateFields } from './validateFields.js'
-
-/**
- * Options for {@link normalizeRoot}. `islands`, when provided, maps each
- * allowed directive name to the schema for its attributes; unknown names,
- * unknown attributes, and attribute values outside the schema all fail with
- * an error naming the offender.
- */
-export type NormalizeOptions = Readonly<{
-  islands?: IslandDefinitions | undefined
-}>
+import type { IslandDefinition } from '../island/index.js'
+import type { NormalizeOptions } from './normalize.vibe'
+import { validateFields } from './validateFields.plain.js'
 
 type PositionedNode = Readonly<{
   type: string

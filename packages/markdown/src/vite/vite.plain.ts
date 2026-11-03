@@ -8,13 +8,13 @@ import { unified } from 'unified'
 import type { Plugin } from 'vite'
 
 import { MarkdownDocument, encodeDocument } from '../ast/index.js'
-import type { FrontmatterDefinition } from './frontmatter.js'
 import {
   parseFrontmatterFields,
   validateFrontmatterFields,
-} from './frontmatter.js'
-import { normalizeRoot } from './normalize.js'
-import type { NormalizeOptions } from './normalize.js'
+} from './frontmatter.plain.js'
+import type { FrontmatterDefinition } from './frontmatter.vibe'
+import { normalizeRoot } from './normalize.plain.js'
+import type { MarkdownPluginOptions, ParsedMarkdown } from './vite.vibe'
 
 // NOTE: remark-frontmatter is included so that YAML frontmatter parses as one
 // `yaml` node. With a `frontmatter` schema configured it becomes the document's
@@ -27,12 +27,6 @@ const processor = unified()
   .use(remarkGfm)
   .use(remarkDirective)
   .freeze()
-
-/** Options for {@link markdown}, {@link parseMarkdown}, and {@link parseMarkdownWithFrontmatter}. */
-export type MarkdownPluginOptions = NormalizeOptions &
-  Readonly<{
-    frontmatter?: FrontmatterDefinition | undefined
-  }>
 
 const isSchemaStruct = (value: unknown): boolean =>
   Schema.isSchema(value) && 'fields' in value
@@ -57,12 +51,6 @@ const validateMarkdownPluginOptions = (
   }
   return options
 }
-
-/** A parsed document together with its frontmatter fields, when it has any. */
-export type ParsedMarkdown = Readonly<{
-  document: MarkdownDocument
-  maybeFrontmatter: Option.Option<Readonly<Record<string, string>>>
-}>
 
 const isYamlNode = (node: RootContent): node is Yaml => node.type === 'yaml'
 

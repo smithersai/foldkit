@@ -1,13 +1,8 @@
 import { Array, Option, Predicate, Schema, SchemaIssue, pipe } from 'effect'
 
-// FIELD VALIDATION
+import type { FieldsSchema } from './validateFields.vibe'
 
-/**
- * A struct schema describing a flat record of string values, the shape shared
- * by island attribute definitions and frontmatter definitions.
- */
-export type FieldsSchema = Schema.Struct<Schema.Struct.Fields> &
-  Readonly<{ DecodingServices: never; EncodingServices: never }>
+// FIELD VALIDATION
 
 const maybeInvalidFieldName = (error: unknown): Option.Option<string> =>
   pipe(

@@ -1,18 +1,13 @@
 import { Array, Option, String, pipe } from 'effect'
 import type { Position } from 'unist'
 
-import type { FieldsSchema } from './validateFields.js'
-import { validateFields } from './validateFields.js'
+import type {
+  FrontmatterDefinition,
+  ParsedFrontmatterFields,
+} from './frontmatter.vibe'
+import { validateFields } from './validateFields.plain.js'
 
 // FRONTMATTER
-
-/**
- * Schema for a document's frontmatter: a struct that validates the flat string
- * fields at build time. Values stay the raw strings the block declares; where
- * an app needs typed values, decode the exported `frontmatter` object with the
- * same schema at runtime.
- */
-export type FrontmatterDefinition = FieldsSchema
 
 const FRONTMATTER_ENTRY_PATTERN = /^([A-Za-z][A-Za-z0-9_-]*):(.*)$/
 
@@ -35,16 +30,6 @@ const unquote = (value: string): string =>
   isWrappedIn(value, '"') || isWrappedIn(value, "'")
     ? value.slice(1, -1)
     : value
-
-/**
- * A frontmatter block's parsed string fields, alongside each field's line
- * offset within the block so validation errors can point at the offending
- * line rather than the opening fence.
- */
-export type ParsedFrontmatterFields = Readonly<{
-  fields: Readonly<Record<string, string>>
-  fieldLineOffsets: ReadonlyMap<string, number>
-}>
 
 /**
  * Parses a frontmatter block's raw text into its string fields. The supported
