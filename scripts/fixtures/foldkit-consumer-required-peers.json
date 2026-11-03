@@ -1,0 +1,6 @@
+{
+  "seed": 413973,
+  "runs": 500,
+  "origin": "packed SSR consumer's legacy peer mode omitted platform-node4.1.1's required Redis peer",
+  "oracle": "A consumer installed with peer resolution disabled declares every required runtime peer at its declared range, excludes peers whose optional metadata is true, preserves the input manifest, and keeps explicit fixture version precedence."
+}
