@@ -1,0 +1,6 @@
+{
+  "source": "foldkit relayRegistryTrust: bigint lstat canonicalization and confirmation",
+  "inode": "9007199254740992",
+  "replacementInode": "9007199254740993",
+  "expected": "has ownership that cannot be verified"
+}

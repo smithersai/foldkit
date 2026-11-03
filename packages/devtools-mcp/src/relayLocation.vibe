@@ -134,7 +134,7 @@ export const configuredRelayUrl = (
 export const resolveRelayTargets = (
   settings: Settings,
   registryReader: RelayRegistryReader,
-): ReadonlyArray<RelayTarget>!never!RelayRegistryServices | ChildProcessSpawner.ChildProcessSpawner =>
+): ReadonlyArray<RelayTarget>!never!(RelayRegistryServices | ChildProcessSpawner.ChildProcessSpawner) =>
   match (configuredRelayUrl(settings)) {
     when Option.Some(let url): do {
       // The TypeScript factory constructs this one array before any run.
