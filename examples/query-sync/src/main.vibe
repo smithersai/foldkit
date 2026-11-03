@@ -61,29 +61,30 @@ const sortingFromParam = ((): infer _ => {
       SchemaTransformation.transform({
         decode: (
           maybeRaw: Option<string>,
-        ): Sorting => match (maybeRaw) {
-          when Option.None: (Sorting.Unsorted());
-          when Option.Some(let value): do {
-            const parts = Str.split(value, SORT_PARAM_SEPARATOR)
-            Option.all({
-              column: pipe(
-                parts,
-                Arr.get(0),
-                Option.flatMap(decodeColumn),
-              ),
-              direction: pipe(
-                parts,
-                Arr.get(1),
-                Option.flatMap(decodeDirection),
-              ),
-            })
-              .map(({ column, direction }) => match (direction) {
-                when 'Ascending': Sorting.Ascending({ column });
-                when 'Descending': Sorting.Descending({ column });
+        ): Sorting =>
+          match (maybeRaw) {
+            when Option.None: (Sorting.Unsorted());
+            when Option.Some(let value): do {
+              const parts = Str.split(value, SORT_PARAM_SEPARATOR)
+              Option.all({
+                column: pipe(
+                  parts,
+                  Arr.get(0),
+                  Option.flatMap(decodeColumn),
+                ),
+                direction: pipe(
+                  parts,
+                  Arr.get(1),
+                  Option.flatMap(decodeDirection),
+                ),
               })
-              .getOrElse(() => Sorting.Unsorted())
-          };
-        },
+                .map(({ column, direction }) => match (direction) {
+                  when 'Ascending': Sorting.Ascending({ column });
+                  when 'Descending': Sorting.Descending({ column });
+                })
+                .getOrElse(() => Sorting.Unsorted())
+            };
+          },
         encode: (sorting): Option<string> =>
           Sorting.match<Option<string>>(sorting, {
             Unsorted: () => Option.none(),

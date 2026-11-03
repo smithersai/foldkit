@@ -238,25 +238,26 @@ export const update = (model: Model, message: Message): infer _ =>
 
     ClickedLocation: (
       { locationId },
-    ) => match (findLocation(model, locationId)) {
-      when Option.None: ({ model });
-      when Option.Some(let matchedOptionValue): do {
-        const { lng, lat } = matchedOptionValue
-        ;({
-          model: modifyFields(model, {
-            maybeSelectedLocationId: () => Option.some(locationId),
-          }),
-          commands: [
-            FlyTo({
-              maybeHostId: model.maybeMapHostId,
-              lng,
-              lat,
-              zoom: SELECTED_LOCATION_ZOOM,
+    ) =>
+      match (findLocation(model, locationId)) {
+        when Option.None: ({ model });
+        when Option.Some(let matchedOptionValue): do {
+          const { lng, lat } = matchedOptionValue
+          ;({
+            model: modifyFields(model, {
+              maybeSelectedLocationId: () => Option.some(locationId),
             }),
-          ],
-        })
-      };
-    },
+            commands: [
+              FlyTo({
+                maybeHostId: model.maybeMapHostId,
+                lng,
+                lat,
+                zoom: SELECTED_LOCATION_ZOOM,
+              }),
+            ],
+          })
+        };
+      },
 
     UpdatedSearchQuery: ({ value }) => ({
       model: modifyFields(model, { searchQuery: () => value }),

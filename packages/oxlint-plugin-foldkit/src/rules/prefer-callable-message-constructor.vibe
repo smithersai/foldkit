@@ -78,7 +78,7 @@ export const preferCallableMessageConstructor = Rule.define({
       'Construct Messages via their callable Schema constructor instead of typing or casting an object literal.',
   }),
   create: effect () => {
-    const ctx = try RuleContext()
+    const ctx = try RuleContext
     return {
       VariableDeclarator: effect (node: ESTree.Node) => {
         if (

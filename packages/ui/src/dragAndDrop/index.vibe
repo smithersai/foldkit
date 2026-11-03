@@ -272,7 +272,7 @@ const resolveKeyboardMoveTarget = effect (
   }>,
 ): typeof Message.CompletedResolveKeyboardMove.Type!! => {
   provide ExperimentalBrowserDocument.layer {
-    const documentService = try Experimental.Document.Document()
+    const documentService = try Experimental.Document.Document
     const hostDocument = try documentService.current
     return try Effect.sync((): infer _ => match (config.direction) {
       when 'Down' or 'Right': resolveWithinContainer(hostDocument, {
@@ -613,7 +613,7 @@ export const subscriptions = Subscription.make<Model, Message>()((
           BrowserStream.fromEventListenerDocument('pointermove').pipe(
             Stream.mapEffect(effect event => {
               provide ExperimentalBrowserDocument.layer {
-                const documentService = try Experimental.Document.Document()
+                const documentService = try Experimental.Document.Document
                 const hostDocument = try documentService.current
                 return try Effect.sync((): infer _ =>
                   Message.MovedPointer({
@@ -671,7 +671,7 @@ export const subscriptions = Subscription.make<Model, Message>()((
       dependenciesToStream: ({ dragActivity }): infer _ =>
         Stream.unwrap(effect {
           provide ExperimentalBrowserDocument.layer {
-            const documentService = try Experimental.Document.Document()
+            const documentService = try Experimental.Document.Document
             const hostDocument = try documentService.current
             return Stream.when(
               Dom.streamFromEventFilterMapPreventDefault({
@@ -730,28 +730,19 @@ export const subscriptions = Subscription.make<Model, Message>()((
           Stream.callback<typeof Message.AdvancedAutoScrollFrame.Type>(
             effect (queue) => {
               provide Layer.mergeAll(ExperimentalBrowserAnimations.layer, ExperimentalBrowserWindow.layer) {
-                const windowService = try Experimental.Window.Window()
+                const windowService = try Experimental.Window.Window
                 const browserWindow = try windowService.current
-                const animations = try Experimental.Animations.Animations()
-                try Effect.acquireRelease(
-                  Effect.sync((): infer _ => {
-                    const ref: { cancel: () => void } = {
-                      cancel: (): void => {},
-                    }
-                    const step = (): void => {
-                      autoScroll(browserWindow, readDependencies().clientY)
-                      Queue.offerUnsafe(
-                        queue,
-                        Message.AdvancedAutoScrollFrame(),
-                      )
-                      ref.cancel = animations.onNextFrame(step)
-                    }
-                    ref.cancel = animations.onNextFrame(step)
-                    return ref
-                  }),
-                  effect ref => try Effect.sync((): infer _ => ref.cancel()),
-                )
-                try Effect.never
+                const animations = try Experimental.Animations.Animations
+                while (true) {
+                  try animations.nextFrame
+                  try Effect.sync((): infer _ => {
+                    autoScroll(browserWindow, readDependencies().clientY)
+                    Queue.offerUnsafe(
+                      queue,
+                      Message.AdvancedAutoScrollFrame(),
+                    )
+                  })
+                }
               }
             },
           ),

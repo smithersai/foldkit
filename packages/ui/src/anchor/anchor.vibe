@@ -177,21 +177,22 @@ const findWrapperInsideDialog = (element: Element): Option<Element> => {
  *  backdrop rendered directly in the dialog goes into the dialog's portal
  *  root instead. Designed to be called from inside an `OnMount` action,
  *  like `portalToContainingRoot`. */
-export const portalBackdrop = (element: Element): (() => void) => match (findWrapperInsideDialog(element)) {
-  when Option.None: portalToContainingRoot(element);
-  when Option.Some(let wrapper): do {
-    // NOTE: positioned elements without a z-index paint in tree order, and
-    // every non-positioned element paints before them. Placed directly
-    // before the positioned wrapper, the backdrop paints over the dialog
-    // panel and its content but under the wrapper and the trigger inside it.
-    // The dialog portal root cannot give both: appended, the backdrop would
-    // cover the trigger too, and prepended, the dialog panel would cover the
-    // backdrop. `closest` and `parentElement` must be read before the move.
-    wrapper.before(element)
-    const optionResult24 = (): infer _ => element.remove()
-    optionResult24
-  };
-}
+export const portalBackdrop = (element: Element): (() => void) =>
+  match (findWrapperInsideDialog(element)) {
+    when Option.None: portalToContainingRoot(element);
+    when Option.Some(let wrapper): do {
+      // NOTE: positioned elements without a z-index paint in tree order, and
+      // every non-positioned element paints before them. Placed directly
+      // before the positioned wrapper, the backdrop paints over the dialog
+      // panel and its content but under the wrapper and the trigger inside it.
+      // The dialog portal root cannot give both: appended, the backdrop would
+      // cover the trigger too, and prepended, the dialog panel would cover the
+      // backdrop. `closest` and `parentElement` must be read before the move.
+      wrapper.before(element)
+      const optionResult24 = (): infer _ => element.remove()
+      optionResult24
+    };
+  }
 
 const isInsideFixedContainer = (element: Element | null): boolean =>
   element !== null

@@ -31,6 +31,8 @@ type Probe = Readonly<{
   afterSnippets: SnippetMaps
   beforePosts: PostMaps
   afterPosts: PostMaps
+  beforeServer: Readonly<{ readServerUrl: () => string | undefined }>
+  afterServer: Readonly<{ readServerUrl: () => string | undefined }>
   beforeEnv: Readonly<{ canaryCommit: string | undefined }>
   afterEnv: Readonly<{ canaryCommit: string | undefined }>
 }>
@@ -73,6 +75,21 @@ test('sibling TypeScript boundaries preserve Vite selection, queries, value iden
       'export const canaryCommit = ' + corpus.envExpression,
     )
     write(
+      'src/server.before.ts',
+      'export const readServerUrl = (): string | undefined => import.meta.env.VITE_SERVER_URL',
+    )
+    write(
+      'src/config.env.ts',
+      readFileSync(
+        join(website, '../typing-game/client/src/config.env.ts'),
+        'utf8',
+      ),
+    )
+    write(
+      'src/server.after.vibe',
+      "export { readServerUrl } from './config.env.ts'",
+    )
+    write(
       'src/markdown/snippets.globs.ts',
       readFileSync(join(website, 'src/markdown/snippets.globs.ts'), 'utf8'),
     )
@@ -103,6 +120,8 @@ test('sibling TypeScript boundaries preserve Vite selection, queries, value iden
         "export * as afterSnippets from './src/markdown/after.vibe'",
         "export * as beforePosts from './src/page/blog/before.ts'",
         "export * as afterPosts from './src/page/blog/after.vibe'",
+        "export * as beforeServer from './src/server.before.ts'",
+        "export * as afterServer from './src/server.after.vibe'",
         "export * as beforeEnv from './src/env.before.ts'",
         "export * as afterEnv from './src/env.after.vibe'",
       ].join('\n'),
@@ -209,6 +228,8 @@ test('sibling TypeScript boundaries preserve Vite selection, queries, value iden
         envPrefix: 'FOLDKIT_TEST_NO_EXTERNAL_ENV_',
         logLevel: 'silent',
         define: {
+          'import.meta.env.VITE_SERVER_URL':
+            value === undefined ? 'undefined' : JSON.stringify(value),
           'import.meta.env.VITE_FOLDKIT_CANARY_COMMIT':
             value === undefined ? 'undefined' : JSON.stringify(value),
         },
@@ -231,6 +252,10 @@ test('sibling TypeScript boundaries preserve Vite selection, queries, value iden
       const result: Probe = await import(
         pathToFileURL(join(outDir, 'entry.mjs')).href
       )
+      for (const _ of [0, 1, 2]) {
+        expect(result.beforeServer.readServerUrl()).toBe(value)
+        expect(result.afterServer.readServerUrl()).toBe(value)
+      }
       expect(Object.keys(result.beforeSnippets.rawByPath)).toEqual(
         Object.keys(result.afterSnippets.rawByPath),
       )

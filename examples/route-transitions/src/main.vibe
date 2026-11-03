@@ -561,13 +561,14 @@ const paintingView = (
   paintingId: number,
   paintingStatus: PaintingStatus,
   h: HtmlBuilder<Message>,
-): Html => match (findPaintingWithIndex(paintingId)) {
-  when Option.None: (missingPaintingView(paintingId, h));
-  when Option.Some(let matchedOptionValue): do {
-    const { painting, paintingIndex } = matchedOptionValue
-    foundPaintingView(painting, paintingIndex, paintingStatus, h)
-  };
-}
+): Html =>
+  match (findPaintingWithIndex(paintingId)) {
+    when Option.None: (missingPaintingView(paintingId, h));
+    when Option.Some(let matchedOptionValue): do {
+      const { painting, paintingIndex } = matchedOptionValue
+      foundPaintingView(painting, paintingIndex, paintingStatus, h)
+    };
+  }
 
 const studioView = (
   studioDraft: string,

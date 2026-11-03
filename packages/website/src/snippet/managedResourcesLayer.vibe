@@ -14,19 +14,20 @@ service ChessEngineService: ChessEngine {}
 // acquireRelease terminates it.
 const engineLayer: Layer.Layer<ChessEngineService> = Layer.effect(
   ChessEngineService,
-) {
-  const worker = try Effect.acquireRelease(
-    sync(() => new globalThis.Worker('/chess-engine-worker.js')),
-    worker => sync(worker => worker.terminate(), worker),
-  )
+  effect {
+    const worker = try Effect.acquireRelease(
+      sync(() => new globalThis.Worker('/chess-engine-worker.js')),
+      worker => sync(worker => worker.terminate(), worker),
+    )
 
-  return {
-    bestMove: (fen: string): string!! => {
-      // Your engine protocol goes here: post the FEN to the worker and
-      // resolve with its best-move reply.
-    },
-  }
-}
+    return {
+      bestMove: (fen: string): string!! => {
+        // Your engine protocol goes here: post the FEN to the worker and
+        // resolve with its best-move reply.
+      },
+    }
+  },
+)
 
 // 1. The Managed Resource holds the bare service value, with no wrapper.
 const Engine = ManagedResource.tag<ChessEngine>()('ChessEngine')

@@ -475,7 +475,7 @@ export const ApplyScroll = Command.define('ApplyScroll', {
   execute: effect ({ id, request, version }) => {
     provide ExperimentalBrowserDocument.layer {
       const { isHTMLElement: isHtmlElement } = try Experimental.Document
-        .Document()
+        .Document
       try Render.afterCommit
       const containers = mountedContainers.get(id)
       if (containers === undefined || containers.size !== 1) {
@@ -1181,10 +1181,10 @@ const observeVirtualList = (
       ExperimentalBrowserMutationObserver.layer,
     ) {
       const { isHTMLElement: isHtmlElement } = try Experimental.Document
-        .Document()
-      const resizeObserver = try Experimental.ResizeObserver.ResizeObserver()
+        .Document
+      const resizeObserver = try Experimental.ResizeObserver.ResizeObserver
       const mutationObserverService = try Experimental.MutationObserver
-        .MutationObserver()
+        .MutationObserver
 
       try Effect.acquireRelease(
         effect {

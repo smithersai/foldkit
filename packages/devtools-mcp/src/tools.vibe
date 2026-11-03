@@ -227,12 +227,12 @@ error InvalidToolInput {
   message: string
 }
 
-const decodeInput = <Input>(
+const decodeInput = effect <Input>(
   schema: Schema.Codec<Input>,
   rawInput: unknown,
 ): Input!InvalidToolInput => {
   try {
-    return Schema.decodeUnknownEffect(schema)(rawInput)
+    return try Schema.decodeUnknownEffect(schema)(rawInput)
   } catch (error) {
     throw new InvalidToolInput({ message: `Invalid input: ${error.message}` })
   }
@@ -251,19 +251,21 @@ const responseToToolResult = (response: typeof Response.Type): ToolResult =>
     ? formatError(response.reason)
     : formatResult(response)
 
-const callRuntimeRequest = (
+const callRuntimeRequest = effect (
   relayClient: RelayClient,
   explicitRuntimeId: string | undefined,
   buildRequest: () => typeof Request.Type,
 ): ToolResult!! => {
   try {
-    const response = relayClient.sendRequest(
+    const response = try relayClient.sendRequest(
       buildRequest(),
       Option.fromNullishOr(explicitRuntimeId),
     )
     return responseToToolResult(response)
   } catch (error) {
-    return formatError(sync((failure: Error) => errorReason(failure), error))
+    return formatError(
+      try sync((failure: Error) => errorReason(failure), error),
+    )
   }
 }
 
@@ -279,17 +281,19 @@ const runRuntimeTool = <Input extends RuntimeToolInput>(
   buildRequest: (input: Input) => typeof Request.Type,
   relayClient: RelayClient,
 ): (rawInput: unknown) => ToolResult!! =>
-(rawInput: unknown): ToolResult!! => {
+effect (rawInput: unknown): ToolResult!! => {
   try {
-    const input = decodeInput(inputSchema, rawInput)
+    const input = try decodeInput(inputSchema, rawInput)
 
-    return callRuntimeRequest(
+    return try callRuntimeRequest(
       relayClient,
       input.runtime_id,
       () => buildRequest(input),
     )
   } catch (error) {
-    return formatError(sync((failure: Error) => errorReason(failure), error))
+    return formatError(
+      try sync((failure: Error) => errorReason(failure), error),
+    )
   }
 }
 
@@ -496,8 +500,10 @@ export const buildTools = (
             runtimes: EffectArray.map(listed, listedRuntimeOutput),
           })
         ),
-        Effect.catch(error =>
-          formatError(sync((failure: Error) => errorReason(failure), error))
+        Effect.catch(effect error =>
+          formatError(
+            try sync((failure: Error) => errorReason(failure), error),
+          )
         ),
       ),
   },

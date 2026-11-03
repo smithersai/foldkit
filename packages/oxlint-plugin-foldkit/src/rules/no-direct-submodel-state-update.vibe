@@ -856,7 +856,7 @@ export const noDirectSubmodelStateUpdate = Rule.define({
       'Keep Submodel state changes inside child-owned update capabilities.',
   }),
   create: effect () => {
-    const ctx = try RuleContext()
+    const ctx = try RuleContext
     const scopes = ctx.sourceCode.scopeManager?.scopes
     const references = scopes === undefined
       ? undefined

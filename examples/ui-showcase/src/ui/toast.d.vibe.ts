@@ -1362,21 +1362,7 @@ export declare const Toast: {
             readonly __subscription: never;
         };
     };
-    readonly swipeOffset: (swipeState: {
-        readonly _tag: "Idle";
-    } | {
-        readonly _tag: "Dismissing";
-        readonly offsetX: number;
-        readonly direction: "Left" | "Right";
-    } | {
-        readonly _tag: "Dragging";
-        readonly pointerId: number;
-        readonly startX: number;
-        readonly currentX: number;
-    } | {
-        readonly _tag: "Settling";
-        readonly offsetX: number;
-    }) => number;
+    readonly swipeOffset: typeof import("../../node_modules/@foldkit/ui/dist/toast/update").swipeOffset;
     readonly view: import("foldkit/submodel").View<{
         readonly id: string;
         readonly defaultDuration: import("effect/Duration").Duration;

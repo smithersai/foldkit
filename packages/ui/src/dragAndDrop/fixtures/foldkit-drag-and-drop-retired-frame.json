@@ -1,0 +1,8 @@
+{
+  "inbox": [23, 61, 66],
+  "rule": "Accepted details 261/262 retire onNextFrame; frame programs are cold and interruption cancels the pending registration.",
+  "seed": 620261,
+  "runs": 100,
+  "source": "packages/ui/src/dragAndDrop/index.vibe",
+  "before": "                try Effect.acquireRelease(\n                  Effect.sync((): infer _ => {\n                    const ref: { cancel: () => void } = {\n                      cancel: (): void => {},\n                    }\n                    const step = (): void => {\n                      autoScroll(browserWindow, readDependencies().clientY)\n                      Queue.offerUnsafe(\n                        queue,\n                        Message.AdvancedAutoScrollFrame(),\n                      )\n                      ref.cancel = animations.onNextFrame(step)\n                    }\n                    ref.cancel = animations.onNextFrame(step)\n                    return ref\n                  }),\n                  effect ref => try Effect.sync((): infer _ => ref.cancel()),\n                )\n                try Effect.never"
+}

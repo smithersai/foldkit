@@ -398,7 +398,7 @@ export const lazyViewStableReferences = Rule.define({
       'Keep lazy slots and their view functions referentially stable so the lazy cache can hit.',
   }),
   create: effect () => {
-    const ctx = try RuleContext()
+    const ctx = try RuleContext
     const scopes = ctx.sourceCode.scopeManager?.scopes
     const references = scopes === undefined
       ? undefined

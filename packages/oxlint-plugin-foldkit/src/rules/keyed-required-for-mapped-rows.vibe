@@ -315,7 +315,7 @@ export const keyedRequiredForMappedRows = Rule.define({
       'Wrap identity-bearing mapped row elements in keyed so the runtime patches the right rows.',
   }),
   create: effect () => {
-    const ctx = try RuleContext()
+    const ctx = try RuleContext
     const scopeManager = ctx.sourceCode.scopeManager
     const references = scopeManager === undefined
       ? undefined

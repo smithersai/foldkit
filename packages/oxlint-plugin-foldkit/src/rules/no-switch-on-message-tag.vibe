@@ -35,7 +35,7 @@ export const noSwitchOnMessageTag = Rule.define({
       "Dispatch on tagged Messages and state with the union's match helper or Effect Match instead of switching on _tag.",
   }),
   create: effect () => {
-    const ctx = try RuleContext()
+    const ctx = try RuleContext
     return {
       SwitchStatement: effect (node: ESTree.Node) => {
         if (!isSwitchStatement(node)) {

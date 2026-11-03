@@ -6,10 +6,11 @@ type Commands = ReadonlyArray<Command.Command<Message>>
 
 const commandsForTransition = (
   transition: Transition.Transition<AppRoute>,
-): Commands => match (Transition.entered(transition, 'Person')) {
-  when { _tag: "None" }: [];
-  when { _tag: "Some", value: let optionValue1 }: do {
-    const { personId } = optionValue1
-    ;[FetchPerson({ personId })]
-  };
-}
+): Commands =>
+  match (Transition.entered(transition, 'Person')) {
+    when { _tag: "None" }: [];
+    when { _tag: "Some", value: let optionValue1 }: do {
+      const { personId } = optionValue1
+      ;[FetchPerson({ personId })]
+    };
+  }

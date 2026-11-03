@@ -298,7 +298,7 @@ export const preferCommandMapmessage = Rule.define({
       'Lift a Command result Message with Command.mapMessage or Command.mapMessages so Story and Scene resolve can recover it.',
   }),
   create: effect () => {
-    const ctx = try RuleContext()
+    const ctx = try RuleContext
     const scopes = ctx.sourceCode.scopeManager?.scopes
     const references = scopes === undefined
       ? undefined

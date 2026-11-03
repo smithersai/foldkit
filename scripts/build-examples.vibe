@@ -24,7 +24,7 @@ const checked = effect <A, E extends { readonly cause?: unknown }, R>(
 }
 
 const buildPaths = effect (): BuildPaths!never!Path.Path => {
-  const path = try Path.Path()
+  const path = try Path.Path
   const script = try checked(path.fromFileUrl(new URL(import.meta.url)))
   const root = path.resolve(path.dirname(script), '..')
   return {
@@ -41,7 +41,7 @@ const buildIdForEmbed = effect () => {
     when Option.None: '';
   }
   if (value !== '') return value
-  const crypto = try Experimental.Crypto.Crypto()
+  const crypto = try Experimental.Crypto.Crypto
   const uuid = try checked(crypto.randomUUIDv4())
   return uuid.includes('-')
     ? uuid
@@ -56,7 +56,7 @@ const runExampleCommand = effect (
   commandArguments: ReadonlyArray<string>,
   environment: Readonly<Record<string, string>> = {},
 ) => {
-  const spawner = try ChildProcessSpawner.ChildProcessSpawner()
+  const spawner = try ChildProcessSpawner.ChildProcessSpawner
   try Effect.scoped(effect {
     const child = try checked(spawner.spawn(ChildProcess.make(
       'pnpm',
@@ -85,8 +85,8 @@ const runExampleCommand = effect (
 const collectHtmlPaths = effect (
   directory: string,
 ): ReadonlyArray<string>!never!FileSystem.FileSystem | Path.Path => {
-  const fs = try FileSystem.FileSystem()
-  const path = try Path.Path()
+  const fs = try FileSystem.FileSystem
+  const path = try Path.Path
   const files: Array<string> = []
   for (const entry of try checked(fs.readDirectoryEntries(directory))) {
     const entryPath = path.join(directory, entry.name)
@@ -100,8 +100,8 @@ const collectHtmlPaths = effect (
 }
 
 const injectBridgeScript = effect (paths: BuildPaths, outputDir: string) => {
-  const fs = try FileSystem.FileSystem()
-  const path = try Path.Path()
+  const fs = try FileSystem.FileSystem
+  const path = try Path.Path
   try checked(fs.copyFile(paths.bridge, path.resolve(outputDir, 'bridge.js')))
   for (const htmlPath of try collectHtmlPaths(outputDir)) {
     const bytes = try checked(fs.readFile(htmlPath))
@@ -152,8 +152,8 @@ const buildPrerenderedExample = effect (
   slug: string,
   outputDir: string,
 ) => {
-  const fs = try FileSystem.FileSystem()
-  const path = try Path.Path()
+  const fs = try FileSystem.FileSystem
+  const path = try Path.Path
   try checked(
     fs.remove(path.resolve(exampleDir, 'dist'), {
       recursive: true,
@@ -185,7 +185,7 @@ const buildExample = effect (
   slug: string,
   livePreview: 'Spa' | 'Prerendered',
 ) => {
-  const path = try Path.Path()
+  const path = try Path.Path
   try Console.log(`Building example: ${slug}`)
   const exampleDir = path.resolve(paths.examples, slug)
   const outputDir = path.resolve(paths.output, slug)
@@ -211,8 +211,8 @@ const requestedSlugs = (args: ReadonlyArray<string>): ReadonlySet<string> => {
 const reported = Ref.makeUnsafe(false)
 
 const main = effect () => {
-  const fs = try FileSystem.FileSystem()
-  const stdio = try Stdio.Stdio()
+  const fs = try FileSystem.FileSystem
+  const stdio = try Stdio.Stdio
   const only = requestedSlugs(try stdio.args)
   const paths = try buildPaths()
   const exists = try fs.exists(paths.output) catch () => false

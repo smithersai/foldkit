@@ -19,7 +19,7 @@ export service RoomsClient {
 
 const ProtocolLive = Layer.unwrap(
   effect {
-    const { VITE_SERVER_URL } = try ViteEnvConfig()
+    const { VITE_SERVER_URL } = try ViteEnvConfig
     const url = `${VITE_SERVER_URL}/rpc`
     return RpcClient.layerProtocolHttp({ url })
   },

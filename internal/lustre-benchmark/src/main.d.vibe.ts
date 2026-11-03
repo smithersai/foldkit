@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Schema } from 'effect';
 import { Runtime, type Update } from 'foldkit';
 import { Document, type HtmlBuilder } from 'foldkit/html';
 declare const Todo: Schema.Struct<{

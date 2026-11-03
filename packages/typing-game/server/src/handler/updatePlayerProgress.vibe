@@ -9,7 +9,7 @@ export const updatePlayerProgress = (
   progressByGamePlayerRef: SubscriptionRef<ProgressByGamePlayer>,
 ): infer _ =>
 effect (payload: Rpc.Payload<typeof Shared.updatePlayerProgressRpc>) => {
-  const updatedAt = try Clock.currentTimeMillis()
+  const updatedAt = try Clock.currentTimeMillis
 
   const gamePlayer = Shared.GamePlayer.make({
     gameId: payload.gameId,

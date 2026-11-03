@@ -1,5 +1,5 @@
 import { Data } from 'effect';
-import { type Example } from './examples.js';
+import { type Example } from './examples.ts';
 export declare const RENDERING_VALUES: readonly ['spa', 'ssg', 'ssr'];
 export type Rendering = (typeof RENDERING_VALUES)[number];
 export declare const renderings: ReadonlyArray<{

@@ -310,26 +310,27 @@ export const update = (model: Model, message: Message): infer _ =>
         },
       }),
 
-    ClickedPause: (): infer _ => match (model.playbackState) {
-      when { _tag: 'Playing' }: do {
-        const { noteSequence, currentNoteIndex } = model.playbackState
-        const nextGeneration = model.generation + 1
-        ;({
-          model: modifyFields(model, {
-            playbackState: (): infer _ =>
-              PlaybackState.Paused({
-                noteSequence,
-                currentNoteIndex,
-              }),
-            highlightPhase: (): infer _ => 'PauseMessage',
-            generation: (): infer _ => nextGeneration,
-            messageLog: prependToLog('ClickedPause'),
-          }),
-          commands: [DelayAdvancePhase({ generation: nextGeneration })],
-        })
-      };
-      default: ({ model });
-    },
+    ClickedPause: (): infer _ =>
+      match (model.playbackState) {
+        when { _tag: 'Playing' }: do {
+          const { noteSequence, currentNoteIndex } = model.playbackState
+          const nextGeneration = model.generation + 1
+          ;({
+            model: modifyFields(model, {
+              playbackState: (): infer _ =>
+                PlaybackState.Paused({
+                  noteSequence,
+                  currentNoteIndex,
+                }),
+              highlightPhase: (): infer _ => 'PauseMessage',
+              generation: (): infer _ => nextGeneration,
+              messageLog: prependToLog('ClickedPause'),
+            }),
+            commands: [DelayAdvancePhase({ generation: nextGeneration })],
+          })
+        };
+        default: ({ model });
+      },
 
     ClickedStop: (): infer _ => ({
       model: modifyFields(model, {
@@ -533,13 +534,14 @@ const PlayNote = Command.define('PlayNote', {
             }
           },
         )
-      }) catch effect (error) => match (error) {
-        when { _tag: 'ResourceNotAvailable' }: do {
-          try Effect.sleep(Duration.millis(DURATION_MILLISECONDS[duration]))
-          Message.CompletedPlayNote({ noteIndex })
-        };
-        default: throw error;
-      }
+      }) catch effect (error) =>
+        match (error) {
+          when { _tag: 'ResourceNotAvailable' }: do {
+            try Effect.sleep(Duration.millis(DURATION_MILLISECONDS[duration]))
+            Message.CompletedPlayNote({ noteIndex })
+          };
+          default: throw error;
+        }
     },
 })
 

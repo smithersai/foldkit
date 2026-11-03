@@ -61,7 +61,7 @@ export const noHandRolledCommandStruct = Rule.define({
       'Create Commands with Command.define and transform them with the Command.map helpers instead of hand-building Command structs.',
   }),
   create: effect () => {
-    const ctx = try RuleContext()
+    const ctx = try RuleContext
     return {
       ObjectExpression: effect (node: ESTree.Node) => {
         if (!isObjectExpression(node)) {

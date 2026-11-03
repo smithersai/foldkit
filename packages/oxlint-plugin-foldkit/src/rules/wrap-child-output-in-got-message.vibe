@@ -292,7 +292,7 @@ export const wrapChildOutputInGotMessage = Rule.define({
       'Wrap child Submodel output in a Got*Message constructor inside Command and Subscription mappers.',
   }),
   create: effect () => {
-    const ctx = try RuleContext()
+    const ctx = try RuleContext
     const scopeManager = ctx.sourceCode.scopeManager
     const scopes = scopeManager?.scopes
     const references = scopes === undefined

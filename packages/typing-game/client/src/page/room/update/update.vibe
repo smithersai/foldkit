@@ -252,19 +252,23 @@ const leaveRoom = (model: Model): UpdateReturn => ({
 })
 
 const handleStartGame =
-  (model: Model, room: Shared.Room): infer _ => (): UpdateReturn => match (model.maybeSession) {
-    when Option.None: ({ model });
-    when Option.Some(let session): do {
-      const isHost = session.player.id === room.hostId
-      const maybeStartGame = optionWhen(
-        isHost,
-        (): infer _ =>
-          StartGame({ roomId: room.id, playerId: session.player.id }),
-      )
-      const optionResult11 = { model, commands: Arr.fromOption(maybeStartGame) }
-      optionResult11
-    };
-  }
+  (model: Model, room: Shared.Room): infer _ => (): UpdateReturn =>
+    match (model.maybeSession) {
+      when Option.None: ({ model });
+      when Option.Some(let session): do {
+        const isHost = session.player.id === room.hostId
+        const maybeStartGame = optionWhen(
+          isHost,
+          (): infer _ =>
+            StartGame({ roomId: room.id, playerId: session.player.id }),
+        )
+        const optionResult11 = {
+          model,
+          commands: Arr.fromOption(maybeStartGame),
+        }
+        optionResult11
+      };
+    }
 
 export const informJoined = (
   model: Model,

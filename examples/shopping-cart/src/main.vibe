@@ -277,13 +277,14 @@ const notFoundView = (path: string, h: HtmlBuilder<Message>): Html =>
     ],
   )
 
-const routeTitle = (route: Model['route']): string => match (route) {
-  when { _tag: 'Products' }: 'Shopping Cart';
-  when let rest: do {
-    const { _tag } = rest
-    ;`${_tag} | Shopping Cart`
-  };
-}
+const routeTitle = (route: Model['route']): string =>
+  match (route) {
+    when { _tag: 'Products' }: 'Shopping Cart';
+    when let rest: do {
+      const { _tag } = rest
+      ;`${_tag} | Shopping Cart`
+    };
+  }
 
 export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
   const routeContent = AppRoute.match(model.route, {

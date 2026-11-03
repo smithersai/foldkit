@@ -1150,10 +1150,10 @@ const main = effect () => {
     }
   }
 
-  const path = try Path.Path()
-  const scriptPath = try path.fromFileUrl(new URL(import.meta.url)) catch (
+  const path = try Path.Path
+  const scriptPath = try path.fromFileUrl(new URL(import.meta.url)) catch effect (
     error,
-  ) => die(error)
+  ) => try die(error)
   const manifestPath = path.resolve(
     path.dirname(scriptPath),
     '../packages/examples-e2e/package.json',

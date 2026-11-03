@@ -14,7 +14,7 @@ export const createRoom =
       username: payload.username,
     }
 
-    const createdAt = try Clock.currentTimeMillis()
+    const createdAt = try Clock.currentTimeMillis
 
     const newRoom: Shared.Room = {
       id: roomId,

@@ -198,7 +198,7 @@ export const preferEffectModuleNames = Rule.define({
     fixable: 'code',
   }),
   create: effect () => {
-    const ctx = try RuleContext()
+    const ctx = try RuleContext
 
     return {
       ImportDeclaration: effect (node: ESTree.Node) => {

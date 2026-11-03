@@ -134,90 +134,91 @@ const baseOption = (title: string, subtitle: string): EChartsOption => ({
 
 const adoptionOption = (
   args: ChartOptionArgs,
-): EChartsOption => match (findPackageSnapshot(args.telemetry, args.selectedPackageId)) {
-  when Option.None: (baseOption(
-    'Adoption',
-    `${packageIdToSpec(args.selectedPackageId).displayName} telemetry`,
-  ));
-  when Option.Some(let snapshot): do {
-    const weeks = visibleWeeks(args.telemetry, args.period)
-    const weekLabels = Arr.map(weeks, ({ weekStart }) => weekLabel(weekStart))
-    ;({
-      ...baseOption(
-        'Adoption',
-        `${snapshot.displayName} downloads and GitHub stars`,
-      ),
-      xAxis: {
-        type: 'category',
-        boundaryGap: false,
-        data: weekLabels,
-      },
-      yAxis: [
-        {
-          type: 'value',
-          name: 'downloads',
-          min: 0,
-          splitLine: { lineStyle: { color: '#e4e4e7' } },
+): EChartsOption =>
+  match (findPackageSnapshot(args.telemetry, args.selectedPackageId)) {
+    when Option.None: (baseOption(
+      'Adoption',
+      `${packageIdToSpec(args.selectedPackageId).displayName} telemetry`,
+    ));
+    when Option.Some(let snapshot): do {
+      const weeks = visibleWeeks(args.telemetry, args.period)
+      const weekLabels = Arr.map(weeks, ({ weekStart }) => weekLabel(weekStart))
+      ;({
+        ...baseOption(
+          'Adoption',
+          `${snapshot.displayName} downloads and GitHub stars`,
+        ),
+        xAxis: {
+          type: 'category',
+          boundaryGap: false,
+          data: weekLabels,
         },
-        {
-          type: 'value',
-          name: 'stars',
-          min: 0,
-          splitLine: { show: false },
-        },
-      ],
-      dataZoom: [
-        {
-          type: 'inside',
-        },
-      ],
-      series: [
-        {
-          name: 'npm downloads',
-          type: 'line',
-          smooth: true,
-          symbol: 'circle',
-          symbolSize: DEFAULT_SYMBOL_SIZE,
-          lineStyle: { width: 3, color: '#0891b2' },
-          itemStyle: { color: '#0891b2' },
-          areaStyle: { color: 'rgba(8, 145, 178, 0.12)' },
-          data: Arr.map(weeks, week => {
-            const id = datumId('Adoption', snapshot.id, week.weekStart)
-            return {
-              id,
-              name: weekLabel(week.weekStart),
-              symbolSize: isSelected(args.maybeSelectedDatumId, id)
-                ? SELECTED_SYMBOL_SIZE
-                : DEFAULT_SYMBOL_SIZE,
-              value: downloadForWeek(snapshot, week.weekStart),
-            }
-          }),
-        },
-        {
-          name: 'GitHub stars',
-          type: 'line',
-          smooth: true,
-          yAxisIndex: 1,
-          symbol: 'diamond',
-          symbolSize: DEFAULT_SYMBOL_SIZE,
-          lineStyle: { width: 3, color: '#7c3aed' },
-          itemStyle: { color: '#7c3aed' },
-          data: Arr.map(weeks, week => {
-            const id = datumId('Adoption', 'Stars', week.weekStart)
-            return {
-              id,
-              name: weekLabel(week.weekStart),
-              symbolSize: isSelected(args.maybeSelectedDatumId, id)
-                ? SELECTED_SYMBOL_SIZE
-                : DEFAULT_SYMBOL_SIZE,
-              value: week.cumulativeStars,
-            }
-          }),
-        },
-      ],
-    })
-  };
-}
+        yAxis: [
+          {
+            type: 'value',
+            name: 'downloads',
+            min: 0,
+            splitLine: { lineStyle: { color: '#e4e4e7' } },
+          },
+          {
+            type: 'value',
+            name: 'stars',
+            min: 0,
+            splitLine: { show: false },
+          },
+        ],
+        dataZoom: [
+          {
+            type: 'inside',
+          },
+        ],
+        series: [
+          {
+            name: 'npm downloads',
+            type: 'line',
+            smooth: true,
+            symbol: 'circle',
+            symbolSize: DEFAULT_SYMBOL_SIZE,
+            lineStyle: { width: 3, color: '#0891b2' },
+            itemStyle: { color: '#0891b2' },
+            areaStyle: { color: 'rgba(8, 145, 178, 0.12)' },
+            data: Arr.map(weeks, week => {
+              const id = datumId('Adoption', snapshot.id, week.weekStart)
+              return {
+                id,
+                name: weekLabel(week.weekStart),
+                symbolSize: isSelected(args.maybeSelectedDatumId, id)
+                  ? SELECTED_SYMBOL_SIZE
+                  : DEFAULT_SYMBOL_SIZE,
+                value: downloadForWeek(snapshot, week.weekStart),
+              }
+            }),
+          },
+          {
+            name: 'GitHub stars',
+            type: 'line',
+            smooth: true,
+            yAxisIndex: 1,
+            symbol: 'diamond',
+            symbolSize: DEFAULT_SYMBOL_SIZE,
+            lineStyle: { width: 3, color: '#7c3aed' },
+            itemStyle: { color: '#7c3aed' },
+            data: Arr.map(weeks, week => {
+              const id = datumId('Adoption', 'Stars', week.weekStart)
+              return {
+                id,
+                name: weekLabel(week.weekStart),
+                symbolSize: isSelected(args.maybeSelectedDatumId, id)
+                  ? SELECTED_SYMBOL_SIZE
+                  : DEFAULT_SYMBOL_SIZE,
+                value: week.cumulativeStars,
+              }
+            }),
+          },
+        ],
+      })
+    };
+  }
 
 const velocityOption = (args: ChartOptionArgs): EChartsOption => {
   const weeks = visibleWeeks(args.telemetry, args.period)

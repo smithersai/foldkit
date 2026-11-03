@@ -61,7 +61,7 @@ export const gotWrapperCarriesOnlyRouting = Rule.define({
       'Keep Got wrapper Message fields to the child Message plus routing context.',
   }),
   create: effect () => {
-    const ctx = try RuleContext()
+    const ctx = try RuleContext
     const scopes = ctx.sourceCode.scopeManager?.scopes
     const references = scopes === undefined
       ? undefined
@@ -83,23 +83,24 @@ export const gotWrapperCarriesOnlyRouting = Rule.define({
             gotWrapperTagPattern.test(messageCase.name)
               ? try Effect.forEach(
                 messageCase.fields.properties,
-                effect property => match (staticPropertyKey(property)) {
-                  when Option.None: undefined;
-                  when Option.Some(let matchedOptionValue1): do {
-                    const { keyNode, keyName } = matchedOptionValue1
-                    try (isRoutingKey(keyName)
-                      ? effect {}
-                      : ctx.report(
-                        Diagnostic.make({
-                          node: keyNode,
-                          message: extraFieldMessage(
-                            messageCase.name,
-                            keyName,
-                          ),
-                        }),
-                      ))
-                  };
-                },
+                effect property =>
+                  match (staticPropertyKey(property)) {
+                    when Option.None: undefined;
+                    when Option.Some(let matchedOptionValue1): do {
+                      const { keyNode, keyName } = matchedOptionValue1
+                      try (isRoutingKey(keyName)
+                        ? effect {}
+                        : ctx.report(
+                          Diagnostic.make({
+                            node: keyNode,
+                            message: extraFieldMessage(
+                              messageCase.name,
+                              keyName,
+                            ),
+                          }),
+                        ))
+                    };
+                  },
                 { discard: true },
               )
               : undefined,

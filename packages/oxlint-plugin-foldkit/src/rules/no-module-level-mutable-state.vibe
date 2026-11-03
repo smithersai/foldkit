@@ -29,7 +29,7 @@ export const noModuleLevelMutableState = Rule.define({
       'Keep state in the Model instead of module-level let/var bindings.',
   }),
   create: effect () => {
-    const ctx = try RuleContext()
+    const ctx = try RuleContext
     return {
       Program: effect (node: ESTree.Node) => {
         if (!isProgram(node)) return undefined

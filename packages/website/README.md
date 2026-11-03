@@ -52,3 +52,7 @@ Snippet discovery accepts `.vibex` alongside `.vibe`, retaining the basename loo
 Example source listings exclude both `.d.vibe.ts` and `.d.vibex.ts` native declaration sidecars. The source files remain visible.
 
 The `check:playground-ssg-build` launcher enables native loading only for its checker process, so generated project installs preserve caller `NODE_OPTIONS` without inheriting the checker's loader.
+
+Native Effect functions use `effect`, and `try` runs a program. A plain factory
+keeps eager argument or resource lookups before its returned `effect { ... }`
+block, preserving what happens when the program is created and when it runs.

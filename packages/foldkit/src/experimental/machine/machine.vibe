@@ -1316,32 +1316,33 @@ function defineImplementation<
           _tag: 'IgnoredEdge',
           reason: 'GuardsFellThrough',
         }),
-        onNonEmpty: (guardedEdge, rest): EdgeSelection<State, Message, R> => match (guardedEdge) {
-          when { _tag: 'When' } and let guardedWhen: do {
-            const maybeGuardValue = runGuard(
-              guardedWhen,
-              state,
-              message,
-              context,
-            )
-            Option.isSome(maybeGuardValue)
-              ? {
-                _tag: 'SelectedEdge',
-                edge: guardedWhen.edge,
-                guardValue: maybeGuardValue.value,
-              }
-              : selectFromGuardList(rest, state, message, context)
-          };
-          when { _tag: 'Otherwise' } and let guardedOtherwise: ({
-            _tag: 'SelectedEdge',
-            edge: guardedOtherwise.edge,
-            guardValue: undefined,
-          });
-          when { _tag: 'Ignore' }: ({
-            _tag: 'IgnoredEdge',
-            reason: 'ExplicitlyIgnored',
-          });
-        },
+        onNonEmpty: (guardedEdge, rest): EdgeSelection<State, Message, R> =>
+          match (guardedEdge) {
+            when { _tag: 'When' } and let guardedWhen: do {
+              const maybeGuardValue = runGuard(
+                guardedWhen,
+                state,
+                message,
+                context,
+              )
+              Option.isSome(maybeGuardValue)
+                ? {
+                  _tag: 'SelectedEdge',
+                  edge: guardedWhen.edge,
+                  guardValue: maybeGuardValue.value,
+                }
+                : selectFromGuardList(rest, state, message, context)
+            };
+            when { _tag: 'Otherwise' } and let guardedOtherwise: ({
+              _tag: 'SelectedEdge',
+              edge: guardedOtherwise.edge,
+              guardValue: undefined,
+            });
+            when { _tag: 'Ignore' }: ({
+              _tag: 'IgnoredEdge',
+              reason: 'ExplicitlyIgnored',
+            });
+          },
       })
 
     const chooseEdge = (

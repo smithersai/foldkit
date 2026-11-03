@@ -21,19 +21,20 @@ const findDraggedCard = (model: Model): infer _ =>
     ),
   )
 
-const ghostElement = (model: Model, h: HtmlBuilder<Message>): infer _ => match (DragAndDrop.ghostStyle(model.dragAndDrop)
-    .flatMap(ghostStyle =>
-      Option.map(findDraggedCard(model), card => ({ ghostStyle, card }))
-    )) {
-  when Option.None: h.empty;
-  when Option.Some(let ghost): do {
-    const { ghostStyle, card } = ghost
-    h.div(
-      [h.Style(ghostStyle), h.Class('w-64'), h.AriaHidden(true)],
-      [ghostCardView(card, h)],
-    )
-  };
-}
+const ghostElement = (model: Model, h: HtmlBuilder<Message>): infer _ =>
+  match (DragAndDrop.ghostStyle(model.dragAndDrop)
+      .flatMap(ghostStyle =>
+        Option.map(findDraggedCard(model), card => ({ ghostStyle, card }))
+      )) {
+    when Option.None: h.empty;
+    when Option.Some(let ghost): do {
+      const { ghostStyle, card } = ghost
+      h.div(
+        [h.Style(ghostStyle), h.Class('w-64'), h.AriaHidden(true)],
+        [ghostCardView(card, h)],
+      )
+    };
+  }
 
 export const view = (model: Model, h: HtmlBuilder<Message>): Document => ({
   title: 'Kanban Board',

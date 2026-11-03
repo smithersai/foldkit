@@ -36,7 +36,7 @@ export const noDuplicateOnmountPerElement = Rule.define({
     description: 'Attach at most one OnMount attribute per element.',
   }),
   create: effect () => {
-    const ctx = try RuleContext()
+    const ctx = try RuleContext
     const scopes = ctx.sourceCode.scopeManager?.scopes
     const references = scopes === undefined
       ? undefined

@@ -23,31 +23,32 @@ export const subscriptions = Subscription.make<Model, Message, RoomsClient>()(
             }),
           ),
         }),
-        dependenciesToStream: ({ maybeRoomStream }): infer _ => match (maybeRoomStream) {
-          when Option.None: Stream.empty;
-          when Option.Some(let dependency): do {
-            const { roomId, playerId } = dependency
-            const stream = effect {
-              const client = try RoomsClient
-              return client.subscribeToRoom({ roomId, playerId }).pipe(
-                Stream.map(({ room, maybePlayerProgress }): infer _ =>
-                  Message.UpdatedRoom({ room, maybePlayerProgress })
-                ),
-                Stream.catchCause((cause): infer _ =>
-                  Stream.make(
-                    Message.FailedStreamRoom({
-                      error: match (Cause.findErrorOption(cause)) {
-                        when Option.None: 'Unknown stream error';
-                        when Option.Some(let failure): String(failure);
-                      },
-                    }),
-                  )
-                ),
-              )
-            }.pipe(Stream.unwrap)
-            stream
-          };
-        },
+        dependenciesToStream: ({ maybeRoomStream }): infer _ =>
+          match (maybeRoomStream) {
+            when Option.None: Stream.empty;
+            when Option.Some(let dependency): do {
+              const { roomId, playerId } = dependency
+              const stream = effect {
+                const client = try RoomsClient
+                return client.subscribeToRoom({ roomId, playerId }).pipe(
+                  Stream.map(({ room, maybePlayerProgress }): infer _ =>
+                    Message.UpdatedRoom({ room, maybePlayerProgress })
+                  ),
+                  Stream.catchCause((cause): infer _ =>
+                    Stream.make(
+                      Message.FailedStreamRoom({
+                        error: match (Cause.findErrorOption(cause)) {
+                          when Option.None: 'Unknown stream error';
+                          when Option.Some(let failure): String(failure);
+                        },
+                      }),
+                    )
+                  ),
+                )
+              }.pipe(Stream.unwrap)
+              stream
+            };
+          },
       },
     ),
 

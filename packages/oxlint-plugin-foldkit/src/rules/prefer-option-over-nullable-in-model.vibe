@@ -145,7 +145,7 @@ export const preferOptionOverNullableInModel = Rule.define({
       'Model absence with Schema.Option instead of nullable or optional fields.',
   }),
   create: effect () => {
-    const ctx = try RuleContext()
+    const ctx = try RuleContext
     const scopes = ctx.sourceCode.scopeManager?.scopes
     const references = scopes === undefined
       ? undefined

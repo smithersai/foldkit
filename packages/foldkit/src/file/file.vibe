@@ -1,4 +1,4 @@
-import { fileConstructor } from './file.platform.js'
+import { fileConstructor } from './file.platform.ts'
 
 /**
  * A file selected by the user. Direct alias for the browser's native `File`

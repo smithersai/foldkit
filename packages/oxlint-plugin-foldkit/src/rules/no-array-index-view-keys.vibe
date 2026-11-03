@@ -270,7 +270,7 @@ export const noArrayIndexViewKeys = Rule.define({
       'Key rows and Submodels by stable Model identifiers instead of map callback array indexes.',
   }),
   create: effect () => {
-    const ctx = try RuleContext()
+    const ctx = try RuleContext
     const scopes = ctx.sourceCode.scopeManager?.scopes
     const scopeManager = ctx.sourceCode.scopeManager
     const references = scopes === undefined

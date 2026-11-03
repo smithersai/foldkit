@@ -2,7 +2,7 @@ import { ExperimentalBrowserDocument } from 'vibelang-runtime/experimental/platf
 
 export const documentDragStyles = Stream.callback<never>(effect () => {
   provide ExperimentalBrowserDocument.layer {
-    const documentService = try Experimental.Document.Document()
+    const documentService = try Experimental.Document.Document
     const hostDocument = try documentService.current
     try Effect.acquireRelease(
       Effect.sync((): infer _ => {

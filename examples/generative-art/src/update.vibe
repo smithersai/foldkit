@@ -99,13 +99,14 @@ const boostFactor = (ageMs: number): number =>
 const blendWithInitialAngle = (
   particle: Particle,
   fieldAngle: number,
-): number => match (particle.initialAngle) {
-  when Option.None: fieldAngle;
-  when Option.Some(let initialAngle): do {
-    const fieldWeight = 1 - boostFactor(particle.ageMs)
-    blendAnglesByVector(initialAngle, fieldAngle, fieldWeight)
-  };
-}
+): number =>
+  match (particle.initialAngle) {
+    when Option.None: fieldAngle;
+    when Option.Some(let initialAngle): do {
+      const fieldWeight = 1 - boostFactor(particle.ageMs)
+      blendAnglesByVector(initialAngle, fieldAngle, fieldWeight)
+    };
+  }
 
 const computeSpeed = (particle: Particle): number => {
   const boost = boostFactor(particle.ageMs)

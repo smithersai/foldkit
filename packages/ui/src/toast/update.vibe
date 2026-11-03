@@ -98,7 +98,7 @@ const clampSwipeClientX = (
 
 const documentStylesWhileSwiping = Stream.callback<never>(effect () => {
   provide ExperimentalBrowserDocument.layer {
-    const documentService = try Experimental.Document.Document()
+    const documentService = try Experimental.Document.Document
     const hostDocument = try documentService.current
     try Effect.acquireRelease(
       Effect.sync((): infer _ => {
@@ -518,36 +518,37 @@ export const makeRuntime = <A, I>(
         }
       },
 
-      MovedSwipePointer: ({ pointerId, clientX }): infer _ => match (Option.all({
-          swipeConfig: model.maybeSwipeConfig,
-          draggingEntry: findDraggingEntry(model, pointerId),
-        })) {
-        when Option.None: ({ model });
-        when Option.Some(let matchedOption3): do {
-          const { swipeConfig, draggingEntry: { entry, startX } } =
-            matchedOption3
-          const result = {
-            model: updateEntry(
-              model,
-              entry.id,
-              (currentEntry): infer _ =>
-                modifyFields(currentEntry, {
-                  swipeState: (): infer _ =>
-                    SwipeState.Dragging({
-                      pointerId,
-                      startX,
-                      currentX: clampSwipeClientX(
+      MovedSwipePointer: ({ pointerId, clientX }): infer _ =>
+        match (Option.all({
+            swipeConfig: model.maybeSwipeConfig,
+            draggingEntry: findDraggingEntry(model, pointerId),
+          })) {
+          when Option.None: ({ model });
+          when Option.Some(let matchedOption3): do {
+            const { swipeConfig, draggingEntry: { entry, startX } } =
+              matchedOption3
+            const result = {
+              model: updateEntry(
+                model,
+                entry.id,
+                (currentEntry): infer _ =>
+                  modifyFields(currentEntry, {
+                    swipeState: (): infer _ =>
+                      SwipeState.Dragging({
+                        pointerId,
                         startX,
-                        clientX,
-                        swipeConfig.direction,
-                      ),
-                    }),
-                }),
-            ),
-          }
-          result
-        };
-      },
+                        currentX: clampSwipeClientX(
+                          startX,
+                          clientX,
+                          swipeConfig.direction,
+                        ),
+                      }),
+                  }),
+              ),
+            }
+            result
+          };
+        },
 
       ReleasedSwipePointer: ({ pointerId, clientX }): infer _ => match (Option.all({
           swipeConfig: model.maybeSwipeConfig,
@@ -587,14 +588,15 @@ export const makeRuntime = <A, I>(
         })(optionValue3);
       },
 
-      CancelledSwipe: ({ pointerId }): infer _ => match (findDraggingEntry(model, pointerId)) {
-        when Option.None: ({ model });
-        when Option.Some(let matchedOption4): do {
-          const { entry } = matchedOption4
-          const result = settleSnapBack(entry)(model)
-          result
-        };
-      },
+      CancelledSwipe: ({ pointerId }): infer _ =>
+        match (findDraggingEntry(model, pointerId)) {
+          when Option.None: ({ model });
+          when Option.Some(let matchedOption4): do {
+            const { entry } = matchedOption4
+            const result = settleSnapBack(entry)(model)
+            result
+          };
+        },
 
       PressedEscape: (): infer _ => {
         const draggingEntries = Array.filter(
@@ -665,7 +667,7 @@ export const makeRuntime = <A, I>(
         dependenciesToStream: ({ isSwipeEnabled, isAnyDragging }): infer _ =>
           Stream.unwrap(effect {
             provide ExperimentalBrowserDocument.layer {
-              const documentService = try Experimental.Document.Document()
+              const documentService = try Experimental.Document.Document
               const hostDocument = try documentService.current
               const pointerMoveStream = Dom.streamFromEvent({
                 target: hostDocument,
@@ -715,7 +717,7 @@ export const makeRuntime = <A, I>(
         dependenciesToStream: ({ isSwipeEnabled, isAnyDragging }): infer _ =>
           Stream.unwrap(effect {
             provide ExperimentalBrowserDocument.layer {
-              const documentService = try Experimental.Document.Document()
+              const documentService = try Experimental.Document.Document
               const hostDocument = try documentService.current
               return Stream.when(
                 Dom.streamFromEventFilterMap({

@@ -663,13 +663,14 @@ const contentView = (model: Model, h: HtmlBuilder<Message>): Html => {
   })
 }
 
-const routeTitle = (route: Model['route']): string => match (route) {
-  when { _tag: 'Home' }: 'Foldkit UI Showcase';
-  when let rest: do {
-    const { _tag } = rest
-    ;`${_tag} | Foldkit UI Showcase`
-  };
-}
+const routeTitle = (route: Model['route']): string =>
+  match (route) {
+    when { _tag: 'Home' }: 'Foldkit UI Showcase';
+    when let rest: do {
+      const { _tag } = rest
+      ;`${_tag} | Foldkit UI Showcase`
+    };
+  }
 
 export const view = (model: Model, h: HtmlBuilder<Message>): Document => ({
   title: routeTitle(model.route),

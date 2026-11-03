@@ -213,32 +213,33 @@ const foldPaletteRadioGroup = Update.foldChild({
 
 export const update = (model: Model, message: Message): infer _ =>
   Message.match<UpdateReturn>(message, {
-    PressedCell: ({ x, y }) => match (model.tool) {
-      when 'Brush': ({
-        model: modifyFields(model, {
-          grid: () => applyBrush(model, x, y),
-          undoStack: () => pushHistory(model.undoStack, model.grid),
-          redoStack: () => [],
-          isDrawing: () => true,
-        }),
-      });
-      when 'Fill': do {
-        const nextModel = modifyFields(model, {
-          grid: () => applyFill(model, x, y),
-          undoStack: () => pushHistory(model.undoStack, model.grid),
-          redoStack: () => [],
-        })
-        ;({ model: nextModel, commands: [saveCanvas(nextModel)] })
-      };
-      when 'Eraser': ({
-        model: modifyFields(model, {
-          grid: () => applyEraser(model, x, y),
-          undoStack: () => pushHistory(model.undoStack, model.grid),
-          redoStack: () => [],
-          isDrawing: () => true,
-        }),
-      });
-    },
+    PressedCell: ({ x, y }) =>
+      match (model.tool) {
+        when 'Brush': ({
+          model: modifyFields(model, {
+            grid: () => applyBrush(model, x, y),
+            undoStack: () => pushHistory(model.undoStack, model.grid),
+            redoStack: () => [],
+            isDrawing: () => true,
+          }),
+        });
+        when 'Fill': do {
+          const nextModel = modifyFields(model, {
+            grid: () => applyFill(model, x, y),
+            undoStack: () => pushHistory(model.undoStack, model.grid),
+            redoStack: () => [],
+          })
+          ;({ model: nextModel, commands: [saveCanvas(nextModel)] })
+        };
+        when 'Eraser': ({
+          model: modifyFields(model, {
+            grid: () => applyEraser(model, x, y),
+            undoStack: () => pushHistory(model.undoStack, model.grid),
+            redoStack: () => [],
+            isDrawing: () => true,
+          }),
+        });
+      },
 
     EnteredCell: ({ x, y }) => {
       const withHover = modifyFields(model, {

@@ -1,6 +1,6 @@
 import { Option } from 'effect';
 import { Update } from 'foldkit';
-import { Message } from './message.js';
+import { Message } from './message.ts';
 import { Model } from './model.vibe';
 import { RoomsClient } from './rpc.vibe';
 export type UpdateReturn<Model, Message> = Update.Return<Model, Message, RoomsClient>;

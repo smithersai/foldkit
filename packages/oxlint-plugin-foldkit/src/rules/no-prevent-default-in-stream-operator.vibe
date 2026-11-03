@@ -165,7 +165,7 @@ export const noPreventDefaultInStreamOperator = Rule.define({
       'Disallow unreliable preventDefault calls inside Stream operator callbacks.',
   }),
   create: effect () => {
-    const ctx = try RuleContext()
+    const ctx = try RuleContext
     const scopes = ctx.sourceCode.scopeManager?.scopes
     const references = scopes === undefined
       ? undefined

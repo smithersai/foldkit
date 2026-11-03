@@ -59,7 +59,7 @@ export const noEmptyCommandsArray = Rule.define({
     fixable: 'code',
   }),
   create: effect () => {
-    const ctx = try RuleContext()
+    const ctx = try RuleContext
     return {
       ObjectExpression: effect (node: ESTree.Node) => {
         if (!isObjectExpression(node)) {

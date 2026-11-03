@@ -80,7 +80,7 @@ export const acquireReleaseConstructsInAcquireBody = Rule.define({
       'Construct resources lazily inside the Effect.acquireRelease acquire Effect instead of returning eager or captured handles.',
   }),
   create: effect () => {
-    const ctx = try RuleContext()
+    const ctx = try RuleContext
     const scopes = ctx.sourceCode.scopeManager?.scopes
     const references = scopes === undefined
       ? undefined

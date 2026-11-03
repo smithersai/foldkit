@@ -19,7 +19,7 @@ export const gotPrefixRequiresSubmodelPayload = Rule.define({
       'Reserve Got* Messages for Submodel wrappers with a { message: Child.Message } payload.',
   }),
   create: effect () => {
-    const ctx = try RuleContext()
+    const ctx = try RuleContext
     const scopes = ctx.sourceCode.scopeManager?.scopes
     const references = scopes === undefined
       ? undefined

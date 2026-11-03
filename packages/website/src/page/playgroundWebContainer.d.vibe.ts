@@ -31,11 +31,11 @@ export declare function installDependencies(container: ProcessHost): Effect.Effe
 export declare function startDevServer(container: ServerHost): Effect.Effect<{
     previewUrl: string;
     serverFailure: Deferred.Deferred<never, Error>;
-}, Error | WebContainerError, import("effect/Scope").Scope>;
+}, Error, import("effect/Scope").Scope>;
 export declare function acquirePlaygroundWebContainer(files: Readonly<Record<string, string>>): Effect.Effect<{
     container: WebContainer;
     previewUrl: string;
     pendingWrites: FiberMap.FiberMap<string, void, never>;
     serverFailure: Deferred.Deferred<never, Error>;
-}, Error | WebContainerError, import("effect/Scope").Scope>;
+}, Error, import("effect/Scope").Scope>;
 export {};

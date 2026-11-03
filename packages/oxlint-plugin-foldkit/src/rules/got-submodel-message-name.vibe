@@ -19,7 +19,7 @@ export const gotSubmodelMessageName = Rule.define({
       'Name Foldkit Submodel wrapper Messages with the Got*Message convention.',
   }),
   create: effect () => {
-    const ctx = try RuleContext()
+    const ctx = try RuleContext
     const scopes = ctx.sourceCode.scopeManager?.scopes
     const references = scopes === undefined
       ? undefined

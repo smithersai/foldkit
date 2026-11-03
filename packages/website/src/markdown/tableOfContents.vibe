@@ -55,17 +55,21 @@ export const collectHeadings = (
   const idByHeading = new Map<Heading, string>()
   const usedIds = new Set<string>()
 
-  const tableOfContents = Arr.filterMap(document.blocks, (block): infer _ => match (block) {
-    when { _tag: 'Heading' } and let heading: do {
-      const { maybeId, text } = parseHeadingId(heading.content)
-      const base = Option.getOrElse(maybeId, (): infer _ => slugify(text))
-      const id = uniqueHeadingId(base, usedIds)
-      usedIds.add(id)
-      idByHeading.set(heading, id)
-      tableOfContentsEntry(heading, id, text)
-    };
-    default: Result.failVoid;
-  })
+  const tableOfContents = Arr.filterMap(
+    document.blocks,
+    (block): infer _ =>
+      match (block) {
+        when { _tag: 'Heading' } and let heading: do {
+          const { maybeId, text } = parseHeadingId(heading.content)
+          const base = Option.getOrElse(maybeId, (): infer _ => slugify(text))
+          const id = uniqueHeadingId(base, usedIds)
+          usedIds.add(id)
+          idByHeading.set(heading, id)
+          tableOfContentsEntry(heading, id, text)
+        };
+        default: Result.failVoid;
+      },
+  )
 
   return { tableOfContents, idByHeading }
 }

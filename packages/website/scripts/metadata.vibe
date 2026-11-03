@@ -480,55 +480,56 @@ const METADATA_BY_TAG: Record<StaticRouteTag, PageMetadata> = {
 export const routeToMetadata = (
   route: AppRoute,
   resolveApiModuleName: ApiModuleNameResolver,
-): PageMetadata => match (route) {
-  when { _tag: 'ApiModule' }: do {
-    const { moduleSlug } = route
-    const moduleName = resolveApiModuleName(moduleSlug)
-    docs(
-      moduleName,
-      `API documentation for the ${moduleName} module.`,
-      'API Reference',
-    )
-  };
-  when { _tag: 'BlogPost' }: do {
-    const { postSlug } = route
-    const { frontmatter } = Option.getOrThrowWith(
-      Arr.findFirst(blogPosts, ({ slug }): infer _ => slug === postSlug),
-      (): infer _ =>
-        new Error(
-          `Blog post "${postSlug}" is missing from the blog post registry.`,
-        ),
-    )
-    docs(frontmatter.title, frontmatter.description, BLOG_SECTION)
-  };
-  when { _tag: 'ExampleDetail' }: do {
-    const { exampleSlug } = route
-    const example = Option.getOrThrowWith(
-      findBySlug(exampleSlug),
-      (): infer _ =>
-        new Error(
-          `Example "${exampleSlug}" is missing from the example registry.`,
-        ),
-    )
-    docs(example.title, example.description, 'Examples')
-  };
-  when { _tag: 'Playground' }: do {
-    const { exampleSlug } = route
-    const example = Option.getOrThrowWith(
-      findBySlug(exampleSlug),
-      (): infer _ =>
-        new Error(
-          `Playground example "${exampleSlug}" is missing from the example registry.`,
-        ),
-    )
-    docs(
-      `${example.title} Playground`,
-      `Edit and run the ${example.title} example live in your browser.`,
-      'Playground',
-    )
-  };
-  default: do {
-    const { _tag } = route
-    METADATA_BY_TAG[_tag]
-  };
-}
+): PageMetadata =>
+  match (route) {
+    when { _tag: 'ApiModule' }: do {
+      const { moduleSlug } = route
+      const moduleName = resolveApiModuleName(moduleSlug)
+      docs(
+        moduleName,
+        `API documentation for the ${moduleName} module.`,
+        'API Reference',
+      )
+    };
+    when { _tag: 'BlogPost' }: do {
+      const { postSlug } = route
+      const { frontmatter } = Option.getOrThrowWith(
+        Arr.findFirst(blogPosts, ({ slug }): infer _ => slug === postSlug),
+        (): infer _ =>
+          new Error(
+            `Blog post "${postSlug}" is missing from the blog post registry.`,
+          ),
+      )
+      docs(frontmatter.title, frontmatter.description, BLOG_SECTION)
+    };
+    when { _tag: 'ExampleDetail' }: do {
+      const { exampleSlug } = route
+      const example = Option.getOrThrowWith(
+        findBySlug(exampleSlug),
+        (): infer _ =>
+          new Error(
+            `Example "${exampleSlug}" is missing from the example registry.`,
+          ),
+      )
+      docs(example.title, example.description, 'Examples')
+    };
+    when { _tag: 'Playground' }: do {
+      const { exampleSlug } = route
+      const example = Option.getOrThrowWith(
+        findBySlug(exampleSlug),
+        (): infer _ =>
+          new Error(
+            `Playground example "${exampleSlug}" is missing from the example registry.`,
+          ),
+      )
+      docs(
+        `${example.title} Playground`,
+        `Edit and run the ${example.title} example live in your browser.`,
+        'Playground',
+      )
+    };
+    default: do {
+      const { _tag } = route
+      METADATA_BY_TAG[_tag]
+    };
+  }

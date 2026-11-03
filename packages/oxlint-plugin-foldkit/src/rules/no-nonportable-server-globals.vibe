@@ -88,7 +88,7 @@ export const noNonportableServerGlobals = Rule.define({
       'Avoid browser-only globals in files that run across Foldkit server targets.',
   }),
   create: effect () => {
-    const ctx = try RuleContext()
+    const ctx = try RuleContext
     const references = indexReferences(ctx.sourceCode.scopeManager.scopes)
     return {
       Identifier: effect (node: ESTree.Node) => {

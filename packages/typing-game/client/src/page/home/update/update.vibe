@@ -22,22 +22,23 @@ export const update = (model: Model, message: Message): infer _ =>
 
     CompletedFocusRoomIdInput: (): infer _ => ({ model }),
 
-    SubmittedUsernameForm: (): infer _ => match (model.homeStep) {
-      when { _tag: 'EnterUsername', let username }: do {
-        const nextModel = Str.isNonEmpty(username)
-          ? modifyFields(model, {
-            homeStep: (): infer _ =>
-              HomeStep.SelectAction({
-                username,
-                selectedAction: 'CreateRoom',
-              }),
-          })
-          : model
-        const result = { model: nextModel }
-        result
-      };
-      default: ({ model });
-    },
+    SubmittedUsernameForm: (): infer _ =>
+      match (model.homeStep) {
+        when { _tag: 'EnterUsername', let username }: do {
+          const nextModel = Str.isNonEmpty(username)
+            ? modifyFields(model, {
+              homeStep: (): infer _ =>
+                HomeStep.SelectAction({
+                  username,
+                  selectedAction: 'CreateRoom',
+                }),
+            })
+            : model
+          const result = { model: nextModel }
+          result
+        };
+        default: ({ model });
+      },
 
     PressedKey: (message): infer _ => handleKeyPressed(model)(message),
 
@@ -75,27 +76,29 @@ export const update = (model: Model, message: Message): infer _ =>
       default: ({ model });
     },
 
-    SubmittedJoinRoomForm: (): infer _ => match (model.homeStep) {
-      when { _tag: 'EnterRoomId', let username, let roomId }: roomId === 'exit'
-        ? {
-          model: modifyFields(model, {
-            homeStep: (): infer _ =>
-              HomeStep.SelectAction({
-                username,
-                selectedAction: 'JoinRoom',
+    SubmittedJoinRoomForm: (): infer _ =>
+      match (model.homeStep) {
+        when { _tag: 'EnterRoomId', let username, let roomId }:
+          roomId === 'exit'
+            ? {
+              model: modifyFields(model, {
+                homeStep: (): infer _ =>
+                  HomeStep.SelectAction({
+                    username,
+                    selectedAction: 'JoinRoom',
+                  }),
               }),
-          }),
-        }
-        : do {
-          const maybeJoin = optionWhen(
-            Str.isNonEmpty(roomId),
-            (): infer _ => JoinRoom({ username, roomId }),
-          )
-          const result = { model, commands: Arr.fromOption(maybeJoin) }
-          result
-        };
-      default: ({ model });
-    },
+            }
+            : do {
+              const maybeJoin = optionWhen(
+                Str.isNonEmpty(roomId),
+                (): infer _ => JoinRoom({ username, roomId }),
+              )
+              const result = { model, commands: Arr.fromOption(maybeJoin) }
+              result
+            };
+        default: ({ model });
+      },
 
     SucceededCreateRoom: ({ roomId, player }): infer _ => ({
       model,

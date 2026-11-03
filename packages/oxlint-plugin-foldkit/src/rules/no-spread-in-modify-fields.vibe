@@ -120,7 +120,7 @@ export const noSpreadInModifyFields = Rule.define({
       'Use a nested modifyFields instead of spreading a record inside a modifyFields field updater.',
   }),
   create: effect () => {
-    const ctx = try RuleContext()
+    const ctx = try RuleContext
     const scopes = ctx.sourceCode.scopeManager?.scopes
     const references = scopes === undefined
       ? undefined

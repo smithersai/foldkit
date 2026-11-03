@@ -203,19 +203,20 @@ export const update = (model: Model, message: Message): infer _ =>
     // from the thumb's current position. Fine-grained sliders (e.g. step
     // 0.05) see a visible jump without this guard, because the cursor sits
     // off-center on a non-zero-width thumb.
-    PressedPointer: ({ value, originValue }): infer _ => match (model.dragState) {
-      when { _tag: 'Dragging' }: ({ model });
-      default: do {
-        const snapped = snapAndClamp(value, model.min, model.max, model.step)
-        withChangedValue(
-          modifyFields(model, {
-            dragState: (): infer _ => DragState.Dragging({ originValue }),
-          }),
-          originValue,
-          snapped,
-        )
-      };
-    },
+    PressedPointer: ({ value, originValue }): infer _ =>
+      match (model.dragState) {
+        when { _tag: 'Dragging' }: ({ model });
+        default: do {
+          const snapped = snapAndClamp(value, model.min, model.max, model.step)
+          withChangedValue(
+            modifyFields(model, {
+              dragState: (): infer _ => DragState.Dragging({ originValue }),
+            }),
+            originValue,
+            snapped,
+          )
+        };
+      },
 
     MovedDragPointer: ({ value }): infer _ => match (model.dragState) {
       when { _tag: 'Dragging' }: ({

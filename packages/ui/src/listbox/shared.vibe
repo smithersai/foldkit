@@ -1009,24 +1009,25 @@ export const makeView = <Model extends BaseModel>(
       const handleSpaceKeyUp = (key: string): Option<Message> =>
         OptionExt.when(key === ' ', Message.SuppressedSpaceScroll())
 
-      const resolveActiveIndex = (key: string): number => match (maybeActiveItemIndex) {
-        when Option.None: do {
-          const nativeMatchInput15 = key
-          const nativeMatchResult15 = match (nativeMatchInput15) {
-            when (if (nativeMatchInput15 === previousKey)) or ('End') or ('PageDown'):
-              lastEnabledIndex;
-            default: firstEnabledIndex;
-          }
-          nativeMatchResult15
-        };
-        when Option.Some(let activeIndex): keyToIndex(
-          nextKey,
-          previousKey,
-          items.length,
-          activeIndex,
-          isItemDisabledByIndex,
-        )(key);
-      }
+      const resolveActiveIndex = (key: string): number =>
+        match (maybeActiveItemIndex) {
+          when Option.None: do {
+            const nativeMatchInput15 = key
+            const nativeMatchResult15 = match (nativeMatchInput15) {
+              when (if (nativeMatchInput15 === previousKey)) or ('End') or ('PageDown'):
+                lastEnabledIndex;
+              default: firstEnabledIndex;
+            }
+            nativeMatchResult15
+          };
+          when Option.Some(let activeIndex): keyToIndex(
+            nextKey,
+            previousKey,
+            items.length,
+            activeIndex,
+            isItemDisabledByIndex,
+          )(key);
+        }
 
       const searchForKey = (key: string): Option<Message> => {
         const nextQuery = searchQuery + key

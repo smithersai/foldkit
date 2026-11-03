@@ -60,47 +60,48 @@ type UpdateReturn = Update.Return<Model, Message>
 
 export const update = (model: Model, message: Message): infer _ =>
   Message.match<UpdateReturn>(message, {
-    PressedKey: ({ key }): UpdateReturn => match (key) {
-      when "ArrowUp" or "ArrowDown" or "ArrowLeft" or "ArrowRight" or "w" or "a" or "s" or "d":
-        do {
-          const nextDirection: Direction.Direction = match (key) {
-            when "ArrowUp" or "w": 'Up';
-            when "ArrowDown" or "s": 'Down';
-            when "ArrowLeft" or "a": 'Left';
-            when "ArrowRight" or "d": 'Right';
-          }
-          model.gameState === 'Playing'
-            ? {
-              model: modifyFields(model, {
-                nextDirection: () => nextDirection,
-              }),
+    PressedKey: ({ key }): UpdateReturn =>
+      match (key) {
+        when "ArrowUp" or "ArrowDown" or "ArrowLeft" or "ArrowRight" or "w" or "a" or "s" or "d":
+          do {
+            const nextDirection: Direction.Direction = match (key) {
+              when "ArrowUp" or "w": 'Up';
+              when "ArrowDown" or "s": 'Down';
+              when "ArrowLeft" or "a": 'Left';
+              when "ArrowRight" or "d": 'Right';
             }
-            : { model }
+            model.gameState === 'Playing'
+              ? {
+                model: modifyFields(model, {
+                  nextDirection: () => nextDirection,
+                }),
+              }
+              : { model }
+          };
+        when " ": do {
+          const nextGameState: GameState = match (model.gameState) {
+            when "NotStarted": 'Playing';
+            when "Playing": 'Paused';
+            when "Paused": 'Playing';
+            when "GameOver": 'GameOver';
+          }
+          ;({ model: modifyFields(model, { gameState: () => nextGameState }) })
         };
-      when " ": do {
-        const nextGameState: GameState = match (model.gameState) {
-          when "NotStarted": 'Playing';
-          when "Playing": 'Paused';
-          when "Paused": 'Playing';
-          when "GameOver": 'GameOver';
-        }
-        ;({ model: modifyFields(model, { gameState: () => nextGameState }) })
-      };
-      when "r": do {
-        const nextSnake = Snake.create(GAME.INITIAL_POSITION)
-        ;({
-          model: modifyFields(model, {
-            snake: () => nextSnake,
-            direction: () => GAME.INITIAL_DIRECTION,
-            nextDirection: () => GAME.INITIAL_DIRECTION,
-            gameState: () => 'NotStarted',
-            points: () => 0,
-          }),
-          commands: [GenerateApplePosition({ snake: nextSnake })],
-        })
-      };
-      default: ({ model });
-    },
+        when "r": do {
+          const nextSnake = Snake.create(GAME.INITIAL_POSITION)
+          ;({
+            model: modifyFields(model, {
+              snake: () => nextSnake,
+              direction: () => GAME.INITIAL_DIRECTION,
+              nextDirection: () => GAME.INITIAL_DIRECTION,
+              gameState: () => 'NotStarted',
+              points: () => 0,
+            }),
+            commands: [GenerateApplePosition({ snake: nextSnake })],
+          })
+        };
+        default: ({ model });
+      },
 
     TickedClock: () => {
       if (model.gameState !== 'Playing') {
