@@ -504,10 +504,12 @@ const assertBuiltRequestTargets = async (origin: string): Promise<void> => {
   log('built raw request targets: same-origin asset 200, off-origin forms 400')
 }
 
+// Each readiness probe is bounded: a request the host accepts but never
+// answers would otherwise hold this gate for the client's own timeout.
 const waitForOrigin = async (origin: string): Promise<void> => {
   for (let attempt = 0; attempt < 120; attempt++) {
     try {
-      await fetch(origin, { method: 'GET' })
+      await fetch(origin, { method: 'GET', signal: AbortSignal.timeout(2_000) })
       return
     } catch {
       await new Promise(resolveWait => setTimeout(resolveWait, 250))
