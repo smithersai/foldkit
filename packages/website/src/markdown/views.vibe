@@ -13,7 +13,7 @@ import {
   inlineCode,
   pageTitle,
 } from '../prose.vibe'
-import { inlineToText, parseHeadingId, stripHeadingIdMarker } from './slug.ts'
+import { inlineToText, parseHeadingId, stripHeadingIdMarker } from './slug.vibe'
 import { type HeadingIds, headingId } from './tableOfContents.vibe'
 
 // VIEWS

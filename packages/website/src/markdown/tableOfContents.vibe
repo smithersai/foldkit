@@ -3,7 +3,7 @@ import { Array as Arr, Option, Result } from 'effect'
 import type { Heading, MarkdownDocument } from '@foldkit/markdown'
 
 import type { TableOfContentsEntry } from '../tableOfContentsEntry.ts'
-import { parseHeadingId, slugify } from './slug.ts'
+import { parseHeadingId, slugify } from './slug.vibe'
 
 // TABLE OF CONTENTS
 

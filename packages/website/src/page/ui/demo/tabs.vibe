@@ -1,4 +1,3 @@
-import { Match } from 'effect'
 import type { HtmlBuilder } from 'foldkit/html'
 
 import { Tabs } from '@foldkit/ui'
@@ -30,7 +29,7 @@ export const horizontalDemo = (
   tabsModel: Tabs.Model,
   selectedTab: DemoTab,
   h: HtmlBuilder<Message>,
-) => {
+): infer _ => {
   const foldkitPanel = h.div(
     [],
     [
@@ -97,13 +96,11 @@ export const horizontalDemo = (
     ],
   )
 
-  const panelFor = (tab: DemoTab) =>
-    Match.value(tab).pipe(
-      Match.when('Foldkit', () => foldkitPanel),
-      Match.when('React', () => reactPanel),
-      Match.when('Elm', () => elmPanel),
-      Match.exhaustive,
-    )
+  const panelFor = (tab: DemoTab): infer _ => match (tab) {
+    when 'Foldkit': foldkitPanel;
+    when 'React': reactPanel;
+    when 'Elm': elmPanel;
+  }
 
   return [
     h.submodel({
@@ -114,31 +111,31 @@ export const horizontalDemo = (
         tabs: demoTabs,
         selectedValue: selectedTab,
         ariaLabel: 'Framework comparison tabs',
-        toView: ({ tablist, tabs, activeIndex }) =>
+        toView: ({ tablist, tabs, activeIndex }): infer _ =>
           h.div(
             [],
             [
               h.div(
                 [...tablist, h.Class('flex')],
-                tabs.map(tab =>
+                tabs.map((tab): infer _ =>
                   h.button(
                     [...tab.tab, h.Class(buttonClassName)],
                     [h.span([], [tab.value])],
-                  ),
+                  )
                 ),
               ),
               ...tabs
-                .filter(tab => tab.index === activeIndex)
-                .map(tab =>
+                .filter((tab): infer _ => tab.index === activeIndex)
+                .map((tab): infer _ =>
                   h.div(
                     [...tab.panel, h.Class(panelClassName)],
                     [panelFor(tab.value)],
-                  ),
+                  )
                 ),
             ],
           ),
       },
-      toParentMessage: message =>
+      toParentMessage: (message): infer _ =>
         Message.GotHorizontalTabsDemoMessage({ message }),
     }),
   ]
@@ -148,7 +145,7 @@ export const verticalDemo = (
   tabsModel: Tabs.Model,
   selectedTab: DemoTab,
   h: HtmlBuilder<Message>,
-) => {
+): infer _ => {
   const foldkitPanel = h.div(
     [],
     [
@@ -215,13 +212,11 @@ export const verticalDemo = (
     ],
   )
 
-  const panelFor = (tab: DemoTab) =>
-    Match.value(tab).pipe(
-      Match.when('Foldkit', () => foldkitPanel),
-      Match.when('React', () => reactPanel),
-      Match.when('Elm', () => elmPanel),
-      Match.exhaustive,
-    )
+  const panelFor = (tab: DemoTab): infer _ => match (tab) {
+    when 'Foldkit': foldkitPanel;
+    when 'React': reactPanel;
+    when 'Elm': elmPanel;
+  }
 
   return [
     h.submodel({
@@ -233,31 +228,31 @@ export const verticalDemo = (
         selectedValue: selectedTab,
         ariaLabel: 'Framework comparison tabs',
         orientation: 'Vertical',
-        toView: ({ tablist, tabs, activeIndex }) =>
+        toView: ({ tablist, tabs, activeIndex }): infer _ =>
           h.div(
             [h.Class('flex')],
             [
               h.div(
                 [...tablist, h.Class('flex flex-col')],
-                tabs.map(tab =>
+                tabs.map((tab): infer _ =>
                   h.button(
                     [...tab.tab, h.Class(verticalButtonClassName)],
                     [h.span([], [tab.value])],
-                  ),
+                  )
                 ),
               ),
               ...tabs
-                .filter(tab => tab.index === activeIndex)
-                .map(tab =>
+                .filter((tab): infer _ => tab.index === activeIndex)
+                .map((tab): infer _ =>
                   h.div(
                     [...tab.panel, h.Class(verticalPanelClassName)],
                     [panelFor(tab.value)],
-                  ),
+                  )
                 ),
             ],
           ),
       },
-      toParentMessage: message =>
+      toParentMessage: (message): infer _ =>
         Message.GotVerticalTabsDemoMessage({ message }),
     }),
   ]

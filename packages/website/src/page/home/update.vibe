@@ -5,7 +5,7 @@ import { Menu, Tabs } from '@foldkit/ui'
 
 import { ExampleSlug } from '../example/meta.vibe'
 import * as AsyncCounterDemo from './asyncCounterDemo.vibe'
-import * as DemoTab from './demoTab.ts'
+import * as DemoTab from './demoTab.vibe'
 import { type ManagedResourceServices } from './managedResources.vibe'
 import { Message, OutMessage } from './message.vibe'
 import { type Model } from './model.vibe'

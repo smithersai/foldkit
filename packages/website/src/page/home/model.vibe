@@ -1,7 +1,7 @@
 import { Menu, Tabs } from '@foldkit/ui'
 
 import * as AsyncCounterDemo from './asyncCounterDemo.vibe'
-import * as DemoTab from './demoTab.ts'
+import * as DemoTab from './demoTab.vibe'
 import * as NotePlayerDemo from './notePlayerDemo.vibe'
 
 // MODEL

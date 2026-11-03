@@ -1,4 +1,3 @@
-import { Match } from 'effect'
 import {
   Html,
   type HtmlBuilder,
@@ -9,7 +8,7 @@ import {
 import { Menu } from '@foldkit/ui'
 import type { AnchorConfig } from '@foldkit/ui/menu'
 
-import { Icon } from '../../../icon'
+import { Icon } from '../../../icon/index.ts'
 import { Message } from '../message.vibe'
 
 // DEMO CONTENT
@@ -18,7 +17,8 @@ const triggerClassName = 'demo-neutral-button inline-flex items-center gap-1.5'
 
 const basicItemsClassName = 'demo-popup-surface w-48 overflow-hidden'
 
-const animatedItemsClassName = `${basicItemsClassName} transition duration-200 ease-out data-[closed]:scale-95 data-[closed]:opacity-0`
+const animatedItemsClassName =
+  `${basicItemsClassName} transition duration-200 ease-out data-[closed]:scale-95 data-[closed]:opacity-0`
 
 const itemClassName = 'demo-option'
 
@@ -42,23 +42,20 @@ const MENU_ITEMS: ReadonlyArray<MenuItem> = [
   'Delete',
 ]
 
-const menuItemIcon = (item: MenuItem): Html =>
-  Match.value(item).pipe(
-    Match.when('Edit', () => Icon.pencil(ICON_SIZE)),
-    Match.when('Duplicate', () => Icon.documentDuplicate(ICON_SIZE)),
-    Match.when('Archive', () => Icon.archiveBox(ICON_SIZE)),
-    Match.when('Move', () => Icon.arrowRight(ICON_SIZE)),
-    Match.when('Delete', () => Icon.trash(ICON_SIZE)),
-    Match.exhaustive,
-  )
+const menuItemIcon = (item: MenuItem): Html => match (item) {
+  when 'Edit': Icon.pencil(ICON_SIZE);
+  when 'Duplicate': Icon.documentDuplicate(ICON_SIZE);
+  when 'Archive': Icon.archiveBox(ICON_SIZE);
+  when 'Move': Icon.arrowRight(ICON_SIZE);
+  when 'Delete': Icon.trash(ICON_SIZE);
+}
 
 const isItemDisabled = (item: MenuItem): boolean => item === 'Archive'
 
-const itemGroupKey = (item: MenuItem): string =>
-  Match.value(item).pipe(
-    Match.when('Delete', () => 'Danger'),
-    Match.orElse(() => 'Actions'),
-  )
+const itemGroupKey = (item: MenuItem): string => match (item) {
+  when 'Delete': 'Danger';
+  default: 'Actions';
+}
 
 // VIEW
 
@@ -68,20 +65,19 @@ const MENU_ANCHOR: AnchorConfig = {
   padding: 8,
 }
 
-const menuViewConfig = (itemsClassName: string) => {
-  const groupToHeading = (groupKey: string) =>
-    Match.value(groupKey).pipe(
-      Match.when('Danger', () => ({
-        content: ih.span([], ['Danger Zone']),
-        className: headingClassName,
-      })),
-      Match.orElse(() => undefined),
-    )
+const menuViewConfig = (itemsClassName: string): infer _ => {
+  const groupToHeading = (groupKey: string): infer _ => match (groupKey) {
+    when 'Danger': ({
+      content: ih.span([], ['Danger Zone']),
+      className: headingClassName,
+    });
+    default: undefined;
+  }
 
   return {
     anchor: MENU_ANCHOR,
     items: MENU_ITEMS,
-    itemToConfig: (item: MenuItem) => ({
+    itemToConfig: (item: MenuItem): infer _ => ({
       className: itemClassName,
       content: ih.div(
         [ih.Class('flex items-center gap-2.5')],
@@ -102,7 +98,10 @@ const menuViewConfig = (itemsClassName: string) => {
   }
 }
 
-export const basicDemo = (menuModel: Menu.Model, h: HtmlBuilder<Message>) => {
+export const basicDemo = (
+  menuModel: Menu.Model,
+  h: HtmlBuilder<Message>,
+): infer _ => {
   return [
     h.div(
       [h.Class('demo-field')],
@@ -121,7 +120,7 @@ export const basicDemo = (menuModel: Menu.Model, h: HtmlBuilder<Message>) => {
               viewInputs: {
                 ...menuViewConfig(basicItemsClassName),
               },
-              toParentMessage: message =>
+              toParentMessage: (message): infer _ =>
                 Message.GotMenuBasicDemoMessage({ message }),
             }),
           ],
@@ -134,7 +133,7 @@ export const basicDemo = (menuModel: Menu.Model, h: HtmlBuilder<Message>) => {
 export const animatedDemo = (
   menuModel: Menu.Model,
   h: HtmlBuilder<Message>,
-) => {
+): infer _ => {
   return [
     h.div(
       [h.Class('demo-field')],
@@ -153,7 +152,7 @@ export const animatedDemo = (
               viewInputs: {
                 ...menuViewConfig(animatedItemsClassName),
               },
-              toParentMessage: message =>
+              toParentMessage: (message): infer _ =>
                 Message.GotMenuAnimatedDemoMessage({ message }),
             }),
           ],

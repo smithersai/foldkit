@@ -1,0 +1,10 @@
+import { Tabs } from '@foldkit/ui'
+
+export schema Tab = 'Architecture' | 'Note Player'
+
+export const DemoTabs = Tabs.create<Tab>()
+
+export const all: ReadonlyArray<Tab> = ['Architecture', 'Note Player']
+
+export const isActive = (tab: Tab): infer _ => (activeDemoTab: Tab): boolean =>
+  activeDemoTab === tab

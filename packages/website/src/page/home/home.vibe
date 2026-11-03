@@ -20,7 +20,7 @@ import {
 } from '../example/index.ts'
 import * as AsyncCounterDemo from './asyncCounterDemo.vibe'
 import { contentView } from './content.vibe'
-import * as DemoTab from './demoTab.ts'
+import * as DemoTab from './demoTab.vibe'
 import { Message } from './message.vibe'
 import { type Model } from './model.vibe'
 import * as NotePlayerDemo from './notePlayerDemo.vibe'

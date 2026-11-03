@@ -28,9 +28,9 @@ import {
   ItemListbox,
   ItemMultiListbox,
 } from './demo/listbox.vibe'
-import { DemoMenu, type MenuItem } from './demo/menu.ts'
+import { DemoMenu, type MenuItem } from './demo/menu.vibe'
 import { PlanRadioGroup } from './demo/radioGroup.ts'
-import { DemoTabs } from './demo/tabs.ts'
+import { DemoTabs } from './demo/tabs.vibe'
 import { Toast } from './demo/toastModule.vibe'
 import { ROW_COUNT as VIRTUAL_LIST_ROW_COUNT } from './demo/virtualList.vibe'
 import { Message } from './message.vibe'

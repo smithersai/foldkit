@@ -56,3 +56,10 @@ The `check:playground-ssg-build` launcher enables native loading only for its ch
 Native Effect functions use `effect`, and `try` runs a program. A plain factory
 keeps eager argument or resource lookups before its returned `effect { ... }`
 block, preserving what happens when the program is created and when it runs.
+
+The website uses a native `vite.config.vibe` with the native config loader.
+The type display and heading slug helpers are native programs. Their differential
+properties preserve TypeDoc getter evaluation, recursive heading text, Unicode,
+explicit heading IDs and opaque HTML identity, and reject typed wrong-result
+mutants. The source-collector regression creates a temporary native config at
+the website root; its filename pattern is included in the website project.

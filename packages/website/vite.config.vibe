@@ -1,7 +1,7 @@
-import { Array, Match, Option, Schema, pipe } from 'effect'
-import { existsSync } from 'node:fs'
-import { readFile, readdir } from 'node:fs/promises'
-import { basename, extname, join, relative, resolve } from 'node:path'
+import * as NodeFileSystem from '@effect/platform-node/NodeFileSystem'
+import * as NodePath from '@effect/platform-node/NodePath'
+import { Array as Arr, pipe } from 'effect'
+import { codeToHtml } from './scripts/nativeHighlight.ts'
 import vibelang from 'vibelang-vite'
 import { type Plugin, defineConfig } from 'vite'
 
@@ -14,7 +14,6 @@ import {
   notePlayerDemoCodePlugin,
 } from './scripts/demoCodePlugin.ts'
 import { monacoWorkersPlugin } from './scripts/monacoWorkersPlugin.ts'
-import { codeToHtml } from './scripts/nativeHighlight.ts'
 import { playgroundFilesPlugin } from './scripts/playgroundFilesPlugin.vibe'
 import { playgroundTypesPlugin } from './scripts/playgroundTypesPlugin.vibe'
 import { islandAttributes } from './src/markdown/islandAttributes.vibe'
@@ -28,7 +27,7 @@ import {
   type NamedSchemas,
   typeDefFromChildren,
   typeToString,
-} from './src/page/apiReference/typeToString.ts'
+} from './src/page/apiReference/typeToString.vibe'
 import {
   Kind,
   type TypeDocCommentPart,
@@ -44,6 +43,15 @@ import {
   runnableExampleSlugs,
 } from './src/page/example/meta.vibe'
 import { shikiDarkTheme, shikiLightTheme } from './src/shikiTheme.ts'
+
+const moduleUrl = new URL(import.meta.url)
+const { paths, moduleDirectory } = Effect.runSync(effect {
+  provide NodePath.layer {
+    const paths = try Path.Path
+    const moduleFile = try Effect.orDie(paths.fromFileUrl(moduleUrl))
+    return { paths, moduleDirectory: paths.dirname(moduleFile) }
+  }
+})
 
 const shikiThemes = {
   light: shikiLightTheme,
@@ -84,7 +92,14 @@ const highlightCodePlugin = (): Plugin => ({
     }
 
     const filePath = id.slice(0, id.indexOf('?'))
-    const rawCode = await readFile(filePath, 'utf-8')
+    const rawCode = await Effect.runPromise(effect {
+      provide NodeFileSystem.layer {
+        return try (try FileSystem.FileSystem).readFileString(
+          filePath,
+          'utf-8',
+        )
+      }
+    })
     const code = rawCode.trimEnd()
 
     const lang = highlightLanguage(filePath)
@@ -127,13 +142,13 @@ const cssSnippetEntry = (
  * invisible until restart while every `.ts` snippet hot-updates.
  */
 const cssSnippetsPlugin = (): Plugin => {
-  const snippetDirectory = resolve(import.meta.dirname, 'src/snippet')
+  const snippetDirectory = paths.resolve(moduleDirectory, 'src/snippet')
   const isCssSnippet = (filePath: string): boolean =>
     filePath.startsWith(snippetDirectory) && filePath.endsWith('.css')
 
   return {
     name: 'css-snippets',
-    resolveId(id) {
+    resolveId(id): infer _ {
       return id === CSS_SNIPPETS_ID ? RESOLVED_CSS_SNIPPETS_ID : undefined
     },
     async load(id) {
@@ -141,15 +156,26 @@ const cssSnippetsPlugin = (): Plugin => {
         return undefined
       }
 
-      const fileNames = (await readdir(snippetDirectory)).filter(fileName =>
-        fileName.endsWith('.css'),
-      )
+      const fileNames = (await Effect.runPromise(effect {
+        provide NodeFileSystem.layer {
+          return try (try FileSystem.FileSystem).readDirectory(
+            snippetDirectory,
+          )
+        }
+      })).filter(fileName => fileName.endsWith('.css'))
 
       const entries = await Promise.all(
         fileNames.map(async fileName => {
-          const filePath = join(snippetDirectory, fileName)
+          const filePath = paths.join(snippetDirectory, fileName)
           this.addWatchFile(filePath)
-          const raw = (await readFile(filePath, 'utf-8')).trimEnd()
+          const raw = (await Effect.runPromise(effect {
+            provide NodeFileSystem.layer {
+              return try (try FileSystem.FileSystem).readFileString(
+                filePath,
+                'utf-8',
+              )
+            }
+          })).trimEnd()
 
           const highlighted = await codeToHtml(raw, {
             lang: 'css',
@@ -165,7 +191,7 @@ const cssSnippetsPlugin = (): Plugin => {
     // NOTE: Vite runs this once per environment. Without the client guard a
     // single snippet edit sends a full reload for the client and again for
     // ssr.
-    hotUpdate({ file, server, modules }) {
+    hotUpdate({ file, server, modules }): infer _ {
       if (this.environment.name !== 'client' || !isCssSnippet(file)) {
         return undefined
       }
@@ -198,11 +224,16 @@ const RESOLVED_PARSED_API_ID = '\0' + PARSED_API_ID
 // reference renders `Calendar` alongside `Ui/Calendar`. Type references render by name,
 // so the two projects' independent numeric ids never collide.
 const loadApiTypeDocJson = async (): Promise<TypeDocJson> => {
-  const generatedDir = resolve(import.meta.dirname, 'src/generated')
-  const [coreRaw, uiRaw] = await Promise.all([
-    readFile(join(generatedDir, 'api.json'), 'utf-8'),
-    readFile(join(generatedDir, 'api-ui.json'), 'utf-8'),
-  ])
+  const generatedDir = paths.resolve(moduleDirectory, 'src/generated')
+  const [coreRaw, uiRaw] = await Effect.runPromise(effect {
+    provide NodeFileSystem.layer {
+      const fs = try FileSystem.FileSystem
+      return try.all [
+        fs.readFileString(paths.join(generatedDir, 'api.json'), 'utf-8'),
+        fs.readFileString(paths.join(generatedDir, 'api-ui.json'), 'utf-8'),
+      ]
+    }
+  })
   const core = JSON.parse(coreRaw)
   const ui = JSON.parse(uiRaw)
   const merged = {
@@ -213,207 +244,213 @@ const loadApiTypeDocJson = async (): Promise<TypeDocJson> => {
 }
 
 const formatTypeParam =
-  (namedSchemas: NamedSchemas) =>
+  (namedSchemas: NamedSchemas): infer _ =>
   (typeParam: TypeDocTypeParam): string => {
-    const constraint = Option.match(typeParam.type, {
-      onNone: () => '',
-      onSome: () => ` extends ${typeToString(typeParam.type, 0, namedSchemas)}`,
-    })
-    const defaultValue = Option.match(typeParam.default, {
-      onNone: () => '',
-      onSome: () => ` = ${typeToString(typeParam.default, 0, namedSchemas)}`,
-    })
+    const constraint = match (typeParam.type) {
+      when { _tag: "None" }: '';
+      when { _tag: "Some", value: let optionValue3 }: do {
+        void optionValue3
+        ;` extends ${typeToString(typeParam.type, 0, namedSchemas)}`
+      };
+    }
+    const defaultValue = match (typeParam.default) {
+      when { _tag: "None" }: '';
+      when { _tag: "Some", value: let optionValue2 }: do {
+        void optionValue2
+        ;` = ${typeToString(typeParam.default, 0, namedSchemas)}`
+      };
+    }
     return `${typeParam.name}${constraint}${defaultValue}`
   }
 
 const formatParam =
-  (namedSchemas: NamedSchemas) =>
+  (namedSchemas: NamedSchemas): infer _ =>
   (parameter: TypeDocParam, depth: number): string => {
     const optionalSuffix = parameter.flags.isOptional ? '?' : ''
-    return `${parameter.name}${optionalSuffix}: ${typeToString(parameter.type, depth, namedSchemas)}`
+    return `${parameter.name}${optionalSuffix}: ${
+      typeToString(parameter.type, depth, namedSchemas)
+    }`
   }
 
 const formatParams =
-  (namedSchemas: NamedSchemas) =>
+  (namedSchemas: NamedSchemas): infer _ =>
   (parameters: ReadonlyArray<TypeDocParam>): string => {
     const format = formatParam(namedSchemas)
-    return Array.matchLeft(parameters, {
-      onEmpty: () => '()',
-      onNonEmpty: (first, rest) =>
-        Array.match(rest, {
-          onEmpty: () => `(${format(first, 0)})`,
-          onNonEmpty: () =>
+    return Arr.matchLeft(parameters, {
+      onEmpty: (): infer _ => '()',
+      onNonEmpty: (first, rest): infer _ =>
+        Arr.match(rest, {
+          onEmpty: (): infer _ => `(${format(first, 0)})`,
+          onNonEmpty: (): infer _ =>
             pipe(
               parameters,
-              Array.map(parameter => `  ${format(parameter, 1)}`),
-              Array.join(',\n'),
-              joined => `(\n${joined}\n)`,
+              Arr.map((parameter): infer _ => `  ${format(parameter, 1)}`),
+              Arr.join(',\n'),
+              (joined): infer _ => `(\n${joined}\n)`,
             ),
         }),
     })
   }
 
 const buildFunctionSignatureString =
-  (namedSchemas: NamedSchemas) =>
+  (namedSchemas: NamedSchemas): infer _ =>
   (signature: TypeDocSignature): string => {
-    const typeParamString = pipe(
-      signature.typeParameters,
-      Option.filter(Array.isReadonlyArrayNonEmpty),
-      Option.match({
-        onNone: () => '',
-        onSome: typeParams =>
+    const typeParamString = signature.typeParameters
+      .filter(Arr.isReadonlyArrayNonEmpty)
+      .match({
+        onNone: (): infer _ => '',
+        onSome: (typeParams): infer _ =>
           pipe(
             typeParams,
-            Array.map(formatTypeParam(namedSchemas)),
-            Array.join(', '),
-            joined => `<${joined}>`,
+            Arr.map(formatTypeParam(namedSchemas)),
+            Arr.join(', '),
+            (joined): infer _ => `<${joined}>`,
           ),
-      }),
-    )
+      })
 
-    const paramString = pipe(
-      signature.parameters,
-      Option.filter(Array.isReadonlyArrayNonEmpty),
-      Option.match({
-        onNone: () => '()',
-        onSome: formatParams(namedSchemas),
-      }),
-    )
+    const parameters = signature.parameters
+    const isNonEmpty = Arr.isReadonlyArrayNonEmpty
+    const formatSomeParameters = formatParams(namedSchemas)
+    const paramString = parameters.filter(isNonEmpty).match({
+      onNone: (): infer _ => '()',
+      onSome: formatSomeParameters,
+    })
 
-    return `${typeParamString}${paramString}: ${typeToString(signature.type, 0, namedSchemas)}`
+    return `${typeParamString}${paramString}: ${
+      typeToString(signature.type, 0, namedSchemas)
+    }`
   }
 
 const partsToText = (
   parts: ReadonlyArray<TypeDocCommentPart>,
-): Option.Option<string> =>
+): Option<string> =>
   pipe(
-    Array.map(parts, ({ text }) => text),
-    Array.join(''),
-    text => text.trim(),
-    Option.liftPredicate(text => text.length > 0),
+    Arr.map(parts, ({ text }): infer _ => text),
+    Arr.join(''),
+    (text): infer _ => text.trim(),
+    Option.liftPredicate((text): infer _ => text.length > 0),
   )
 
-const itemDescription = (item: TypeDocItem): Option.Option<string> =>
-  pipe(
-    item.comment,
-    Option.flatMap(comment => comment.summary),
-    Option.flatMap(partsToText),
-  )
+const itemDescription = (item: TypeDocItem): Option<string> =>
+  item.comment
+    .flatMap((comment): infer _ => comment.summary)
+    .flatMap(partsToText)
 
-const signatureDescription = (item: TypeDocItem): Option.Option<string> =>
-  pipe(
-    item.signatures,
-    Option.flatMap(Array.head),
-    Option.flatMap(({ comment }) => comment),
-    Option.flatMap(comment => comment.summary),
-    Option.flatMap(partsToText),
-  )
+const signatureDescription = (item: TypeDocItem): Option<string> =>
+  item.signatures
+    .flatMap(Arr.head)
+    .flatMap(({ comment }): infer _ => comment)
+    .flatMap((comment): infer _ => comment.summary)
+    .flatMap(partsToText)
 
 const formatAsDocComment = (description: string): string => {
   const lines = description.split('\n')
   if (lines.length === 1) {
     return `/** ${description} */`
   }
-  return ['/**', ...lines.map(line => ` * ${line}`), ' */'].join('\n')
+  return ['/**', ...lines.map((line): infer _ => ` * ${line}`), ' */'].join(
+    '\n',
+  )
 }
 
 const prependDescription = (
   code: string,
-  maybeDescription: Option.Option<string>,
-): string =>
-  Option.match(maybeDescription, {
-    onNone: () => code,
-    onSome: description => `${formatAsDocComment(description)}\n${code}`,
-  })
+  maybeDescription: Option<string>,
+): string => match (maybeDescription) {
+  when { _tag: "None" }: code;
+  when { _tag: "Some", value: let description }: `${
+    formatAsDocComment(description)
+  }\n${code}`;
+}
 
-const functionEntries =
-  (namedSchemas: NamedSchemas) =>
-  (
-    prefix: string,
-    item: TypeDocItem,
-  ): ReadonlyArray<readonly [string, string]> => {
-    const buildSignature = buildFunctionSignatureString(namedSchemas)
-    return pipe(
-      item.signatures,
-      Option.filter(Array.isReadonlyArrayNonEmpty),
-      Option.match({
-        onNone: () => [],
-        onSome: signatures => [
-          [
-            `function-${prefix}${item.name}`,
-            prependDescription(
-              pipe(
-                signatures,
-                Array.map(
-                  signature => `declare function _${buildSignature(signature)}`,
-                ),
-                Array.join('\n\n'),
+const functionEntries = (namedSchemas: NamedSchemas): infer _ =>
+(
+  prefix: string,
+  item: TypeDocItem,
+): ReadonlyArray<readonly [string, string]> => {
+  const buildSignature = buildFunctionSignatureString(namedSchemas)
+  return item.signatures
+    .filter(Arr.isReadonlyArrayNonEmpty)
+    .match({
+      onNone: (): infer _ => [],
+      onSome: (signatures): infer _ => [
+        [
+          `function-${prefix}${item.name}`,
+          prependDescription(
+            pipe(
+              signatures,
+              Arr.map(
+                (signature): infer _ =>
+                  `declare function _${buildSignature(signature)}`,
               ),
-              signatureDescription(item),
+              Arr.join('\n\n'),
             ),
-          ] as const,
-        ],
-      }),
-    )
-  }
+            signatureDescription(item),
+          ),
+        ] as const,
+      ],
+    })
+}
 
 const isExtractedTypeAlias = (item: TypeDocItem): boolean =>
-  Option.exists(item.type, ({ type }) => type === 'query')
+  Option.exists(item.type, ({ type }): infer _ => type === 'query')
 
-const typeAliasEntries =
-  (namedSchemas: NamedSchemas) =>
-  (
-    prefix: string,
-    item: TypeDocItem,
-  ): ReadonlyArray<readonly [string, string]> => {
-    if (isExtractedTypeAlias(item)) {
-      return []
-    }
-    const tsString = Option.match(item.type, {
-      onNone: () =>
-        `type ${item.name} = ${typeDefFromChildren(item.children, namedSchemas)}`,
-      onSome: () =>
-        `type ${item.name} = ${typeToString(item.type, 0, namedSchemas)}`,
-    })
-    return [
-      [
-        `type-${prefix}${item.name}`,
-        prependDescription(tsString, itemDescription(item)),
-      ] as const,
-    ]
+const typeAliasEntries = (namedSchemas: NamedSchemas): infer _ =>
+(
+  prefix: string,
+  item: TypeDocItem,
+): ReadonlyArray<readonly [string, string]> => {
+  if (isExtractedTypeAlias(item)) {
+    return []
   }
-
-const interfaceEntries =
-  (namedSchemas: NamedSchemas) =>
-  (
-    prefix: string,
-    item: TypeDocItem,
-  ): ReadonlyArray<readonly [string, string]> => [
+  const tsString = match (item.type) {
+    when { _tag: "None" }: `type ${item.name} = ${
+      typeDefFromChildren(item.children, namedSchemas)
+    }`;
+    when { _tag: "Some", value: let optionValue1 }: do {
+      void optionValue1
+      ;`type ${item.name} = ${typeToString(item.type, 0, namedSchemas)}`
+    };
+  }
+  return [
     [
-      `interface-${prefix}${item.name}`,
-      prependDescription(
-        `interface ${item.name} ${typeDefFromChildren(item.children, namedSchemas)}`,
-        itemDescription(item),
-      ),
+      `type-${prefix}${item.name}`,
+      prependDescription(tsString, itemDescription(item)),
     ] as const,
   ]
+}
 
-const variableEntries =
-  (namedSchemas: NamedSchemas) =>
-  (
-    prefix: string,
-    item: TypeDocItem,
-  ): ReadonlyArray<readonly [string, string]> => [
-    [
-      `const-${prefix}${item.name}`,
-      prependDescription(
-        `const ${item.name}: ${typeToString(item.type, 0, namedSchemas)}`,
-        itemDescription(item),
-      ),
-    ] as const,
-  ]
+const interfaceEntries = (namedSchemas: NamedSchemas): infer _ =>
+(
+  prefix: string,
+  item: TypeDocItem,
+): ReadonlyArray<readonly [string, string]> => [
+  [
+    `interface-${prefix}${item.name}`,
+    prependDescription(
+      `interface ${item.name} ${
+        typeDefFromChildren(item.children, namedSchemas)
+      }`,
+      itemDescription(item),
+    ),
+  ] as const,
+]
 
-const itemToEntries = (namedSchemas: NamedSchemas) => {
+const variableEntries = (namedSchemas: NamedSchemas): infer _ =>
+(
+  prefix: string,
+  item: TypeDocItem,
+): ReadonlyArray<readonly [string, string]> => [
+  [
+    `const-${prefix}${item.name}`,
+    prependDescription(
+      `const ${item.name}: ${typeToString(item.type, 0, namedSchemas)}`,
+      itemDescription(item),
+    ),
+  ] as const,
+]
+
+const itemToEntries = (namedSchemas: NamedSchemas): infer _ => {
   const fnEntries = functionEntries(namedSchemas)
   const typeEntries = typeAliasEntries(namedSchemas)
   const ifaceEntries = interfaceEntries(namedSchemas)
@@ -422,13 +459,32 @@ const itemToEntries = (namedSchemas: NamedSchemas) => {
     prefix: string,
     item: TypeDocItem,
   ): ReadonlyArray<readonly [string, string]> =>
-    Match.value(item.kind).pipe(
-      Match.when(Kind.Function, () => fnEntries(prefix, item)),
-      Match.when(Kind.TypeAlias, () => typeEntries(prefix, item)),
-      Match.when(Kind.Interface, () => ifaceEntries(prefix, item)),
-      Match.when(Kind.Variable, () => varEntries(prefix, item)),
-      Match.orElse(() => []),
-    )
+    do {
+      const matchSubject = item.kind
+      const patternFunction = Kind.Function
+      const patternTypeAlias = Kind.TypeAlias
+      const patternInterface = Kind.Interface
+      const patternVariable = Kind.Variable
+      match (matchSubject) {
+        when let selected and if (selected === patternFunction): fnEntries(
+          prefix,
+          item,
+        );
+        when let selected and if (selected === patternTypeAlias): typeEntries(
+          prefix,
+          item,
+        );
+        when let selected and if (selected === patternInterface): ifaceEntries(
+          prefix,
+          item,
+        );
+        when let selected and if (selected === patternVariable): varEntries(
+          prefix,
+          item,
+        );
+        default: [];
+      }
+    }
 }
 
 // NOTE: Signatures are wrapped as `declare function _<sig>` so Shiki highlights them
@@ -441,7 +497,7 @@ const stripDeclarePrefix = (html: string): string =>
 
 const highlightApiSignaturesPlugin = (): Plugin => ({
   name: 'highlight-api-signatures',
-  resolveId(id) {
+  resolveId(id): infer _ {
     if (id === VIRTUAL_MODULE_ID) {
       return RESOLVED_VIRTUAL_MODULE_ID
     } else {
@@ -461,22 +517,24 @@ const highlightApiSignaturesPlugin = (): Plugin => ({
       prefix: string,
       children: ReadonlyArray<TypeDocItem>,
     ): ReadonlyArray<readonly [string, string]> =>
-      Array.flatMap(children, item =>
+      Arr.flatMap(children, item =>
         item.kind === Kind.Namespace
-          ? Option.match(item.children, {
-              onNone: () => [],
-              onSome: namespaceChildren =>
-                itemsToEntries(`${prefix}${item.name}/`, namespaceChildren),
-            })
-          : toEntries(prefix, item),
-      )
+          ? match (item.children) {
+            when { _tag: "None" }: [];
+            when { _tag: "Some", value: let namespaceChildren }: itemsToEntries(
+              `${prefix}${item.name}/`,
+              namespaceChildren,
+            );
+          }
+          : toEntries(prefix, item))
 
-    const entries = Array.flatMap(json.children, ({ name, children }) =>
-      itemsToEntries(`${name}/`, children),
+    const entries = Arr.flatMap(
+      json.children,
+      ({ name, children }) => itemsToEntries(`${name}/`, children),
     )
 
     const highlightedEntries = await Promise.all(
-      Array.map(entries, async ([key, tsString]) => {
+      Arr.map(entries, async ([key, tsString]) => {
         const html = await codeToHtml(tsString, {
           lang: 'typescript',
           themes: shikiThemes,
@@ -499,7 +557,7 @@ const highlightApiSignaturesPlugin = (): Plugin => ({
 // HTML, both of which are loaded lazily via virtual:parsed-api and virtual:api-highlights.
 const apiModuleIndexPlugin = (): Plugin => ({
   name: 'api-module-index',
-  resolveId(id) {
+  resolveId(id): infer _ {
     if (id === API_MODULE_INDEX_ID) {
       return RESOLVED_API_MODULE_INDEX_ID
     } else {
@@ -517,33 +575,33 @@ const apiModuleIndexPlugin = (): Plugin => ({
       prefix: string,
       children: ReadonlyArray<TypeDocItem>,
     ): ReadonlyArray<string> =>
-      Array.flatMap(children, item => {
+      Arr.flatMap(children, item => {
         if (item.kind !== Kind.Namespace) {
           return []
         }
-        return Option.match(item.children, {
-          onNone: () => [],
-          onSome: namespaceChildren => {
+        return match (item.children) {
+          when { _tag: "None" }: [];
+          when { _tag: "Some", value: let namespaceChildren }: do {
             const qualifiedName = `${prefix}/${item.name}`
-            const hasDeclarations = Array.some(
+            const hasDeclarations = Arr.some(
               namespaceChildren,
               ({ kind }) => kind !== Kind.Namespace,
             )
             const selfEntry = hasDeclarations ? [qualifiedName] : []
             const nested = collectNestedNames(qualifiedName, namespaceChildren)
-            return [...selfEntry, ...nested]
-          },
-        })
+            ;[...selfEntry, ...nested]
+          };
+        }
       })
 
-    const index = Array.flatMap(json.children, module => {
-      const hasDeclarations = Array.some(
+    const index = Arr.flatMap(json.children, module => {
+      const hasDeclarations = Arr.some(
         module.children,
         ({ kind }) => kind !== Kind.Namespace,
       )
       const selfEntry = hasDeclarations ? [module.name] : []
       const nested = collectNestedNames(module.name, module.children)
-      return Array.map([...selfEntry, ...nested], name => ({
+      return Arr.map([...selfEntry, ...nested], name => ({
         slug: moduleNameToSlug(name),
         name,
       }))
@@ -555,7 +613,7 @@ const apiModuleIndexPlugin = (): Plugin => ({
 
 const parsedApiPlugin = (): Plugin => ({
   name: 'parsed-api',
-  resolveId(id) {
+  resolveId(id): infer _ {
     if (id === PARSED_API_ID) {
       return RESOLVED_PARSED_API_ID
     } else {
@@ -578,8 +636,11 @@ const parsedApiPlugin = (): Plugin => ({
 const LANDING_DATA_ID = 'virtual:landing-data'
 const RESOLVED_LANDING_DATA_ID = '\0' + LANDING_DATA_ID
 
-const readBakedStarCount = (): number | null => {
-  const raw = process.env['FOLDKIT_GITHUB_STAR_COUNT']
+const readBakedStarCount = effect () => {
+  const maybeRaw = try Config.option(
+    Config.String('FOLDKIT_GITHUB_STAR_COUNT'),
+  )
+  const raw = Option.getOrUndefined(maybeRaw)
   if (raw === undefined || raw === '') {
     return null
   }
@@ -589,7 +650,7 @@ const readBakedStarCount = (): number | null => {
 
 const landingDataPlugin = (): Plugin => ({
   name: 'landing-data',
-  resolveId(id) {
+  resolveId(id): infer _ {
     if (id === LANDING_DATA_ID) {
       return RESOLVED_LANDING_DATA_ID
     } else {
@@ -602,17 +663,23 @@ const landingDataPlugin = (): Plugin => ({
     }
 
     const packageJson = JSON.parse(
-      await readFile(
-        resolve(import.meta.dirname, '../foldkit/package.json'),
-        'utf-8',
-      ),
+      await Effect.runPromise(effect {
+        provide NodeFileSystem.layer {
+          return try (try FileSystem.FileSystem).readFileString(
+            paths.resolve(moduleDirectory, '../foldkit/package.json'),
+            'utf-8',
+          )
+        }
+      }),
     )
 
-    const githubStarCount = readBakedStarCount()
+    const githubStarCount = await Effect.runPromise(readBakedStarCount())
 
     return [
       `export const foldkitVersion = ${JSON.stringify(packageJson.version)}`,
-      `export const effectVersion = ${JSON.stringify(packageJson.peerDependencies.effect)}`,
+      `export const effectVersion = ${
+        JSON.stringify(packageJson.peerDependencies.effect)
+      }`,
       `export const githubStarCount = ${JSON.stringify(githubStarCount)}`,
     ].join('\n')
   },
@@ -626,7 +693,7 @@ const landingDataPlugin = (): Plugin => ({
 const cssLoadOrderPlugin = (): Plugin => ({
   name: 'css-load-order',
   enforce: 'post',
-  transformIndexHtml(html) {
+  transformIndexHtml(html): infer _ {
     const cssLinkPattern =
       /<link\s+rel="stylesheet"[^>]*crossorigin[^>]*href="[^"]*\.css"[^>]*>/g
     const cssLinks = html.match(cssLinkPattern)
@@ -639,8 +706,8 @@ const cssLoadOrderPlugin = (): Plugin => ({
       result = result.replace(link, '')
     }
 
-    const cleanedLinks = cssLinks.map(link =>
-      link.replace(/\s+crossorigin/, ''),
+    const cleanedLinks = cssLinks.map((link): infer _ =>
+      link.replace(/\s+crossorigin/, '')
     )
 
     const headOpenIndex = result.indexOf('<head>')
@@ -670,10 +737,8 @@ export const EXAMPLE_FILE_EXTENSIONS: ReadonlySet<string> = new Set([
 ])
 
 const langFromExtension = (filePath: string): string => {
-  const extension = extname(filePath)
-  if (extension === '.vibe' || extension === '.vibex') {
-    return 'vibe'
-  }
+  const extension = paths.extname(filePath)
+  if (extension === '.vibe' || extension === '.vibex') return 'vibe'
   if (extension === '.tsx') {
     return 'tsx'
   }
@@ -704,38 +769,53 @@ export const EXAMPLE_ROOT_FILES: ReadonlyArray<string> = [
 
 const collectSourceFiles = async (
   directory: string,
-): Promise<ReadonlyArray<string>> => {
-  const entries = await readdir(directory, {
-    recursive: true,
-    withFileTypes: true,
-  }).catch((error: unknown) => {
-    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-      return []
+): Promise<ReadonlyArray<string>> =>
+  await Effect.runPromise(effect {
+    provide NodeFileSystem.layer {
+      return (effect {
+        const fs = try FileSystem.FileSystem
+        const pending = [{
+          directory,
+          entries: try fs.readDirectoryEntries(directory),
+        }]
+        const files: string[] = []
+        while (pending.length > 0) {
+          const current = pending.pop()
+          if (current === undefined) break
+          for (const entry of current.entries) {
+            const absolute = paths.join(current.directory, entry.name)
+            if (entry.type === 'Directory') {
+              pending.push({
+                directory: absolute,
+                entries: try fs.readDirectoryEntries(absolute),
+              })
+            }
+            if (entry.type === 'File') files.push(absolute)
+          }
+        }
+        return files.filter(file =>
+          EXAMPLE_FILE_EXTENSIONS.has(paths.extname(file))
+          && !file.endsWith('.d.vibe.ts')
+          && !file.endsWith('.d.vibex.ts')
+          && !paths.dirname(file).includes('node_modules')
+          && !paths.basename(file).startsWith('vitest-setup')
+        )
+      }) catch effect error => {
+        if (error.reason._tag === 'NotFound') return []
+        throw error
+      }
     }
-    throw error
   })
-  return entries
-    .filter(
-      entry =>
-        entry.isFile() &&
-        EXAMPLE_FILE_EXTENSIONS.has(extname(entry.name)) &&
-        !entry.name.endsWith('.d.vibe.ts') &&
-        !entry.name.endsWith('.d.vibex.ts') &&
-        !entry.parentPath.includes('node_modules') &&
-        !entry.name.startsWith('vitest-setup'),
-    )
-    .map(entry => join(entry.parentPath, entry.name))
-}
 
 const sortExampleFiles = (
   files: ReadonlyArray<string>,
   baseDirectory: string,
 ): ReadonlyArray<string> =>
-  [...files].sort((fileA, fileB) => {
-    const relativeA = relative(baseDirectory, fileA)
-    const relativeB = relative(baseDirectory, fileB)
-    const isMainA = /^main\.(?:ts|vibe)$/.test(basename(fileA))
-    const isMainB = /^main\.(?:ts|vibe)$/.test(basename(fileB))
+  [...files].sort((fileA, fileB): infer _ => {
+    const relativeA = paths.relative(baseDirectory, fileA)
+    const relativeB = paths.relative(baseDirectory, fileB)
+    const isMainA = /^main\.(?:ts|vibe)$/.test(paths.basename(fileA))
+    const isMainB = /^main\.(?:ts|vibe)$/.test(paths.basename(fileB))
     if (isMainA && !isMainB) {
       return -1
     }
@@ -754,14 +834,18 @@ const highlightExampleFile = async (
   filePath: string,
   baseDirectory: string,
 ) => {
-  const rawCode = await readFile(filePath, 'utf-8')
+  const rawCode = await Effect.runPromise(effect {
+    provide NodeFileSystem.layer {
+      return try (try FileSystem.FileSystem).readFileString(filePath, 'utf-8')
+    }
+  })
   const code = rawCode.trimEnd()
   const lang = langFromExtension(filePath)
 
   const html = await codeToHtml(code, { lang, themes: shikiThemes })
 
   return {
-    path: relative(baseDirectory, filePath),
+    path: paths.relative(baseDirectory, filePath),
     highlightedHtml: html,
     rawCode: code,
   }
@@ -769,7 +853,7 @@ const highlightExampleFile = async (
 
 const highlightExampleSourcesPlugin = (): Plugin => ({
   name: 'highlight-example-sources',
-  resolveId(id) {
+  resolveId(id): infer _ {
     if (id.startsWith(EXAMPLE_SOURCES_PREFIX)) {
       return '\0' + id
     } else {
@@ -786,18 +870,26 @@ const highlightExampleSourcesPlugin = (): Plugin => ({
       return undefined
     }
 
-    const exampleDirectory = resolve(
-      import.meta.dirname,
+    const exampleDirectory = paths.resolve(
+      moduleDirectory,
       `../../examples/${slug}`,
     )
     const collected = await Promise.all(
       EXAMPLE_SOURCE_ROOTS.map(root =>
-        collectSourceFiles(join(exampleDirectory, root)),
+        collectSourceFiles(paths.join(exampleDirectory, root))
       ),
     )
-    const rootFiles = EXAMPLE_ROOT_FILES.map(fileName =>
-      join(exampleDirectory, fileName),
-    ).filter(filePath => existsSync(filePath))
+    const rootFiles = await Effect.runPromise(effect {
+      provide NodeFileSystem.layer {
+        const fs = try FileSystem.FileSystem
+        const files: string[] = []
+        for (const fileName of EXAMPLE_ROOT_FILES) {
+          const filePath = paths.join(exampleDirectory, fileName)
+          if (fs.exists(filePath) catch () => false) files.push(filePath)
+        }
+        return files
+      }
+    })
     const sortedFiles = sortExampleFiles(
       [...collected.flat(), ...rootFiles],
       exampleDirectory,
@@ -805,7 +897,7 @@ const highlightExampleSourcesPlugin = (): Plugin => ({
 
     const files = await Promise.all(
       sortedFiles.map(filePath =>
-        highlightExampleFile(filePath, exampleDirectory),
+        highlightExampleFile(filePath, exampleDirectory)
       ),
     )
 
@@ -815,17 +907,17 @@ const highlightExampleSourcesPlugin = (): Plugin => ({
 
 const embeddedExampleRedirectPlugin = (): Plugin => ({
   name: 'embedded-example-redirect',
-  configureServer(server) {
-    server.middlewares.use((req, res, next) => {
+  configureServer(server): infer _ {
+    server.middlewares.use((req, res, next): infer _ => {
       if (!req.url) {
         return next()
       }
       const url = new URL(req.url, 'http://localhost')
       const slug = url.searchParams.get('embedded')
       if (
-        slug &&
-        EXAMPLE_SLUG_SET.has(slug) &&
-        !url.pathname.startsWith('/example-apps-embed/')
+        slug
+        && EXAMPLE_SLUG_SET.has(slug)
+        && !url.pathname.startsWith('/example-apps-embed/')
       ) {
         const target = `/example-apps-embed/${slug}/index.html${url.search}`
         res.writeHead(302, { Location: target })
@@ -848,7 +940,7 @@ const embeddedExampleRedirectPlugin = (): Plugin => ({
 const setIsolationHeaders = (
   url: string | undefined,
   res: { setHeader: (name: string, value: string) => void },
-) => {
+): infer _ => {
   const isPlaygroundRequest = url?.startsWith('/playground/') ?? false
   const isMonacoWorkerRequest = url?.startsWith('/monacoworkers/') ?? false
   res.setHeader('Cross-Origin-Resource-Policy', 'same-origin')
@@ -862,14 +954,14 @@ const setIsolationHeaders = (
 
 const playgroundIsolationHeadersPlugin = (): Plugin => ({
   name: 'playground-isolation-headers',
-  configureServer(server) {
-    server.middlewares.use((req, res, next) => {
+  configureServer(server): infer _ {
+    server.middlewares.use((req, res, next): infer _ => {
       setIsolationHeaders(req.url, res)
       next()
     })
   },
-  configurePreviewServer(server) {
-    server.middlewares.use((req, res, next) => {
+  configurePreviewServer(server): infer _ {
+    server.middlewares.use((req, res, next): infer _ => {
       setIsolationHeaders(req.url, res)
       next()
     })
@@ -885,34 +977,45 @@ const playgroundIsolationHeadersPlugin = (): Plugin => ({
 // empty and there's no landing markup to flash.
 const playgroundShellFallbackPlugin = (): Plugin => ({
   name: 'playground-shell-fallback',
-  configurePreviewServer(server) {
-    server.middlewares.use((req, _res, next) => {
-      if (req.url) {
-        const { pathname, search } = new URL(req.url, 'http://localhost')
-        const isPrerenderedPlaygroundRoute = Array.some(
-          runnableExampleSlugs,
-          exampleSlug =>
-            pathname === `/playground/${exampleSlug}` &&
-            existsSync(
-              resolve(
-                import.meta.dirname,
-                'dist',
-                'playground',
-                exampleSlug,
-                'index.html',
-              ),
-            ),
-        )
-        if (isPrerenderedPlaygroundRoute) {
-          req.url = `${pathname}/index.html${search}`
-        } else if (
-          pathname.startsWith('/playground/') &&
-          pathname !== '/playground/index.html'
-        ) {
-          req.url = `/playground/index.html${search}`
+  configurePreviewServer(server): infer _ {
+    server.middlewares.use(async (req, _res, next): Promise<void> => {
+      try {
+        if (req.url) {
+          const { pathname, search } = new URL(req.url, 'http://localhost')
+          let isPrerenderedPlaygroundRoute = false
+          for (const exampleSlug of runnableExampleSlugs) {
+            if (pathname !== ('/playground/' + exampleSlug)) continue
+            const shellPath = paths.resolve(
+              moduleDirectory,
+              'dist',
+              'playground',
+              exampleSlug,
+              'index.html',
+            )
+            const exists = await Effect.runPromise(effect {
+              provide NodeFileSystem.layer {
+                return (try FileSystem.FileSystem).exists(shellPath) catch () =>
+                  false
+              }
+            })
+            if (exists) {
+              isPrerenderedPlaygroundRoute = true
+              break
+            }
+          }
+          if (isPrerenderedPlaygroundRoute) {
+            req.url = pathname + '/index.html' + search
+          } else if (
+            pathname.startsWith('/playground/')
+            && pathname !== '/playground/index.html'
+          ) {
+            req.url = '/playground/index.html' + search
+          }
         }
+        next()
+      } catch (error) {
+        next(error)
       }
-      next()
     })
   },
 })

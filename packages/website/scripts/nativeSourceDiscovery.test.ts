@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import { EXAMPLE_FILE_EXTENSIONS } from '../vite.config.ts'
+import { EXAMPLE_FILE_EXTENSIONS } from '../vite.config.vibe'
 import corpus from './fixtures/foldkit-native-source-discovery.json'
 import {
   INCLUDED_EXTENSIONS,

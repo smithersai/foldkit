@@ -17,7 +17,7 @@ import { build, type Plugin } from 'vite'
 import { expect, test } from 'vitest'
 
 import { shikiDarkTheme, shikiLightTheme } from '../src/shikiTheme.ts'
-import websiteConfig, { EXAMPLE_FILE_EXTENSIONS } from '../vite.config.ts'
+import websiteConfig, { EXAMPLE_FILE_EXTENSIONS } from '../vite.config.vibe'
 import corpus from './fixtures/foldkit-vibex-snippet-discovery.json'
 import { codeToHtml } from './nativeHighlight.ts'
 

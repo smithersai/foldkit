@@ -5,7 +5,7 @@ import {
   reflectionFingerprint,
   typeDefFromChildren,
   typeToString,
-} from './typeToString.ts'
+} from './typeToString.vibe'
 import {
   Kind,
   TypeDocCommentPart,

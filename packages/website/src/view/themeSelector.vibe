@@ -1,4 +1,3 @@
-import { Match, Option } from 'effect'
 import {
   type Html,
   type HtmlBuilder,
@@ -8,7 +7,7 @@ import {
 
 import { Menu } from '@foldkit/ui'
 
-import { Icon } from '../icon'
+import { Icon } from '../icon/index.ts'
 import { Message, type ThemePreference } from '../message.vibe'
 
 const THEME_PREFERENCES: ReadonlyArray<ThemePreference> = [
@@ -25,23 +24,24 @@ const THEME_MENU_ANCHOR: Menu.AnchorConfig = {
 
 export const ThemeMenu = Menu.create<ThemePreference>()
 
-const preferenceIcon = (preference: ThemePreference, className: string): Html =>
-  Match.value(preference).pipe(
-    Match.when('Light', () => Icon.sun(className)),
-    Match.when('System', () => Icon.computer(className)),
-    Match.when('Dark', () => Icon.moon(className)),
-    Match.exhaustive,
-  )
+const preferenceIcon = (
+  preference: ThemePreference,
+  className: string,
+): Html => match (preference) {
+  when 'Light': Icon.sun(className);
+  when 'System': Icon.computer(className);
+  when 'Dark': Icon.moon(className);
+}
 
 export const view = (
   menu: Menu.Model,
-  maybeActivePreference: Option.Option<ThemePreference>,
+  maybeActivePreference: Option<ThemePreference>,
   h: HtmlBuilder<Message>,
 ): Html => {
-  const activePreference: ThemePreference = Option.getOrElse(
-    maybeActivePreference,
-    () => 'System',
-  )
+  const activePreference: ThemePreference = match (maybeActivePreference) {
+    when { _tag: "Some", value: let preference }: preference;
+    when { _tag: "None" }: 'System';
+  }
 
   return h.submodel({
     slotId: 'theme-menu',
@@ -51,7 +51,7 @@ export const view = (
       anchor: THEME_MENU_ANCHOR,
       ariaLabel: `Theme: ${activePreference}`,
       items: THEME_PREFERENCES,
-      itemToConfig: preference => {
+      itemToConfig: (preference): infer _ => {
         const isSelected = preference === activePreference
 
         return {
@@ -88,6 +88,7 @@ export const view = (
       backdropAttributes: childAttributes([ih.Class('fixed inset-0 z-[60]')]),
       attributes: childAttributes([ih.Class('inline-flex')]),
     },
-    toParentMessage: message => Message.GotThemeMenuMessage({ message }),
+    toParentMessage: (message): infer _ =>
+      Message.GotThemeMenuMessage({ message }),
   })
 }

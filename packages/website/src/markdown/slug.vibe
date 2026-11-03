@@ -1,4 +1,4 @@
-import { Array, Match, Option, Predicate, String, flow, pipe } from 'effect'
+import { Array as Arr, String as Str, flow, pipe } from 'effect'
 import type { Html } from 'foldkit/html'
 
 import type { Inline } from '@foldkit/markdown'
@@ -13,22 +13,22 @@ import type { Inline } from '@foldkit/markdown'
 export const inlineToText = (content: ReadonlyArray<Inline>): string =>
   pipe(
     content,
-    Array.map(inline =>
-      Match.value(inline).pipe(
-        Match.withReturnType<string>(),
-        Match.tagsExhaustive({
-          Text: ({ value }) => value,
-          InlineCode: ({ value }) => value,
-          HardBreak: () => ' ',
-          Emphasis: ({ content }) => inlineToText(content),
-          Strong: ({ content }) => inlineToText(content),
-          Strikethrough: ({ content }) => inlineToText(content),
-          Link: ({ content }) => inlineToText(content),
-          Image: ({ alt }) => alt,
-        }),
-      ),
+    Arr.map(inline =>
+      do {
+        const $matchResult: string = match (inline) {
+          when { _tag: "Text", let value }: value;
+          when { _tag: "InlineCode", let value }: value;
+          when { _tag: "HardBreak" }: ' ';
+          when { _tag: "Emphasis", let content }: inlineToText(content);
+          when { _tag: "Strong", let content }: inlineToText(content);
+          when { _tag: "Strikethrough", let content }: inlineToText(content);
+          when { _tag: "Link", let content }: inlineToText(content);
+          when { _tag: "Image", let alt }: alt;
+        }
+        $matchResult
+      }
     ),
-    Array.join(''),
+    Arr.join(''),
   )
 
 /**
@@ -40,16 +40,16 @@ export const inlineToText = (content: ReadonlyArray<Inline>): string =>
  * `"don-t-compute-in-update"`.
  */
 export const slugify: (text: string) => string = flow(
-  String.replaceAll(/['’]/g, ''),
-  String.toLowerCase,
-  String.replaceAll(/[^a-z0-9]+/g, '-'),
-  String.replaceAll(/^-+|-+$/g, ''),
+  Str.replaceAll(/['’]/g, ''),
+  Str.toLowerCase,
+  Str.replaceAll(/[^a-z0-9]+/g, '-'),
+  Str.replaceAll(/^-+|-+$/g, ''),
 )
 
 const HEADING_ID_OVERRIDE_PATTERN = /^(.*?)\s*\{#([A-Za-z0-9-]+)\}$/
 
 const hasTerminalPlainText = (content: ReadonlyArray<Inline>): boolean =>
-  Option.exists(Array.last(content), last => last._tag === 'Text')
+  Option.exists(Arr.last(content), last => last._tag === 'Text')
 
 /**
  * Reads an optional trailing `{#custom-id}` override off a heading's inline
@@ -64,19 +64,32 @@ const hasTerminalPlainText = (content: ReadonlyArray<Inline>): boolean =>
  */
 export const parseHeadingId = (
   content: ReadonlyArray<Inline>,
-): Readonly<{ maybeId: Option.Option<string>; text: string }> => {
+): Readonly<{ maybeId: Option<string>; text: string }> => {
   const raw = inlineToText(content)
   const maybeOverride = hasTerminalPlainText(content)
-    ? String.match(HEADING_ID_OVERRIDE_PATTERN)(raw)
+    ? Str.match(HEADING_ID_OVERRIDE_PATTERN)(raw)
     : Option.none<RegExpMatchArray>()
 
-  return Option.match(maybeOverride, {
-    onNone: () => ({ maybeId: Option.none(), text: raw }),
-    onSome: ([, base = raw, id]) => ({
-      maybeId: Option.fromNullishOr(id),
-      text: base,
-    }),
-  })
+  return do {
+    const $optionSubject = maybeOverride
+    const $optionHandlers: {
+      onNone: () => { maybeId: Option<string>; text: string }
+      onSome: (
+        [, base, id]: RegExpMatchArray,
+      ) => { maybeId: Option<string>; text: string }
+    } = {
+      onNone: () => ({ maybeId: Option.none(), text: raw }),
+      onSome: ([, base = raw, id]) => ({
+        maybeId: Option.fromNullishOr(id),
+        text: base,
+      }),
+    }
+    const { onNone: $optionNone, onSome: $optionSome } = $optionHandlers
+    match ($optionSubject) {
+      when Option.Some(let $optionValue): $optionSome($optionValue);
+      default: $optionNone();
+    }
+  }
 }
 
 const HEADING_ID_MARKER_SUFFIX_PATTERN = /\s*\{#[A-Za-z0-9-]+\}$/
@@ -90,15 +103,15 @@ const HEADING_ID_MARKER_SUFFIX_PATTERN = /\s*\{#[A-Za-z0-9-]+\}$/
 export const stripHeadingIdMarker = (
   content: ReadonlyArray<Html | string>,
 ): ReadonlyArray<Html | string> =>
-  Array.matchRight(content, {
+  Arr.matchRight(content, {
     onEmpty: () => content,
     onNonEmpty: (init, last) => {
       if (Predicate.isString(last)) {
-        const stripped = String.replace(
+        const stripped = Str.replace(
           HEADING_ID_MARKER_SUFFIX_PATTERN,
           '',
         )(last)
-        return String.isEmpty(stripped) ? init : Array.append(init, stripped)
+        return Str.isEmpty(stripped) ? init : Arr.append(init, stripped)
       } else {
         return content
       }
