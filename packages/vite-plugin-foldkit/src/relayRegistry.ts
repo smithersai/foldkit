@@ -18,10 +18,9 @@ import {
 } from 'foldkit/devtools-protocol'
 import { homedir, tmpdir } from 'node:os'
 
-import {
-  type RelayRegistryTrust,
-  windowsTempRootRefusal,
-} from './relayRegistryTrust.js'
+import type { RelayRegistryTrust } from './relayRegistryTrust.vibe'
+
+import { windowsTempRootRefusal } from '#vibelang/emitted/src/relayRegistryTrust'
 
 const RUNTIME_DIRECTORY_VARIABLE = 'XDG_RUNTIME_DIR'
 const RECORD_FILE_EXTENSION = '.json'

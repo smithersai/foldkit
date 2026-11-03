@@ -17,9 +17,9 @@
   ],
   "scripts": {
     "clean": "rimraf dist *.tsbuildinfo",
-    "build": "pnpm run clean && tsc -b",
-    "watch": "tsc -b --watch",
-    "typecheck": "tsc -b --noEmit && tsc -p tsconfig.test.json",
+    "build": "pnpm run clean && vibelang -b",
+    "watch": "vibelang -b --watch",
+    "typecheck": "vibelang -b --noEmit && vibelang -p tsconfig.test.json",
     "test": "vitest run"
   },
   "peerDependencies": {
@@ -34,7 +34,8 @@
     "vitefu": "^1.1.3",
     "ws": "^8.21.3",
     "@jridgewell/trace-mapping": "^0.3.31",
-    "@jridgewell/remapping": "^2.3.5"
+    "@jridgewell/remapping": "^2.3.5",
+    "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-4a7e790005b5.tgz"
   },
   "devDependencies": {
     "@types/node": "26.4.0",
@@ -71,5 +72,12 @@
   },
   "engines": {
     "node": ">=20.19.0"
+  },
+  "imports": {
+    "#vibelang/emitted/src/relayRegistryTrust": {
+      "vibelang-source": "./src/relayRegistryTrust.vibe",
+      "types": "./src/relayRegistryTrust.d.vibe.ts",
+      "default": "./dist/relayRegistryTrust.js"
+    }
   }
 }

@@ -65,9 +65,10 @@ import { foldkitBuildToken } from './buildToken.js'
 import { devToolsOverlayPlugin } from './devToolsOverlay.js'
 import { crawlFoldkitPackages } from './foldkitPackages.js'
 import { publishRelayRecord, retireRelayRecord } from './relayRegistry.js'
-import { relayRegistryTrust } from './relayRegistryTrust.js'
 import { type FoldkitSsrOptions, foldkitSsr } from './ssr.js'
 import { foldkitViewIdentity } from './viewIdentity.js'
+
+import { relayRegistryTrust } from '#vibelang/emitted/src/relayRegistryTrust'
 
 export { type BrandDistResult, brandDistDirectory } from './brandDist.js'
 export {
