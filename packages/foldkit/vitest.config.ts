@@ -9,10 +9,11 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'json-summary'],
-      include: ['src/**/*.ts'],
+      include: ['src/**/*.{ts,vibe}'],
       exclude: [
         'src/**/*.test.ts',
         'src/**/*.d.ts',
+        'src/**/*.d.vibe.ts',
         'src/test/apps/**',
         'src/test/vitest-setup.ts',
         'src/test/vitest.ts',
