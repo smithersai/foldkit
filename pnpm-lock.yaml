@@ -16,7 +16,9 @@ overrides:
 
 patchedDependencies:
   effect-oxlint@0.3.4: 5ae1feddd491062272373f775b503eba796f277697b34a9a65faf2f92dd72e20
+  filing-cabinet@5.5.1: 99de2f41fa54829d679fd9e0109bfa4636b36ae56c792f0a41fcdc928a1e6e85
   knip@6.38.0: e6383dad5c49dd2ad320b00e2b5a52e0932217aea0fc51a725af6a2e559bc2fe
+  precinct@12.3.2: 16bbb3f1a47fe822db7ebc2b5660ec19c2ca567008905f0f629b8ef31921776d
   vite@8.3.1: 7da63ac16413df0a99d8d0cfc4ebf0aa05d61ea7501a5726e78e9467b5eac558
 
 importers:
@@ -9271,8 +9273,8 @@ snapshots:
     dependencies:
       '@discoveryjs/json-ext': 1.1.0
       commander: 12.1.0
-      filing-cabinet: 5.5.1
-      precinct: 12.3.2
+      filing-cabinet: 5.5.1(patch_hash=99de2f41fa54829d679fd9e0109bfa4636b36ae56c792f0a41fcdc928a1e6e85)
+      precinct: 12.3.2(patch_hash=16bbb3f1a47fe822db7ebc2b5660ec19c2ca567008905f0f629b8ef31921776d)
       typescript: 5.9.3
     transitivePeerDependencies:
       - supports-color
@@ -9661,7 +9663,7 @@ snapshots:
     dependencies:
       flat-cache: 4.0.1
 
-  filing-cabinet@5.5.1:
+  filing-cabinet@5.5.1(patch_hash=99de2f41fa54829d679fd9e0109bfa4636b36ae56c792f0a41fcdc928a1e6e85):
     dependencies:
       app-module-path: 2.2.0
       commander: 12.1.0
@@ -10899,7 +10901,7 @@ snapshots:
 
   potpack@2.1.0: {}
 
-  precinct@12.3.2:
+  precinct@12.3.2(patch_hash=16bbb3f1a47fe822db7ebc2b5660ec19c2ca567008905f0f629b8ef31921776d):
     dependencies:
       '@dependents/detective-less': 5.0.3
       commander: 12.1.0

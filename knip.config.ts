@@ -118,7 +118,7 @@ const config: { ignore?: string | string[]; [key: string]: unknown } = {
     },
   },
   ignore: ['**/*.css'],
-  ignoreDependencies: ['@foldkit/oxlint-plugin', 'tailwindcss', 'madge'],
+  ignoreDependencies: ['@foldkit/oxlint-plugin', 'tailwindcss'],
   ignoreBinaries: ['typecheck'],
 }
 

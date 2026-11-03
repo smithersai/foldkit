@@ -87,3 +87,27 @@ the last Node bind error as `cause`.
 that gap, checks HTTP responses, and exercises 100 generated collision sequences.
 The named Foldkit corpus also covers strict automatic ports, bounded exhaustion,
 explicit port policies and an unchanged non-address error.
+
+## `precinct@12.3.2` and `filing-cabinet@5.5.1`
+
+`scripts/check-circular-deps.sh` runs madge, whose dependency detective
+(precinct) chooses a parser by file extension and has none for `.vibe` or
+`.vibex`, and whose resolver (filing-cabinet) resolves a TypeScript import
+through the TypeScript compiler, which does not find `./module.vibe`. With
+`--extensions ts,vibe,vibex` alone (the tool's own configuration) every
+VibeLang module is a node without edges, so a cycle through them passes
+unseen: 31 `.vibe` nodes and 0 edges in `packages/typing-game/client/src`.
+
+The precinct patch adds the `vibe` and `vibex` module types: the VibeLang
+compiler parses the file (`vibelang --estree`, the ESTree the ESLint parser
+reads) and the TypeScript detective collects its imports and exports. The
+filing-cabinet patch resolves imports from `.vibe`/`.vibex` files as
+TypeScript, falls back to the `.vibe`/`.vibex` source for an import the
+TypeScript compiler cannot resolve, and maps a `.d.vibe.ts` declaration
+sidecar back to its source, so the graph follows implementations.
+
+`scripts/check-circular-deps.test.mjs` seeds a cycle between two `.vibe`
+modules, a cycle through a `.ts` importer and a `.vibe` module, and an
+acyclic `.vibe` graph. Run it with `node --test
+scripts/check-circular-deps.test.mjs`. Refresh with `pnpm patch
+precinct@12.3.2` / `pnpm patch filing-cabinet@5.5.1` and `pnpm patch-commit`.
