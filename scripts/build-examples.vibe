@@ -121,8 +121,8 @@ const injectBridgeScript = effect (paths: BuildPaths, outputDir: string) => {
 const NATIVE_CONFIG_LOADER = '--configLoader native'
 
 const configLoaderArguments = effect (exampleDir: string) => {
-  const fs = try FileSystem.FileSystem()
-  const path = try Path.Path()
+  const fs = try FileSystem.FileSystem
+  const path = try Path.Path
   const manifest = try fs.readFileString(
     path.resolve(exampleDir, 'package.json'),
   )
