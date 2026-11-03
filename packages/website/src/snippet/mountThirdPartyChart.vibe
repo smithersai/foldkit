@@ -28,7 +28,7 @@ const MountChart = Mount.define('MountChart', {
           return new Chart(element, { data })
         },
         chart => sync(chart => chart.destroy(), chart),
-        { interruptible: true },
+        { interruptible: false },
       )
       return Message.SucceededMountChart()
     } catch (error) {
