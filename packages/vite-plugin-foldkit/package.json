@@ -49,8 +49,8 @@
     "vite-host": "npm:vite@8.2.1",
     "vitest": "^4.1.11",
     "fast-check": "^4.10.2",
-    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-270e120fde80.tgz",
-    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-e3281f083c35.tgz"
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-3fd0fe8dc126.tgz",
+    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-94168276647a.tgz"
   },
   "keywords": [
     "vite",
