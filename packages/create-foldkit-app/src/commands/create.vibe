@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import { Console, FileSystem, Layer, Option, Path } from 'effect'
+import { Console, Effect, FileSystem, Layer, Option, Path } from 'effect'
 import { ChildProcess, ChildProcessSpawner } from 'effect/process'
 import { NodeChildProcessSpawner } from '@effect/platform-node'
 import * as Process from 'vibelang-runtime/experimental/Process'
@@ -146,12 +146,18 @@ const setupProject = effect (
   scaffold: Scaffold,
   packageManager: PackageManager,
 ) => {
-  try Console.log(chalk.blue('🚀 Creating your Foldkit app...'))
+  try Console.log(
+    try Effect.orDie(
+      Effect.try(() => chalk.blue('🚀 Creating your Foldkit app...')),
+    ),
+  )
   try Console.log('')
 
   try createProject(name, projectPath, scaffold, packageManager)
 
-  try Console.log(chalk.green(`✅ Created project`))
+  try Console.log(
+    try Effect.orDie(Effect.try(() => chalk.green(`✅ Created project`))),
+  )
   try Console.log('')
 }
 
@@ -162,7 +168,11 @@ const installProjectDependencies = effect (
   maybeDependencyManifestsDirectory: Option.Option<string>,
 ) => {
   try Console.log(
-    chalk.blue(`📦 Installing dependencies with ${packageManager}...`),
+    try Effect.orDie(
+      Effect.try(() =>
+        chalk.blue(`📦 Installing dependencies with ${packageManager}...`)
+      ),
+    ),
   )
 
   try installDependencies(
@@ -172,7 +182,11 @@ const installProjectDependencies = effect (
     maybeDependencyManifestsDirectory,
   )
 
-  try Console.log(chalk.green('✅ Dependencies installed'))
+  try Console.log(
+    try Effect.orDie(
+      Effect.try(() => chalk.green('✅ Dependencies installed')),
+    ),
+  )
   try Console.log('')
 }
 
@@ -181,16 +195,24 @@ const displaySuccessMessage = effect (
   packageManager: PackageManager,
   subtreeRef: string,
 ) => {
-  try Console.log(chalk.bold('All systems nominal.'))
+  try Console.log(
+    try Effect.orDie(Effect.try(() => chalk.bold('All systems nominal.'))),
+  )
   try Console.log('')
-  try Console.log(`  > ${chalk.cyan('cd')} ${name}`)
+  try Console.log(
+    `  > ${(try Effect.orDie(Effect.try(() => chalk.cyan('cd'))))} ${name}`,
+  )
   const dev = try sync(
     (manager: PackageManager): string => devCommand(manager),
     packageManager,
   )
-  try Console.log(`  > ${chalk.cyan(dev)}`)
+  try Console.log(
+    `  > ${(try Effect.orDie(Effect.try(() => chalk.cyan(dev))))}`,
+  )
   try Console.log('')
-  try Console.log(chalk.bold('AI-Assisted Development'))
+  try Console.log(
+    try Effect.orDie(Effect.try(() => chalk.bold('AI-Assisted Development'))),
+  )
   try Console.log('')
   try Console.log(
     '  Vendor Foldkit in as a git subtree, pinned to the release this\n'
@@ -199,37 +221,71 @@ const displaySuccessMessage = effect (
       + '  subtree has a base commit to merge into:',
   )
   try Console.log('')
-  try Console.log(`  > ${chalk.cyan('cd')} ${name}`)
-  try Console.log(`  > ${chalk.cyan('git init')}`)
-  try Console.log(`  > ${chalk.cyan('git add .')}`)
   try Console.log(
-    `  > ${chalk.cyan('git commit -m "chore: initial commit"')}`,
+    `  > ${(try Effect.orDie(Effect.try(() => chalk.cyan('cd'))))} ${name}`,
   )
   try Console.log(
-    `  > ${
+    `  > ${(try Effect.orDie(Effect.try(() => chalk.cyan('git init'))))}`,
+  )
+  try Console.log(
+    `  > ${(try Effect.orDie(Effect.try(() => chalk.cyan('git add .'))))}`,
+  )
+  try Console.log(
+    `  > ${(try Effect.orDie(
+      Effect.try(() => chalk.cyan('git commit -m "chore: initial commit"')),
+    ))}`,
+  )
+  try Console.log(
+    `  > ${(try Effect.orDie(Effect.try(() =>
       chalk.cyan(
         `git subtree add --prefix=repos/foldkit https://github.com/foldkit/foldkit.git ${subtreeRef} --squash`,
       )
-    }`,
+    )))}`,
   )
   try Console.log('')
-  try Console.log(`  Details: ${chalk.cyan('foldkit.dev/ai/overview')}`)
-  try Console.log('')
-  try Console.log(`Training manual: ${chalk.cyan('foldkit.dev')}`)
   try Console.log(
-    `Incident report: ${chalk.cyan('github.com/foldkit/foldkit/issues')}`,
+    `  Details: ${(try Effect.orDie(
+      Effect.try(() => chalk.cyan('foldkit.dev/ai/overview')),
+    ))}`,
   )
   try Console.log('')
-  try Console.log(`Crew channel: ${chalk.cyan('discord.gg/kav8VNxqGm')}`)
+  try Console.log(
+    `Training manual: ${(try Effect.orDie(
+      Effect.try(() => chalk.cyan('foldkit.dev')),
+    ))}`,
+  )
+  try Console.log(
+    `Incident report: ${(try Effect.orDie(
+      Effect.try(() => chalk.cyan('github.com/foldkit/foldkit/issues')),
+    ))}`,
+  )
+  try Console.log('')
+  try Console.log(
+    `Crew channel: ${(try Effect.orDie(
+      Effect.try(() => chalk.cyan('discord.gg/kav8VNxqGm')),
+    ))}`,
+  )
   try Console.log('')
   try Console.log('Transmissions:')
-  try Console.log(`  Newsletter:  ${chalk.cyan('foldkit.dev/newsletter')}`)
-  try Console.log(`  X:           ${chalk.cyan('x.com/devinjameson')}`)
   try Console.log(
-    `  Bluesky:     ${chalk.cyan('bsky.app/profile/devinjameson.bsky.social')}`,
+    `  Newsletter:  ${(try Effect.orDie(
+      Effect.try(() => chalk.cyan('foldkit.dev/newsletter')),
+    ))}`,
   )
   try Console.log(
-    `  Threads:     ${chalk.cyan('threads.com/@devinthedeveloper')}`,
+    `  X:           ${(try Effect.orDie(
+      Effect.try(() => chalk.cyan('x.com/devinjameson')),
+    ))}`,
+  )
+  try Console.log(
+    `  Bluesky:     ${(try Effect.orDie(
+      Effect.try(() => chalk.cyan('bsky.app/profile/devinjameson.bsky.social')),
+    ))}`,
+  )
+  try Console.log(
+    `  Threads:     ${(try Effect.orDie(
+      Effect.try(() => chalk.cyan('threads.com/@devinthedeveloper')),
+    ))}`,
   )
   try Console.log('')
   try Console.log(
