@@ -1,6 +1,6 @@
 import { Slider } from '@foldkit/ui'
 
-export schema Point { x: number; y: number }
+export schema Point { readonly x: number; readonly y: number }
 
 export const Particle = Schema.Struct({
   id: Schema.Number,

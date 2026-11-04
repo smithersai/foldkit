@@ -3,7 +3,7 @@ import { AsyncData, Command, Http, type Update } from 'foldkit'
 import { defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
 
-schema SearchResult { id: string; title: string }
+schema SearchResult { readonly id: string; readonly title: string }
 
 const SearchResultsData = AsyncData.Schema(
   Schema.Array(SearchResult),

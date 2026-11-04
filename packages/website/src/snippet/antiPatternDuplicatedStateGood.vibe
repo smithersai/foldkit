@@ -1,10 +1,10 @@
 // ✅ Good: the Model stores the source values and derives the result.
 
-schema Item { id: string; name: string }
+schema Item { readonly id: string; readonly name: string }
 
 schema Model {
-  items: ReadonlyArray<Item>
-  query: string
+  readonly items: ReadonlyArray<Item>
+  readonly query: string
 }
 
 const visibleItems = (model: Model) =>

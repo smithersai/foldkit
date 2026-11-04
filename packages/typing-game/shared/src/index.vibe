@@ -17,35 +17,35 @@ export type Finished = typeof Finished.Type
 export schema GameStatus = Waiting | GetReady | Countdown | Playing | Finished
 
 export schema Player {
-  id: string
-  username: string
+  readonly id: string
+  readonly username: string
 }
 
 export schema Game {
-  id: string
-  text: string
+  readonly id: string
+  readonly text: string
 }
 
 export schema GamePlayer {
-  gameId: string
-  playerId: string
+  readonly gameId: string
+  readonly playerId: string
 }
 
 export schema PlayerProgress {
-  playerId: string
-  gameId: string
-  userText: string
-  updatedAt: number
-  charsTyped: number
+  readonly playerId: string
+  readonly gameId: string
+  readonly userText: string
+  readonly updatedAt: number
+  readonly charsTyped: number
 }
 
 export schema PlayerScore {
-  playerId: string
-  username: string
-  wpm: number
-  accuracy: number
-  charsTyped: number
-  correctChars: number
+  readonly playerId: string
+  readonly username: string
+  readonly wpm: number
+  readonly accuracy: number
+  readonly charsTyped: number
+  readonly correctChars: number
 }
 
 export schema Scoreboard = ReadonlyArray<PlayerScore>
@@ -73,7 +73,7 @@ export schema error UnauthorizedError {
   message: string
 }
 
-export schema RoomAndPlayer { player: Player; room: Room }
+export schema RoomAndPlayer { readonly player: Player; readonly room: Room }
 
 export const RoomWithPlayerProgress = Schema.Struct({
   room: Room,

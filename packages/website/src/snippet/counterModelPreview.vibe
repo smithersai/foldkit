@@ -2,6 +2,6 @@
 // the Model grows to hold new state:
 
 schema Model {
-  count: number
-  isAutoCounting: boolean
+  readonly count: number
+  readonly isAutoCounting: boolean
 }

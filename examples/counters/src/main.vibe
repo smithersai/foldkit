@@ -11,13 +11,13 @@ import * as Counter from './counter.vibe'
 // MODEL
 
 schema Row {
-  id: string
-  counter: Counter.Model
+  readonly id: string
+  readonly counter: Counter.Model
 }
 
 export schema Model {
-  rows: ReadonlyArray<Row>
-  nextRowId: number
+  readonly rows: ReadonlyArray<Row>
+  readonly nextRowId: number
 }
 
 // MESSAGE

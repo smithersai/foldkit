@@ -1,10 +1,10 @@
 import { Array as Arr } from 'effect'
 
 export schema Painting {
-  id: number
-  title: string
-  artist: string
-  gradient: string
+  readonly id: number
+  readonly title: string
+  readonly artist: string
+  readonly gradient: string
 }
 
 export const paintings: ReadonlyArray<Painting> = [

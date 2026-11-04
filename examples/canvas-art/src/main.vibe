@@ -29,19 +29,19 @@ const PALETTE: ReadonlyArray<string> = [
 const FALLBACK_COLOR = '#ffffff'
 
 schema Ball {
-  id: number
-  x: number
-  y: number
-  vx: number
-  vy: number
-  radius: number
-  color: string
+  readonly id: number
+  readonly x: number
+  readonly y: number
+  readonly vx: number
+  readonly vy: number
+  readonly radius: number
+  readonly color: string
 }
 
 export schema Model {
-  balls: ReadonlyArray<Ball>
-  nextId: number
-  isRunning: boolean
+  readonly balls: ReadonlyArray<Ball>
+  readonly nextId: number
+  readonly isRunning: boolean
 }
 
 // MESSAGE

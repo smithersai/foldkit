@@ -20,8 +20,8 @@ export { AppRoute } from './route.vibe'
 // MODEL
 
 export schema Model {
-  route: AppRoute
-  filterText: string
+  readonly route: AppRoute
+  readonly filterText: string
 }
 
 // MESSAGE

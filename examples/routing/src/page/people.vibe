@@ -18,9 +18,9 @@ import {
 // DOMAIN
 
 schema Person {
-  id: number
-  name: string
-  role: string
+  readonly id: number
+  readonly name: string
+  readonly role: string
 }
 
 const people: ReadonlyArray<Person> = [
@@ -76,9 +76,9 @@ export const SearchResults = defineTaggedUnion({
 export type SearchResults = typeof SearchResults.Type
 
 export schema Model {
-  searchInput: string
-  searchHistory: ReadonlyArray<string>
-  results: SearchResults
+  readonly searchInput: string
+  readonly searchHistory: ReadonlyArray<string>
+  readonly results: SearchResults
 }
 
 // MESSAGE

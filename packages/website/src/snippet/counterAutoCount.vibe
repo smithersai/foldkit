@@ -13,8 +13,8 @@ type Message = typeof Message.Type
 // MODEL
 
 schema Model {
-  count: number
-  isAutoCounting: boolean
+  readonly count: number
+  readonly isAutoCounting: boolean
 }
 
 // SUBSCRIPTION

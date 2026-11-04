@@ -20,8 +20,8 @@ import { Array as EffectArray } from 'effect'
  */
 export service RenderCommit {
   static readonly key = '@foldkit/RenderCommit'
-  isCommitPending: () => boolean
-  onNextCommit: (callback: () => void) => () => void
+  readonly isCommitPending: () => boolean
+  readonly onNextCommit: (callback: () => void) => () => void
 }
 
 /** @internal The runtime's half of {@link RenderCommit}: the service value to

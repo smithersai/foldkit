@@ -8,7 +8,7 @@ const Message = defineMessageUnion({
   FailedFetchCount: { error: Schema.String },
 })
 
-schema CountResponse { count: number }
+schema CountResponse { readonly count: number }
 
 const FetchCount = Command.define('FetchCount', {
   messages: [Message.SucceededFetchCount, Message.FailedFetchCount],

@@ -8,9 +8,14 @@ const NPM_REGISTRY_API = 'https://registry.npmjs.org'
 
 // SCHEMA
 
-export schema NpmDownloadDay { day: string; downloads: number }
+export schema NpmDownloadDay {
+  readonly day: string
+  readonly downloads: number
+}
 
-export schema NpmDownloadsResponse { downloads: ReadonlyArray<NpmDownloadDay> }
+export schema NpmDownloadsResponse {
+  readonly downloads: ReadonlyArray<NpmDownloadDay>
+}
 
 export const NpmVersionMetadata = Schema.Struct({
   dependencies: Schema.OptionFromOptional(
@@ -23,10 +28,10 @@ export const NpmVersionMetadata = Schema.Struct({
 export type NpmVersionMetadata = typeof NpmVersionMetadata.Type
 
 export schema NpmPackument {
-  name: string
-  time: Readonly<Record<string, string>>
-  versions: Readonly<Record<string, NpmVersionMetadata>>
-  'dist-tags': { latest: string }
+  readonly name: string
+  readonly time: Readonly<Record<string, string>>
+  readonly versions: Readonly<Record<string, NpmVersionMetadata>>
+  readonly 'dist-tags': { readonly latest: string }
 }
 
 // SERVICE

@@ -12,8 +12,8 @@ import { cartRouter, productsRouter } from '../route.vibe'
 // MODEL
 
 export schema Model {
-  products: ReadonlyArray<Item.Item>
-  searchText: string
+  readonly products: ReadonlyArray<Item.Item>
+  readonly searchText: string
 }
 
 // MESSAGE

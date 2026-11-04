@@ -7,10 +7,10 @@ import { modifyFields } from 'foldkit/struct'
 // MODEL
 
 schema HeavyItem {
-  id: number
-  label: string
-  category: string
-  isActive: boolean
+  readonly id: number
+  readonly label: string
+  readonly category: string
+  readonly isActive: boolean
 }
 
 export const Model = Schema.Struct({

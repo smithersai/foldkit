@@ -24,7 +24,7 @@ import {
 // FLAGS
 
 const MaybeSavedCanvas = Schema.Option(SavedCanvas)
-export schema Flags { maybeSavedCanvas: MaybeSavedCanvas }
+export schema Flags { readonly maybeSavedCanvas: MaybeSavedCanvas }
 
 export const flags: Flags!! = effect {
   provide BrowserKeyValueStore.layerLocalStorage {

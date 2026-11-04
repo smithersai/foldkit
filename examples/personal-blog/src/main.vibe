@@ -18,8 +18,8 @@ export { AppRoute } from './route.vibe'
 // MODEL
 
 export schema Model {
-  route: Route.AppRoute
-  counter: Counter.Model
+  readonly route: Route.AppRoute
+  readonly counter: Counter.Model
 }
 
 // MESSAGE

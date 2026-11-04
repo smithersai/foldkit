@@ -1,8 +1,8 @@
 import { modifyFields } from 'foldkit/struct'
 
 schema Model {
-  count: number
-  status: 'Idle' | 'Counting'
+  readonly count: number
+  readonly status: 'Idle' | 'Counting'
 }
 
 const model: Model = { count: 0, status: 'Idle' }

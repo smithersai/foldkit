@@ -33,11 +33,11 @@ const DragState = defineTaggedUnion({
  *  maps pointer positions into values. `dragState` tracks the active drag phase
  *  and captures the pre-drag value so Escape can restore it. */
 export schema Model {
-  id: string
-  min: number
-  max: number
-  step: number
-  dragState: DragState
+  readonly id: string
+  readonly min: number
+  readonly max: number
+  readonly step: number
+  readonly dragState: DragState
 }
 
 // MESSAGE

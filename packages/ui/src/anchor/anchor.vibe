@@ -55,12 +55,12 @@ export type Padding = typeof Padding.Type
 
 /** Static configuration for anchor-based positioning of a floating element relative to a button. */
 export schema AnchorConfig {
-  placement?: Placement
-  gap?: number
-  offset?: number
-  padding?: Padding
-  portal?: boolean
-  isPlacementLocked?: boolean
+  readonly placement?: Placement
+  readonly gap?: number
+  readonly offset?: number
+  readonly padding?: Padding
+  readonly portal?: boolean
+  readonly isPlacementLocked?: boolean
 }
 
 const PORTAL_ROOT_ID = 'foldkit-portal-root'

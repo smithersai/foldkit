@@ -46,20 +46,20 @@ export schema ListboxItem =
   | 'Lucille Bluth'
 
 export schema DemoCard {
-  id: string
-  label: string
+  readonly id: string
+  readonly label: string
 }
 
 export schema DemoColumn {
-  id: string
-  label: string
-  cards: DemoCard[]
+  readonly id: string
+  readonly label: string
+  readonly cards: DemoCard[]
 }
 
 export schema VirtualListChatMessage {
-  id: number
-  body: string
-  isExpanded: boolean
+  readonly id: number
+  readonly body: string
+  readonly isExpanded: boolean
 }
 
 export const VirtualListChatStartProximity = defineTaggedUnion({

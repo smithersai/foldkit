@@ -8,8 +8,8 @@ const TICK_INTERVAL_MS = 1000
 // MODEL
 
 schema Model {
-  count: number
-  isAutoCounting: boolean
+  readonly count: number
+  readonly isAutoCounting: boolean
 }
 
 // MESSAGE

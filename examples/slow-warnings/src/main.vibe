@@ -26,11 +26,11 @@ schema Workload =
 type SlowPhase = Runtime.SlowPhase
 
 export schema SlowWarningReport {
-  phase: Runtime.SlowPhase
-  durationMs: number
-  thresholdMs: number
-  trigger: string
-  details: string
+  readonly phase: Runtime.SlowPhase
+  readonly durationMs: number
+  readonly thresholdMs: number
+  readonly trigger: string
+  readonly details: string
 }
 
 export const SlowWarning = Schema.Struct({
@@ -42,11 +42,11 @@ export type SlowWarning = typeof SlowWarning.Type
 // MODEL
 
 export schema Model {
-  activeWorkload: Workload
-  nextWarningId: number
-  warnings: ReadonlyArray<SlowWarning>
-  patchRows: number
-  patchRun: number
+  readonly activeWorkload: Workload
+  readonly nextWarningId: number
+  readonly warnings: ReadonlyArray<SlowWarning>
+  readonly patchRows: number
+  readonly patchRun: number
 }
 
 // MESSAGE

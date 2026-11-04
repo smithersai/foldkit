@@ -11,9 +11,9 @@ import '@shoelace-style/shoelace/dist/components/qr-code/qr-code.js'
 // MODEL
 
 export schema Model {
-  content: string
-  fillColor: string
-  backgroundColor: string
+  readonly content: string
+  readonly fillColor: string
+  readonly backgroundColor: string
 }
 
 // MESSAGE

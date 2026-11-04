@@ -16,10 +16,10 @@ const TODOS_STORAGE_KEY = 'todos'
 // MODEL
 
 schema Todo {
-  id: string
-  text: string
-  completed: boolean
-  createdAt: number
+  readonly id: string
+  readonly text: string
+  readonly completed: boolean
+  readonly createdAt: number
 }
 
 schema Todos = ReadonlyArray<Todo>
@@ -35,10 +35,10 @@ export const EditingState = defineTaggedUnion({
 export type EditingState = typeof EditingState.Type
 
 export schema Model {
-  todos: Todos
-  newTodoText: string
-  filter: Filter
-  editing: EditingState
+  readonly todos: Todos
+  readonly newTodoText: string
+  readonly filter: Filter
+  readonly editing: EditingState
 }
 
 // MESSAGE

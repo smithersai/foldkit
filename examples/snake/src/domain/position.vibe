@@ -2,8 +2,8 @@ import { GAME } from '../constants.ts'
 import * as Direction from './direction.vibe'
 
 export schema Position {
-  x: number
-  y: number
+  readonly x: number
+  readonly y: number
 }
 
 export const equivalence = Schema.toEquivalence(Position)

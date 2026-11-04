@@ -9,7 +9,7 @@ import { Textarea } from '@foldkit/ui'
 // MODEL
 
 export schema Model {
-  content: string
+  readonly content: string
 }
 
 // MESSAGE

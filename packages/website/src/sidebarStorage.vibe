@@ -1,7 +1,7 @@
 export const SIDEBAR_STORAGE_KEY = 'foldkit-sidebar-state'
 
 export schema SidebarState {
-  open: Readonly<Record<string, boolean>>
+  readonly open: Readonly<Record<string, boolean>>
 }
 
 export const SidebarStateJsonString = Schema.fromJsonString(SidebarState)

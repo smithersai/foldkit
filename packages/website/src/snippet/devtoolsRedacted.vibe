@@ -16,7 +16,7 @@ const makeAccessToken = (accessToken: string): AccessToken =>
 // MODEL
 
 // 2. Store the wrapper in the Model, never the raw string.
-schema Model { accessToken: AccessToken }
+schema Model { readonly accessToken: AccessToken }
 
 const init = (accessToken: string) => ({
   model: { accessToken: makeAccessToken(accessToken) },

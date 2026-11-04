@@ -151,8 +151,8 @@ const urlToAppRoute = Route.parseUrlWithFallback(routeParser, AppRoute.NotFound)
 // MODEL
 
 export schema Model {
-  route: AppRoute
-  uiModel: UiModel
+  readonly route: AppRoute
+  readonly uiModel: UiModel
 }
 
 // MESSAGE
@@ -199,7 +199,7 @@ const LoadExternal = Command.define('LoadExternal', {
 // INIT
 
 export schema Flags {
-  today: Calendar.CalendarDate
+  readonly today: Calendar.CalendarDate
 }
 
 export const flags: Flags!! = effect {

@@ -85,10 +85,10 @@ export type DragState = typeof DragState.Type
 
 /** Schema for the drag-and-drop component's state, tracking its unique ID, orientation, and current drag phase. */
 export schema Model {
-  id: string
-  orientation: Orientation
-  activationThreshold: number
-  dragState: DragState
+  readonly id: string
+  readonly orientation: Orientation
+  readonly activationThreshold: number
+  readonly dragState: DragState
 }
 
 // MESSAGE

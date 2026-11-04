@@ -19,11 +19,11 @@ import {
 // MODEL
 
 export schema Model {
-  route: AppRoute
-  cart: Cart.Cart
-  deliveryInstructions: string
-  orderPlaced: boolean
-  productsPage: Products.Model
+  readonly route: AppRoute
+  readonly cart: Cart.Cart
+  readonly deliveryInstructions: string
+  readonly orderPlaced: boolean
+  readonly productsPage: Products.Model
 }
 
 // MESSAGE

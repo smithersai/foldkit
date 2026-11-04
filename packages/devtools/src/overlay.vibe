@@ -187,15 +187,15 @@ schema Model {
 type Model = typeof Model.Type
 
 schema Flags {
-  isOpen: boolean
-  isMobile: boolean
-  isFlattened: boolean
-  entries: ReadonlyArray<DisplayEntry>
-  initCommands: ReadonlyArray<DisplayCommand>
-  initMountStarts: ReadonlyArray<DisplayMount>
-  startIndex: number
-  isPaused: boolean
-  pausedAtIndex: number
+  readonly isOpen: boolean
+  readonly isMobile: boolean
+  readonly isFlattened: boolean
+  readonly entries: ReadonlyArray<DisplayEntry>
+  readonly initCommands: ReadonlyArray<DisplayCommand>
+  readonly initMountStarts: ReadonlyArray<DisplayMount>
+  readonly startIndex: number
+  readonly isPaused: boolean
+  readonly pausedAtIndex: number
 }
 
 // MESSAGE

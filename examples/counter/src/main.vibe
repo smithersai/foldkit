@@ -7,7 +7,7 @@ import { Button } from '@foldkit/ui'
 
 // MODEL
 
-export schema Model { count: number }
+export schema Model { readonly count: number }
 
 // MESSAGE
 

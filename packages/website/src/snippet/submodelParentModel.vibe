@@ -1,6 +1,6 @@
 import * as Settings from './page/settings'
 
 export schema Model {
-  username: string
-  settings: Settings.Model
+  readonly username: string
+  readonly settings: Settings.Model
 }

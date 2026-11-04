@@ -20,9 +20,9 @@ import * as Popover from '../popover/index.vibe'
  * (the visible grid) and the embedded Popover submodel (the open/close +
  * transition layer). */
 export schema Model {
-  id: string
-  calendar: UiCalendar.Model
-  popover: Popover.Model
+  readonly id: string
+  readonly calendar: UiCalendar.Model
+  readonly popover: Popover.Model
 }
 
 // MESSAGE

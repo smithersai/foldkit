@@ -19,10 +19,10 @@ import { view } from './view/view.vibe'
 // FLAGS
 
 export schema Flags {
-  today: Calendar.CalendarDate
-  initialWorkHistoryEntryId: string
-  initialEducationEntryId: string
-  initialSkillsEntryId: string
+  readonly today: Calendar.CalendarDate
+  readonly initialWorkHistoryEntryId: string
+  readonly initialEducationEntryId: string
+  readonly initialSkillsEntryId: string
 }
 
 export const flags: Flags!! = effect {

@@ -7,8 +7,8 @@ import {
 } from './domain.vibe'
 
 export schema ApiData {
-  parsedApi: ParsedApiReference
-  highlights: Readonly<Record<string, string>>
+  readonly parsedApi: ParsedApiReference
+  readonly highlights: Readonly<Record<string, string>>
 }
 
 /**

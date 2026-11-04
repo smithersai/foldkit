@@ -4,12 +4,12 @@ import type { Update } from 'foldkit'
 import { defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
 
-schema Item { id: string; name: string }
+schema Item { readonly id: string; readonly name: string }
 
 schema Model {
-  items: ReadonlyArray<Item>
-  query: string
-  visibleItems: ReadonlyArray<Item>
+  readonly items: ReadonlyArray<Item>
+  readonly query: string
+  readonly visibleItems: ReadonlyArray<Item>
 }
 
 const Message = defineMessageUnion({

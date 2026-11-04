@@ -22,8 +22,8 @@ export const resultsFromState = (
 }
 
 export schema Model {
-  dialog: Dialog.Model
-  query: string
-  searchState: SearchState
-  activeResultIndex: number
+  readonly dialog: Dialog.Model
+  readonly query: string
+  readonly searchState: SearchState
+  readonly activeResultIndex: number
 }

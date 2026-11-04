@@ -11,9 +11,9 @@ const TICK_INTERVAL_MS = 10
 // MODEL
 
 export schema Model {
-  elapsedMs: number
-  isRunning: boolean
-  startTime: number
+  readonly elapsedMs: number
+  readonly isRunning: boolean
+  readonly startTime: number
 }
 
 // MESSAGE

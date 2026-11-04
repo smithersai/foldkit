@@ -12,10 +12,10 @@ export schema PackageId = 'Core' | 'Ui' | 'Devtools' | 'VitePlugin'
 export const packageIds: ReadonlyArray<PackageId> = PackageId.literals
 
 export schema PackageSpec {
-  id: PackageId
-  npmName: string
-  displayName: string
-  role: string
+  readonly id: PackageId
+  readonly npmName: string
+  readonly displayName: string
+  readonly role: string
 }
 
 export const packageSpecs: ReadonlyArray<PackageSpec> = [
@@ -46,34 +46,34 @@ export const packageSpecs: ReadonlyArray<PackageSpec> = [
 ]
 
 export schema WeeklyTelemetry {
-  weekStart: string
-  cumulativeStars: number
-  commits: number
-  releases: number
+  readonly weekStart: string
+  readonly cumulativeStars: number
+  readonly commits: number
+  readonly releases: number
 }
 
 export schema WeeklyDownloads {
-  weekStart: string
-  downloads: number
+  readonly weekStart: string
+  readonly downloads: number
 }
 
 export schema PackageSnapshot {
-  id: PackageId
-  npmName: string
-  displayName: string
-  role: string
-  latestVersion: string
-  publishedAt: string
-  totalDownloads: number
-  lastWeekDownloads: number
-  dependencyCount: number
-  downloadsByWeek: ReadonlyArray<WeeklyDownloads>
+  readonly id: PackageId
+  readonly npmName: string
+  readonly displayName: string
+  readonly role: string
+  readonly latestVersion: string
+  readonly publishedAt: string
+  readonly totalDownloads: number
+  readonly lastWeekDownloads: number
+  readonly dependencyCount: number
+  readonly downloadsByWeek: ReadonlyArray<WeeklyDownloads>
 }
 
 export schema DependencyEdge {
-  source: PackageId
-  target: PackageId
-  kind: 'Dependency' | 'PeerDependency'
+  readonly source: PackageId
+  readonly target: PackageId
+  readonly kind: 'Dependency' | 'PeerDependency'
 }
 
 export const ContributorSummary = Schema.Struct({
@@ -84,24 +84,24 @@ export const ContributorSummary = Schema.Struct({
 export type ContributorSummary = typeof ContributorSummary.Type
 
 export schema RepositorySnapshot {
-  stars: number
-  forks: number
-  watchers: number
-  openIssues: number
-  openPullRequests: number
-  visibleContributors: number
-  pushedAt: string
-  defaultBranch: string
+  readonly stars: number
+  readonly forks: number
+  readonly watchers: number
+  readonly openIssues: number
+  readonly openPullRequests: number
+  readonly visibleContributors: number
+  readonly pushedAt: string
+  readonly defaultBranch: string
 }
 
 export schema Telemetry {
-  fetchedAt: number
-  repository: RepositorySnapshot
-  packages: ReadonlyArray<PackageSnapshot>
-  weeks: ReadonlyArray<WeeklyTelemetry>
-  dependencyEdges: ReadonlyArray<DependencyEdge>
-  topContributors: ReadonlyArray<ContributorSummary>
-  warnings: ReadonlyArray<string>
+  readonly fetchedAt: number
+  readonly repository: RepositorySnapshot
+  readonly packages: ReadonlyArray<PackageSnapshot>
+  readonly weeks: ReadonlyArray<WeeklyTelemetry>
+  readonly dependencyEdges: ReadonlyArray<DependencyEdge>
+  readonly topContributors: ReadonlyArray<ContributorSummary>
+  readonly warnings: ReadonlyArray<string>
 }
 
 // CONSTANT

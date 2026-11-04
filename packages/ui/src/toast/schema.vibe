@@ -33,8 +33,8 @@ export const SwipeDirection = Schema.Literals(['Left', 'Right'])
 export type SwipeDirection = typeof SwipeDirection.Type
 
 schema SwipeConfig {
-  direction: SwipeDirection
-  threshold: number
+  readonly direction: SwipeDirection
+  readonly threshold: number
 }
 
 /** Per-entry swipe gesture state. `Dragging` retains the initiating

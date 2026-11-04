@@ -12,17 +12,17 @@ import { writeCookie } from './cookiePlatform.ts'
 // MODEL
 
 export schema Model {
-  count: number
-  renderedAt: string
-  renderedOn: 'Server' | 'Client'
+  readonly count: number
+  readonly renderedAt: string
+  readonly renderedOn: 'Server' | 'Client'
 }
 
 // FLAGS
 
 export schema Flags {
-  initialCount: number
-  renderedAt: string
-  renderedOn: 'Server' | 'Client'
+  readonly initialCount: number
+  readonly renderedAt: string
+  readonly renderedOn: 'Server' | 'Client'
 }
 
 // MESSAGE

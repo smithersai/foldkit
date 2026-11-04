@@ -23,58 +23,58 @@ const NullableString = Schema.OptionFromNullishOr(Schema.String, {
 })
 
 export schema ApiParameter {
-  name: string
-  type: string
-  isOptional: boolean
-  isRest: boolean
-  defaultValue: NullableString
-  description: NullableString
+  readonly name: string
+  readonly type: string
+  readonly isOptional: boolean
+  readonly isRest: boolean
+  readonly defaultValue: NullableString
+  readonly description: NullableString
 }
 
 export schema ApiFunctionSignature {
-  parameters: ReadonlyArray<ApiParameter>
-  returnType: string
-  typeParameters: ReadonlyArray<string>
+  readonly parameters: ReadonlyArray<ApiParameter>
+  readonly returnType: string
+  readonly typeParameters: ReadonlyArray<string>
 }
 
 export schema ApiFunction {
-  name: string
-  description: NullableString
-  signatures: ReadonlyArray<ApiFunctionSignature>
-  sourceUrl: NullableString
+  readonly name: string
+  readonly description: NullableString
+  readonly signatures: ReadonlyArray<ApiFunctionSignature>
+  readonly sourceUrl: NullableString
 }
 
 export schema ApiType {
-  name: string
-  description: NullableString
-  typeDefinition: string
-  sourceUrl: NullableString
+  readonly name: string
+  readonly description: NullableString
+  readonly typeDefinition: string
+  readonly sourceUrl: NullableString
 }
 
 export schema ApiVariable {
-  name: string
-  description: NullableString
-  type: string
-  sourceUrl: NullableString
+  readonly name: string
+  readonly description: NullableString
+  readonly type: string
+  readonly sourceUrl: NullableString
 }
 
 export schema ApiInterface {
-  name: string
-  description: NullableString
-  typeDefinition: string
-  sourceUrl: NullableString
+  readonly name: string
+  readonly description: NullableString
+  readonly typeDefinition: string
+  readonly sourceUrl: NullableString
 }
 
 export schema ApiModule {
-  name: string
-  functions: ReadonlyArray<ApiFunction>
-  types: ReadonlyArray<ApiType>
-  interfaces: ReadonlyArray<ApiInterface>
-  variables: ReadonlyArray<ApiVariable>
+  readonly name: string
+  readonly functions: ReadonlyArray<ApiFunction>
+  readonly types: ReadonlyArray<ApiType>
+  readonly interfaces: ReadonlyArray<ApiInterface>
+  readonly variables: ReadonlyArray<ApiVariable>
 }
 
 export schema ParsedApiReference {
-  modules: ReadonlyArray<ApiModule>
+  readonly modules: ReadonlyArray<ApiModule>
 }
 
 // SHARED

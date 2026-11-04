@@ -9,11 +9,11 @@ import shootingFilmRaw from './shooting-film.md'
 export const about: MarkdownDocument = decodeDocument(aboutRaw)
 
 export schema Post {
-  slug: string
-  title: string
-  publishedOn: string
-  summary: string
-  document: MarkdownDocument
+  readonly slug: string
+  readonly title: string
+  readonly publishedOn: string
+  readonly summary: string
+  readonly document: MarkdownDocument
 }
 
 export const posts: ReadonlyArray<Post> = [

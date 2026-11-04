@@ -27,11 +27,11 @@ __setDevToolsOverlay(overlay)
 `
 
 schema ApplicationPackageJson {
-  dependencies?: Readonly<Record<string, string>>
+  readonly dependencies?: Readonly<Record<string, string>>
 }
 
 schema DevToolsPackageJson {
-  exports?: Readonly<Record<string, Schema.Unknown>>
+  readonly exports?: Readonly<Record<string, Schema.Unknown>>
 }
 
 const decodeApplicationPackageJson = Schema.decodeUnknownOption(

@@ -10,9 +10,9 @@ export schema Theme = 'Light' | 'Dark' | 'System'
 export schema FontSize = 'Small' | 'Medium' | 'Large'
 
 export schema Model {
-  theme: Theme
-  fontSize: FontSize
-  notificationsEnabled: boolean
+  readonly theme: Theme
+  readonly fontSize: FontSize
+  readonly notificationsEnabled: boolean
 }
 
 // MESSAGE

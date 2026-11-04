@@ -9,7 +9,7 @@ const postsQuery = Query.define({
 })
 
 schema Model {
-  posts: postsQuery.Model
+  readonly posts: postsQuery.Model
 }
 
 const Message = defineMessageUnion({

@@ -1,6 +1,6 @@
 export schema Card {
-  id: string
-  title: string
-  description: string
-  sortKey: string
+  readonly id: string
+  readonly title: string
+  readonly description: string
+  readonly sortKey: string
 }

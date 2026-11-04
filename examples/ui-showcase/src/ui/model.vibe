@@ -45,14 +45,14 @@ export schema ListboxItem =
   | 'Lucille Bluth'
 
 export schema DemoCard {
-  id: string
-  label: string
+  readonly id: string
+  readonly label: string
 }
 
 export schema DemoColumn {
-  id: string
-  label: string
-  cards: ReadonlyArray<DemoCard>
+  readonly id: string
+  readonly label: string
+  readonly cards: ReadonlyArray<DemoCard>
 }
 
 export const UiModel = Schema.Struct({

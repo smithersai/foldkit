@@ -1,5 +1,5 @@
 // MODEL
 
 schema Model {
-  count: number
+  readonly count: number
 }

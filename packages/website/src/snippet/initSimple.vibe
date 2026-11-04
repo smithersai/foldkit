@@ -2,7 +2,7 @@ import type { Runtime } from 'foldkit'
 import { defineMessageUnion } from 'foldkit/message'
 
 schema Model {
-  count: number
+  readonly count: number
 }
 
 const Message = defineMessageUnion({

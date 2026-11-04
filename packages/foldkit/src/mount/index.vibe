@@ -8,8 +8,8 @@ import { Function as EffectFunction } from 'effect'
  *  fire in their VNode-only environment. */
 export service MountTracker {
   static readonly key = '@foldkit/MountTracker'
-  started: (name: string, args?: Record<string, unknown>) => void
-  ended: (name: string, args?: Record<string, unknown>) => void
+  readonly started: (name: string, args?: Record<string, unknown>) => void
+  readonly ended: (name: string, args?: Record<string, unknown>) => void
 }
 
 /** The state of the DOM currently owned by the Foldkit renderer. `Live` means
@@ -21,7 +21,7 @@ export schema ViewState = 'Live' | 'Paused'
  *  `viewStateChanges`. */
 export service MountRuntime {
   static readonly key = '@foldkit/MountRuntime'
-  captureViewStateChanges: () => Stream<ViewState>
+  readonly captureViewStateChanges: () => Stream<ViewState>
 }
 
 /** Type-level brand for MountDefinition values. */

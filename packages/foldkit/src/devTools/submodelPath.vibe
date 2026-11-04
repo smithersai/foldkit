@@ -1,6 +1,6 @@
 export const GOT_MESSAGE_PATTERN = /^Got.+Message$/
 
-schema Tagged { _tag: string }
+schema Tagged { readonly _tag: string }
 export const isTagged = Schema.is(Tagged)
 
 /** Submodel chain information extracted from a recorded Message. */

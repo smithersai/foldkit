@@ -35,17 +35,17 @@ export type Cell = typeof Cell.Type
 const Row = Schema.Array(Cell)
 export schema Grid = ReadonlyArray<Row>
 
-export schema Position { x: number; y: number }
+export schema Position { readonly x: number; readonly y: number }
 
 const SavedCell = Schema.Option(PaletteIndex)
 const SavedRow = Schema.Array(SavedCell)
 const SavedGrid = Schema.Array(SavedRow)
 
 export schema SavedCanvas {
-  grid: SavedGrid
-  gridSize: number
-  paletteThemeIndex: number
-  selectedColorIndex: PaletteIndex
+  readonly grid: SavedGrid
+  readonly gridSize: number
+  readonly paletteThemeIndex: number
+  readonly selectedColorIndex: PaletteIndex
 }
 
 export const SavedCanvasJsonString = Schema.fromJsonString(

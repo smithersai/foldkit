@@ -39,14 +39,14 @@ export type SerializedEntry = typeof SerializedEntry.Type
 
 /** Metadata about a single keyframe. The index identifies the point in history where the runtime can replay back to. */
 export schema KeyframeInfo {
-  index: number
+  readonly index: number
 }
 
 /** Metadata about a connected browser runtime. */
 export schema RuntimeInfo {
-  connectionId: string
-  url: string
-  title: string
+  readonly connectionId: string
+  readonly url: string
+  readonly title: string
 }
 
 // REQUEST
@@ -110,8 +110,8 @@ export type Request = typeof Request.Type
 
 /** One row of a Message-tag histogram. */
 export schema MessageTagCount {
-  tag: string
-  count: number
+  readonly tag: string
+  readonly count: number
 }
 
 /** The value on one side of a Model diff. `DiffValue.Present` carries the
@@ -126,21 +126,21 @@ export type DiffValue = typeof DiffValue.Type
 
 /** One changed path in a Model diff. `before` is the value at `fromIndex`, `after` the value at `toIndex`. */
 export schema ModelDiffChange {
-  path: string
-  before: DiffValue
-  after: DiffValue
+  readonly path: string
+  readonly before: DiffValue
+  readonly after: DiffValue
 }
 
 /** One variant entry in a `MessageSchemaIndex`. `payloadFields` lists the variant's payload property names (excluding `_tag`); `unionFields` lists the subset of those properties whose schemas are themselves `_tag`-discriminated unions. A Submodel-wrapper variant always shows up with `unionFields: ['message']`, but the same flag also catches plain tagged-union value types like `UrlRequest = Internal | External`. Either way, the agent will need to pick a variant when filling these fields. */
 export schema MessageSchemaIndexEntry {
-  tag: string
-  payloadFields: ReadonlyArray<string>
-  unionFields: ReadonlyArray<string>
+  readonly tag: string
+  readonly payloadFields: ReadonlyArray<string>
+  readonly unionFields: ReadonlyArray<string>
 }
 
 /** A flat directory of every top-level Message variant the runtime accepts, designed to fit in an agent context regardless of Message-union size. Use the tag names to make a follow-up `RequestGetMessageSchema` with `maybeVariantTag` set to fetch the full JSON Schema for one variant. */
 export schema MessageSchemaIndex {
-  variants: ReadonlyArray<MessageSchemaIndexEntry>
+  readonly variants: ReadonlyArray<MessageSchemaIndexEntry>
 }
 
 /** The result of requesting the app's Message Schema. It is either a compact
@@ -225,8 +225,8 @@ export type RequestFrame = typeof RequestFrame.Type
 
 /** A wire frame carrying a Response, correlated to a Request by id. */
 export schema ResponseFrame {
-  id: string
-  response: Response
+  readonly id: string
+  readonly response: Response
 }
 
 /** A wire frame carrying a runtime lifecycle event from the bridge to the Vite plugin. */

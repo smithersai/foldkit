@@ -2,7 +2,7 @@ import { Home, Room } from './page/index.ts'
 import { AppRoute } from './route.vibe'
 
 export schema Model {
-  route: AppRoute
-  home: Home.Model.Model
-  room: Room.Model.Model
+  readonly route: AppRoute
+  readonly home: Home.Model.Model
+  readonly room: Room.Model.Model
 }

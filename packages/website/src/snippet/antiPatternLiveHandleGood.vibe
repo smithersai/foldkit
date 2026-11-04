@@ -6,7 +6,7 @@ import { Model } from './model'
 
 const ChatSocket = ManagedResource.tag<WebSocket>()('ChatSocket')
 schema RoomRequirements {
-  roomId: string
+  readonly roomId: string
 }
 
 const managedResources = ManagedResource.make<Model, Message>()(entry => ({

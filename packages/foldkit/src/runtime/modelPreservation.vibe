@@ -1,19 +1,19 @@
 /** Browser → plugin: the runtime preserves its current Model under a stable id so it can be restored after a full reload. `isReloadFlush` is set by the runtime when flushing on `vite:beforeFullReload` to mark the entry as eligible for restoration; absent or `false` for ordinary debounced preserves. */
 export schema PreserveModelMessage {
-  id: string
-  model: Schema.Unknown
-  isReloadFlush?: boolean
+  readonly id: string
+  readonly model: Schema.Unknown
+  readonly isReloadFlush?: boolean
 }
 
 /** Browser → plugin: the runtime requests its previously-preserved Model on startup, scoped by id. */
 export schema RequestModelMessage {
-  id: string
+  readonly id: string
 }
 
 /** Plugin → browser: the plugin returns the preserved Model for a given runtime id. `model` is omitted when nothing is preserved (cold start, manual refresh). */
 export schema RestoreModelMessage {
-  id: string
-  model?: Schema.Unknown
+  readonly id: string
+  readonly model?: Schema.Unknown
 }
 
 /** The Vite hot context of the module that owns the protocol's listeners. Vite ties a context's listeners to the module that read `import.meta.hot`, so the owner passes its context in and this module never reads one. */

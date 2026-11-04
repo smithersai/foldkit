@@ -6,7 +6,7 @@ import { modifyFields } from 'foldkit/struct'
 // MODEL - Your entire application state
 
 schema Model {
-  count: number
+  readonly count: number
 }
 
 // MESSAGE - Events that can happen in your app

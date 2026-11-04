@@ -3,7 +3,7 @@ import { defineMessageUnion } from 'foldkit/message'
 import { defineTaggedUnion } from 'foldkit/schema'
 import { modifyFields } from 'foldkit/struct'
 
-schema UserSchema { id: string; name: string }
+schema UserSchema { readonly id: string; readonly name: string }
 
 const UserState = defineTaggedUnion({
   Loading: {},
@@ -14,8 +14,8 @@ const UserState = defineTaggedUnion({
 // MODEL
 
 schema Model {
-  userId: string
-  user: UserState
+  readonly userId: string
+  readonly user: UserState
 }
 
 // MESSAGE

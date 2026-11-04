@@ -8,5 +8,5 @@ type Model = {
 }
 
 schema ModelSchema {
-  session: Schema.Unknown
+  readonly session: Schema.Unknown
 }

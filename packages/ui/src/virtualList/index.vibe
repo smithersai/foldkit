@@ -112,17 +112,17 @@ const EndBehavior = defineTaggedUnion({
 /** Schema for the virtual list's state. Tracks scroll position, container
  *  measurement, and any in-flight programmatic scroll. */
 export schema Model {
-  id: string
-  rowHeightPx: number
-  scrollTop: number
-  measurement: Measurement
-  viewportAnchor: ViewportAnchor
-  measuredRowHeights: Readonly<Record<string, number>>
-  layoutVersion: number
-  initialScroll: InitialScroll
-  endBehavior: EndBehavior
-  pendingScroll: PendingScroll
-  pendingScrollVersion: number
+  readonly id: string
+  readonly rowHeightPx: number
+  readonly scrollTop: number
+  readonly measurement: Measurement
+  readonly viewportAnchor: ViewportAnchor
+  readonly measuredRowHeights: Readonly<Record<string, number>>
+  readonly layoutVersion: number
+  readonly initialScroll: InitialScroll
+  readonly endBehavior: EndBehavior
+  readonly pendingScroll: PendingScroll
+  readonly pendingScrollVersion: number
 }
 
 // MESSAGE

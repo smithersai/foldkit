@@ -3,11 +3,11 @@ import { defineMessageUnion } from 'foldkit/message'
 import { Dialog } from '@foldkit/ui'
 
 export schema SearchResult {
-  url: string
-  title: string
-  excerpt: string
-  section: string
-  kind: string
+  readonly url: string
+  readonly title: string
+  readonly excerpt: string
+  readonly section: string
+  readonly kind: string
 }
 
 export const Message = defineMessageUnion({

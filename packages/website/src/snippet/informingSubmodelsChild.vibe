@@ -8,9 +8,9 @@ import { PeopleRoute } from './route'
 // MESSAGE
 
 schema Person {
-  id: number
-  name: string
-  role: string
+  readonly id: number
+  readonly name: string
+  readonly role: string
 }
 
 export const Message = defineMessageUnion({

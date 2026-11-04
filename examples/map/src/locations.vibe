@@ -1,9 +1,9 @@
 export schema Location {
-  id: string
-  name: string
-  region: string
-  lng: number
-  lat: number
+  readonly id: string
+  readonly name: string
+  readonly region: string
+  readonly lng: number
+  readonly lat: number
 }
 
 export const featuredLocations: ReadonlyArray<Location> = [

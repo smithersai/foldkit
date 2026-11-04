@@ -26,13 +26,13 @@ const defaultFlags: TypeDocFlags = {
 }
 
 export schema TypeDocCommentPart {
-  kind: string
-  text: string
+  readonly kind: string
+  readonly text: string
 }
 
 export schema TypeDocBlockTag {
-  tag: string
-  content: ReadonlyArray<TypeDocCommentPart>
+  readonly tag: string
+  readonly content: ReadonlyArray<TypeDocCommentPart>
 }
 
 export const TypeDocComment = Schema.Struct({
@@ -382,12 +382,12 @@ export const TypeDocModule = Schema.Struct({
 export type TypeDocModule = typeof TypeDocModule.Type
 
 export schema TypeDocJson {
-  schemaVersion: string
-  id: number
-  name: string
-  variant: string
-  kind: number
-  children: ReadonlyArray<TypeDocModule>
+  readonly schemaVersion: string
+  readonly id: number
+  readonly name: string
+  readonly variant: string
+  readonly kind: number
+  readonly children: ReadonlyArray<TypeDocModule>
 }
 
 export const Kind = {

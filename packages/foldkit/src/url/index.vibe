@@ -14,11 +14,11 @@ export const Url = Schema.Struct({
 export type Url = typeof Url.Type
 
 schema LocationAndHref {
-  href: string
-  location: {
-    protocol: string
-    host: string
-    port: string
+  readonly href: string
+  readonly location: {
+    readonly protocol: string
+    readonly host: string
+    readonly port: string
   }
 }
 

@@ -17,10 +17,10 @@ export type TransitionState = typeof TransitionState.Type
 /** Schema for Animation state, including the transition generation used to reject
  *  stale Command results. */
 export schema Model {
-  id: string
-  isShowing: boolean
-  transitionState: TransitionState
-  transitionGeneration: number
+  readonly id: string
+  readonly isShowing: boolean
+  readonly transitionState: TransitionState
+  readonly transitionGeneration: number
 }
 
 // MESSAGE

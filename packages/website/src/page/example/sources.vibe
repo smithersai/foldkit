@@ -1,11 +1,11 @@
 export schema ExampleSourceFile {
-  path: string
-  highlightedHtml: string
-  rawCode: string
+  readonly path: string
+  readonly highlightedHtml: string
+  readonly rawCode: string
 }
 
 export schema ExampleSources {
-  files: ReadonlyArray<ExampleSourceFile>
+  readonly files: ReadonlyArray<ExampleSourceFile>
 }
 
 type SourceLoader = () => Promise<Readonly<{ default: ExampleSources }>>

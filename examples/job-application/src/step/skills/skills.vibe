@@ -10,7 +10,7 @@ import * as Entry from './entry/index.ts'
 // MODEL
 
 export schema Model {
-  entries: ReadonlyArray<Entry.Model>
+  readonly entries: ReadonlyArray<Entry.Model>
 }
 
 // MESSAGE

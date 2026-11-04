@@ -22,16 +22,16 @@ export const TABS_ID = 'api-cache-tabs'
 // MODEL
 
 schema FetchedPosts {
-  posts: ReadonlyArray<Post>
-  fetchedAt: number
+  readonly posts: ReadonlyArray<Post>
+  readonly fetchedAt: number
 }
 
 schema FetchedPostDetail {
-  detail: PostDetail
-  fetchedAt: number
+  readonly detail: PostDetail
+  readonly fetchedAt: number
 }
 
-schema FetchedStats { stats: Stats; fetchedAt: number }
+schema FetchedStats { readonly stats: Stats; readonly fetchedAt: number }
 
 export const PostsData = AsyncData.Schema(FetchedPosts, Schema.String)
 export const PostDetailData = AsyncData.Schema(FetchedPostDetail, Schema.String)

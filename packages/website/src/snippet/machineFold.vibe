@@ -9,8 +9,8 @@ import {
 } from './machineDefinition.vibe'
 
 export schema Model {
-  checkout: CheckoutState
-  isHelpOpen: boolean
+  readonly checkout: CheckoutState
+  readonly isHelpOpen: boolean
 }
 
 export const initialModel = Model.make({

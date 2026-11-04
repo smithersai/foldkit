@@ -9,13 +9,13 @@ import { Button, Input } from '@foldkit/ui'
 // MODEL
 
 export schema WeatherData {
-  zipCode: string
-  temperature: number
-  description: string
-  humidity: number
-  windSpeed: number
-  locationName: string
-  region: string
+  readonly zipCode: string
+  readonly temperature: number
+  readonly description: string
+  readonly humidity: number
+  readonly windSpeed: number
+  readonly locationName: string
+  readonly region: string
 }
 
 export const WeatherAsyncData = AsyncData.Schema(WeatherData, Schema.String)
@@ -96,11 +96,11 @@ const GeocodingResponse = Schema.Struct({
 })
 
 schema WeatherResponse {
-  current: {
-    temperature_2m: number
-    relative_humidity_2m: number
-    wind_speed_10m: number
-    weather_code: number
+  readonly current: {
+    readonly temperature_2m: number
+    readonly relative_humidity_2m: number
+    readonly wind_speed_10m: number
+    readonly weather_code: number
   }
 }
 

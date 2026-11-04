@@ -11,8 +11,8 @@ type Message = typeof Message.Type
 // MODEL
 
 schema Model {
-  isRunning: boolean
-  elapsed: number
+  readonly isRunning: boolean
+  readonly elapsed: number
 }
 
 // SUBSCRIPTION

@@ -104,15 +104,15 @@ export type MonthYearFormat = typeof MonthYearFormat.Type
  * controls how the view rotates them at render time.
  */
 export schema LocaleConfig {
-  firstDayOfWeek: DayOfWeek
-  monthNames: twelveStrings
-  shortMonthNames: twelveStrings
-  dayNames: sevenStrings
-  shortDayNames: sevenStrings
-  longFormat: DateFormat
-  shortFormat: DateFormat
-  ariaLabelFormat: DateFormat
-  monthYearFormat: MonthYearFormat
+  readonly firstDayOfWeek: DayOfWeek
+  readonly monthNames: twelveStrings
+  readonly shortMonthNames: twelveStrings
+  readonly dayNames: sevenStrings
+  readonly shortDayNames: sevenStrings
+  readonly longFormat: DateFormat
+  readonly shortFormat: DateFormat
+  readonly ariaLabelFormat: DateFormat
+  readonly monthYearFormat: MonthYearFormat
 }
 
 /**

@@ -7,8 +7,8 @@ const Message = defineMessageUnion({
 type Message = typeof Message.Type
 
 schema Model {
-  isDragging: boolean
-  clientY: number
+  readonly isDragging: boolean
+  readonly clientY: number
 }
 
 const subscriptions = Subscription.make<Model, Message>()(entry => ({

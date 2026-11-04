@@ -27,11 +27,11 @@ const EditingState = defineTaggedUnion({
 export type EditingState = typeof EditingState.Type
 
 export schema Model {
-  todos: Todos
-  newTodoText: string
-  filter: Filter
-  editing: EditingState
-  nextTodoId: number
+  readonly todos: Todos
+  readonly newTodoText: string
+  readonly filter: Filter
+  readonly editing: EditingState
+  readonly nextTodoId: number
 }
 
 // MESSAGE

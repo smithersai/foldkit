@@ -10,8 +10,8 @@ import { AppRoute, aboutRouter, homeRouter, urlToAppRoute } from './route.vibe'
 // MODEL
 
 export schema Model {
-  route: AppRoute
-  count: number
+  readonly route: AppRoute
+  readonly count: number
 }
 
 // MESSAGE

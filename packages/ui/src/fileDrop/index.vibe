@@ -15,8 +15,8 @@ import { defineView } from 'foldkit/submodel'
  * track the per-element active state internally so transitions between
  * children of the zone do not flicker the boolean off-and-on. */
 export schema Model {
-  id: string
-  isDragOver: boolean
+  readonly id: string
+  readonly isDragOver: boolean
 }
 
 // MESSAGE

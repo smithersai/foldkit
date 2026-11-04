@@ -13,7 +13,7 @@ const Message = defineMessageUnion({
   },
 })
 
-schema UploadKey { uploadId: number }
+schema UploadKey { readonly uploadId: number }
 
 const UploadFile = Command.define('UploadFile', {
   args: { ...UploadKey.fields, file: Schema.instanceOf(File) },

@@ -129,9 +129,9 @@ const urlToAppRoute = Route.parseUrlWithFallback(routeParser, AppRoute.NotFound)
 // MODEL
 
 export schema Model {
-  route: AppRoute
-  dietListbox: Listbox.Model
-  periodListbox: Listbox.Model
+  readonly route: AppRoute
+  readonly dietListbox: Listbox.Model
+  readonly periodListbox: Listbox.Model
 }
 
 // MESSAGE

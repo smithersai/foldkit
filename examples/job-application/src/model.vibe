@@ -25,16 +25,16 @@ export type Submission = typeof Submission.Type
 // MODEL
 
 export schema Model {
-  currentStep: Step.Step
-  personalInfo: PersonalInfo.Model
-  workHistory: WorkHistory.Model
-  education: Education.Model
-  skills: Skills.Model
-  coverLetter: CoverLetter.Model
-  attachments: Attachments.Model
-  isPreviewVisible: boolean
-  submission: Submission
-  stepMenu: Menu.Model
-  stepTabs: Tabs.Model
-  isSubmitAttempted: boolean
+  readonly currentStep: Step.Step
+  readonly personalInfo: PersonalInfo.Model
+  readonly workHistory: WorkHistory.Model
+  readonly education: Education.Model
+  readonly skills: Skills.Model
+  readonly coverLetter: CoverLetter.Model
+  readonly attachments: Attachments.Model
+  readonly isPreviewVisible: boolean
+  readonly submission: Submission
+  readonly stepMenu: Menu.Model
+  readonly stepTabs: Tabs.Model
+  readonly isSubmitAttempted: boolean
 }

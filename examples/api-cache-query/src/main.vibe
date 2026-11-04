@@ -21,16 +21,16 @@ const STATS_REFETCH_INTERVAL = Duration.seconds(5)
 export const TABS_ID = 'api-cache-query-tabs'
 
 schema PostsData {
-  posts: ReadonlyArray<Post>
-  fetchedAt: number
+  readonly posts: ReadonlyArray<Post>
+  readonly fetchedAt: number
 }
 
 schema PostData {
-  post: PostDetail
-  fetchedAt: number
+  readonly post: PostDetail
+  readonly fetchedAt: number
 }
 
-schema StatsData { stats: Stats; fetchedAt: number }
+schema StatsData { readonly stats: Stats; readonly fetchedAt: number }
 
 export const postsQuery = Query.define({
   name: 'Posts',

@@ -11,8 +11,8 @@ import { RadioGroup } from '@foldkit/ui'
 // MODEL
 
 export schema Discount {
-  code: string
-  percentOff: number
+  readonly code: string
+  readonly percentOff: number
 }
 
 export const Promo = defineTaggedUnion({
@@ -48,8 +48,8 @@ export const CheckoutState = defineTaggedUnion({
 })
 
 export schema TransitionLogEntry {
-  id: number
-  summary: string
+  readonly id: number
+  readonly summary: string
 }
 
 const EDITION_RADIO_GROUP_ID = 'edition'
@@ -68,10 +68,10 @@ export const editionName = (isShippingRequired: boolean): string =>
 export const EditionRadioGroup = RadioGroup.create()
 
 export schema Model {
-  checkout: CheckoutState
-  editionRadioGroup: RadioGroup.Model
-  transitionLog: ReadonlyArray<TransitionLogEntry>
-  nextTransitionLogId: number
+  readonly checkout: CheckoutState
+  readonly editionRadioGroup: RadioGroup.Model
+  readonly transitionLog: ReadonlyArray<TransitionLogEntry>
+  readonly nextTransitionLogId: number
 }
 
 // MESSAGE

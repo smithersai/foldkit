@@ -382,7 +382,7 @@ export const Island = taggedStruct('Island', {
 // DOCUMENT
 
 /** A compiled markdown document: the block sequence of one source file. */
-export schema MarkdownDocument { blocks: ReadonlyArray<Block> }
+export schema MarkdownDocument { readonly blocks: ReadonlyArray<Block> }
 
 /** The wire form of {@link MarkdownDocument}. */
 export type MarkdownDocumentEncoded = typeof MarkdownDocument.Encoded

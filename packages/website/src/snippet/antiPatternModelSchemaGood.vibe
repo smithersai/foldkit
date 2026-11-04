@@ -6,5 +6,5 @@ const Session = Schema.Struct({
 })
 
 schema Model {
-  session: Session
+  readonly session: Session
 }

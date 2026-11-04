@@ -8,7 +8,7 @@ const EditorMode = defineTaggedUnion({
 type EditorMode = typeof EditorMode.Type
 
 schema Model {
-  editorMode: EditorMode
+  readonly editorMode: EditorMode
 }
 
 const init = (): Model => ({

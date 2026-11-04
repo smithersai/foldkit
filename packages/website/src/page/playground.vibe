@@ -124,7 +124,7 @@ export type WebContainerPlaygroundService = ManagedResource.ServiceOf<
   typeof WebContainerPlayground
 >
 
-schema PlaygroundParams { slug: string }
+schema PlaygroundParams { readonly slug: string }
 
 export const managedResources = ManagedResource.make<Model, Message>()(
   (entry): infer _ => ({

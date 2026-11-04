@@ -24,7 +24,7 @@ const urlToAppRoute = Route.parseUrlWithFallback(routeParser, AppRoute.NotFound)
 
 // MODEL
 
-schema Model { route: AppRoute }
+schema Model { readonly route: AppRoute }
 
 // MESSAGE
 

@@ -41,12 +41,12 @@ schema AnimationPhase =
   | 'ResetModel'
 
 export schema Model {
-  count: number
-  isResetting: boolean
-  resetDuration: number
-  phase: AnimationPhase
-  generation: number
-  messageLog: ReadonlyArray<string>
+  readonly count: number
+  readonly isResetting: boolean
+  readonly resetDuration: number
+  readonly phase: AnimationPhase
+  readonly generation: number
+  readonly messageLog: ReadonlyArray<string>
 }
 
 // MESSAGE

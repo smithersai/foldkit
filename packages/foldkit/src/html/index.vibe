@@ -232,9 +232,9 @@ export type EventPropagation = typeof EventPropagation.Type
  *  fields keep the browser default, allow the click to bubble, and leave focus
  *  unchanged. */
 export schema ClickOptions {
-  defaultAction?: DefaultAction
-  propagation?: EventPropagation
-  focusSelector?: string
+  readonly defaultAction?: DefaultAction
+  readonly propagation?: EventPropagation
+  readonly focusSelector?: string
 }
 /** Declarative controls for an `OnClick` handler. Omitted
  *  fields keep the browser default, allow the click to bubble, and leave focus

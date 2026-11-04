@@ -14,12 +14,12 @@ const RELEASE_PAGE_SIZE = 100
 // SCHEMA
 
 export schema GitHubRepositoryResponse {
-  stargazers_count: number
-  forks_count: number
-  watchers_count: number
-  open_issues_count: number
-  pushed_at: string
-  default_branch: string
+  readonly stargazers_count: number
+  readonly forks_count: number
+  readonly watchers_count: number
+  readonly open_issues_count: number
+  readonly pushed_at: string
+  readonly default_branch: string
 }
 
 export const GitHubContributorResponse = Schema.Struct({
@@ -33,19 +33,22 @@ export const GitHubIssueResponse = Schema.Struct({
   pull_request: Schema.OptionFromOptional(Schema.Unknown),
 })
 
-export schema GitHubPullRequestResponse { id: number }
+export schema GitHubPullRequestResponse { readonly id: number }
 
 export const GitHubReleaseResponse = Schema.Struct({
   published_at: Schema.OptionFromOptional(Schema.String),
 })
 
 export schema GitHubStarHistoryResponse {
-  week: number
-  total: number
-  days: ReadonlyArray<number>
+  readonly week: number
+  readonly total: number
+  readonly days: ReadonlyArray<number>
 }
 
-export schema GitHubCommitActivityResponse { week: number; total: number }
+export schema GitHubCommitActivityResponse {
+  readonly week: number
+  readonly total: number
+}
 
 // SERVICE
 

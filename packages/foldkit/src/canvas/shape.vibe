@@ -2,8 +2,8 @@ import { taggedStruct } from '../schema/index.vibe'
 
 /** A 2D point in canvas-local coordinates. */
 export schema Point {
-  x: number
-  y: number
+  readonly x: number
+  readonly y: number
 }
 
 /** Move the path cursor to a point without drawing. */

@@ -3,7 +3,7 @@ import { DragAndDrop } from '@foldkit/ui'
 import { Column } from './domain/index.ts'
 
 export schema SavedBoard {
-  columns: ReadonlyArray<Column.Column>
+  readonly columns: ReadonlyArray<Column.Column>
 }
 
 export const SavedBoardJsonString = Schema.fromJsonString(

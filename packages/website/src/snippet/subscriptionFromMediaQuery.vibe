@@ -11,7 +11,7 @@ type Message = typeof Message.Type
 // MODEL
 
 schema Model {
-  isReducedMotion: boolean
+  readonly isReducedMotion: boolean
 }
 
 // SUBSCRIPTION

@@ -1,7 +1,7 @@
 export schema Session {
-  userId: string
-  email: string
-  name: string
+  readonly userId: string
+  readonly email: string
+  readonly name: string
 }
 
 export const SessionJsonString = Schema.fromJsonString(

@@ -8,7 +8,7 @@ const SearchState = defineTaggedUnion({
 })
 
 schema Model {
-  searchState: SearchState
+  readonly searchState: SearchState
 }
 
 const Message = defineMessageUnion({

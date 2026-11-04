@@ -11,8 +11,8 @@ import * as Entry from './entry/index.ts'
 // MODEL
 
 export schema Model {
-  entries: ReadonlyArray<Entry.Model>
-  today: Calendar.CalendarDate
+  readonly entries: ReadonlyArray<Entry.Model>
+  readonly today: Calendar.CalendarDate
 }
 
 // MESSAGE

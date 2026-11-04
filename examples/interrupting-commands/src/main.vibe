@@ -10,15 +10,15 @@ import { modifyFields } from 'foldkit/struct'
 export schema UploadStatus = 'Uploading' | 'Done' | 'Cancelled'
 
 export schema Upload {
-  id: number
-  fileName: string
-  sizeMegabytes: number
-  status: UploadStatus
+  readonly id: number
+  readonly fileName: string
+  readonly sizeMegabytes: number
+  readonly status: UploadStatus
 }
 
 export schema Model {
-  uploadId: number
-  uploads: ReadonlyArray<Upload>
+  readonly uploadId: number
+  readonly uploads: ReadonlyArray<Upload>
 }
 
 // MESSAGE
@@ -51,8 +51,8 @@ export const init: Runtime.ApplicationInit<Model, Message> = () => ({
 // FAKE FILES
 
 export schema FakeFile {
-  name: string
-  sizeMegabytes: number
+  readonly name: string
+  readonly sizeMegabytes: number
 }
 
 export const FAKE_FILES: Array.NonEmptyReadonlyArray<FakeFile> = [
@@ -74,7 +74,7 @@ const fakeFileForUpload = (uploadId: number): FakeFile =>
 
 const MILLISECONDS_PER_MEGABYTE = 100
 
-export schema UploadKey { uploadId: number }
+export schema UploadKey { readonly uploadId: number }
 
 export const UploadFile = Command.define('UploadFile', {
   args: { ...UploadKey.fields, sizeMegabytes: Schema.Number },

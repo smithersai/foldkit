@@ -6,7 +6,7 @@ import { modifyFields } from 'foldkit/struct'
 // MODEL
 
 export schema Model {
-  count: number
+  readonly count: number
 }
 
 // MESSAGE

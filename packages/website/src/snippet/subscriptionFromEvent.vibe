@@ -11,7 +11,7 @@ type Message = typeof Message.Type
 // MODEL
 
 schema Model {
-  isListening: boolean
+  readonly isListening: boolean
 }
 
 // SUBSCRIPTION

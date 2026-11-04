@@ -3,8 +3,8 @@ import { AsyncData } from 'foldkit'
 import * as Shared from '@typing-game/shared'
 
 export schema RoomPlayerSession {
-  roomId: string
-  player: Shared.Player
+  readonly roomId: string
+  readonly player: Shared.Player
 }
 
 export const RoomPlayerSessionJsonString = Schema.fromJsonString(

@@ -26,9 +26,9 @@ const getZonedTime = effect {
 // MODEL
 
 schema ChatMessage {
-  text: string
-  zoned: Schema.DateTimeZoned
-  isSent: boolean
+  readonly text: string
+  readonly zoned: Schema.DateTimeZoned
+  readonly isSent: boolean
 }
 
 type ChatPull = Arr.NonEmptyReadonlyArray<string>!Socket.SocketError
@@ -49,9 +49,9 @@ export const ConnectionState = defineTaggedUnion({
 export type ConnectionState = typeof ConnectionState.Type
 
 export schema Model {
-  connection: ConnectionState
-  messages: ReadonlyArray<ChatMessage>
-  messageInput: string
+  readonly connection: ConnectionState
+  readonly messages: ReadonlyArray<ChatMessage>
+  readonly messageInput: string
 }
 
 // MESSAGE

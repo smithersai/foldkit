@@ -35,9 +35,9 @@ export const ActivationTrigger = Schema.Literals(['Pointer', 'Keyboard'])
 export type ActivationTrigger = typeof ActivationTrigger.Type
 
 schema PointerOrigin {
-  screenX: number
-  screenY: number
-  timeStamp: number
+  readonly screenX: number
+  readonly screenY: number
+  readonly timeStamp: number
 }
 
 /** Schema for the menu component's state, tracking open/closed status, active item, activation trigger, and typeahead search. */

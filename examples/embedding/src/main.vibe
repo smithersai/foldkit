@@ -8,8 +8,8 @@ import { Button } from '@foldkit/ui'
 // MODEL
 
 export schema Model {
-  count: number
-  step: number
+  readonly count: number
+  readonly step: number
 }
 
 // MESSAGE
@@ -32,7 +32,7 @@ export const ports = {
 
 // INIT
 
-export schema Flags { initialCount: number }
+export schema Flags { readonly initialCount: number }
 
 export const init: Runtime.ElementInit<Model, Message, Flags> = flags => ({
   model: { count: flags.initialCount, step: 1 },
