@@ -14,6 +14,7 @@ import {
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { test } from 'node:test'
+import ts from 'typescript'
 
 const ROOT = resolve(import.meta.dirname, '..')
 const compiler = realpathSync(join(ROOT, 'node_modules/vibelang'))
@@ -37,7 +38,48 @@ const run = (cwd, args) => {
   assert.equal(result.signal, null, String(result.signal))
   assert.equal(result.status, 0, result.stdout + result.stderr)
 }
-const sameBytes = (actual, expected, stage) => {
+// NOTE: VIP-27:24 permits generated @throws contracts to differ.
+// Preserve every byte outside the JSDoc tag lines, including inline signatures.
+const withoutThrows = bytes => {
+  const source = bytes.toString('latin1')
+  const declarations = ts.createSourceFile(
+    'declarations.d.ts',
+    source,
+    ts.ScriptTarget.Latest,
+  )
+  const comments = new Map()
+  const collectComments = node => {
+    for (const comment of [
+      ...(ts.getLeadingCommentRanges(source, node.pos) ?? []),
+      ...(ts.getTrailingCommentRanges(source, node.pos) ?? []),
+    ]) {
+      if (source.startsWith('/**', comment.pos)) {
+        comments.set(comment.pos, comment.end)
+      }
+    }
+    ts.forEachChild(node, collectComments)
+  }
+  collectComments(declarations)
+
+  return Buffer.from(
+    source.replace(
+      /(?:^[\t ]*)?\/\*\* @throws \{[^}\r\n]*\} \*\/(?:\r?\n|$)|^[\t ]*\* @throws \{[^}\r\n]*\}[\t ]*(?:\r?\n|$)/gm,
+      (tag, offset) => {
+        const start = offset + tag.search(/\S/)
+        const isJSDocTag = [...comments].some(([position, end]) =>
+          source.startsWith('/**', start)
+            ? position === start && end === offset + tag.trimEnd().length
+            : position < start && start < end,
+        )
+        return isJSDocTag ? '' : tag
+      },
+    ),
+    'latin1',
+  )
+}
+const sameBytes = (actualBytes, expectedBytes, stage) => {
+  const actual = withoutThrows(actualBytes)
+  const expected = withoutThrows(expectedBytes)
   const actualLines = actual.toString().split('\n')
   const expectedLines = expected.toString().split('\n')
   const line = expectedLines.findIndex(
@@ -53,6 +95,172 @@ const sameBytes = (actual, expected, stage) => {
     }),
   )
 }
+test('declaration comparisons ignore generated throws tag lines on either side', () => {
+  const declaration =
+    'export declare const callback: () => ((value: string) => number);\n'
+  const tagged =
+    '/** @throws {never} */\nexport declare const callback: () => (/** @throws {never} */\n(value: string) => number);\n'
+  const documented =
+    '/**\n * Callback documentation.\n * @deprecated Use another callback.\n */\n' +
+    declaration
+  const withThrows = documented.replace(
+    ' * @deprecated',
+    ' * @throws {never}\n * @deprecated',
+  )
+
+  for (const [actual, expected] of [
+    [tagged, declaration],
+    [declaration, tagged],
+    [tagged, tagged.replaceAll('{never}', '{Error}')],
+    [withThrows, documented],
+    [documented, withThrows],
+    ['  /** @throws {never} */\n' + declaration, declaration],
+    [tagged.replaceAll('\n', '\r\n'), declaration.replaceAll('\n', '\r\n')],
+  ]) {
+    sameBytes(Buffer.from(actual), Buffer.from(expected), 'throws tags')
+  }
+})
+
+test('declaration comparisons reject every difference outside throws tag lines', () => {
+  const declaration =
+    '/** Callback documentation.\n * @deprecated Use another callback.\n */\nexport declare const callback: () => string;\n'
+
+  for (const changed of [
+    declaration.replace('string', 'number'),
+    declaration.replace('const callback', 'const renamed'),
+    declaration.replace('Callback documentation.', 'Changed documentation.'),
+    declaration.replace(
+      '@deprecated Use another callback.',
+      '@deprecated Use a new callback.',
+    ),
+    declaration.replace('@deprecated', '@rethrows'),
+    declaration.replace('=> string', '=>  string'),
+    declaration.replaceAll('\n', '\r\n'),
+    declaration + '\n',
+    declaration.trimEnd(),
+    '/** @throwsExtra {never} */\n' + declaration,
+    '/** @throws {never} @deprecated Use another callback. */\n' + declaration,
+    '/** Mention @throws {never} in prose. */\n' + declaration,
+    'export declare const text: "/** @throws {never} */";\n' + declaration,
+  ]) {
+    for (const [actual, expected] of [
+      [changed, declaration],
+      [declaration, changed],
+    ]) {
+      assert.throws(
+        () =>
+          sameBytes(
+            Buffer.from(actual),
+            Buffer.from(expected),
+            'changed declaration',
+          ),
+        { code: 'ERR_ASSERTION' },
+      )
+    }
+  }
+})
+
+test('declaration comparisons preserve throws text inside types and documentation', () => {
+  for (const declaration of [
+    'export declare const text: `before\n/** @throws {never} */\nafter`;\n',
+    'export declare const text: `before\n * @throws {never}\nafter`;\n',
+    '/** Example /** @throws {never} */\nexport declare const text: string;\n',
+  ]) {
+    assert.throws(
+      () =>
+        sameBytes(
+          Buffer.from(declaration),
+          Buffer.from(declaration.replace('{never}', '{Error}')),
+          'throws text',
+        ),
+      { code: 'ERR_ASSERTION' },
+    )
+  }
+  assert.throws(
+    () => sameBytes(Buffer.from([0xff]), Buffer.from([0xfe]), 'distinct bytes'),
+    { code: 'ERR_ASSERTION' },
+  )
+})
+
+test('generated throws tags cannot hide declaration or documentation mutations', () => {
+  fc.assert(
+    fc.property(
+      fc.record({
+        result: fc.constantFrom('string', 'number', 'boolean'),
+        documentation: fc
+          .array(fc.constantFrom('a', 'b', ' ', 'é', '😀'), {
+            minLength: 1,
+            maxLength: 40,
+          })
+          .map(characters => characters.join('')),
+        newline: fc.constantFrom('\n', '\r\n'),
+        actualThrows: fc.constantFrom('never', 'Error', 'RangeError'),
+        expectedThrows: fc.constantFrom('never', 'Error', 'TypeError'),
+        mutation: fc.constantFrom(
+          'type',
+          'name',
+          'documentation',
+          'tag',
+          'whitespace',
+          'blank line',
+        ),
+      }),
+      ({
+        result,
+        documentation,
+        newline,
+        actualThrows,
+        expectedThrows,
+        mutation,
+      }) => {
+        const declaration =
+          '/**\n * ' +
+          documentation +
+          '\n * @deprecated Use another callback.\n */\nexport declare const callback: () => ' +
+          result +
+          ';\n'
+        const decorate = (text, contract) =>
+          (
+            '/** @throws {' +
+            contract +
+            '} */\n' +
+            text.replace(
+              ' * @deprecated',
+              ' * @throws {' + contract + '}\n * @deprecated',
+            )
+          ).replaceAll('\n', newline)
+        const changed = {
+          type: declaration.replace('=> ' + result, '=> Date'),
+          name: declaration.replace('const callback', 'const renamed'),
+          documentation: declaration.replace(
+            ' * ' + documentation,
+            ' * Changed ' + documentation,
+          ),
+          tag: declaration.replace('@deprecated', '@rethrows'),
+          whitespace: declaration.replace('=> ', '=>  '),
+          'blank line': declaration + '\n',
+        }[mutation]
+        const expected = Buffer.from(decorate(declaration, expectedThrows))
+        sameBytes(
+          Buffer.from(decorate(declaration, actualThrows)),
+          expected,
+          'generated tags',
+        )
+        assert.throws(
+          () =>
+            sameBytes(
+              Buffer.from(decorate(changed, actualThrows)),
+              expected,
+              'generated mutation',
+            ),
+          { code: 'ERR_ASSERTION' },
+        )
+      },
+    ),
+    { numRuns: 250, seed: 271024 },
+  )
+})
+
 const verify = (sources, label) => {
   const directory = mkdtempSync(
     join(
@@ -134,7 +342,7 @@ const verify = (sources, label) => {
   }
 }
 
-test('Foldkit public callback declarations keep their original bytes through native formatting', () =>
+test('Foldkit public callback declarations preserve bytes except throws tags through native formatting', () =>
   verify(corpus, 'foldkit-callbacks'))
 
 const shape = fc.record({
@@ -185,7 +393,7 @@ const sourcesFor = (shapes, native) =>
     })
     .join('\n')
 
-test('250 generated callback shapes retain raw declarations before and after formatting', () => {
+test('250 generated callback shapes preserve bytes except throws tags before and after formatting', () => {
   fc.assert(
     fc.property(fc.array(shape, { minLength: 250, maxLength: 250 }), shapes => {
       verify(
