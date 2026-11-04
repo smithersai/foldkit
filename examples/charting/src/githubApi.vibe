@@ -60,17 +60,19 @@ export type GitHubStatResult<A> = Readonly<{
 export service GitHubApi {
   static readonly key = 'charting/GitHubApi'
 
-  fetchRepository: typeof GitHubRepositoryResponse.Type!Error
-  fetchContributors: ReadonlyArray<typeof GitHubContributorResponse.Type>!Error
-  fetchIssues: ReadonlyArray<typeof GitHubIssueResponse.Type>!Error
-  fetchPullRequests: ReadonlyArray<typeof GitHubPullRequestResponse.Type>!Error
+  readonly fetchRepository: typeof GitHubRepositoryResponse.Type!Error
+  readonly fetchContributors:
+    ReadonlyArray<typeof GitHubContributorResponse.Type>!Error
+  readonly fetchIssues: ReadonlyArray<typeof GitHubIssueResponse.Type>!Error
+  readonly fetchPullRequests:
+    ReadonlyArray<typeof GitHubPullRequestResponse.Type>!Error
   fetchReleases(
     yearCutoff: DateTime.Utc,
   ): ReadonlyArray<typeof GitHubReleaseResponse.Type>!Error
   fetchStarHistory(
     yearCutoff: DateTime.Utc,
   ): ReadonlyArray<typeof GitHubStarHistoryResponse.Type>!Error
-  fetchCommitActivity:
+  readonly fetchCommitActivity:
     GitHubStatResult<ReadonlyArray<typeof GitHubCommitActivityResponse.Type>>!!
 }
 
