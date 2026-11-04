@@ -148,7 +148,10 @@ const setupProject = effect (
 ) => {
   try Console.log(
     try Effect.orDie(
-      Effect.try(() => chalk.blue('🚀 Creating your Foldkit app...')),
+      Effect.try({
+        try: () => chalk.blue('🚀 Creating your Foldkit app...'),
+        catch: cause => cause,
+      }),
     ),
   )
   try Console.log('')
@@ -156,7 +159,12 @@ const setupProject = effect (
   try createProject(name, projectPath, scaffold, packageManager)
 
   try Console.log(
-    try Effect.orDie(Effect.try(() => chalk.green(`✅ Created project`))),
+    try Effect.orDie(
+      Effect.try({
+        try: () => chalk.green(`✅ Created project`),
+        catch: cause => cause,
+      }),
+    ),
   )
   try Console.log('')
 }
@@ -169,9 +177,11 @@ const installProjectDependencies = effect (
 ) => {
   try Console.log(
     try Effect.orDie(
-      Effect.try(() =>
-        chalk.blue(`📦 Installing dependencies with ${packageManager}...`)
-      ),
+      Effect.try({
+        try: () =>
+          chalk.blue(`📦 Installing dependencies with ${packageManager}...`),
+        catch: cause => cause,
+      }),
     ),
   )
 
@@ -184,7 +194,10 @@ const installProjectDependencies = effect (
 
   try Console.log(
     try Effect.orDie(
-      Effect.try(() => chalk.green('✅ Dependencies installed')),
+      Effect.try({
+        try: () => chalk.green('✅ Dependencies installed'),
+        catch: cause => cause,
+      }),
     ),
   )
   try Console.log('')
@@ -196,22 +209,36 @@ const displaySuccessMessage = effect (
   subtreeRef: string,
 ) => {
   try Console.log(
-    try Effect.orDie(Effect.try(() => chalk.bold('All systems nominal.'))),
+    try Effect.orDie(
+      Effect.try({
+        try: () => chalk.bold('All systems nominal.'),
+        catch: cause => cause,
+      }),
+    ),
   )
   try Console.log('')
   try Console.log(
-    `  > ${(try Effect.orDie(Effect.try(() => chalk.cyan('cd'))))} ${name}`,
+    `  > ${(try Effect.orDie(
+      Effect.try({ try: () => chalk.cyan('cd'), catch: cause => cause }),
+    ))} ${name}`,
   )
   const dev = try sync(
     (manager: PackageManager): string => devCommand(manager),
     packageManager,
   )
   try Console.log(
-    `  > ${(try Effect.orDie(Effect.try(() => chalk.cyan(dev))))}`,
+    `  > ${(try Effect.orDie(
+      Effect.try({ try: () => chalk.cyan(dev), catch: cause => cause }),
+    ))}`,
   )
   try Console.log('')
   try Console.log(
-    try Effect.orDie(Effect.try(() => chalk.bold('AI-Assisted Development'))),
+    try Effect.orDie(
+      Effect.try({
+        try: () => chalk.bold('AI-Assisted Development'),
+        catch: cause => cause,
+      }),
+    ),
   )
   try Console.log('')
   try Console.log(
@@ -222,69 +249,104 @@ const displaySuccessMessage = effect (
   )
   try Console.log('')
   try Console.log(
-    `  > ${(try Effect.orDie(Effect.try(() => chalk.cyan('cd'))))} ${name}`,
-  )
-  try Console.log(
-    `  > ${(try Effect.orDie(Effect.try(() => chalk.cyan('git init'))))}`,
-  )
-  try Console.log(
-    `  > ${(try Effect.orDie(Effect.try(() => chalk.cyan('git add .'))))}`,
+    `  > ${(try Effect.orDie(
+      Effect.try({ try: () => chalk.cyan('cd'), catch: cause => cause }),
+    ))} ${name}`,
   )
   try Console.log(
     `  > ${(try Effect.orDie(
-      Effect.try(() => chalk.cyan('git commit -m "chore: initial commit"')),
+      Effect.try({ try: () => chalk.cyan('git init'), catch: cause => cause }),
     ))}`,
   )
   try Console.log(
-    `  > ${(try Effect.orDie(Effect.try(() =>
-      chalk.cyan(
-        `git subtree add --prefix=repos/foldkit https://github.com/foldkit/foldkit.git ${subtreeRef} --squash`,
-      )
-    )))}`,
+    `  > ${(try Effect.orDie(
+      Effect.try({ try: () => chalk.cyan('git add .'), catch: cause => cause }),
+    ))}`,
+  )
+  try Console.log(
+    `  > ${(try Effect.orDie(
+      Effect.try({
+        try: () => chalk.cyan('git commit -m "chore: initial commit"'),
+        catch: cause => cause,
+      }),
+    ))}`,
+  )
+  try Console.log(
+    `  > ${(try Effect.orDie(Effect.try({
+      try: () =>
+        chalk.cyan(
+          `git subtree add --prefix=repos/foldkit https://github.com/foldkit/foldkit.git ${subtreeRef} --squash`,
+        ),
+      catch: cause => cause,
+    })))}`,
   )
   try Console.log('')
   try Console.log(
     `  Details: ${(try Effect.orDie(
-      Effect.try(() => chalk.cyan('foldkit.dev/ai/overview')),
+      Effect.try({
+        try: () => chalk.cyan('foldkit.dev/ai/overview'),
+        catch: cause => cause,
+      }),
     ))}`,
   )
   try Console.log('')
   try Console.log(
     `Training manual: ${(try Effect.orDie(
-      Effect.try(() => chalk.cyan('foldkit.dev')),
+      Effect.try({
+        try: () => chalk.cyan('foldkit.dev'),
+        catch: cause => cause,
+      }),
     ))}`,
   )
   try Console.log(
     `Incident report: ${(try Effect.orDie(
-      Effect.try(() => chalk.cyan('github.com/foldkit/foldkit/issues')),
+      Effect.try({
+        try: () => chalk.cyan('github.com/foldkit/foldkit/issues'),
+        catch: cause => cause,
+      }),
     ))}`,
   )
   try Console.log('')
   try Console.log(
     `Crew channel: ${(try Effect.orDie(
-      Effect.try(() => chalk.cyan('discord.gg/kav8VNxqGm')),
+      Effect.try({
+        try: () => chalk.cyan('discord.gg/kav8VNxqGm'),
+        catch: cause => cause,
+      }),
     ))}`,
   )
   try Console.log('')
   try Console.log('Transmissions:')
   try Console.log(
     `  Newsletter:  ${(try Effect.orDie(
-      Effect.try(() => chalk.cyan('foldkit.dev/newsletter')),
+      Effect.try({
+        try: () => chalk.cyan('foldkit.dev/newsletter'),
+        catch: cause => cause,
+      }),
     ))}`,
   )
   try Console.log(
     `  X:           ${(try Effect.orDie(
-      Effect.try(() => chalk.cyan('x.com/devinjameson')),
+      Effect.try({
+        try: () => chalk.cyan('x.com/devinjameson'),
+        catch: cause => cause,
+      }),
     ))}`,
   )
   try Console.log(
     `  Bluesky:     ${(try Effect.orDie(
-      Effect.try(() => chalk.cyan('bsky.app/profile/devinjameson.bsky.social')),
+      Effect.try({
+        try: () => chalk.cyan('bsky.app/profile/devinjameson.bsky.social'),
+        catch: cause => cause,
+      }),
     ))}`,
   )
   try Console.log(
     `  Threads:     ${(try Effect.orDie(
-      Effect.try(() => chalk.cyan('threads.com/@devinthedeveloper')),
+      Effect.try({
+        try: () => chalk.cyan('threads.com/@devinthedeveloper'),
+        catch: cause => cause,
+      }),
     ))}`,
   )
   try Console.log('')
