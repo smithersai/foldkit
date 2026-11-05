@@ -270,7 +270,7 @@ export const SaveTodos = Command.define('SaveTodos', {
   messages: [Message.SucceededSaveTodos, Message.FailedSaveTodos],
   execute: (
     { todos },
-  ): ReturnType<typeof Message.SucceededSaveTodos> | ReturnType<typeof Message.FailedSaveTodos>!! =>
+  ): (ReturnType<typeof Message.SucceededSaveTodos> | ReturnType<typeof Message.FailedSaveTodos>)!! =>
     effect {
       provide BrowserKeyValueStore.layerLocalStorage {
         return (effect {

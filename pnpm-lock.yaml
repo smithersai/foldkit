@@ -1592,6 +1592,9 @@ importers:
       '@tailwindcss/vite':
         specifier: ^4.3.3
         version: 4.3.3(vite@8.3.1(patch_hash=3641db06cb630e7972fa524c5fc5accd786252601e266f9059ef369120bc64bb)(@types/node@26.4.0)(jiti@2.7.0)(yaml@2.9.1))
+      fast-check:
+        specifier: 4.3.0
+        version: 4.3.0
       happy-dom:
         specifier: ^20.14.5
         version: 20.14.5
