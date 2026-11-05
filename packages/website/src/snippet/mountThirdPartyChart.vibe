@@ -19,7 +19,7 @@ const MountChart = Mount.define('MountChart', {
   args: { data: ChartData },
   messages: [Message.SucceededMountChart, Message.FailedMountChart],
   execute: effect ({ element, data }) => {
-    try {
+    return (effect {
       try Effect.acquireRelease(
         effect {
           const { Chart } = try Effect.tryPromise(() =>
@@ -31,11 +31,10 @@ const MountChart = Mount.define('MountChart', {
         { interruptible: false },
       )
       return Message.SucceededMountChart()
-    } catch (error) {
-      return Message.FailedMountChart({
+    }) catch (error) =>
+      Message.FailedMountChart({
         reason: error instanceof Error ? error.message : String(error),
       })
-    }
   },
 })
 

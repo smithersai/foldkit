@@ -7,11 +7,9 @@ const ReadAvatarPreview = Command.define('ReadAvatarPreview', {
   args: { file: File.File },
   messages: [SucceededReadAvatarPreview, FailedReadAvatarPreview],
   execute: effect ({ file }) => {
-    try {
+    return (effect {
       const dataUrl = try File.readAsDataUrl(file)
       return SucceededReadAvatarPreview({ dataUrl })
-    } catch (error) {
-      return FailedReadAvatarPreview({ reason: error.reason })
-    }
+    }) catch (error) => FailedReadAvatarPreview({ reason: error.reason })
   },
 })

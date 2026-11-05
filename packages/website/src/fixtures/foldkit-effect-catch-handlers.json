@@ -1,0 +1,15 @@
+{
+  "key": "foldkit:effect-catch-handlers",
+  "diagnostic": "EK0503",
+  "snippets": [
+    "antiPatternLiveHandleGood",
+    "atomCompareFoldkitEffect",
+    "commandInterruptKey",
+    "domFocus",
+    "fileMetadataAndRead",
+    "mountThirdPartyChart",
+    "resourcesFlags",
+    "resourcesPerCommandHttp"
+  ],
+  "outcomes": ["success", "failure", "defect", "interrupt"]
+}

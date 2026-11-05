@@ -5,15 +5,13 @@ const FetchWeather = Command.define('FetchWeather', {
   args: { city: Schema.String },
   messages: [SucceededFetchWeather, FailedFetchWeather],
   execute: effect ({ city }) => {
-    try {
+    return (effect {
       provide Http.layer {
         const response = try HttpClient.get(`https://api.weather.com/${city}`)
         const json = try response.json
         const data = try Schema.decodeUnknownEffect(WeatherResponse)(json)
         return SucceededFetchWeather({ weather: data })
       }
-    } catch {
-      return FailedFetchWeather({ error: 'Request failed' })
-    }
+    }) catch () => FailedFetchWeather({ error: 'Request failed' })
   },
 })

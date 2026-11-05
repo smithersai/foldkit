@@ -11,14 +11,12 @@ const CreateTodo = Command.define('CreateTodo', {
   args: { text: Schema.String },
   messages: [SucceededCreateTodo, FailedCreateTodo],
   execute: effect ({ text }) => {
-    try {
+    return (effect {
       provide Api.Default {
         try Api.createTodo(text)
         return SucceededCreateTodo()
       }
-    } catch {
-      return FailedCreateTodo()
-    }
+    }) catch () => FailedCreateTodo()
   },
 })
 

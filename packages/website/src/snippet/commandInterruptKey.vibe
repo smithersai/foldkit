@@ -17,11 +17,9 @@ const UploadFile = Command.define('UploadFile', {
     toKey: ({ uploadId }) => globalThis.String(uploadId),
   },
   execute: effect ({ uploadId, file }) => {
-    try {
+    return (effect {
       try postFile(file)
       return Message.SucceededUploadFile({ uploadId })
-    } catch {
-      return Message.FailedUploadFile({ uploadId })
-    }
+    }) catch () => Message.FailedUploadFile({ uploadId })
   },
 })

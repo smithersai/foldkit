@@ -29,15 +29,14 @@ const SendChatMessage = Command.define('SendChatMessage', {
   execute: ({ text }) => {
     const socketProgram = ChatSocket.get
     return effect {
-      try {
+      return (effect {
         const socket = try socketProgram
         try Effect.try(() => socket.send(text))
         return Message.CompletedSendChatMessage()
-      } catch (error) {
-        return Message.FailedSendChatMessage({
+      }) catch (error) =>
+        Message.FailedSendChatMessage({
           error: globalThis.String(error),
         })
-      }
     }
   },
 })

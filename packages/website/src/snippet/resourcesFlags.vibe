@@ -11,13 +11,11 @@ const Flags = Schema.Struct({
 type Flags = typeof Flags.Type
 
 const flags: Flags!never!ApiClientService = effect {
-  try {
+  return (effect {
     const apiClient = try ApiClientService
     const session = try apiClient.restoreSession
     return Flags.make({ maybeSession: Option.some(session) })
-  } catch {
-    return Flags.make({ maybeSession: Option.none() })
-  }
+  }) catch () => Flags.make({ maybeSession: Option.none() })
 }
 
 const application = Runtime.makeApplication({
