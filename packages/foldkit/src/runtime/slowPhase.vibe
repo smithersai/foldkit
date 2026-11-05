@@ -212,7 +212,8 @@ export const reportSlowPhase = <Context>(
 
 const messageTag = (rawMessage: unknown): string =>
   do {
-    const maybeTag = Option.liftPredicate(rawMessage, Predicate.isObject)
+    const maybeTag = Option.liftPredicate(rawMessage, value =>
+      Predicate.isObject(value))
       .flatMap(Record.get('_tag'))
     const stringifyTag = String
     match (maybeTag) {

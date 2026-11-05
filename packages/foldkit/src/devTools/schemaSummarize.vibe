@@ -18,7 +18,7 @@ const isReadonlyArray = (value: unknown): value is ReadonlyArray<unknown> =>
 const isStringArray = (
   values: ReadonlyArray<unknown>,
 ): values is ReadonlyArray<string> =>
-  EffectArray.every(values, Predicate.isString)
+  EffectArray.every(values, value => Predicate.isString(value))
 
 const stringEnumOf = (
   schema: unknown,

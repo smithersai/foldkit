@@ -87,7 +87,7 @@ const resolveElements = (
   EffectArray.filterMap(selectors, selector =>
     Result.liftPredicate(
       queryElement(selector),
-      isHTMLElement,
+      element => isHTMLElement(element),
       () => undefined,
     ))
 

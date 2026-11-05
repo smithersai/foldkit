@@ -10,7 +10,7 @@
 import { microtaskSetImmediate } from './browserScheduler.platform.ts'
 const browserScheduler = new Scheduler.MixedScheduler(
   'async',
-  microtaskSetImmediate,
+  callback => microtaskSetImmediate(callback),
 )
 export const provideBrowserScheduler = effect <A, E, R>(
   effect: A!E!R,

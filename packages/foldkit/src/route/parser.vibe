@@ -511,9 +511,13 @@ export const mapTo: {
     const router = Object.assign(build, {
       parse: effect (segments: ReadonlyArray<string>, search?: string) => {
         const [value, remaining]: any = try parser.parse(segments, search)
-        const result = appRouteConstructor.make.length === 0
-          ? appRouteConstructor.make()
-          : appRouteConstructor.make(value)
+        const result = try Effect.orDie(Effect.try({
+          try: () =>
+            appRouteConstructor.make.length === 0
+              ? appRouteConstructor.make()
+              : appRouteConstructor.make(value),
+          catch: cause => cause,
+        }))
         return [result, remaining]
       },
       build,

@@ -113,7 +113,7 @@ const isRelevantModalMutation = (mutation: MutationRecord): boolean => {
   if (
     isHtmlElementNode(mutation.target)
     && modalAllowedAncestors.has(mutation.target)
-    && Effect.Array.some(changedNodes, isElementNode)
+    && Effect.Array.some(changedNodes, node => isElementNode(node))
   ) {
     return true
   }
