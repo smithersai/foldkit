@@ -41,11 +41,32 @@ export error InvalidPluginOptions { message: string }
 // typed frontmatter; without one it fails the build with guidance. Without the
 // remark plugin, remark reads `---` fences as a thematic break plus a setext
 // heading and renders garbage.
+function remarkFrontmatterPlugin(
+  this: ThisParameterType<typeof remarkFrontmatter>,
+  ...args: Parameters<typeof remarkFrontmatter>
+): ReturnType<typeof remarkFrontmatter> {
+  return remarkFrontmatter.apply(this, args)
+}
+
+function remarkGfmPlugin(
+  this: ThisParameterType<typeof remarkGfm>,
+  ...args: Parameters<typeof remarkGfm>
+): ReturnType<typeof remarkGfm> {
+  return remarkGfm.apply(this, args)
+}
+
+function remarkDirectivePlugin(
+  this: ThisParameterType<typeof remarkDirective>,
+  ...args: Parameters<typeof remarkDirective>
+): ReturnType<typeof remarkDirective> {
+  return remarkDirective.apply(this, args)
+}
+
 const processor = unified()
   .use(remarkParse)
-  .use(remarkFrontmatter)
-  .use(remarkGfm)
-  .use(remarkDirective)
+  .use(remarkFrontmatterPlugin)
+  .use(remarkGfmPlugin)
+  .use(remarkDirectivePlugin)
   .freeze()
 
 const isSchemaStruct = (value: unknown): boolean =>
@@ -112,7 +133,9 @@ const parseWithValidatedOptions = effect (
   options: MarkdownPluginOptions,
 ): ParsedMarkdown!(NormalizeError | InvalidFrontmatter) => {
   const { contentRoot, maybeFrontmatter } = try extractFrontmatter(
-    processor.parse(source),
+    try Effect.orDie(
+      Effect.try({ try: () => processor.parse(source), catch: cause => cause }),
+    ),
     options.frontmatter,
   )
   return {

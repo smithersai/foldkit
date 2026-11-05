@@ -148,28 +148,59 @@ const toSafeUrl = effect (
 
 effect function toInline(node: PhrasingContent): Inline!UnsupportedMarkdown {
   return match (node) {
-    when { type: 'text', let value }: Text({ value });
-    when { type: 'inlineCode', let value }: InlineCode({ value });
-    when { type: 'break' }: HardBreak();
-    when { type: 'emphasis', let children }: Emphasis({
-      content: try forEach(children, (child) => toInline(child)),
-    });
-    when { type: 'strong', let children }: Strong({
-      content: try forEach(children, (child) => toInline(child)),
-    });
-    when { type: 'delete', let children }: Strikethrough({
-      content: try forEach(children, (child) => toInline(child)),
-    });
-    when { type: 'link', let url, let title, let children }: Link({
-      url: try toSafeUrl(node, url),
-      maybeTitle: Option.fromNullishOr(title),
-      content: try forEach(children, (child) => toInline(child)),
-    });
-    when { type: 'image', let url, let alt, let title }: Image({
-      url: try toSafeUrl(node, url),
-      alt: alt ?? '',
-      maybeTitle: Option.fromNullishOr(title),
-    });
+    when { type: 'text', let value }: try Effect.orDie(
+      Effect.try({ try: () => Text({ value }), catch: cause => cause }),
+    );
+    when { type: 'inlineCode', let value }: try Effect.orDie(
+      Effect.try({ try: () => InlineCode({ value }), catch: cause => cause }),
+    );
+    when { type: 'break' }: try Effect.orDie(
+      Effect.try({ try: () => HardBreak(), catch: cause => cause }),
+    );
+    when { type: 'emphasis', let children }: do {
+      const fields = {
+        content: try forEach(children, (child) => toInline(child)),
+      }
+      try Effect.orDie(
+        Effect.try({ try: () => Emphasis(fields), catch: cause => cause }),
+      )
+    };
+    when { type: 'strong', let children }: do {
+      const fields = {
+        content: try forEach(children, (child) => toInline(child)),
+      }
+      try Effect.orDie(
+        Effect.try({ try: () => Strong(fields), catch: cause => cause }),
+      )
+    };
+    when { type: 'delete', let children }: do {
+      const fields = {
+        content: try forEach(children, (child) => toInline(child)),
+      }
+      try Effect.orDie(
+        Effect.try({ try: () => Strikethrough(fields), catch: cause => cause }),
+      )
+    };
+    when { type: 'link', let url, let title, let children }: do {
+      const fields = {
+        url: try toSafeUrl(node, url),
+        maybeTitle: Option.fromNullishOr(title),
+        content: try forEach(children, (child) => toInline(child)),
+      }
+      try Effect.orDie(
+        Effect.try({ try: () => Link(fields), catch: cause => cause }),
+      )
+    };
+    when { type: 'image', let url, let alt, let title }: do {
+      const fields = {
+        url: try toSafeUrl(node, url),
+        alt: alt ?? '',
+        maybeTitle: Option.fromNullishOr(title),
+      }
+      try Effect.orDie(
+        Effect.try({ try: () => Image(fields), catch: cause => cause }),
+      )
+    };
     default: try unsupported(node);
   }
 }
@@ -184,15 +215,25 @@ const toAlignment = (align: 'left' | 'right' | 'center' | null): Alignment => ma
 effect function toTableCell(
   cell: MdastTableCell,
 ): TableCell!UnsupportedMarkdown {
-  return TableCell({
-    content: try forEach(cell.children, (child) => toInline(child)),
-  })
+  return do {
+    const fields = {
+      content: try forEach(cell.children, (child) => toInline(child)),
+    }
+    try Effect.orDie(
+      Effect.try({ try: () => TableCell(fields), catch: cause => cause }),
+    )
+  }
 }
 
 effect function toTableRow(row: MdastTableRow): TableRow!UnsupportedMarkdown {
-  return TableRow({
-    cells: try forEach(row.children, (cell) => toTableCell(cell)),
-  })
+  return do {
+    const fields = {
+      cells: try forEach(row.children, (cell) => toTableCell(cell)),
+    }
+    try Effect.orDie(
+      Effect.try({ try: () => TableRow(fields), catch: cause => cause }),
+    )
+  }
 }
 
 effect function toTable(
@@ -204,11 +245,15 @@ effect function toTable(
 ): Table!UnsupportedMarkdown {
   const rows = try forEach(node.children, (row) => toTableRow(row))
   if (Effect.Array.isArrayNonEmpty(rows)) {
-    return Table({
-      alignments: (node.align ?? []).map(toAlignment),
-      headerRow: Effect.Array.headNonEmpty(rows),
-      bodyRows: Effect.Array.tailNonEmpty(rows),
-    })
+    return try Effect.orDie(Effect.try({
+      try: () =>
+        Table({
+          alignments: (node.align ?? []).map(toAlignment),
+          headerRow: Effect.Array.headNonEmpty(rows),
+          bodyRows: Effect.Array.tailNonEmpty(rows),
+        }),
+      catch: cause => cause,
+    }))
   }
   return try unsupported({ type: 'table', position: node.position })
 }
@@ -257,7 +302,12 @@ effect function toIsland(
     }
   }
 
-  return Island({ name: directive.name, attributes, blocks })
+  return try Effect.orDie(
+    Effect.try({
+      try: () => Island({ name: directive.name, attributes, blocks }),
+      catch: cause => cause,
+    }),
+  )
 }
 
 effect function toListItem(
@@ -265,9 +315,14 @@ effect function toListItem(
   options: NormalizeOptions,
 ): ListItem!NormalizeError {
   if (node.checked === null || node.checked === undefined) {
-    return ListItem({
-      blocks: try forEach(node.children, (child) => toBlock(child, options)),
-    })
+    return do {
+      const fields = {
+        blocks: try forEach(node.children, (child) => toBlock(child, options)),
+      }
+      try Effect.orDie(
+        Effect.try({ try: () => ListItem(fields), catch: cause => cause }),
+      )
+    }
   }
   return try unsupported({ type: 'task list item', position: node.position })
 }
@@ -277,18 +332,34 @@ effect function toBlock(
   options: NormalizeOptions,
 ): Block!NormalizeError {
   return match (node) {
-    when { type: 'heading', let depth, let children }: Heading({
-      level: depth,
-      content: try forEach(children, (child) => toInline(child)),
-    });
-    when { type: 'paragraph', let children }: Paragraph({
-      content: try forEach(children, (child) => toInline(child)),
-    });
-    when { type: 'code', let lang, let meta, let value }: CodeBlock({
-      maybeLanguage: Option.fromNullishOr(lang),
-      maybeMeta: Option.fromNullishOr(meta),
-      value,
-    });
+    when { type: 'heading', let depth, let children }: do {
+      const fields = {
+        level: depth,
+        content: try forEach(children, (child) => toInline(child)),
+      }
+      try Effect.orDie(
+        Effect.try({ try: () => Heading(fields), catch: cause => cause }),
+      )
+    };
+    when { type: 'paragraph', let children }: do {
+      const fields = {
+        content: try forEach(children, (child) => toInline(child)),
+      }
+      try Effect.orDie(
+        Effect.try({ try: () => Paragraph(fields), catch: cause => cause }),
+      )
+    };
+    when { type: 'code', let lang, let meta, let value }: try Effect.orDie(
+      Effect.try({
+        try: () =>
+          CodeBlock({
+            maybeLanguage: Option.fromNullishOr(lang),
+            maybeMeta: Option.fromNullishOr(meta),
+            value,
+          }),
+        catch: cause => cause,
+      }),
+    );
     when { type: 'list', let ordered, let start, let children, let position }:
       do {
         const items = try forEach(
@@ -296,17 +367,28 @@ effect function toBlock(
           (item) => toListItem(item, options),
         )
         Effect.Array.isArrayNonEmpty(items)
-          ? List({
-            isOrdered: ordered === true,
-            maybeStartNumber: Option.fromNullishOr(start),
-            items,
-          })
+          ? try Effect.orDie(Effect.try({
+            try: () =>
+              List({
+                isOrdered: ordered === true,
+                maybeStartNumber: Option.fromNullishOr(start),
+                items,
+              }),
+            catch: cause => cause,
+          }))
           : try unsupported({ type: 'list', position })
       };
-    when { type: 'blockquote', let children }: Blockquote({
-      blocks: try forEach(children, (child) => toBlock(child, options)),
-    });
-    when { type: 'thematicBreak' }: ThematicBreak();
+    when { type: 'blockquote', let children }: do {
+      const fields = {
+        blocks: try forEach(children, (child) => toBlock(child, options)),
+      }
+      try Effect.orDie(
+        Effect.try({ try: () => Blockquote(fields), catch: cause => cause }),
+      )
+    };
+    when { type: 'thematicBreak' }: try Effect.orDie(
+      Effect.try({ try: () => ThematicBreak(), catch: cause => cause }),
+    );
     when { type: 'table', let children, let align, let position }: try toTable(
       {
         children,

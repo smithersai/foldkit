@@ -40,7 +40,7 @@ const maybeInvalidFieldName = (
       issue instanceof SchemaIssue.Pointer
         ? Effect.Array.head(issue.path)
         : Option.none()),
-    Predicate.isString,
+    value => Predicate.isString(value),
   )
 }
 
