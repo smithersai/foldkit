@@ -1,17 +1,3 @@
-import { BarChart, GraphChart, LineChart } from 'echarts/charts'
-import {
-  AriaComponent,
-  DataZoomComponent,
-  GridComponent,
-  LegendComponent,
-  MarkLineComponent,
-  TitleComponent,
-  ToolboxComponent,
-  TooltipComponent,
-} from 'echarts/components'
-import * as echarts from 'echarts/core'
-import { LabelLayout, UniversalTransition } from 'echarts/features'
-import { CanvasRenderer } from 'echarts/renderers'
 import type { EChartsOption } from 'echarts/types/dist/shared'
 import { Array as Arr, String as Str } from 'effect'
 
@@ -26,6 +12,8 @@ import {
   packageIdToSpec,
   visibleWeeks,
 } from './domain.vibe'
+
+export { registerEcharts } from './registerEcharts.ts'
 
 const MIN_NODE_SIZE = 34
 const MAX_NODE_SIZE = 82
@@ -45,27 +33,6 @@ type DatumLabel = Readonly<{
   id: string
   label: string
 }>
-
-export const registerEcharts = (): infer _ => {
-  echarts.use([
-    AriaComponent,
-    BarChart,
-    CanvasRenderer,
-    DataZoomComponent,
-    GraphChart,
-    GridComponent,
-    LabelLayout,
-    LegendComponent,
-    LineChart,
-    MarkLineComponent,
-    TitleComponent,
-    ToolboxComponent,
-    TooltipComponent,
-    UniversalTransition,
-  ])
-
-  return echarts
-}
 
 const datumId = (
   chartMode: ChartMode,
