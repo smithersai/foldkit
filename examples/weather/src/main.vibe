@@ -191,7 +191,7 @@ export const FetchWeather = Command.define('FetchWeather', {
   messages: [Message.SucceededFetchWeather, Message.FailedFetchWeather],
   execute: (
     { zipCode },
-  ): ReturnType<typeof Message.SucceededFetchWeather> | ReturnType<typeof Message.FailedFetchWeather>!! =>
+  ): (ReturnType<typeof Message.SucceededFetchWeather> | ReturnType<typeof Message.FailedFetchWeather>)!! =>
     effect {
       provide Http.layer {
         return try fetchWeatherEffect(zipCode)
