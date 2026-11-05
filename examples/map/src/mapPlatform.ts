@@ -20,3 +20,27 @@ export const isHtmlElement = (value: unknown): value is HTMLElement =>
 
 export const asHtmlElement = (value: Element): HTMLElement | null =>
   value instanceof HTMLElement ? value : null
+
+export const registerMapListeners = (
+  map: {
+    on(event: 'moveend', listener: () => void): unknown
+    off(event: 'moveend', listener: () => void): unknown
+  },
+  container: HTMLElement,
+  onMoveEnd: () => void,
+  onContainerClick: (event: MouseEvent) => void,
+): {
+  container: HTMLElement
+  onMoveEnd: () => void
+  onContainerClick: (event: MouseEvent) => void
+} => {
+  try {
+    map.on('moveend', onMoveEnd)
+    container.addEventListener('click', onContainerClick)
+    return { container, onMoveEnd, onContainerClick }
+  } catch (error) {
+    map.off('moveend', onMoveEnd)
+    container.removeEventListener('click', onContainerClick)
+    throw error
+  }
+}

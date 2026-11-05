@@ -19,6 +19,7 @@ import {
   isElement,
   isHtmlElement,
   lockBodyScroll,
+  registerMapListeners,
   unlockBodyScroll,
 } from './mapPlatform.ts'
 
@@ -381,15 +382,7 @@ const listenToMapMovesAndMarkerClicks = effect (
           }
         }
 
-        try {
-          map.on('moveend', onMoveEnd)
-          container.addEventListener('click', onContainerClick)
-          return { container, onMoveEnd, onContainerClick }
-        } catch (error) {
-          map.off('moveend', onMoveEnd)
-          container.removeEventListener('click', onContainerClick)
-          throw error
-        }
+        return registerMapListeners(map, container, onMoveEnd, onContainerClick)
       },
       catch: toMapMountError,
     }),
