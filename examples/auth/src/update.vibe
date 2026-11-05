@@ -110,7 +110,8 @@ const foldLoggedInOutMessage = LoggedIn.OutMessage.match<
 })
 
 const foldLoggedIn = Update.foldChild({
-  update: LoggedIn.update,
+  update: (model: LoggedIn.Model, message: LoggedIn.Message) =>
+    LoggedIn.update(model, message),
   read: (model: Model) => match (model) {
     when { _tag: 'LoggedOut' }: Option.none();
     when { _tag: 'LoggedIn' } and let child: Option.some(child);
