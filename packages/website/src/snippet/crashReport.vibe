@@ -1,3 +1,4 @@
+import { ExperimentalBrowserDocument } from 'vibelang-runtime/experimental/platform-browser'
 import { Runtime } from 'foldkit'
 
 import * as Sentry from '@sentry/browser'
@@ -15,7 +16,15 @@ const application = Runtime.makeApplication({
       })
     },
   },
-  container: document.getElementById('root'),
+  container: Effect.runSync(effect {
+    provide ExperimentalBrowserDocument.layer {
+      const page = try (try Experimental.Document.Document).current
+      return try Effect.orDie(Effect.try({
+        try: () => page.getElementById('root'),
+        catch: error => error,
+      }))
+    }
+  }),
 })
 
 Runtime.run(application)

@@ -1,21 +1,11 @@
 import { Html, inertHtml as ih } from 'foldkit/html'
 
 const foreignBrowserExamples: ReadonlyArray<string> = [
-  'atomCompareFoldkitEffect',
-  'crashReport',
-  'domFilteredEvent',
-  'domPreventDefault',
   'lintAcquireReleaseConstructsInAcquireBody',
   'lintNoImpureCallAtDecisionTime',
   'lintNoPreventDefaultInStreamOperator',
-  'managedResources',
-  'resources',
-  'resourcesFlags',
-  'resourcesMultiple',
   'routingQueryParams',
-  'slowConfig',
   'subscriptionFromEvent',
-  'subscriptionOrganizationChild',
   'subscriptionOrganizationComposing',
 ]
 

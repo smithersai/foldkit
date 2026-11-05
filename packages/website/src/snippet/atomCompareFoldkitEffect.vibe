@@ -1,3 +1,4 @@
+import { ExperimentalBrowserDocument } from 'vibelang-runtime/experimental/platform-browser'
 import { Command, Dom, Subscription } from 'foldkit'
 
 import { Api } from './api'
@@ -31,7 +32,11 @@ export const subscriptions = Subscription.make<Model, Message>()(entry => ({
       dependenciesToStream: ({ isDrawing }) =>
         Stream.when(
           Dom.streamFromEvent({
-            target: document,
+            target: Effect.runSync(effect {
+              provide ExperimentalBrowserDocument.layer {
+                return try (try Experimental.Document.Document).current
+              }
+            }),
             type: 'mouseup',
             mapEvent: () => ReleasedMouse(),
           }),

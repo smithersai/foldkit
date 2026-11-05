@@ -1,3 +1,4 @@
+import { ExperimentalBrowserDocument } from 'vibelang-runtime/experimental/platform-browser'
 // page/settings/themeMenu/subscription.ts
 import { Subscription } from 'foldkit'
 
@@ -11,7 +12,14 @@ export const subscriptions = Subscription.make<Model, Message>()(entry => ({
       modelToDependencies: model => ({ isOpen: model.isOpen }),
       dependenciesToStream: ({ isOpen }) =>
         Stream.when(
-          Stream.fromEventListener<KeyboardEvent>(document, 'keydown').pipe(
+          Stream.fromEventListener<KeyboardEvent>(
+            Effect.runSync(effect {
+              provide ExperimentalBrowserDocument.layer {
+                return try (try Experimental.Document.Document).current
+              }
+            }),
+            'keydown',
+          ).pipe(
             Stream.filter(event => event.key === 'Escape'),
             Stream.map(PressedEscape),
           ),

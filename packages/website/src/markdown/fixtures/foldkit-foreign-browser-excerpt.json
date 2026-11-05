@@ -1,19 +1,9 @@
 {
   "foreignSnippets": [
-    "atomCompareFoldkitEffect",
-    "crashReport",
-    "domFilteredEvent",
-    "domPreventDefault",
     "lintAcquireReleaseConstructsInAcquireBody",
     "lintNoPreventDefaultInStreamOperator",
-    "managedResources",
-    "resources",
-    "resourcesFlags",
-    "resourcesMultiple",
     "routingQueryParams",
-    "slowConfig",
     "subscriptionFromEvent",
-    "subscriptionOrganizationChild",
     "subscriptionOrganizationComposing",
     "lintNoImpureCallAtDecisionTime"
   ],
@@ -28,5 +18,17 @@
     "uiTextareaBasic",
     "comparisonReactApp"
   ],
-  "reconvertedSnippets": ["uiMenuBasic"]
+  "reconvertedSnippets": [
+    "uiMenuBasic",
+    "managedResources",
+    "slowConfig",
+    "resources",
+    "crashReport",
+    "resourcesFlags",
+    "resourcesMultiple",
+    "atomCompareFoldkitEffect",
+    "domFilteredEvent",
+    "domPreventDefault",
+    "subscriptionOrganizationChild"
+  ]
 }
