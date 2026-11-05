@@ -370,13 +370,10 @@ export const transformTelemetry = (
   )
   const sortedContributors = Arr.sort(
     raw.contributors,
-    pipe(
-      Order.Number,
-      Order.mapInput(
-        (contributor: GitHubContributorResponse) => contributor.contributions,
-      ),
-      Order.flip,
-    ),
+    (left: GitHubContributorResponse, right: GitHubContributorResponse) =>
+      left === right
+        ? 0
+        : Order.Number(right.contributions, left.contributions),
   )
   const cumulativeStars = cumulativeStarsByWeek(
     raw.repository.stargazers_count,
