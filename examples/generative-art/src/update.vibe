@@ -126,7 +126,7 @@ const advanceParticle = (
   flowStrength: number,
   noiseScaleMultiplier: number,
   maybeMousePosition: Option.Option<Point>,
-): infer _ =>
+) =>
 (particle: Particle): Result.Result<Particle, void> => {
   if (Arr.last(particle.trail) is Option.Some(let currentPosition)) {
     const fieldAngle = computeFieldAngle(
@@ -194,7 +194,7 @@ const spawnAmbientParticles = (
   return Arr.makeBy(clamped, () => GenerateAmbientParticle())
 }
 
-const appendGeneratedParticle = (model: Model): infer _ =>
+const appendGeneratedParticle = (model: Model) =>
 (
   generatedParticle:
     | typeof Message.CompletedGenerateAmbientParticle.Type
@@ -254,7 +254,7 @@ const foldNoiseScaleSlider = Update.foldChild({
   foldOutMessage: foldNoiseScaleSliderOutMessage,
 })
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
     TickedFrame: ({ deltaTimeMs }) => {
       const deltaSeconds = cappedDeltaSeconds(deltaTimeMs)

@@ -12,12 +12,12 @@ const hasItemId =
 const mapCartItem = (
   itemId: string,
   f: (cartItem: CartItem) => CartItem,
-): infer _ =>
+) =>
   Array.map<Cart, CartItem>(cartItem =>
     hasItemId(itemId)(cartItem) ? f(cartItem) : cartItem
   )
 
-export const addItem = (item: Item): infer _ => (cart: Cart): Cart => {
+export const addItem = (item: Item) => (cart: Cart): Cart => {
   const existingCartItem = Array.findFirst(cart, hasItemId(item.id))
 
   return (match (existingCartItem) {
@@ -31,10 +31,10 @@ export const addItem = (item: Item): infer _ => (cart: Cart): Cart => {
   })
 }
 
-export const removeItem = (itemId: string): infer _ => (cart: Cart): Cart =>
+export const removeItem = (itemId: string) => (cart: Cart): Cart =>
   Array.filter(cart, Predicate.not(hasItemId(itemId)))
 
-export const changeQuantity = (itemId: string, quantity: number): infer _ =>
+export const changeQuantity = (itemId: string, quantity: number) =>
   quantity <= 0
     ? removeItem(itemId)
     : mapCartItem(
@@ -44,7 +44,7 @@ export const changeQuantity = (itemId: string, quantity: number): infer _ =>
       }),
     )
 
-export const incrementQuantity = (itemId: string): infer _ =>
+export const incrementQuantity = (itemId: string) =>
   mapCartItem(
     itemId,
     modifyFields({
@@ -52,15 +52,13 @@ export const incrementQuantity = (itemId: string): infer _ =>
     }),
   )
 
-export const decrementQuantity =
-  (itemId: string): infer _ => (cart: Cart): Cart =>
-    changeQuantity(itemId, itemQuantity(itemId)(cart) - 1)(cart)
+export const decrementQuantity = (itemId: string) => (cart: Cart): Cart =>
+  changeQuantity(itemId, itemQuantity(itemId)(cart) - 1)(cart)
 
-export const itemQuantity =
-  (itemId: string): infer _ => (cart: Cart): number => match (Array.findFirst(cart, hasItemId(itemId))) {
-    when Option.None: 0;
-    when Option.Some(let item): item.quantity;
-  }
+export const itemQuantity = (itemId: string) => (cart: Cart): number => match (Array.findFirst(cart, hasItemId(itemId))) {
+  when Option.None: 0;
+  when Option.Some(let item): item.quantity;
+}
 
-export const totalItems = (cart: Cart): infer _ =>
+export const totalItems = (cart: Cart) =>
   Array.reduce(cart, 0, (total, { quantity }) => total + quantity)

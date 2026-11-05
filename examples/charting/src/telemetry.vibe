@@ -252,7 +252,7 @@ export const cumulativeStarsByWeek = (
   ).weeks
 }
 
-const commitCountForWeek = (weekStart: string): infer _ =>
+const commitCountForWeek = (weekStart: string) =>
 (
   activity: ReadonlyArray<typeof GitHubCommitActivityResponse.Type>,
 ): number => match (Arr.findFirst(
@@ -332,7 +332,7 @@ export const fetchRawTelemetry: RawTelemetry!Error!(GitHubApi | NpmApi) = effect
     ]
     const starHistory = try github.fetchStarHistory(yearCutoff)
     const commitActivity = try github.fetchCommitActivity
-    const packagePrograms = Arr.map(packageSpecs, (spec): infer _ =>
+    const packagePrograms = Arr.map(packageSpecs, (spec) =>
       effect {
         const { downloads, packument } = try npm.fetchPackage(spec)
         return { spec, downloads, packument }

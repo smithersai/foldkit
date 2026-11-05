@@ -8,7 +8,7 @@ import type { Model } from '../model.vibe'
 import { ghostCardView } from './card.vibe'
 import { columnView } from './column.vibe'
 
-const findDraggedCard = (model: Model): infer _ =>
+const findDraggedCard = (model: Model) =>
   pipe(
     model.dragAndDrop,
     DragAndDrop.maybeDraggedItemId,
@@ -21,7 +21,7 @@ const findDraggedCard = (model: Model): infer _ =>
     ),
   )
 
-const ghostElement = (model: Model, h: HtmlBuilder<Message>): infer _ =>
+const ghostElement = (model: Model, h: HtmlBuilder<Message>) =>
   match (DragAndDrop.ghostStyle(model.dragAndDrop)
       .flatMap(ghostStyle =>
         Option.map(findDraggedCard(model), card => ({ ghostStyle, card }))

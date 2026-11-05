@@ -57,7 +57,7 @@ export const DetermineTickTime = Command.define('DetermineTickTime', {
 
 // UPDATE
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<Update.Return<Model, Message>>(message, {
     ClickedStart: () => ({
       model,

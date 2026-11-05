@@ -80,9 +80,9 @@ error GitHubStatsPending
 error GitHubStatError
 
 const fetchOptionalGitHubStat =
-  (client: HttpClient): infer _ =>
-  <A, I>(schema: Schema.Codec<A, I>): infer _ =>
-  (path: string, label: string): infer _ => {
+  (client: HttpClient) =>
+  <A, I>(schema: Schema.Codec<A, I>) =>
+  (path: string, label: string) => {
     const url = `${GITHUB_REPOSITORY_API}${path}`
     const attempt: GitHubStatResult<A>!GitHubStatsPending = effect {
       return (effect {

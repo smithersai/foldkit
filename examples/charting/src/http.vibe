@@ -23,8 +23,8 @@ export const encodePackageName = (packageName: string): string =>
   encodeURIComponent(packageName)
 
 export const fetchJson =
-  (client: HttpClient): infer _ =>
-  <A, I>(schema: Schema.Codec<A, I>): infer _ =>
+  (client: HttpClient) =>
+  <A, I>(schema: Schema.Codec<A, I>) =>
   (
     url: string,
     headers: Readonly<globalThis.Record<string, string>> = Record.empty(),

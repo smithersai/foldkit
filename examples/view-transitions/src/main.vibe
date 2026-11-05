@@ -74,7 +74,7 @@ const LoadExternal = Command.define('LoadExternal', {
 
 type UpdateReturn = Update.Return<Model, Message>
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
     CompletedNavigateInternal: () => ({ model }),
     CompletedLoadExternal: () => ({ model }),
@@ -134,7 +134,7 @@ const transitionNameFor = (artworkId: number): string => `artwork-${artworkId}`
 // NOTE: names have to be unique per snapshot, so each artwork carries its own.
 // The shared class is what lets `styles.css` reach all of them with one rule,
 // since a per-artwork name cannot be written as a selector ahead of time.
-const artworkTransitionStyle = (artworkId: number): infer _ => ({
+const artworkTransitionStyle = (artworkId: number) => ({
   viewTransitionName: transitionNameFor(artworkId),
   viewTransitionClass: 'artwork',
 })

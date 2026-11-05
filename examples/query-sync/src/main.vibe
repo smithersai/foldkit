@@ -34,7 +34,7 @@ const SORT_PARAM_SEPARATOR = ':'
 
 const optionFromValidParam = <A extends string>(
   schema: Schema.Codec<A, A>,
-): infer _ => {
+) => {
   const decode = Schema.decodeUnknownOption(schema)
 
   return Schema.OptionFromOptional(Schema.String).pipe(
@@ -51,7 +51,7 @@ const optionFromValidParam = <A extends string>(
 
 const SortDirection = Schema.Literals(['Ascending', 'Descending'])
 
-const sortingFromParam = ((): infer _ => {
+const sortingFromParam = (() => {
   const decodeColumn = Schema.decodeUnknownOption(SortColumn)
   const decodeDirection = Schema.decodeUnknownOption(SortDirection)
 
@@ -314,7 +314,7 @@ const foldPeriodListbox = Update.foldChild({
   foldOutMessage: foldPeriodListboxOutMessage,
 })
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
     CompletedNavigateInternal: () => ({ model }),
     CompletedLoadExternal: () => ({ model }),
@@ -387,7 +387,7 @@ const columnOrders: Record<SortColumn, Order<Dinosaur>> = {
 const filterWhenSome = <A, B>(
   maybeValue: Option<A>,
   predicate: (value: A, item: B) => boolean,
-): infer _ =>
+) =>
 (
   items: ReadonlyArray<B>,
 ): ReadonlyArray<B> => match (maybeValue) {
@@ -397,7 +397,7 @@ const filterWhenSome = <A, B>(
 }
 
 const sortBySorting =
-  <A>(sorting: Sorting, orders: Record<SortColumn, Order<A>>): infer _ =>
+  <A>(sorting: Sorting, orders: Record<SortColumn, Order<A>>) =>
   (items: ReadonlyArray<A>): ReadonlyArray<A> =>
     Sorting.match(sorting, {
       Unsorted: () => items,

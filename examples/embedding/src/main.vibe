@@ -65,7 +65,7 @@ const advance = (model: Model): UpdateReturn => {
   }
 }
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
     Ticked: () => advance(model),
     ClickedAdvance: () => advance(model),
@@ -136,7 +136,7 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Html =>
 
 // PROGRAM
 
-export const makeElement = (container: HTMLElement, flags: Flags): infer _ =>
+export const makeElement = (container: HTMLElement, flags: Flags) =>
   Runtime.makeElement({
     Model,
     Flags,

@@ -36,7 +36,7 @@ export const SyncChart = Command.define('SyncChart', {
     maybeSelectedDatumId: Schema.Option(Schema.String),
   },
   messages: [Message.SucceededSyncChart, Message.FailedSyncChart],
-  execute: (args): infer _ => {
+  execute: (args) => {
     const maybeChart = getChart(args.hostId)
     if (Option.isNone(maybeChart)) {
       const message = Message.FailedSyncChart({

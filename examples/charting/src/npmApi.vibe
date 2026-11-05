@@ -50,7 +50,7 @@ export const NpmApiLive: Layer<NpmApi, never, HttpClient> = Layer.effect(
     const client = try HttpClient.HttpClient
     const fetch_ = fetchJson(client)
     return {
-      fetchPackage: (spec: PackageSpec): infer _ => {
+      fetchPackage: (spec: PackageSpec) => {
         const downloadsUrl = `${NPM_DOWNLOADS_API}/${
           encodePackageName(spec.npmName)
         }`

@@ -122,7 +122,7 @@ const foldPackageRadioGroup = Update.foldChild({
   foldOutMessage: foldPackageRadioGroupOutMessage,
 })
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
     GotChartModeRadioGroupMessage: ({ message }) =>
       foldChartModeRadioGroup(model, message),

@@ -64,7 +64,7 @@ const LoadExternal = Command.define('LoadExternal', {
 
 type UpdateReturn = Update.Return<Model, Message>
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
     ClickedIncrement: () => ({
       model: modifyFields(model, { count: count => count + 1 }),

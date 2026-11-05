@@ -94,7 +94,7 @@ export const UploadFile = Command.define('UploadFile', {
     },
 })
 
-export const CancelUploadFile = ({ uploadId }: UploadKey): infer _ =>
+export const CancelUploadFile = ({ uploadId }: UploadKey) =>
   UploadFile.Interrupt(
     { uploadId },
     outcome => Message.CompletedCancelUploadFile({ uploadId, outcome }),
@@ -102,7 +102,7 @@ export const CancelUploadFile = ({ uploadId }: UploadKey): infer _ =>
 
 // UPDATE
 
-const setStatusForId = (uploadId: number, status: UploadStatus): infer _ =>
+const setStatusForId = (uploadId: number, status: UploadStatus) =>
   Array.map((upload: Upload) =>
     upload.id === uploadId
       ? modifyFields(upload, { status: () => status })
@@ -111,7 +111,7 @@ const setStatusForId = (uploadId: number, status: UploadStatus): infer _ =>
 
 type UpdateReturn = Update.Return<Model, Message>
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
     ClickedStartUpload: () => {
       const fakeFile = fakeFileForUpload(model.uploadId)

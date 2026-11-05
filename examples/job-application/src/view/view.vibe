@@ -21,23 +21,21 @@ import { stepMenu, stepTabButton } from './stepNav.vibe'
 
 const StepTabs = Tabs.create<Step.Step>()
 
-const stepHasErrors =
-  (model: Model): infer _ => (step: Step.Step): boolean => match (step) {
-    when 'PersonalInfo': PersonalInfo.hasErrors(model.personalInfo);
-    when 'WorkHistory': WorkHistory.hasErrors(model.workHistory);
-    when 'Education': Education.hasErrors(model.education);
-    when 'Skills': Skills.hasErrors(model.skills);
-    default: false;
-  }
+const stepHasErrors = (model: Model) => (step: Step.Step): boolean => match (step) {
+  when 'PersonalInfo': PersonalInfo.hasErrors(model.personalInfo);
+  when 'WorkHistory': WorkHistory.hasErrors(model.workHistory);
+  when 'Education': Education.hasErrors(model.education);
+  when 'Skills': Skills.hasErrors(model.skills);
+  default: false;
+}
 
-const stepIsComplete =
-  (model: Model): infer _ => (step: Step.Step): boolean => match (step) {
-    when 'PersonalInfo': PersonalInfo.isComplete(model.personalInfo);
-    when 'WorkHistory': WorkHistory.isComplete(model.workHistory);
-    when 'Education': Education.isComplete(model.education);
-    when 'Skills': Skills.isComplete(model.skills);
-    default: true;
-  }
+const stepIsComplete = (model: Model) => (step: Step.Step): boolean => match (step) {
+  when 'PersonalInfo': PersonalInfo.isComplete(model.personalInfo);
+  when 'WorkHistory': WorkHistory.isComplete(model.workHistory);
+  when 'Education': Education.isComplete(model.education);
+  when 'Skills': Skills.isComplete(model.skills);
+  default: true;
+}
 
 const stepNeedsAttention =
   (model: Model): (step: Step.Step) => boolean => (step: Step.Step): boolean =>

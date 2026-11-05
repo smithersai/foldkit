@@ -877,7 +877,7 @@ const foldVirtualListVariableDemoScrollToIndex = Update.foldChild({
     UiMessage.GotVirtualListVariableDemoMessage({ message }),
 })
 
-export const uiUpdate = (model: UiModel, message: UiMessage): infer _ =>
+export const uiUpdate = (model: UiModel, message: UiMessage) =>
   UiMessage.match<Update.Return<UiModel, UiMessage>>(message, {
     GotMobileMenuDialogMessage: ({ message }) =>
       foldMobileMenuDialog(model, message),
@@ -1155,8 +1155,8 @@ export const uiUpdate = (model: UiModel, message: UiMessage): infer _ =>
       ),
   })
 
-export const openMobileMenu = (model: UiModel): infer _ =>
+export const openMobileMenu = (model: UiModel) =>
   foldMobileMenuDialogOpen(model)
 
-export const closeMobileMenu = (model: UiModel): infer _ =>
+export const closeMobileMenu = (model: UiModel) =>
   foldMobileMenuDialogClose(model)

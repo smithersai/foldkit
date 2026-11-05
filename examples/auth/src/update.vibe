@@ -121,7 +121,7 @@ const foldLoggedIn = Update.foldChild({
   foldOutMessage: foldLoggedInOutMessage,
 })
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
     ClickedLink: ({ request }) =>
       UrlRequest.match<UpdateReturn>(request, {

@@ -248,7 +248,7 @@ export const view = Submodel.defineView<UiModel, UiMessage>(
             panelClassName,
             backdropClassName,
             className: wrapperClassName,
-            toCalendarView: (u: Calendar.CalendarAttributes): infer _ => match (u) {
+            toCalendarView: (u: Calendar.CalendarAttributes) => match (u) {
               when { _tag: "Days" } and let days: daysView(days, h);
               when { _tag: "Months" } and let months: monthsView(months, h);
               when { _tag: "Years" } and let years: yearsView(years, h);

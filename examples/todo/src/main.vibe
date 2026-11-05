@@ -87,7 +87,7 @@ export const init: Runtime.ApplicationInit<Model, Message, Flags> = flags => ({
 
 type UpdateReturn = Update.Return<Model, Message>
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
     UpdatedNewTodo: ({ text }) => ({
       model: modifyFields(model, {
@@ -430,7 +430,7 @@ const nonEditingTodoView = (todo: Todo, h: HtmlBuilder<Message>): Html =>
   )
 
 const filterButtonView =
-  (model: Model): infer _ =>
+  (model: Model) =>
   (filter: Filter, label: string, h: HtmlBuilder<Message>): Html =>
     Button.view(
       {

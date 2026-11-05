@@ -80,7 +80,7 @@ const foldCounter = Update.foldChild({
   toParentMessage: message => Message.GotCounterMessage({ message }),
 })
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
     ClickedLink: ({ request }) =>
       UrlRequest.match<UpdateReturn>(request, {

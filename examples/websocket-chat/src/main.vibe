@@ -81,7 +81,7 @@ export type Message = typeof Message.Type
 
 type UpdateReturn = Update.Return<Model, Message, ChatSocketService>
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
     ClickedConnect: () => ({
       model: modifyFields(model, {

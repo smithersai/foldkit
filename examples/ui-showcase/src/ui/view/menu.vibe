@@ -77,11 +77,11 @@ const MENU_ANCHOR = {
 const menuViewConfig = (
   itemsClassNameValue: string,
   h: HtmlBuilder<UiMessage>,
-): infer _ => {
+) => {
   return {
     anchor: MENU_ANCHOR,
     items: MENU_ITEMS,
-    itemToConfig: (item: MenuItem): infer _ => ({
+    itemToConfig: (item: MenuItem) => ({
       className: itemClassName,
       content: h.div(
         [h.Class('flex items-center gap-2.5')],

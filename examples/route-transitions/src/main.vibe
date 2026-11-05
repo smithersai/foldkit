@@ -210,7 +210,7 @@ const handleTransition = (
     saveDraftOnStudioExit(transition),
   ])
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
     CompletedNavigateInternal: () => ({ model }),
     CompletedLoadExternal: () => ({ model }),

@@ -32,17 +32,17 @@ import {
 
 type UpdateReturn = Update.Return<Model, Message>
 
-const applyEraser = (model: Model, x: number, y: number): infer _ => {
+const applyEraser = (model: Model, x: number, y: number) => {
   const positions = getMirroredPositions(x, y, model.gridSize, model.mirrorMode)
   return erasePixels(model.grid, positions)
 }
 
-const applyBrush = (model: Model, x: number, y: number): infer _ => {
+const applyBrush = (model: Model, x: number, y: number) => {
   const positions = getMirroredPositions(x, y, model.gridSize, model.mirrorMode)
   return setPixels(model.grid, positions, model.selectedColorIndex)
 }
 
-const applyFill = (model: Model, x: number, y: number): infer _ => {
+const applyFill = (model: Model, x: number, y: number) => {
   const positions = getMirroredPositions(x, y, model.gridSize, 'None')
   return Arr.reduce(
     positions,
@@ -211,7 +211,7 @@ const foldPaletteRadioGroup = Update.foldChild({
   foldOutMessage: foldPaletteRadioGroupOutMessage,
 })
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
     PressedCell: ({ x, y }) =>
       match (model.tool) {

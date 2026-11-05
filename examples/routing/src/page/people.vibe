@@ -64,7 +64,7 @@ const addSearchToHistory = (
 const routeSearchText = (route: PeopleRoute): string =>
   Option.getOrElse(route.searchText, () => '')
 
-export const findPerson = (id: number): infer _ =>
+export const findPerson = (id: number) =>
   Arr.findFirst(people, person => person.id === id)
 
 // MODEL
@@ -150,7 +150,7 @@ export const FetchPeople = Command.define('FetchPeople', {
 
 export type UpdateReturn = Update.Return<Model, Message>
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
     ChangedSearchInput: ({ value }) => ({
       model: modifyFields(model, { searchInput: () => value }),
@@ -192,7 +192,7 @@ export const update = (model: Model, message: Message): infer _ =>
  *  route and returns the refetch Command. The parent calls this from its
  *  `ChangedUrl` handler. Contrast a `reflect*` setter, which writes a field the
  *  Submodel owns from an external value, with no derivation and no Command. */
-export const informRouteChanged = (model: Model, route: PeopleRoute): infer _ =>
+export const informRouteChanged = (model: Model, route: PeopleRoute) =>
   update(model, Message.ChangedRoute({ route }))
 
 // VIEW

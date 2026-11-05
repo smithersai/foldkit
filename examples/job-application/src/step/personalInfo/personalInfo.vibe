@@ -199,7 +199,7 @@ const foldAvailableDate = Update.foldChild({
   foldOutMessage: foldAvailableDateOutMessage,
 })
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
     UpdatedFirstName: ({ value }) => ({
       model: modifyFields(model, { firstName: () => validateFirstName(value) }),

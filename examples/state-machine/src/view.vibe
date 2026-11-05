@@ -110,7 +110,7 @@ const roundToCents = (amount: number): number => Math.round(amount * 100) / 100
 const orderPricing = (
   isShippingRequired: boolean,
   maybeDiscount: Option<typeof Discount.Type>,
-): infer _ => {
+) => {
   const subtotal = isShippingRequired ? PHYSICAL_PRICE : DIGITAL_PRICE
   const maybeAppliedDiscount = Option.map(maybeDiscount, discount => ({
     code: discount.code,

@@ -347,14 +347,14 @@ const weekToDatumLabels = (
   },
 ]
 
-export const makeChartOption = (args: ChartOptionArgs): infer _ => match (args.chartMode) {
+export const makeChartOption = (args: ChartOptionArgs) => match (args.chartMode) {
   when 'Adoption': adoptionOption(args);
   when 'Velocity': velocityOption(args);
   when 'Ecosystem': ecosystemOption(args);
 }
 
 const findDatumLabelById =
-  (telemetry: Telemetry): infer _ => (datumId: string): Option<DatumLabel> =>
+  (telemetry: Telemetry) => (datumId: string): Option<DatumLabel> =>
     Arr.findFirst(
       Arr.flatMap(telemetry.weeks, weekToDatumLabels(telemetry)),
       item => item.id === datumId,

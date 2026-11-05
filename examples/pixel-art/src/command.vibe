@@ -41,7 +41,7 @@ export const SaveCanvas = Command.define('SaveCanvas', {
     },
 })
 
-export const saveCanvas = (model: Model): infer _ =>
+export const saveCanvas = (model: Model) =>
   SaveCanvas({
     grid: model.grid,
     gridSize: model.gridSize,

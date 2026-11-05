@@ -101,7 +101,7 @@ export const SimulateAuthRequest = Command.define('SimulateAuthRequest', {
     },
 })
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<Update.ReturnWithOutMessage<Model, Message, OutMessage>>(
     message,
     {

@@ -112,7 +112,7 @@ const foldDragAndDropOutMessage: (
       }),
     })
 
-const foldDragAndDrop = (previousModel: Model): infer _ =>
+const foldDragAndDrop = (previousModel: Model) =>
   Update.foldChild({
     update: DragAndDrop.update,
     read: (model: Model) => Option.some(model.dragAndDrop),
@@ -133,7 +133,7 @@ const submitNewCard = (model: Model, columnId: string): UpdateReturn => {
   return { model, commands: [GenerateCardId({ columnId, title })] }
 }
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
     GotDragAndDropMessage: ({ message }) =>
       foldDragAndDrop(model)(model, message),
