@@ -6,7 +6,7 @@ import { Message } from './message.vibe'
 import { Model, capturesKeyboard } from './model.vibe'
 
 export const subscriptions = Subscription.make<Model, Message, RoomsClient>()(
-  (entry): infer _ => ({
+  (entry) => ({
     roomStream: entry(
       {
         maybeRoomStream: Schema.Option(
@@ -14,16 +14,16 @@ export const subscriptions = Subscription.make<Model, Message, RoomsClient>()(
         ),
       },
       {
-        modelToDependencies: (model): infer _ => ({
+        modelToDependencies: (model) => ({
           maybeRoomStream: Option.map(
             model.maybeSession,
-            (session): infer _ => ({
+            (session) => ({
               roomId: session.roomId,
               playerId: session.player.id,
             }),
           ),
         }),
-        dependenciesToStream: ({ maybeRoomStream }): infer _ =>
+        dependenciesToStream: ({ maybeRoomStream }) =>
           match (maybeRoomStream) {
             when Option.None: Stream.empty;
             when Option.Some(let dependency): do {
@@ -31,10 +31,10 @@ export const subscriptions = Subscription.make<Model, Message, RoomsClient>()(
               const stream = effect {
                 const client = try RoomsClient
                 return client.subscribeToRoom({ roomId, playerId }).pipe(
-                  Stream.map(({ room, maybePlayerProgress }): infer _ =>
+                  Stream.map(({ room, maybePlayerProgress }) =>
                     Message.UpdatedRoom({ room, maybePlayerProgress })
                   ),
-                  Stream.catchCause((cause): infer _ =>
+                  Stream.catchCause((cause) =>
                     Stream.make(
                       Message.FailedStreamRoom({
                         error: match (Cause.findErrorOption(cause)) {
@@ -55,14 +55,12 @@ export const subscriptions = Subscription.make<Model, Message, RoomsClient>()(
     roomKeyboard: entry(
       { shouldCaptureKeyboard: Schema.Boolean },
       {
-        modelToDependencies: (model): infer _ => ({
+        modelToDependencies: (model) => ({
           shouldCaptureKeyboard: capturesKeyboard(model),
         }),
-        dependenciesToStream: ({ shouldCaptureKeyboard }): infer _ =>
+        dependenciesToStream: ({ shouldCaptureKeyboard }) =>
           Stream.when(
-            capturedKeyDownStream((key): infer _ =>
-              Message.PressedKey({ key })
-            ),
+            capturedKeyDownStream((key) => Message.PressedKey({ key })),
             Effect.sync(() => shouldCaptureKeyboard),
           ),
       },

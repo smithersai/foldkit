@@ -50,7 +50,7 @@ const isCommandDefineCall = (
 
   return Option.exists(
     resolveFoldkitApiPath(references, node.callee),
-    (path): infer _ => {
+    (path) => {
       const [namespace, methodName, extraMember] = path
 
       return (
@@ -109,7 +109,7 @@ const diagnosticMessage = (
   const declarator = maybeDeclarator.value
   const headsInitializer = Option.exists(
     headCommandDefineCall(declarator.init, references),
-    (call): infer _ => call === node,
+    (call) => call === node,
   )
   if (!headsInitializer) {
     return Option.some(notAssignedMessage(name))

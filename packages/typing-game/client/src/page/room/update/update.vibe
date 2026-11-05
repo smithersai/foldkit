@@ -53,16 +53,16 @@ export const update = (
   model: Model,
   message: Message,
   context: Context,
-): infer _ =>
+) =>
   Message.match<UpdateReturn>(message, {
     PressedKey: handleKeyPressed(model),
 
-    ChangedUserText: ({ value }): infer _ => {
+    ChangedUserText: ({ value }) => {
       const maybeRoom = AsyncData.getData(model.roomAsyncData)
 
       const maybeGameText = maybeRoom
-        .flatMap(({ maybeGame }): infer _ => maybeGame)
-        .map(({ text }): infer _ => text)
+        .flatMap(({ maybeGame }) => maybeGame)
+        .map(({ text }) => text)
 
       const userGameText = validateUserTextInput(value, maybeGameText)
 
@@ -74,9 +74,9 @@ export const update = (
 
       const commands = Option.all([
         model.maybeSession,
-        Option.flatMap(maybeRoom, ({ maybeGame }): infer _ => maybeGame),
+        Option.flatMap(maybeRoom, ({ maybeGame }) => maybeGame),
       ])
-        .map(([session, game]): infer _ =>
+        .map(([session, game]) =>
           UpdatePlayerProgress({
             playerId: session.player.id,
             gameId: game.id,
@@ -87,29 +87,28 @@ export const update = (
 
       return {
         model: modifyFields(model, {
-          userGameText: (): infer _ => userGameText,
-          charsTyped: (): infer _ => nextCharsTyped,
+          userGameText: () => userGameText,
+          charsTyped: () => nextCharsTyped,
         }),
         commands: Arr.fromOption(commands),
       }
     },
 
-    BlurredRoomPageUsernameInput: (): infer _ => ({
+    BlurredRoomPageUsernameInput: () => ({
       model,
       commands: [FocusRoomPageUsernameInput()],
     }),
 
-    ChangedRoomPageUsername: ({ value }): infer _ => ({
+    ChangedRoomPageUsername: ({ value }) => ({
       model: modifyFields(model, {
-        username: (): infer _ => value,
+        username: () => value,
       }),
     }),
 
-    SubmittedJoinRoomFromPage: (): infer _ => {
+    SubmittedJoinRoomFromPage: () => {
       const maybeJoinRoom = optionWhen(
         Str.isNonEmpty(model.username),
-        (): infer _ =>
-          JoinRoom({ username: model.username, roomId: context.roomId }),
+        () => JoinRoom({ username: model.username, roomId: context.roomId }),
       )
 
       return { model, commands: Arr.fromOption(maybeJoinRoom) }
@@ -117,101 +116,100 @@ export const update = (
 
     UpdatedRoom: handleRoomUpdated(model),
 
-    FailedStreamRoom: ({ error: _error }): infer _ => {
+    FailedStreamRoom: ({ error: _error }) => {
       return { model }
     },
 
-    CompletedLoadSession: ({ maybeSession }): infer _ => {
+    CompletedLoadSession: ({ maybeSession }) => {
       const maybeFocus = optionWhen(
         Option.isNone(maybeSession) && AsyncData.isSuccess(model.roomAsyncData),
-        (): infer _ => FocusRoomPageUsernameInput(),
+        () => FocusRoomPageUsernameInput(),
       )
       return {
         model: modifyFields(model, {
-          maybeSession: (): infer _ => maybeSession,
+          maybeSession: () => maybeSession,
         }),
         commands: Arr.fromOption(maybeFocus),
       }
     },
 
-    SucceededFetchRoom: ({ room }): infer _ => {
+    SucceededFetchRoom: ({ room }) => {
       const maybeFocus = optionWhen(
         Option.isNone(model.maybeSession),
-        (): infer _ => FocusRoomPageUsernameInput(),
+        () => FocusRoomPageUsernameInput(),
       )
       return {
         model: modifyFields(model, {
-          roomAsyncData: (): infer _ => RoomAsyncData.Success({ data: room }),
+          roomAsyncData: () => RoomAsyncData.Success({ data: room }),
         }),
         commands: Arr.fromOption(maybeFocus),
       }
     },
 
-    FailedFetchRoom: (): infer _ => ({
+    FailedFetchRoom: () => ({
       model: modifyFields(model, {
-        roomAsyncData: (): infer _ =>
-          RoomAsyncData.Failure({ error: 'Room not found' }),
+        roomAsyncData: () => RoomAsyncData.Failure({ error: 'Room not found' }),
       }),
     }),
 
-    ClickedCopyRoomId: (): infer _ => ({
+    ClickedCopyRoomId: () => ({
       model,
       commands: [CopyRoomId({ roomId: context.roomId })],
     }),
 
-    SucceededCopyRoomId: (): infer _ =>
+    SucceededCopyRoomId: () =>
       model.isRoomIdCopyIndicatorVisible
         ? { model }
         : {
           model: modifyFields(model, {
-            isRoomIdCopyIndicatorVisible: (): infer _ => true,
+            isRoomIdCopyIndicatorVisible: () => true,
           }),
           commands: [WaitBeforeHidingRoomIdCopiedIndicator()],
         },
 
-    CompletedWaitBeforeHidingRoomIdCopiedIndicator: (): infer _ => ({
+    CompletedWaitBeforeHidingRoomIdCopiedIndicator: () => ({
       model: modifyFields(model, {
-        isRoomIdCopyIndicatorVisible: (): infer _ => false,
+        isRoomIdCopyIndicatorVisible: () => false,
       }),
     }),
 
-    CompletedWaitForExitCountdownInterval: (): infer _ => {
+    CompletedWaitForExitCountdownInterval: () => {
       const nextSecondsLeft = Num.decrement(model.exitCountdownSecondsLeft)
-      const maybeTick = optionWhen(nextSecondsLeft > 0, (): infer _ =>
+      const maybeTick = optionWhen(nextSecondsLeft > 0, () =>
         WaitForExitCountdownInterval())
 
       return {
         model: modifyFields(model, {
-          exitCountdownSecondsLeft: (): infer _ =>
+          exitCountdownSecondsLeft: () =>
             nextSecondsLeft,
         }),
         commands: Arr.fromOption(maybeTick),
       }
     },
 
-    SucceededJoinRoom: ({ player }): infer _ => {
+    SucceededJoinRoom: ({ player }) => {
       const session = { roomId: context.roomId, player }
       return {
         model: modifyFields(model, {
-          maybeSession: (): infer _ => Option.some(session),
+          maybeSession: () => Option.some(session),
         }),
         commands: [SavePlayerSession({ session })],
       }
     },
-    CompletedFocusRoomPageUsernameInput: (): infer _ => ({ model }),
-    CompletedFocusUserGameTextInput: (): infer _ => ({ model }),
-    CompletedNavigateHome: (): infer _ => ({ model }),
-    SucceededStartGame: (): infer _ => ({ model }),
-    FailedStartGame: (): infer _ => ({ model }),
-    CompletedUpdatePlayerProgress: (): infer _ => ({ model }),
-    CompletedSavePlayerSession: (): infer _ => ({ model }),
-    CompletedClearSession: (): infer _ => ({ model }),
-    FailedJoinRoom: (): infer _ => ({ model }),
-    FailedCopyRoomId: (): infer _ => ({ model }),
+    CompletedFocusRoomPageUsernameInput: () => ({ model }),
+    CompletedFocusUserGameTextInput: () => ({ model }),
+    CompletedNavigateHome: () => ({ model }),
+    SucceededStartGame: () => ({ model }),
+    FailedStartGame: () => ({ model }),
+    CompletedUpdatePlayerProgress: () => ({ model }),
+    CompletedSavePlayerSession: () => ({ model }),
+    CompletedClearSession: () => ({ model }),
+    FailedJoinRoom: () => ({ model }),
+    FailedCopyRoomId: () => ({ model }),
   })
 
 const handleKeyPressed =
-  (model: Model): infer _ => ({ key }: { key: string }): UpdateReturn => match (AsyncData.getData(model.roomAsyncData)) {
+  (model: Model) => ({ key }: { key: string }): UpdateReturn => match (AsyncData.getData(model.roomAsyncData)) {
     when Option.None: ({ model });
     when Option.Some(let room): match (room.status) {
       when { _tag: 'Waiting' }: whenWaiting(model, key, room);
@@ -250,30 +248,28 @@ const whenFinished = (
 
 const leaveRoom = (model: Model): UpdateReturn => ({
   model: modifyFields(model, {
-    maybeSession: (): infer _ => Option.none(),
-    roomAsyncData: (): infer _ => RoomAsyncData.Loading(),
+    maybeSession: () => Option.none(),
+    roomAsyncData: () => RoomAsyncData.Loading(),
   }),
   commands: [ClearSession(), NavigateHome()],
 })
 
-const handleStartGame =
-  (model: Model, room: Shared.Room): infer _ => (): UpdateReturn =>
-    match (model.maybeSession) {
-      when Option.None: ({ model });
-      when Option.Some(let session): do {
-        const isHost = session.player.id === room.hostId
-        const maybeStartGame = optionWhen(
-          isHost,
-          (): infer _ =>
-            StartGame({ roomId: room.id, playerId: session.player.id }),
-        )
-        const optionResult11 = {
-          model,
-          commands: Arr.fromOption(maybeStartGame),
-        }
-        optionResult11
-      };
-    }
+const handleStartGame = (model: Model, room: Shared.Room) => (): UpdateReturn =>
+  match (model.maybeSession) {
+    when Option.None: ({ model });
+    when Option.Some(let session): do {
+      const isHost = session.player.id === room.hostId
+      const maybeStartGame = optionWhen(
+        isHost,
+        () => StartGame({ roomId: room.id, playerId: session.player.id }),
+      )
+      const optionResult11 = {
+        model,
+        commands: Arr.fromOption(maybeStartGame),
+      }
+      optionResult11
+    };
+  }
 
 export const informJoined = (
   model: Model,

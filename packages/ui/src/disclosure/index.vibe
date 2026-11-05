@@ -117,7 +117,7 @@ export const view = <Message>(
     ? [h.AriaDisabled(true), h.DataAttribute('disabled', '')]
     : []
 
-  const resolveButtonLabel = (): infer _ => {
+  const resolveButtonLabel = () => {
     if (Predicate.isNotUndefined(ariaLabel)) {
       return [h.AriaLabel(ariaLabel)]
     } else if (Predicate.isNotUndefined(ariaLabelledBy)) {

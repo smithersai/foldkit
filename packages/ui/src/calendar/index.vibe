@@ -136,7 +136,7 @@ const gridSelector = (modelId: string): string => idSelector(gridId(modelId))
 export const FocusGrid = Command.define('FocusGrid', {
   args: { id: Schema.String },
   messages: [Message.CompletedFocusGrid],
-  execute: ({ id }): infer _ => {
+  execute: ({ id }) => {
     const nativeCommandArg8_0 = gridSelector(id)
     const nativeCommandCompletion8 = Message.CompletedFocusGrid()
     return effect {
@@ -164,9 +164,9 @@ export const focusDate: Reflect<Model, CalendarDate> = Function.dual(
   2,
   (model: Model, date: CalendarDate): Model =>
     modifyFields(model, {
-      maybeFocusedDate: (): infer _ => Option.some(date),
-      viewYear: (): infer _ => date.year,
-      viewMonth: (): infer _ => date.month,
+      maybeFocusedDate: () => Option.some(date),
+      viewYear: () => date.year,
+      viewMonth: () => date.month,
     }),
 )
 
@@ -184,7 +184,7 @@ export const reflectMinDate: Reflect<
 > = Function.dual(
   2,
   (model: Model, maybeMinDate: Option<CalendarDate>): Model =>
-    modifyFields(model, { maybeMinDate: (): infer _ => maybeMinDate }),
+    modifyFields(model, { maybeMinDate: () => maybeMinDate }),
 )
 
 /** Reflects the maximum selectable date onto the model. Pass `Option.none()`
@@ -195,7 +195,7 @@ export const reflectMaxDate: Reflect<
 > = Function.dual(
   2,
   (model: Model, maybeMaxDate: Option<CalendarDate>): Model =>
-    modifyFields(model, { maybeMaxDate: (): infer _ => maybeMaxDate }),
+    modifyFields(model, { maybeMaxDate: () => maybeMaxDate }),
 )
 
 /** Reflects the list of individually-disabled dates onto the model. Pass an
@@ -206,7 +206,7 @@ export const reflectDisabledDates: Reflect<
 > = Function.dual(
   2,
   (model: Model, disabledDates: ReadonlyArray<CalendarDate>): Model =>
-    modifyFields(model, { disabledDates: (): infer _ => disabledDates }),
+    modifyFields(model, { disabledDates: () => disabledDates }),
 )
 
 /** Reflects the days of the week that are disabled (e.g. weekends) onto the
@@ -222,7 +222,7 @@ export const reflectDisabledDaysOfWeek: Reflect<
     disabledDaysOfWeek: ReadonlyArray<Calendar.DayOfWeek>,
   ): Model =>
     modifyFields(model, {
-      disabledDaysOfWeek: (): infer _ => disabledDaysOfWeek,
+      disabledDaysOfWeek: () => disabledDaysOfWeek,
     }),
 )
 
@@ -245,8 +245,8 @@ export const dropToDays = (model: Model): Model => {
     );
   }
   return modifyFields(model, {
-    viewMode: (): infer _ => 'Days',
-    maybeFocusedDate: (): infer _ =>
+    viewMode: () => 'Days',
+    maybeFocusedDate: () =>
       Option.some(Calendar.make(model.viewYear, model.viewMonth, focusedDay)),
   })
 }
@@ -260,11 +260,11 @@ const YEARS_PAGE_SIZE = 12
 const isDateDisabled = (model: Model, date: CalendarDate): boolean =>
   Option.exists(
     model.maybeMinDate,
-    (min): infer _ => Calendar.isBefore(date, min),
+    (min) => Calendar.isBefore(date, min),
   )
   || Option.exists(
     model.maybeMaxDate,
-    (max): infer _ => Calendar.isAfter(date, max),
+    (max) => Calendar.isAfter(date, max),
   )
   || model.disabledDaysOfWeek.includes(Calendar.dayOfWeek(date))
   || model.disabledDates.some(Calendar.isEqual(date))
@@ -279,9 +279,9 @@ const skipDisabled = (
 ): CalendarDate =>
   pipe(
     cap,
-    Array.makeBy((step): infer _ => Calendar.addDays(start, step * direction)),
-    Array.findFirst((date): infer _ => !isDateDisabled(model, date)),
-    Option.getOrElse((): infer _ => start),
+    Array.makeBy((step) => Calendar.addDays(start, step * direction)),
+    Array.findFirst((date) => !isDateDisabled(model, date)),
+    Option.getOrElse(() => start),
   )
 
 const clampToRange = (model: Model, candidate: CalendarDate): CalendarDate => {
@@ -361,7 +361,7 @@ const isCommitKey = (key: string): boolean => key === 'Enter' || key === ' '
 const currentOrFallbackFocus = (model: Model): CalendarDate =>
   Option.getOrElse(
     model.maybeFocusedDate,
-    (): infer _ => Calendar.make(model.viewYear, model.viewMonth, 1),
+    () => Calendar.make(model.viewYear, model.viewMonth, 1),
   )
 
 /** Applies a date selection to the model: commits the selection, moves the
@@ -371,9 +371,9 @@ const currentOrFallbackFocus = (model: Model): CalendarDate =>
  * a separate `ChangedViewMonth` signal that would race with the selection. */
 const commitSelection = (model: Model, date: CalendarDate): UpdateReturn => ({
   model: modifyFields(model, {
-    maybeFocusedDate: (): infer _ => Option.some(date),
-    viewYear: (): infer _ => date.year,
-    viewMonth: (): infer _ => date.month,
+    maybeFocusedDate: () => Option.some(date),
+    viewYear: () => date.year,
+    viewMonth: () => date.month,
   }),
   outMessage: OutMessage.SelectedDate({ date }),
 })
@@ -392,9 +392,9 @@ const applyFocusMove = (
   const crossedMonth = nextFocus.year !== model.viewYear
     || nextFocus.month !== model.viewMonth
   const nextModel = modifyFields(model, {
-    maybeFocusedDate: (): infer _ => Option.some(nextFocus),
-    viewYear: (): infer _ => nextFocus.year,
-    viewMonth: (): infer _ => nextFocus.month,
+    maybeFocusedDate: () => Option.some(nextFocus),
+    viewYear: () => nextFocus.year,
+    viewMonth: () => nextFocus.month,
   })
   if (crossedMonth) {
     return {
@@ -434,15 +434,15 @@ const applyViewMonthChange = (
   year: number,
   month: number,
   direction: 1 | -1,
-): infer _ => {
+) => {
   if (year === model.viewYear && month === model.viewMonth) {
     return { model }
   }
   const nextFocus = moveFocusForViewChange(model, year, month, direction)
   const nextModel = modifyFields(model, {
-    viewYear: (): infer _ => year,
-    viewMonth: (): infer _ => month,
-    maybeFocusedDate: (): infer _ => Option.some(nextFocus),
+    viewYear: () => year,
+    viewMonth: () => month,
+    maybeFocusedDate: () => Option.some(nextFocus),
   })
   return {
     model: nextModel,
@@ -506,8 +506,8 @@ const applyMonthsFocusShift = (
   const nextFocus = Calendar.addMonths(focused, monthShift)
   return {
     model: modifyFields(model, {
-      maybeFocusedDate: (): infer _ => Option.some(nextFocus),
-      viewYear: (): infer _ => nextFocus.year,
+      maybeFocusedDate: () => Option.some(nextFocus),
+      viewYear: () => nextFocus.year,
     }),
   }
 }
@@ -524,16 +524,16 @@ const applyYearsFocusShift = (
   const nextFocus = Calendar.addYears(focused, yearShift)
   return {
     model: modifyFields(model, {
-      maybeFocusedDate: (): infer _ => Option.some(nextFocus),
+      maybeFocusedDate: () => Option.some(nextFocus),
     }),
   }
 }
 
 /** Processes a Calendar Message and returns the next Model, optional Commands,
  *  and an optional OutMessage. */
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
-    ClickedDay: ({ date }): infer _ => {
+    ClickedDay: ({ date }) => {
       if (isDateDisabled(model, date)) {
         return { model }
       } else {
@@ -541,11 +541,11 @@ export const update = (model: Model, message: Message): infer _ =>
       }
     },
 
-    PressedKeyOnGrid: ({ key, isShift }): infer _ =>
+    PressedKeyOnGrid: ({ key, isShift }) =>
       do {
         const nativeMatchInput6 = model.viewMode
         const nativeMatchResult6: UpdateReturn = match (nativeMatchInput6) {
-          when 'Days': ((): infer _ => {
+          when 'Days': (() => {
             const focused = currentOrFallbackFocus(model)
 
             if (isCommitKey(key)) {
@@ -587,7 +587,7 @@ export const update = (model: Model, message: Message): infer _ =>
         nativeMatchResult6
       },
 
-    ClickedPreviousMonthButton: (): infer _ => {
+    ClickedPreviousMonthButton: () => {
       const next = Calendar.subtractMonths(
         Calendar.make(model.viewYear, model.viewMonth, 1),
         1,
@@ -595,7 +595,7 @@ export const update = (model: Model, message: Message): infer _ =>
       return applyViewMonthChange(model, next.year, next.month, -1)
     },
 
-    ClickedNextMonthButton: (): infer _ => {
+    ClickedNextMonthButton: () => {
       const next = Calendar.addMonths(
         Calendar.make(model.viewYear, model.viewMonth, 1),
         1,
@@ -603,16 +603,16 @@ export const update = (model: Model, message: Message): infer _ =>
       return applyViewMonthChange(model, next.year, next.month, 1)
     },
 
-    ClickedHeading: (): infer _ =>
+    ClickedHeading: () =>
       do {
         const nativeMatchInput5 = model.viewMode
         const nativeMatchResult5: UpdateReturn = match (nativeMatchInput5) {
           when 'Days': ({
-            model: modifyFields(model, { viewMode: (): infer _ => 'Months' }),
+            model: modifyFields(model, { viewMode: () => 'Months' }),
             commands: [FocusGrid({ id: model.id })],
           });
           when 'Months': ({
-            model: modifyFields(model, { viewMode: (): infer _ => 'Years' }),
+            model: modifyFields(model, { viewMode: () => 'Years' }),
             commands: [FocusGrid({ id: model.id })],
           });
           when 'Years': ({ model });
@@ -620,7 +620,7 @@ export const update = (model: Model, message: Message): infer _ =>
         nativeMatchResult5
       },
 
-    SelectedMonth: ({ month }): infer _ => {
+    SelectedMonth: ({ month }) => {
       if (isMonthDisabled(model, model.viewYear, month)) {
         return { model }
       } else {
@@ -632,7 +632,7 @@ export const update = (model: Model, message: Message): infer _ =>
         )
         const monthSelection: Update.Return<Model, Message> = {
           model: modifyFields(viewMonthChange.model, {
-            viewMode: (): infer _ => 'Days',
+            viewMode: () => 'Days',
           }),
           commands: [FocusGrid({ id: model.id })],
         }
@@ -644,7 +644,7 @@ export const update = (model: Model, message: Message): infer _ =>
       }
     },
 
-    SelectedYear: ({ year }): infer _ => {
+    SelectedYear: ({ year }) => {
       if (isYearDisabled(model, year)) {
         return { model }
       } else {
@@ -656,7 +656,7 @@ export const update = (model: Model, message: Message): infer _ =>
         )
         const yearSelection: Update.Return<Model, Message> = {
           model: modifyFields(yearViewMonthChange.model, {
-            viewMode: (): infer _ => 'Months',
+            viewMode: () => 'Months',
           }),
           commands: [FocusGrid({ id: model.id })],
         }
@@ -668,22 +668,22 @@ export const update = (model: Model, message: Message): infer _ =>
       }
     },
 
-    PagedYears: ({ direction }): infer _ =>
+    PagedYears: ({ direction }) =>
       applyYearsFocusShift(model, direction * YEARS_PAGE_SIZE),
 
-    FocusedGrid: (): infer _ => ({
-      model: modifyFields(model, { isGridFocused: (): infer _ => true }),
+    FocusedGrid: () => ({
+      model: modifyFields(model, { isGridFocused: () => true }),
     }),
 
-    BlurredGrid: (): infer _ => ({
-      model: modifyFields(model, { isGridFocused: (): infer _ => false }),
+    BlurredGrid: () => ({
+      model: modifyFields(model, { isGridFocused: () => false }),
     }),
 
-    RefreshedToday: ({ today }): infer _ => ({
-      model: modifyFields(model, { today: (): infer _ => today }),
+    RefreshedToday: ({ today }) => ({
+      model: modifyFields(model, { today: () => today }),
     }),
 
-    CompletedFocusGrid: (): infer _ => ({ model }),
+    CompletedFocusGrid: () => ({ model }),
   })
 
 // VIEW
@@ -735,10 +735,10 @@ const buildGrid = (
   const gridStart = Calendar.startOfWeek(firstOfMonth, firstDayOfWeek)
   const weeks = Array.makeBy(
     WEEKS_IN_GRID,
-    (weekIndex): infer _ =>
+    (weekIndex) =>
       Array.makeBy(
         DAYS_IN_WEEK,
-        (dayIndex): infer _ =>
+        (dayIndex) =>
           Calendar.addDays(gridStart, weekIndex * DAYS_IN_WEEK + dayIndex),
       ),
   )
@@ -917,11 +917,11 @@ const isMonthDisabled = (
   return (
     Option.exists(
       model.maybeMinDate,
-      (min): infer _ => Calendar.isBefore(monthEnd, min),
+      (min) => Calendar.isBefore(monthEnd, min),
     )
     || Option.exists(
       model.maybeMaxDate,
-      (max): infer _ => Calendar.isAfter(monthStart, max),
+      (max) => Calendar.isAfter(monthStart, max),
     )
   )
 }
@@ -929,8 +929,8 @@ const isMonthDisabled = (
 /** A year is fully disabled when it falls entirely below the minimum date's
  * year or entirely above the maximum date's year. */
 const isYearDisabled = (model: Model, year: number): boolean =>
-  Option.exists(model.maybeMinDate, (min): infer _ => year < min.year)
-  || Option.exists(model.maybeMaxDate, (max): infer _ => year > max.year)
+  Option.exists(model.maybeMinDate, (min) => year < min.year)
+  || Option.exists(model.maybeMaxDate, (max) => year > max.year)
 
 const buildDaysAttributes = (
   model: Model,
@@ -954,10 +954,9 @@ const buildDaysAttributes = (
   const headingButtonLabel = viewInputs.daysHeadingButtonLabel
     ?? 'Switch to month picker'
   const toDaysGridLabel = viewInputs.toDaysGridLabel
-    ?? ((monthYear): infer _ => `Calendar, ${monthYear}`)
+    ?? ((monthYear) => `Calendar, ${monthYear}`)
   const toWeekLabel = viewInputs.toWeekLabel
-    ?? ((weekStart): infer _ =>
-      `Week of ${Calendar.formatLong(weekStart, locale)}`)
+    ?? ((weekStart) => `Week of ${Calendar.formatLong(weekStart, locale)}`)
 
   const headingText = Calendar.formatMonthYear(
     Calendar.make(viewYear, viewMonth, 1),
@@ -1005,8 +1004,8 @@ const buildDaysAttributes = (
     }
     if (isCommitKey(key)) {
       const maybeCommit = maybeFocusedDate
-        .filter((date): infer _ => !isDateDisabled(model, date))
-        .map((date): infer _ => Message.ClickedDay({ date }))
+        .filter((date) => !isDateDisabled(model, date))
+        .map((date) => Message.ClickedDay({ date }))
       if (Option.isSome(maybeCommit)) {
         return maybeCommit
       }
@@ -1017,7 +1016,7 @@ const buildDaysAttributes = (
   }
 
   const activeDescendantAttributes = maybeFocusedDate
-    .map((date): infer _ => h.AriaActiveDescendant(dayCellId(id, date)))
+    .map((date) => h.AriaActiveDescendant(dayCellId(id, date)))
     .toArray()
 
   const gridAttributes = [
@@ -1083,7 +1082,7 @@ const buildDaysAttributes = (
   }
 
   const weeks: ReadonlyArray<Week> = weeksDates.map(
-    (weekDates, weekIndex): infer _ => {
+    (weekDates, weekIndex) => {
       const weekStart = Calendar.addDays(gridStart, weekIndex * DAYS_IN_WEEK)
       return {
         attributes: childAttributes([
@@ -1099,8 +1098,8 @@ const buildDaysAttributes = (
   const wrappedColumnHeaders: ReadonlyArray<ColumnHeader> = Array.zipWith(
     rotatedShortDayNames,
     rotatedDayNames,
-    (name, fullName): infer _ => ({ name, fullName }),
-  ).map(({ name, fullName }, columnIndex): infer _ => ({
+    (name, fullName) => ({ name, fullName }),
+  ).map(({ name, fullName }, columnIndex) => ({
     name,
     attributes: childAttributes([
       h.Role('columnheader'),
@@ -1141,7 +1140,7 @@ const buildMonthsAttributes = (
   const headingButtonLabel = viewInputs.monthsHeadingButtonLabel
     ?? 'Switch to year picker'
   const toMonthsGridLabel = viewInputs.toMonthsGridLabel
-    ?? ((year): infer _ => `Month picker, ${year}`)
+    ?? ((year) => `Month picker, ${year}`)
 
   const headingText = `${viewYear}`
 
@@ -1242,7 +1241,7 @@ const buildMonthsAttributes = (
 
   const cells = Array.makeBy(
     MONTHS_IN_YEAR,
-    (monthIndex): infer _ => buildMonthCell(Number.increment(monthIndex)),
+    (monthIndex) => buildMonthCell(Number.increment(monthIndex)),
   )
 
   return {
@@ -1266,7 +1265,7 @@ const buildYearsAttributes = (
     ?? 'Previous 12 years'
   const nextYearsPageLabel = viewInputs.nextYearsPageLabel ?? 'Next 12 years'
   const toYearsGridLabel = viewInputs.toYearsGridLabel
-    ?? ((startYear, endYear): infer _ => `Year picker, ${startYear}–${endYear}`)
+    ?? ((startYear, endYear) => `Year picker, ${startYear}–${endYear}`)
 
   const cursorYear = match (maybeFocusedDate) {
     when Option.None: viewYear;
@@ -1371,7 +1370,7 @@ const buildYearsAttributes = (
 
   const cells = Array.makeBy(
     YEARS_PAGE_SIZE,
-    (offset): infer _ => buildYearCell(pageStart + offset),
+    (offset) => buildYearCell(pageStart + offset),
   )
 
   return {

@@ -44,7 +44,7 @@ export const noDuplicateOnmountPerElement = Rule.define({
     return {
       ArrayExpression: effect (node: ESTree.Node) => {
         if (!isArrayExpression(node)) return undefined
-        const onMountCallCount = node.elements.filter((element): infer _ =>
+        const onMountCallCount = node.elements.filter((element) =>
           isOnMountCall(element, references)
         ).length
         if (onMountCallCount <= 1) {
@@ -54,8 +54,7 @@ export const noDuplicateOnmountPerElement = Rule.define({
           try Effect.orDie(Effect.try({
             try: () =>
               Diagnostic.make({ node, message: DUPLICATE_ON_MOUNT_MESSAGE }),
-            catch: error =>
-              error,
+            catch: error => error,
           })),
         )
       },

@@ -25,7 +25,7 @@ type UpdateReturn = Update.ReturnWithOutMessage<Model, Message, OutMessage>
 export const WaitForPaint = Command.define('WaitForPaint', {
   args: { generation: Schema.Number },
   messages: [Message.CompletedWaitForPaint],
-  execute: ({ generation }): infer _ => {
+  execute: ({ generation }) => {
     const nativeCommandCompletion39 = Message.CompletedWaitForPaint({
       generation,
     })
@@ -42,7 +42,7 @@ export const WaitForAnimationSettled = Command.define(
   {
     args: { id: Schema.String, generation: Schema.Number },
     messages: [Message.EndedAnimation],
-    execute: ({ id, generation }): infer _ => {
+    execute: ({ id, generation }) => {
       const nativeCommandArg40_0 = elementSelector(id)
       const nativeCommandCompletion40 = Message.EndedAnimation({ generation })
       return effect {
@@ -65,7 +65,7 @@ export function update(
 export function update(model: Model, message: Message): UpdateReturn
 export function update(model: Model, message: Message): UpdateReturn {
   return Message.match<UpdateReturn>(message, {
-    Showed: (): infer _ => {
+    Showed: () => {
       if (model.isShowing) {
         return { model }
       }
@@ -76,15 +76,15 @@ export function update(model: Model, message: Message): UpdateReturn {
 
       return {
         model: modifyFields(model, {
-          isShowing: (): infer _ => true,
-          transitionState: (): infer _ => 'EnterStart',
-          transitionGeneration: (): infer _ => nextTransitionGeneration,
+          isShowing: () => true,
+          transitionState: () => 'EnterStart',
+          transitionGeneration: () => nextTransitionGeneration,
         }),
         commands: [WaitForPaint({ generation: nextTransitionGeneration })],
       }
     },
 
-    Hid: (): infer _ => {
+    Hid: () => {
       const isLeaving = model.transitionState === 'LeaveStart'
         || model.transitionState === 'LeaveAnimating'
 
@@ -98,15 +98,15 @@ export function update(model: Model, message: Message): UpdateReturn {
 
       return {
         model: modifyFields(model, {
-          isShowing: (): infer _ => false,
-          transitionState: (): infer _ => 'LeaveStart',
-          transitionGeneration: (): infer _ => nextTransitionGeneration,
+          isShowing: () => false,
+          transitionState: () => 'LeaveStart',
+          transitionGeneration: () => nextTransitionGeneration,
         }),
         commands: [WaitForPaint({ generation: nextTransitionGeneration })],
       }
     },
 
-    CompletedWaitForPaint: ({ generation }): infer _ => {
+    CompletedWaitForPaint: ({ generation }) => {
       if (generation !== model.transitionGeneration) {
         return { model }
       }
@@ -114,7 +114,7 @@ export function update(model: Model, message: Message): UpdateReturn {
       return match (model.transitionState) {
         when 'EnterStart': ({
           model: modifyFields(model, {
-            transitionState: (): infer _ => 'EnterAnimating',
+            transitionState: () => 'EnterAnimating',
           }),
           commands: [
             WaitForAnimationSettled({
@@ -125,7 +125,7 @@ export function update(model: Model, message: Message): UpdateReturn {
         });
         when 'LeaveStart': ({
           model: modifyFields(model, {
-            transitionState: (): infer _ => 'LeaveAnimating',
+            transitionState: () => 'LeaveAnimating',
           }),
           outMessage: OutMessage.StartedLeaveAnimating({
             generation: model.transitionGeneration,
@@ -135,7 +135,7 @@ export function update(model: Model, message: Message): UpdateReturn {
       }
     },
 
-    EndedAnimation: ({ generation }): infer _ => {
+    EndedAnimation: ({ generation }) => {
       if (generation !== model.transitionGeneration) {
         return { model }
       }
@@ -143,12 +143,12 @@ export function update(model: Model, message: Message): UpdateReturn {
       return match (model.transitionState) {
         when 'EnterAnimating': ({
           model: modifyFields(model, {
-            transitionState: (): infer _ => 'Idle',
+            transitionState: () => 'Idle',
           }),
         });
         when 'LeaveAnimating': ({
           model: modifyFields(model, {
-            transitionState: (): infer _ => 'Idle',
+            transitionState: () => 'Idle',
           }),
           outMessage: OutMessage.TransitionedOut(),
         });

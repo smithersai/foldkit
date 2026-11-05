@@ -14,9 +14,9 @@ import {
 
 export const view = Submodel.defineView<Model, Message>((model, h): Html => {
   const maybeUsername = HomeStep.match(model.homeStep, {
-    EnterUsername: (): infer _ => Option.none(),
-    SelectAction: ({ username }): infer _ => Option.some(username),
-    EnterRoomId: ({ username }): infer _ => Option.some(username),
+    EnterUsername: () => Option.none(),
+    SelectAction: ({ username }) => Option.some(username),
+    EnterRoomId: ({ username }) => Option.some(username),
   })
 
   const welcomeText = match (maybeUsername) {
@@ -33,9 +33,9 @@ export const view = Submodel.defineView<Model, Message>((model, h): Html => {
       welcomeText,
 
       HomeStep.match(model.homeStep, {
-        EnterUsername: (step): infer _ => enterUsername(step, h),
-        SelectAction: (step): infer _ => selectAction(step, h),
-        EnterRoomId: (step): infer _ => enterRoomId(step, h),
+        EnterUsername: (step) => enterUsername(step, h),
+        SelectAction: (step) => selectAction(step, h),
+        EnterRoomId: (step) => enterRoomId(step, h),
       }),
 
       maybeErrorMessage(model.formError, h),
@@ -64,9 +64,7 @@ const enterUsername = (
                 h.Type('text'),
                 h.Value(username),
                 h.Class('bg-transparent px-0 py-2 outline-none w-full'),
-                h.OnInput((value): infer _ =>
-                  Message.ChangedUsername({ value })
-                ),
+                h.OnInput((value) => Message.ChangedUsername({ value })),
                 h.OnBlur(Message.BlurredUsernameInput()),
                 h.Autocapitalize('none'),
                 h.Spellcheck(false),
@@ -97,7 +95,7 @@ const selectAction = (
   )
 
 const action =
-  (selectedAction: HomeAction, h: HtmlBuilder<Message>): infer _ =>
+  (selectedAction: HomeAction, h: HtmlBuilder<Message>) =>
   (homeAction: HomeAction): Html =>
     h.div(
       [h.Class('whitespace-pre-wrap')],
@@ -129,7 +127,7 @@ const enterRoomId = (
                 h.Type('text'),
                 h.Value(roomId),
                 h.Class('bg-transparent px-0 py-2 outline-none w-full'),
-                h.OnInput((value): infer _ => Message.ChangedRoomId({ value })),
+                h.OnInput((value) => Message.ChangedRoomId({ value })),
                 h.OnBlur(Message.BlurredRoomIdInput()),
                 h.Autocapitalize('none'),
                 h.Spellcheck(false),

@@ -32,7 +32,7 @@ const normalizedEffectPath = (
   references: WeakMap<ESTree.Node, Reference>,
   node: unknown,
 ): Option<ReadonlyArray<string>> =>
-  Option.flatMap(resolveImportedPath(references, node), (path): infer _ => {
+  Option.flatMap(resolveImportedPath(references, node), (path) => {
     if (path.source === 'effect') {
       return Option.some(path.members)
     }
@@ -50,7 +50,7 @@ const isEffectMapCall = (
     ? AST.isCallOf(node, 'Effect', 'map')
     : Option.exists(
       normalizedEffectPath(references, node.callee),
-      (path): infer _ => {
+      (path) => {
         const [namespace, member, extraMember] = path
         return (
           namespace === 'Effect'
@@ -68,7 +68,7 @@ const isCommandMapEffectCall = (
     ? AST.isCallOf(node, 'Command', 'mapEffect')
     : Option.exists(
       resolveFoldkitApiPath(references, node.callee),
-      (path): infer _ => {
+      (path) => {
         const [namespace, member, extraMember] = path
         return (
           namespace === 'Command'
@@ -90,7 +90,7 @@ const isMessageConstructorPath = (path: ReadonlyArray<string>): boolean => {
   const maybeOwnerName = Arr.last(Arr.dropRight(path, 1))
   return Option.exists(
     maybeOwnerName,
-    (ownerName): infer _ => ownerName.endsWith('Message'),
+    (ownerName) => ownerName.endsWith('Message'),
   )
 }
 
@@ -125,8 +125,8 @@ const isMessageConstructorReference = (
 
   return Option.exists(
     resolvedVariable(references, maybePath.value.root),
-    (variable): infer _ =>
-      variable.defs.some((definition): infer _ => {
+    (variable) =>
+      variable.defs.some((definition) => {
         if (
           definition.type !== 'Variable'
           || !isVariableDeclarator(definition.node)
@@ -137,7 +137,7 @@ const isMessageConstructorReference = (
 
         return Option.exists(
           resolveFoldkitApiPath(references, definition.node.init.callee),
-          (apiPath): infer _ => {
+          (apiPath) => {
             const [namespace, helperName, extraMember] = apiPath
             return (
               namespace === 'Message'
@@ -168,7 +168,7 @@ const isMessageWrappingArrow = (
     return isMessageConstructorCall(node.body, references)
   }
   return node.body.body.some(
-    (statement): infer _ =>
+    (statement) =>
       statement.type === 'ReturnStatement'
       && isMessageConstructorCall(statement.argument, references),
   )
@@ -191,7 +191,7 @@ const isEffectMapWrappingMessage = (
   const maybeMapper = Arr.last(node.arguments)
   return Option.exists(
     maybeMapper,
-    (mapper): infer _ => isMessageMapper(mapper, references),
+    (mapper) => isMessageMapper(mapper, references),
   )
 }
 
@@ -203,7 +203,7 @@ const isPipeCall = (
     ? isIdentifier(node.callee, 'pipe')
     : Option.exists(
       resolveImportedPath(references, node.callee),
-      (path): infer _ => {
+      (path) => {
         const [member, extraMember] = path.members
         return (
           path.source === 'effect'
@@ -214,7 +214,7 @@ const isPipeCall = (
     )
 
 const isPipeMethodCall = (node: ESTree.CallExpression): boolean =>
-  Option.exists(staticMemberPath(node.callee), (path): infer _ => {
+  Option.exists(staticMemberPath(node.callee), (path) => {
     const [member, extraMember] = path.members
     return member === 'pipe' && extraMember === undefined
   })
@@ -232,8 +232,8 @@ const returnedExpression = (node: unknown): Option<unknown> => {
       statement.type === 'ReturnStatement',
   )
   return Arr.match(returnStatements, {
-    onEmpty: (): infer _ => Option.none(),
-    onNonEmpty: ([statement, ...remainingStatements]): infer _ =>
+    onEmpty: () => Option.none(),
+    onNonEmpty: ([statement, ...remainingStatements]) =>
       Arr.isArrayEmpty(remainingStatements)
         ? Option.fromNullishOr(statement.argument)
         : Option.none(),
@@ -256,7 +256,7 @@ const resultPathMapsMessage = (
     return false
   }
   if (isPipeCall(node, references)) {
-    return node.arguments.some((argument): infer _ =>
+    return node.arguments.some((argument) =>
       resultPathMapsMessage(argument, references)
     )
   }
@@ -268,9 +268,9 @@ const resultPathMapsMessage = (
   return (
     Option.exists(
       maybeCalleePath,
-      (path): infer _ => resultPathMapsMessage(path.root, references),
+      (path) => resultPathMapsMessage(path.root, references),
     )
-    || node.arguments.some((argument): infer _ =>
+    || node.arguments.some((argument) =>
       resultPathMapsMessage(argument, references)
     )
   )
@@ -317,8 +317,7 @@ export const preferCommandMapmessage = Rule.define({
         if (
           !Option.exists(
             maybeTransform,
-            (transform): infer _ =>
-              transformMapsResultMessage(transform, references),
+            (transform) => transformMapsResultMessage(transform, references),
           )
         ) {
           return undefined

@@ -68,17 +68,17 @@ export const view = <Value extends string = string>(
 
   const itemInfos: ReadonlyArray<ItemInfo<Value>> = Array.map(
     items,
-    (value, index): infer _ => {
+    (value, index) => {
       const isCurrent = isItemCurrent(value, index)
 
       const maybeCurrentAttributes = Option.liftPredicate(
         [ih.AriaCurrent(ARIA_CURRENT_PAGE), ih.DataAttribute('current', '')],
-        (): infer _ => isCurrent,
+        () => isCurrent,
       )
 
       const linkAttributes = [
         ih.Href(toHref(value, index)),
-        ...Option.getOrElse(maybeCurrentAttributes, (): infer _ => []),
+        ...Option.getOrElse(maybeCurrentAttributes, () => []),
       ]
 
       return {

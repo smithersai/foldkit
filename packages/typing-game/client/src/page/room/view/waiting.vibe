@@ -8,7 +8,7 @@ import { RoomPlayerSession } from '../model.vibe'
 
 type Badge = 'Host' | 'You'
 const allBadges: ReadonlyArray<Badge> = ['Host', 'You']
-const badgeToString = (u: Badge): infer _ => match (u) {
+const badgeToString = (u: Badge) => match (u) {
   when 'Host': 'host';
   when 'You': 'you';
 }
@@ -19,7 +19,7 @@ const isLocalPlayer = (
 ): boolean =>
   Option.exists(
     maybeSession,
-    (session): infer _ => session.player.id === player.id,
+    (session) => session.player.id === player.id,
   )
 
 const player = (
@@ -28,16 +28,16 @@ const player = (
   maybeSession: Option<RoomPlayerSession>,
   h: HtmlBuilder<Message>,
 ): Array<Html> =>
-  Arr.map(players, (player): infer _ => {
+  Arr.map(players, (player) => {
     const badges = pipe(
       allBadges,
       Arr.filter(
-        (badge): infer _ => match (badge) {
+        (badge) => match (badge) {
           when 'Host': player.id === hostId;
           when 'You': isLocalPlayer(player, maybeSession);
         },
       ),
-      Arr.map((badge): infer _ =>
+      Arr.map((badge) =>
         h.span([h.Class('uppercase')], [` [${badgeToString(badge)}]`])
       ),
     )
@@ -57,7 +57,7 @@ export const waiting = (
 ): Html => {
   const isLocalPlayerHost = Option.exists(
     maybeSession,
-    (session): infer _ => session.player.id === hostId,
+    (session) => session.player.id === hostId,
   )
 
   return h.div(

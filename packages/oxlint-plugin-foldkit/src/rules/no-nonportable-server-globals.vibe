@@ -70,7 +70,7 @@ const destructuredGlobalThis = (
     : undefined
 }
 
-const restrictedGlobalDiagnostic = (node: ESTree.Node, name: string): infer _ =>
+const restrictedGlobalDiagnostic = (node: ESTree.Node, name: string) =>
   Diagnostic.make({
     node,
     message:
@@ -133,7 +133,7 @@ export const noNonportableServerGlobals = Rule.define({
           return undefined
         }
         const restrictedProperties = node.properties.flatMap(
-          (property): infer _ => {
+          (property) => {
             if (property.type !== 'Property') {
               return []
             }

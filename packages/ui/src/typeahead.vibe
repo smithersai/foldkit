@@ -23,7 +23,7 @@ export const resolveTypeaheadMatch = <Item>(
     && pipe(
       items,
       Array.get(index),
-      Option.exists((item): infer _ =>
+      Option.exists((item) =>
         pipe(
           itemToSearchText(item, index),
           String.toLowerCase,
@@ -35,7 +35,7 @@ export const resolveTypeaheadMatch = <Item>(
   return pipe(
     items,
     Array.length,
-    Array.makeBy((step): infer _ => wrapIndex(startIndex + step, items.length)),
+    Array.makeBy((step) => wrapIndex(startIndex + step, items.length)),
     Array.findFirst(isEnabledMatch),
   )
 }

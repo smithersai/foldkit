@@ -67,7 +67,7 @@ export const init = (config: InitConfig): Model => ({
 export const WaitBeforeShowing = Command.define('WaitBeforeShowing', {
   args: { delay: Schema.DurationFromMillis, version: Schema.Number },
   messages: [Message.CompletedWaitBeforeShowing],
-  execute: ({ delay, version }): infer _ => {
+  execute: ({ delay, version }) => {
     const nativeCommandArg27_0 = delay
     const nativeCommandCompletion27 = Message.CompletedWaitBeforeShowing({
       version,
@@ -85,7 +85,7 @@ export const AnchorTooltip = Mount.define('AnchorTooltip', {
   messages: [Message.CompletedAnchorTooltip],
   execute: effect ({ element, buttonId, anchor }) => {
     try Effect.acquireRelease(
-      Effect.sync((): infer _ =>
+      Effect.sync(() =>
         anchorSetup(element, {
           buttonId,
           anchor,
@@ -103,20 +103,20 @@ export const AnchorTooltip = Mount.define('AnchorTooltip', {
   },
 })
 
-const computeUpdate = (model: Model, message: Message): infer _ =>
+const computeUpdate = (model: Model, message: Message) =>
   Message.match<Update.Return<Model, Message>>(message, {
-    EnteredTrigger: (): infer _ => {
+    EnteredTrigger: () => {
       if (model.isOpen || model.isDismissed) {
         return {
-          model: modifyFields(model, { isHovered: (): infer _ => true }),
+          model: modifyFields(model, { isHovered: () => true }),
         }
       }
 
       const nextVersion = Number.increment(model.pendingShowVersion)
       return {
         model: modifyFields(model, {
-          isHovered: (): infer _ => true,
-          pendingShowVersion: (): infer _ => nextVersion,
+          isHovered: () => true,
+          pendingShowVersion: () => nextVersion,
         }),
         commands: [
           WaitBeforeShowing({ delay: model.showDelay, version: nextVersion }),
@@ -124,16 +124,16 @@ const computeUpdate = (model: Model, message: Message): infer _ =>
       }
     },
 
-    LeftTrigger: (): infer _ => ({
+    LeftTrigger: () => ({
       model: modifyFields(model, {
-        isHovered: (): infer _ => false,
-        isOpen: (): infer _ => model.isFocused && model.isOpen,
-        isDismissed: (): infer _ => false,
+        isHovered: () => false,
+        isOpen: () => model.isFocused && model.isOpen,
+        isDismissed: () => false,
         pendingShowVersion: Number.increment,
       }),
     }),
 
-    FocusedTrigger: (): infer _ => {
+    FocusedTrigger: () => {
       const isFromMousePress = Option.exists(
         model.maybeLastPointerType,
         Equal.equals('mouse'),
@@ -142,7 +142,7 @@ const computeUpdate = (model: Model, message: Message): infer _ =>
       if (isFromMousePress) {
         return {
           model: modifyFields(model, {
-            maybeLastPointerType: (): infer _ => Option.none(),
+            maybeLastPointerType: () => Option.none(),
           }),
         }
       }
@@ -150,46 +150,46 @@ const computeUpdate = (model: Model, message: Message): infer _ =>
       if (model.isDismissed) {
         return {
           model: modifyFields(model, {
-            isFocused: (): infer _ => true,
-            maybeLastPointerType: (): infer _ => Option.none(),
+            isFocused: () => true,
+            maybeLastPointerType: () => Option.none(),
           }),
         }
       }
 
       return {
         model: modifyFields(model, {
-          isFocused: (): infer _ => true,
-          isOpen: (): infer _ => true,
+          isFocused: () => true,
+          isOpen: () => true,
           pendingShowVersion: Number.increment,
         }),
       }
     },
 
-    BlurredTrigger: (): infer _ => ({
+    BlurredTrigger: () => ({
       model: modifyFields(model, {
-        isFocused: (): infer _ => false,
-        isOpen: (): infer _ => model.isHovered && model.isOpen,
-        isDismissed: (): infer _ => false,
+        isFocused: () => false,
+        isOpen: () => model.isHovered && model.isOpen,
+        isDismissed: () => false,
         pendingShowVersion: Number.increment,
-        maybeLastPointerType: (): infer _ => Option.none(),
+        maybeLastPointerType: () => Option.none(),
       }),
     }),
 
-    PressedEscape: (): infer _ => ({
+    PressedEscape: () => ({
       model: modifyFields(model, {
-        isOpen: (): infer _ => false,
-        isDismissed: (): infer _ => true,
+        isOpen: () => false,
+        isDismissed: () => true,
         pendingShowVersion: Number.increment,
       }),
     }),
 
-    PressedPointerOnTrigger: ({ pointerType }): infer _ => ({
+    PressedPointerOnTrigger: ({ pointerType }) => ({
       model: modifyFields(model, {
-        maybeLastPointerType: (): infer _ => Option.some(pointerType),
+        maybeLastPointerType: () => Option.some(pointerType),
       }),
     }),
 
-    CompletedWaitBeforeShowing: ({ version }): infer _ => {
+    CompletedWaitBeforeShowing: ({ version }) => {
       if (version !== model.pendingShowVersion) {
         return { model }
       }
@@ -198,10 +198,10 @@ const computeUpdate = (model: Model, message: Message): infer _ =>
         return { model }
       }
 
-      return { model: modifyFields(model, { isOpen: (): infer _ => true }) }
+      return { model: modifyFields(model, { isOpen: () => true }) }
     },
 
-    CompletedAnchorTooltip: (): infer _ => ({ model }),
+    CompletedAnchorTooltip: () => ({ model }),
   })
 
 const toVisibilityOutMessage = (
@@ -241,7 +241,7 @@ export const reflectShowDelay: Reflect<Model, Duration.Input> = Function.dual(
   2,
   (model: Model, showDelay: Duration.Input): Model =>
     modifyFields(model, {
-      showDelay: (): infer _ => Duration.fromInputUnsafe(showDelay),
+      showDelay: () => Duration.fromInputUnsafe(showDelay),
     }),
 )
 
@@ -280,7 +280,7 @@ export const view = defineView<Model, Message, ViewInputs>(
     const { id, isOpen } = model
     const { anchor, toView, isDisabled, ariaLabel, ariaLabelledBy } = viewInputs
 
-    const resolveTriggerLabel = (): infer _ => {
+    const resolveTriggerLabel = () => {
       if (Predicate.isNotUndefined(ariaLabel)) {
         return [h.AriaLabel(ariaLabel)]
       } else if (Predicate.isNotUndefined(ariaLabelledBy)) {

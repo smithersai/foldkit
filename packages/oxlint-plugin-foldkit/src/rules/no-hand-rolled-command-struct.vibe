@@ -16,7 +16,7 @@ const staticKeys = (node: ESTree.ObjectExpression): ReadonlySet<string> =>
   new Set(
     pipe(
       node.properties,
-      Arr.filterMap((property): infer _ => {
+      Arr.filterMap((property) => {
         if (property.type !== 'Property' || property.computed === true) {
           return Result.failVoid
         }
@@ -32,16 +32,15 @@ const staticKeys = (node: ESTree.ObjectExpression): ReadonlySet<string> =>
   )
 
 const hasSpreadElement = (node: ESTree.ObjectExpression): boolean =>
-  node.properties.some((property): infer _ => property.type === 'SpreadElement')
+  node.properties.some((property) => property.type === 'SpreadElement')
 
 const matchesShape = (
   keys: ReadonlySet<string>,
   shape: ReadonlyArray<string>,
-): boolean =>
-  keys.size === shape.length && shape.every((key): infer _ => keys.has(key))
+): boolean => keys.size === shape.length && shape.every((key) => keys.has(key))
 
 const isHandRolledCommandShape = (keys: ReadonlySet<string>): boolean =>
-  COMMAND_STRUCT_SHAPES.some((shape): infer _ => matchesShape(keys, shape))
+  COMMAND_STRUCT_SHAPES.some((shape) => matchesShape(keys, shape))
 
 const spreadRebuildMessage =
   'Do not rebuild a Command by spreading one and overriding effect. Use Command.mapEffect, Command.mapMessage, or Command.mapMessages so the Command keeps its name and args.'

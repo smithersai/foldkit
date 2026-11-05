@@ -295,7 +295,7 @@ const observedAnchor = (
   const viewportBottom = viewportTop + element.clientHeight
   const maybeRow = Array.findFirst(
     renderedRows(isHtmlElement, element),
-    (row): infer _ => {
+    (row) => {
       const rowRect = row.getBoundingClientRect()
       return rowRect.bottom > viewportTop && rowRect.top < viewportBottom
     },
@@ -332,8 +332,7 @@ const rowForIndex = (
   const rows = renderedRows(isHtmlElement, element)
   const maybeExact = Array.findFirst(
     rows,
-    (row): infer _ =>
-      Option.exists(rowIndex(row), (rowIndex): infer _ => rowIndex === index),
+    (row) => Option.exists(rowIndex(row), (rowIndex) => rowIndex === index),
   )
 
   if (Option.isSome(maybeExact)) {
@@ -365,7 +364,7 @@ const rowForKey = (
 ): Option<HTMLElement> =>
   Array.findFirst(
     renderedRows(isHtmlElement, element),
-    (row): infer _ => row.getAttribute('data-virtual-list-item-key') === key,
+    (row) => row.getAttribute('data-virtual-list-item-key') === key,
   )
 
 const rowOffsets = (container: HTMLElement, row: HTMLElement): RowOffsets => {
@@ -384,10 +383,10 @@ const rowForTarget = (
   ScrollTarget.matchOrElse(
     target,
     {
-      Index: ({ index }): infer _ => rowForIndex(isHtmlElement, element, index),
-      Key: ({ key }): infer _ => rowForKey(isHtmlElement, element, key),
+      Index: ({ index }) => rowForIndex(isHtmlElement, element, index),
+      Key: ({ key }) => rowForKey(isHtmlElement, element, key),
     },
-    (): infer _ => Option.none(),
+    () => Option.none(),
   )
 
 const scrollTopForRowTarget = (
@@ -396,7 +395,7 @@ const scrollTopForRowTarget = (
   target: typeof ScrollTarget.Index.Type | typeof ScrollTarget.Key.Type,
   alignment: ScrollAlignment,
 ): Option<number> =>
-  Option.map(rowForTarget(isHtmlElement, element, target), (row): infer _ => {
+  Option.map(rowForTarget(isHtmlElement, element, target), (row) => {
     const offsets = rowOffsets(element, row)
     return scrollTopForRow(
       element.scrollTop,
@@ -414,12 +413,12 @@ const scrollTopForTarget = (
   alignment: ScrollAlignment,
 ): Option<number> =>
   ScrollTarget.match<Option<number>>(target, {
-    Index: (indexTarget): infer _ =>
+    Index: (indexTarget) =>
       scrollTopForRowTarget(isHtmlElement, element, indexTarget, alignment),
-    Key: (keyTarget): infer _ =>
+    Key: (keyTarget) =>
       scrollTopForRowTarget(isHtmlElement, element, keyTarget, alignment),
-    Offset: ({ offset }): infer _ => Option.some(offset),
-    End: (): infer _ => Option.some(maxScrollTop(element)),
+    Offset: ({ offset }) => Option.some(offset),
+    End: () => Option.some(maxScrollTop(element)),
   })
 
 const rowForAnchor = (
@@ -429,7 +428,7 @@ const rowForAnchor = (
 ): Option<HTMLElement> =>
   Option.orElse(
     rowForKey(isHtmlElement, element, anchor.key),
-    (): infer _ => rowForIndex(isHtmlElement, element, anchor.index),
+    () => rowForIndex(isHtmlElement, element, anchor.index),
   )
 
 const scrollTopForAnchor = (
@@ -438,17 +437,17 @@ const scrollTopForAnchor = (
   anchor: typeof ViewportAnchor.Type,
 ): Option<number> =>
   ViewportAnchor.match<Option<number>>(anchor, {
-    Offset: ({ scrollTop }): infer _ => Option.some(scrollTop),
-    Row: (rowAnchor): infer _ =>
+    Offset: ({ scrollTop }) => Option.some(scrollTop),
+    Row: (rowAnchor) =>
       Option.map(
         rowForAnchor(isHtmlElement, element, rowAnchor),
-        (row): infer _ =>
+        (row) =>
           Math.max(
             0,
             rowOffsets(element, row).startOffset - rowAnchor.viewportOffset,
           ),
       ),
-    End: (): infer _ => Option.some(maxScrollTop(element)),
+    End: () => Option.some(maxScrollTop(element)),
   })
 
 const scrollTopForRequest = (
@@ -457,10 +456,9 @@ const scrollTopForRequest = (
   request: typeof ScrollRequest.Type,
 ): Option<number> =>
   ScrollRequest.match<Option<number>>(request, {
-    Target: ({ target, alignment }): infer _ =>
+    Target: ({ target, alignment }) =>
       scrollTopForTarget(isHtmlElement, element, target, alignment),
-    Anchor: ({ anchor }): infer _ =>
-      scrollTopForAnchor(isHtmlElement, element, anchor),
+    Anchor: ({ anchor }) => scrollTopForAnchor(isHtmlElement, element, anchor),
   })
 
 const mountedContainers = new Map<string, Set<HTMLElement>>()
@@ -508,7 +506,7 @@ export const ApplyScroll = Command.define('ApplyScroll', {
       const element = maybeElement.value
 
       const maybeActiveVersion = Option.fromNullishOr(
-        try Effect.sync((): infer _ =>
+        try Effect.sync(() =>
           element.getAttribute('data-virtual-list-scroll-version')
         ),
       )
@@ -581,8 +579,8 @@ const buildScrollRequest = (
   const nextVersion = Number.increment(model.pendingScrollVersion)
   return {
     model: modifyFields(model, {
-      pendingScrollVersion: (): infer _ => nextVersion,
-      pendingScroll: (): infer _ =>
+      pendingScrollVersion: () => nextVersion,
+      pendingScroll: () =>
         PendingScroll.Pending({ request, version: nextVersion }),
     }),
     commands: [
@@ -597,14 +595,13 @@ const buildScrollRequest = (
 
 const currentScrollRequest = (model: Model): typeof ScrollRequest.Type =>
   PendingScroll.match<typeof ScrollRequest.Type>(model.pendingScroll, {
-    Idle: (): infer _ =>
+    Idle: () =>
       InitialScroll.match<typeof ScrollRequest.Type>(model.initialScroll, {
-        Applied: (): infer _ =>
-          ScrollRequest.Anchor({ anchor: model.viewportAnchor }),
-        Pending: ({ target, alignment }): infer _ =>
+        Applied: () => ScrollRequest.Anchor({ anchor: model.viewportAnchor }),
+        Pending: ({ target, alignment }) =>
           ScrollRequest.Target({ target, alignment }),
       }),
-    Pending: ({ request }): infer _ => request,
+    Pending: ({ request }) => request,
   })
 
 const reconcileLayout = (model: Model): ScrollReturn =>
@@ -622,8 +619,8 @@ const anchorFromSnapshot = (
     scrollHeight - containerHeight - scrollTop,
   )
   const isFollowingEnd = EndBehavior.match<boolean>(model.endBehavior, {
-    PreserveAnchor: (): infer _ => false,
-    Follow: ({ thresholdPx }): infer _ => distanceFromEnd <= thresholdPx,
+    PreserveAnchor: () => false,
+    Follow: ({ thresholdPx }) => distanceFromEnd <= thresholdPx,
   })
 
   if (isFollowingEnd) {
@@ -631,8 +628,8 @@ const anchorFromSnapshot = (
   }
 
   return ObservedAnchor.match<typeof ViewportAnchor.Type>(anchor, {
-    None: (): infer _ => ViewportAnchor.Offset({ scrollTop }),
-    Row: ({ key, index, viewportOffset }): infer _ =>
+    None: () => ViewportAnchor.Offset({ scrollTop }),
+    Row: ({ key, index, viewportOffset }) =>
       ViewportAnchor.Row({ key, index, viewportOffset }),
   })
 }
@@ -647,8 +644,8 @@ const applyScrollSnapshot = (
   }>,
 ): Model =>
   modifyFields(model, {
-    scrollTop: (): infer _ => snapshot.scrollTop,
-    viewportAnchor: (): infer _ =>
+    scrollTop: () => snapshot.scrollTop,
+    viewportAnchor: () =>
       anchorFromSnapshot(
         model,
         snapshot.scrollTop,
@@ -665,20 +662,19 @@ const measureContainer = (
 ): ScrollReturn => {
   const wasUnmeasured = model.measurement._tag === 'Unmeasured'
   const didWidthChange = Measurement.match<boolean>(model.measurement, {
-    Unmeasured: (): infer _ => false,
-    Measured: (measurement): infer _ =>
-      measurement.containerWidth !== containerWidth,
+    Unmeasured: () => false,
+    Measured: (measurement) => measurement.containerWidth !== containerWidth,
   })
   const recordContainerMeasurement: Update.Step<
     Model,
     Message
-  > = (stepModel): infer _ => ({
+  > = (stepModel) => ({
     model: modifyFields(stepModel, {
-      measurement: (): infer _ =>
+      measurement: () =>
         Measurement.Measured({ containerWidth, containerHeight }),
-      measuredRowHeights: (measuredRowHeights): infer _ =>
+      measuredRowHeights: (measuredRowHeights) =>
         didWidthChange ? Record.empty() : measuredRowHeights,
-      layoutVersion: (layoutVersion): infer _ =>
+      layoutVersion: (layoutVersion) =>
         didWidthChange ? Number.increment(layoutVersion) : layoutVersion,
     }),
   })
@@ -687,7 +683,7 @@ const measureContainer = (
   if (initialScroll._tag === 'Pending') {
     return Update.combine(model, [
       recordContainerMeasurement,
-      (stepModel): infer _ =>
+      (stepModel) =>
         buildScrollRequest(
           stepModel,
           ScrollRequest.Target({
@@ -721,8 +717,8 @@ const hasChangedMeasurement = (
     model.measuredRowHeights,
     Record.get(measurement.key),
     Option.match({
-      onNone: (): infer _ => true,
-      onSome: (height): infer _ => height !== measurement.height,
+      onNone: () => true,
+      onSome: (height) => height !== measurement.height,
     }),
   )
 }
@@ -737,7 +733,7 @@ const applyRowMeasurements = (
 ): ScrollReturn => {
   const changedMeasurements = Array.filter(
     measurements,
-    (measurement): infer _ => hasChangedMeasurement(model, measurement),
+    (measurement) => hasChangedMeasurement(model, measurement),
   )
   if (Array.isArrayEmpty(changedMeasurements)) {
     return { model }
@@ -746,13 +742,13 @@ const applyRowMeasurements = (
   const measuredRowHeights = Array.reduce(
     changedMeasurements,
     model.measuredRowHeights,
-    (heights, measurement): infer _ =>
+    (heights, measurement) =>
       Record.set(heights, measurement.key, measurement.height),
   )
   return Update.combine(model, [
-    (stepModel): infer _ => ({
+    (stepModel) => ({
       model: modifyFields(stepModel, {
-        measuredRowHeights: (): infer _ => measuredRowHeights,
+        measuredRowHeights: () => measuredRowHeights,
       }),
     }),
     reconcileLayout,
@@ -760,52 +756,52 @@ const applyRowMeasurements = (
 }
 
 /** Processes a VirtualList Message and returns the next Model and optional Commands. */
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<Update.Return<Model, Message>>(message, {
-    ObservedContainerScroll: (snapshot): infer _ => {
+    ObservedContainerScroll: (snapshot) => {
       const nextPendingScrollVersion = PendingScroll.match<number>(
         model.pendingScroll,
         {
-          Idle: (): infer _ => model.pendingScrollVersion,
-          Pending: (): infer _ => Number.increment(model.pendingScrollVersion),
+          Idle: () => model.pendingScrollVersion,
+          Pending: () => Number.increment(model.pendingScrollVersion),
         },
       )
       return {
         model: modifyFields(applyScrollSnapshot(model, snapshot), {
-          initialScroll: (): infer _ => InitialScroll.Applied(),
-          pendingScroll: (): infer _ => PendingScroll.Idle(),
-          pendingScrollVersion: (): infer _ => nextPendingScrollVersion,
+          initialScroll: () => InitialScroll.Applied(),
+          pendingScroll: () => PendingScroll.Idle(),
+          pendingScrollVersion: () => nextPendingScrollVersion,
         }),
       }
     },
 
-    ResizedContainer: ({ containerWidth, containerHeight }): infer _ =>
+    ResizedContainer: ({ containerWidth, containerHeight }) =>
       measureContainer(model, containerWidth, containerHeight),
 
-    MeasuredRows: ({ measurements }): infer _ =>
+    MeasuredRows: ({ measurements }) =>
       applyRowMeasurements(model, measurements),
 
-    CompletedApplyScroll: ({ version, outcome }): infer _ => {
+    CompletedApplyScroll: ({ version, outcome }) => {
       if (version !== model.pendingScrollVersion) {
         return { model }
       }
 
       return ApplyScrollOutcome.match<ScrollReturn>(outcome, {
-        Applied: (snapshot): infer _ => {
+        Applied: (snapshot) => {
           const scrolledModel = applyScrollSnapshot(model, snapshot)
           return {
             model: modifyFields(scrolledModel, {
-              initialScroll: (): infer _ =>
+              initialScroll: () =>
                 snapshot.anchor._tag === 'Row'
                   ? InitialScroll.Applied()
                   : model.initialScroll,
-              pendingScroll: (): infer _ => PendingScroll.Idle(),
+              pendingScroll: () => PendingScroll.Idle(),
             }),
           }
         },
-        Skipped: (): infer _ => ({
+        Skipped: () => ({
           model: modifyFields(model, {
-            pendingScroll: (): infer _ => PendingScroll.Idle(),
+            pendingScroll: () => PendingScroll.Idle(),
           }),
         }),
       })
@@ -824,12 +820,12 @@ export const scrollTo = (
   options: ScrollToOptions = {},
 ): ScrollReturn =>
   Update.combine(model, [
-    (stepModel): infer _ => ({
+    (stepModel) => ({
       model: modifyFields(stepModel, {
-        initialScroll: (): infer _ => InitialScroll.Applied(),
+        initialScroll: () => InitialScroll.Applied(),
       }),
     }),
-    (stepModel): infer _ =>
+    (stepModel) =>
       buildScrollRequest(
         stepModel,
         ScrollRequest.Target({
@@ -874,9 +870,9 @@ export const informItemsChanged = (
 ): ScrollReturn => {
   const currentKeys = HashSet.fromIterable(itemKeys)
   return Update.combine(model, [
-    (stepModel): infer _ => ({
+    (stepModel) => ({
       model: modifyFields(stepModel, {
-        measuredRowHeights: Record.filter((_, key): infer _ =>
+        measuredRowHeights: Record.filter((_, key) =>
           HashSet.has(currentKeys, key)
         ),
         layoutVersion: Number.increment,
@@ -909,7 +905,7 @@ const prefixSum = <Item>(
   return Array.scan(
     heights,
     0,
-    (cumulative, height): infer _ => cumulative + height,
+    (cumulative, height) => cumulative + height,
   )
 }
 
@@ -917,7 +913,7 @@ const lastOrZero = (values: ReadonlyArray<number>): number =>
   pipe(
     values,
     Array.last,
-    Option.getOrElse((): infer _ => 0),
+    Option.getOrElse(() => 0),
   )
 
 /** Alignment of content when its total height is shorter than the viewport. */
@@ -953,8 +949,7 @@ const listLayout = <Item>(
       const key = itemToKey(item, index)
       return Option.getOrElse(
         measuredRowHeight(model, key),
-        (): infer _ =>
-          itemToEstimatedRowHeightPx?.(item, index) ?? model.rowHeightPx,
+        () => itemToEstimatedRowHeightPx?.(item, index) ?? model.rowHeightPx,
       )
     }
     if (itemToRowHeightPx !== undefined) {
@@ -968,12 +963,12 @@ const listLayout = <Item>(
       ? Option.none()
       : Option.some(prefixSum(items, rowHeightFor))
   const totalHeight = match (maybeCumulativeOffsets) {
-    when Option.None: ((): infer _ => items.length * model.rowHeightPx)();
+    when Option.None: (() => items.length * model.rowHeightPx)();
     when Option.Some(let optionValue8): lastOrZero(optionValue8);
   }
   const containerHeight = Measurement.match<number>(model.measurement, {
-    Unmeasured: (): infer _ => 0,
-    Measured: ({ containerHeight }): infer _ => containerHeight,
+    Unmeasured: () => 0,
+    Measured: ({ containerHeight }) => containerHeight,
   })
   const leadingInset = contentAlignment === 'End'
     ? Math.max(0, containerHeight - totalHeight)
@@ -993,7 +988,7 @@ const offsetAt = (layout: ListLayout, index: number): number => match (layout.ma
   when Option.Some(let cumulativeOffsets): pipe(
     cumulativeOffsets,
     Array.get(index),
-    Option.getOrElse((): infer _ => layout.totalHeight),
+    Option.getOrElse(() => layout.totalHeight),
   );
 }
 
@@ -1020,7 +1015,7 @@ const indexForKey = <Item>(
 ): Option<number> =>
   Array.findFirstIndex(
     items,
-    (item, index): infer _ => itemToKey(item, index) === key,
+    (item, index) => itemToKey(item, index) === key,
   )
 
 const clampLayoutScrollTop = (layout: ListLayout, scrollTop: number): number =>
@@ -1052,23 +1047,19 @@ const scrollTopForLayoutTarget = <Item>(
   alignment: ScrollAlignment,
 ): Option<number> =>
   ScrollTarget.match<Option<number>>(target, {
-    Index: ({ index }): infer _ =>
+    Index: ({ index }) =>
       Option.map(
         rowOffsetsForIndex(layout, items.length, index),
-        (offsets): infer _ =>
-          alignedLayoutScrollTop(model, layout, offsets, alignment),
+        (offsets) => alignedLayoutScrollTop(model, layout, offsets, alignment),
       ),
-    Key: ({ key }): infer _ =>
+    Key: ({ key }) =>
       indexForKey(items, itemToKey, key)
-        .flatMap((index): infer _ =>
-          rowOffsetsForIndex(layout, items.length, index)
-        )
-        .map((offsets): infer _ =>
+        .flatMap((index) => rowOffsetsForIndex(layout, items.length, index))
+        .map((offsets) =>
           alignedLayoutScrollTop(model, layout, offsets, alignment)
         ),
-    Offset: ({ offset }): infer _ =>
-      Option.some(clampLayoutScrollTop(layout, offset)),
-    End: (): infer _ => Option.some(layout.maxScrollTop),
+    Offset: ({ offset }) => Option.some(clampLayoutScrollTop(layout, offset)),
+    End: () => Option.some(layout.maxScrollTop),
   })
 
 const scrollTopForLayoutAnchor = <Item>(
@@ -1078,11 +1069,11 @@ const scrollTopForLayoutAnchor = <Item>(
   anchor: typeof ViewportAnchor.Type,
 ): number =>
   ViewportAnchor.match<number>(anchor, {
-    Offset: ({ scrollTop }): infer _ => clampLayoutScrollTop(layout, scrollTop),
-    Row: ({ key, index, viewportOffset }): infer _ => {
+    Offset: ({ scrollTop }) => clampLayoutScrollTop(layout, scrollTop),
+    Row: ({ key, index, viewportOffset }) => {
       const anchorIndex = Option.getOrElse(
         indexForKey(items, itemToKey, key),
-        (): infer _ => index,
+        () => index,
       )
       const maybeOffsets = rowOffsetsForIndex(layout, items.length, anchorIndex)
       return match (maybeOffsets) {
@@ -1093,7 +1084,7 @@ const scrollTopForLayoutAnchor = <Item>(
         );
       }
     },
-    End: (): infer _ => layout.maxScrollTop,
+    End: () => layout.maxScrollTop,
   })
 
 const scrollTopForView = <Item>(
@@ -1103,10 +1094,10 @@ const scrollTopForView = <Item>(
   itemToKey: (item: Item, index: number) => string,
 ): number =>
   PendingScroll.match<number>(model.pendingScroll, {
-    Idle: (): infer _ => clampLayoutScrollTop(layout, model.scrollTop),
-    Pending: ({ request }): infer _ =>
+    Idle: () => clampLayoutScrollTop(layout, model.scrollTop),
+    Pending: ({ request }) =>
       ScrollRequest.match<number>(request, {
-        Target: ({ target, alignment }): infer _ =>
+        Target: ({ target, alignment }) =>
           Option.getOrElse(
             scrollTopForLayoutTarget(
               model,
@@ -1116,9 +1107,9 @@ const scrollTopForView = <Item>(
               target,
               alignment,
             ),
-            (): infer _ => clampLayoutScrollTop(layout, model.scrollTop),
+            () => clampLayoutScrollTop(layout, model.scrollTop),
           ),
-        Anchor: ({ anchor }): infer _ =>
+        Anchor: ({ anchor }) =>
           scrollTopForLayoutAnchor(layout, items, itemToKey, anchor),
       }),
   })
@@ -1136,14 +1127,14 @@ const visibleWindowForLayout = (
   )
   const firstVisibleIndex = match (layout.maybeCumulativeOffsets) {
     when Option.None:
-      ((): infer _ => Math.floor(contentScrollTop / layout.rowHeightPx))();
-    when Option.Some(let optionValue7): ((cumulativeOffsets): infer _ =>
+      (() => Math.floor(contentScrollTop / layout.rowHeightPx))();
+    when Option.Some(let optionValue7): ((cumulativeOffsets) =>
       pipe(
         cumulativeOffsets,
         Array.findFirstIndex(Number.isGreaterThan(contentScrollTop)),
         Option.match({
-          onNone: (): infer _ => itemCount,
-          onSome: (index): infer _ => Math.max(0, index - 1),
+          onNone: () => itemCount,
+          onSome: (index) => Math.max(0, index - 1),
         }),
       ))(optionValue7);
   }
@@ -1152,7 +1143,7 @@ const visibleWindowForLayout = (
     when Option.Some(let cumulativeOffsets): pipe(
       cumulativeOffsets,
       Array.findFirstIndex(Number.isGreaterThanOrEqualTo(contentViewportEnd)),
-      Option.getOrElse((): infer _ => itemCount),
+      Option.getOrElse(() => itemCount),
     );
   }
   const startIndex = clampIndex(firstVisibleIndex - overscan, itemCount)
@@ -1254,7 +1245,7 @@ const observeVirtualList = (
             })
           )
 
-          try resizeObserver.observe(htmlElement, (entries): infer _ => {
+          try resizeObserver.observe(htmlElement, (entries) => {
             const lastEntry = Array.last(entries)
             if (Option.isSome(lastEntry)) {
               Queue.offerUnsafe(
@@ -1269,7 +1260,7 @@ const observeVirtualList = (
 
           const observedRows = new Map<HTMLElement, string>()
           const rowResizeObserver = try Effect.sync((): ResizeObserver =>
-            createResizeObserver((entries): infer _ => {
+            createResizeObserver((entries) => {
               const measurements = Array.flatMap(
                 entries,
                 entry => match (rowMeasurement(isHtmlElement, entry)) {
@@ -1354,9 +1345,9 @@ export const ObserveVirtualList = Mount.defineStream('ObserveVirtualList', {
     Message.ResizedContainer,
     Message.MeasuredRows,
   ],
-  execute: ({ element, id, viewStateChanges }): infer _ =>
+  execute: ({ element, id, viewStateChanges }) =>
     viewStateChanges.pipe(
-      Stream.switchMap((viewState): infer _ =>
+      Stream.switchMap((viewState) =>
         viewState === 'Live' ? observeVirtualList(element, id) : Stream.never
       ),
     ),
@@ -1412,12 +1403,12 @@ export type ViewInputs<Item> = BaseViewInputs<Item> & RowHeightInputs<Item>
  *  type. */
 type ViewForItem<Item> = SubmodelView<Model, Message, ViewInputs<Item>>
 
-export const view = <Item>(): infer _ =>
+export const view = <Item>() =>
   /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
   viewImpl as unknown as ViewForItem<Item>
 
 const viewImpl = defineView<Model, Message, ViewInputs<unknown>>(
-  (model, viewInputs, h): infer _ => {
+  (model, viewInputs, h) => {
     const {
       items,
       itemToKey,
@@ -1472,8 +1463,8 @@ const viewImpl = defineView<Model, Message, ViewInputs<unknown>>(
     const maybeWindow = Measurement.match<Option<VisibleWindow>>(
       model.measurement,
       {
-        Unmeasured: (): infer _ => Option.none(),
-        Measured: (): infer _ =>
+        Unmeasured: () => Option.none(),
+        Measured: () =>
           Option.some(
             visibleWindowForLayout(
               layout,
@@ -1509,7 +1500,7 @@ const viewImpl = defineView<Model, Message, ViewInputs<unknown>>(
 
           const renderedRows = Array.map(
             visibleItems,
-            (item, sliceIndex): infer _ => {
+            (item, sliceIndex) => {
               const dataIndex = startIndex + sliceIndex
               const key = itemToKey(item, dataIndex)
               const rowHeight = offsetAt(layout, dataIndex + 1)

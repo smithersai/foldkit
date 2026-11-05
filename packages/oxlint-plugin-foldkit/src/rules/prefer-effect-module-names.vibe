@@ -46,7 +46,7 @@ const importVariable = (
 
   return EffectArray.findFirst(
     scopeManager.getDeclaredVariables(specifier),
-    (variable): infer _ => variable.name === specifier.local.name,
+    (variable) => variable.name === specifier.local.name,
   )
     .getOrUndefined()
 }
@@ -57,10 +57,10 @@ const hasUnshadowedReference = (
 ): boolean =>
   EffectArray.some(
     ctx.sourceCode.scopeManager?.scopes ?? [],
-    (scope): infer _ =>
+    (scope) =>
       EffectArray.some(
         scope.references,
-        (reference): infer _ =>
+        (reference) =>
           reference.identifier.name === name
           && (reference.resolved === null
             || EffectArray.isArrayEmpty(reference.resolved.defs)),
@@ -110,7 +110,7 @@ const aliasedEffectModule = (
 
   return Option.flatMap(
     importedName(specifier),
-    (name): infer _ =>
+    (name) =>
       EFFECT_MODULE_NAME.test(name)
         && specifier.local.name !== name
         && !isSemanticConflictAlias(name, specifier.local.name)
@@ -123,7 +123,7 @@ const importsEffectModuleAsAlias = (
   variable: Variable,
   name: string,
 ): boolean =>
-  EffectArray.some(variable.defs, (definition): infer _ => {
+  EffectArray.some(variable.defs, (definition) => {
     if (
       definition.type !== 'ImportBinding'
       || definition.node.type !== 'ImportSpecifier'
@@ -150,7 +150,7 @@ const importsEffectModuleAsAlias = (
 const hasCompetingRenameTarget = (variable: Variable, name: string): boolean =>
   EffectArray.some(
     variable.scope.variables,
-    (candidate): infer _ =>
+    (candidate) =>
       candidate !== variable && importsEffectModuleAsAlias(candidate, name),
   )
 
@@ -162,7 +162,7 @@ const canRenameBinding = (
   variable.scope.set.get(name) === undefined
   && !hasUnshadowedReference(ctx, name)
   && !hasCompetingRenameTarget(variable, name)
-  && EffectArray.every(variable.references, (reference): infer _ =>
+  && EffectArray.every(variable.references, (reference) =>
     referenceCanBeRenamed(reference, variable.scope, name))
 
 const fixesForAlias = (
@@ -183,8 +183,7 @@ const fixesForAlias = (
     Diagnostic.replaceText(specifier, name),
     ...EffectArray.map(
       variable.references,
-      (reference): infer _ =>
-        Diagnostic.replaceText(reference.identifier, name),
+      (reference) => Diagnostic.replaceText(reference.identifier, name),
     ),
   ]
 }
@@ -212,7 +211,7 @@ export const preferEffectModuleNames = Rule.define({
 
         const aliases = EffectArray.flatMap(
           node.specifiers,
-          (specifier): infer _ => match (aliasedEffectModule(specifier)) {
+          (specifier) => match (aliasedEffectModule(specifier)) {
             when Option.None: [];
             when Option.Some(let alias): [alias];
           },
@@ -224,7 +223,7 @@ export const preferEffectModuleNames = Rule.define({
 
         const replacements = EffectArray.map(
           aliases,
-          ({ specifier, name }): infer _ =>
+          ({ specifier, name }) =>
             `\`${name}\` instead of \`${specifier.local.name}\``,
         )
         const diagnostic = try Effect.orDie(
@@ -241,7 +240,7 @@ export const preferEffectModuleNames = Rule.define({
         )
         const fixes = EffectArray.flatMap(
           aliases,
-          (alias): infer _ => fixesForAlias(ctx, alias),
+          (alias) => fixesForAlias(ctx, alias),
         )
 
         return try ctx.report(

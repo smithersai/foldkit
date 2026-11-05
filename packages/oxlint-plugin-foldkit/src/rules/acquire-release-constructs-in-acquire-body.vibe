@@ -28,7 +28,7 @@ const isEffectCall = (
   }
   return Option.exists(
     resolveImportedPath(references, node.callee),
-    (path): infer _ => {
+    (path) => {
       if (path.source === 'effect') {
         const [namespace, member, extraMember] = path.members
         return (

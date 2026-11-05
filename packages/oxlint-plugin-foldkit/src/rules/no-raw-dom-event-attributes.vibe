@@ -158,7 +158,7 @@ const keyPropertyValue = (
 ): Option<ESTree.Expression> =>
   Option.map(
     Arr.findFirst(configObject.properties, isKeyProperty),
-    (property): infer _ => property.value,
+    (property) => property.value,
   )
 
 const attributeEventName = (
@@ -214,7 +214,7 @@ export const noRawDomEventAttributes = Rule.define({
         if (!isCallExpression(node)) {
           return undefined
         }
-        return match (attributeEventName(node, references).orElse((): infer _ =>
+        return match (attributeEventName(node, references).orElse(() =>
             propEventName(node, references)
           )) {
           when Option.None: undefined;

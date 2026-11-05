@@ -4,7 +4,7 @@ import { ROOM_ID_WORDS } from '../constants.ts'
 import * as Room from '../room.vibe'
 
 export const createRoom =
-  (roomByIdRef: SubscriptionRef<Shared.RoomById>): infer _ =>
+  (roomByIdRef: SubscriptionRef<Shared.RoomById>) =>
   effect (payload: Rpc.Payload<typeof Shared.createRoomRpc>) => {
     const roomId = try Room.generateUniqueId(ROOM_ID_WORDS)
     const playerId = try (try SecureRandom.SecureRandom).uuidV4()
@@ -29,7 +29,7 @@ export const createRoom =
 
     try SubscriptionRef.update(
       roomByIdRef,
-      (roomById): infer _ => HashMap.set(roomById, newRoom.id, newRoom),
+      (roomById) => HashMap.set(roomById, newRoom.id, newRoom),
     )
 
     return { player, room: newRoom }

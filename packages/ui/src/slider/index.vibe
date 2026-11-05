@@ -111,8 +111,8 @@ const stepDecimals = (step: number): number => {
     text,
     String.indexOf('.'),
     Option.match({
-      onNone: (): infer _ => 0,
-      onSome: (dotIndex): infer _ => text.length - dotIndex - 1,
+      onNone: () => 0,
+      onSome: (dotIndex) => text.length - dotIndex - 1,
     }),
   )
 }
@@ -186,13 +186,13 @@ const withChangedValue = (
  *  Model: the view supplies the current value on the Messages that need it,
  *  and value changes surface as `ChangedValue` rather than mutating this
  *  Model. */
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
-    PressedThumb: ({ originValue }): infer _ => match (model.dragState) {
+    PressedThumb: ({ originValue }) => match (model.dragState) {
       when { _tag: 'Dragging' }: ({ model });
       default: ({
         model: modifyFields(model, {
-          dragState: (): infer _ => DragState.Dragging({ originValue }),
+          dragState: () => DragState.Dragging({ originValue }),
         }),
       });
     },
@@ -203,14 +203,14 @@ export const update = (model: Model, message: Message): infer _ =>
     // from the thumb's current position. Fine-grained sliders (e.g. step
     // 0.05) see a visible jump without this guard, because the cursor sits
     // off-center on a non-zero-width thumb.
-    PressedPointer: ({ value, originValue }): infer _ =>
+    PressedPointer: ({ value, originValue }) =>
       match (model.dragState) {
         when { _tag: 'Dragging' }: ({ model });
         default: do {
           const snapped = snapAndClamp(value, model.min, model.max, model.step)
           withChangedValue(
             modifyFields(model, {
-              dragState: (): infer _ => DragState.Dragging({ originValue }),
+              dragState: () => DragState.Dragging({ originValue }),
             }),
             originValue,
             snapped,
@@ -218,7 +218,7 @@ export const update = (model: Model, message: Message): infer _ =>
         };
       },
 
-    MovedDragPointer: ({ value }): infer _ => match (model.dragState) {
+    MovedDragPointer: ({ value }) => match (model.dragState) {
       when { _tag: 'Dragging' }: ({
         model,
         outMessage: OutMessage.ChangedValue({
@@ -228,26 +228,26 @@ export const update = (model: Model, message: Message): infer _ =>
       default: ({ model });
     },
 
-    ReleasedDragPointer: (): infer _ => match (model.dragState) {
+    ReleasedDragPointer: () => match (model.dragState) {
       when { _tag: 'Dragging' }: ({
         model: modifyFields(model, {
-          dragState: (): infer _ => DragState.Idle(),
+          dragState: () => DragState.Idle(),
         }),
       });
       default: ({ model });
     },
 
-    CancelledDrag: (): infer _ => match (model.dragState) {
+    CancelledDrag: () => match (model.dragState) {
       when { _tag: 'Dragging', let originValue }: ({
         model: modifyFields(model, {
-          dragState: (): infer _ => DragState.Idle(),
+          dragState: () => DragState.Idle(),
         }),
         outMessage: OutMessage.ChangedValue({ value: originValue }),
       });
       default: ({ model });
     },
 
-    PressedKeyboardNavigation: ({ direction, value }): infer _ =>
+    PressedKeyboardNavigation: ({ direction, value }) =>
       withChangedValue(
         model,
         value,
@@ -272,8 +272,8 @@ export const reflectRange: Reflect<
   2,
   (model: Model, range: Readonly<{ min: number; max: number }>): Model =>
     modifyFields(model, {
-      min: (): infer _ => range.min,
-      max: (): infer _ => range.max,
+      min: () => range.min,
+      max: () => range.max,
     }),
 )
 
@@ -305,7 +305,7 @@ const isEdgeAlignedTrack = (track: Element): boolean =>
 
 const findThumbElementForTrack = (track: Element): Option<Element> =>
   Option.fromNullishOr(track.getAttribute('data-slider-track-id'))
-    .flatMap((sliderId): infer _ => {
+    .flatMap((sliderId) => {
       const thumbSelector = idSelector(`${sliderId}-thumb`)
       const maybeSliderRoot = Option.fromNullishOr(
         track.closest(attributeSelector('data-slider-id', sliderId)),
@@ -393,8 +393,8 @@ export const valueFromPointer = (
  *  The resolver runs at subscription time. */
 export const subscriptionsForRoot = (
   getTrackRoot: () => Document | ShadowRoot,
-): infer _ =>
-  Subscription.make<Model, Message>()((entry): infer _ => ({
+) =>
+  Subscription.make<Model, Message>()((entry) => ({
     dragPointer: entry(
       {
         dragActivity: DragActivity,
@@ -403,17 +403,17 @@ export const subscriptionsForRoot = (
         max: Schema.Number,
       },
       {
-        modelToDependencies: (model): infer _ => ({
+        modelToDependencies: (model) => ({
           dragActivity: dragActivityFromModel(model),
           id: model.id,
           min: model.min,
           max: model.max,
         }),
-        dependenciesToStream: ({ dragActivity, id, min, max }): infer _ => {
+        dependenciesToStream: ({ dragActivity, id, min, max }) => {
           const pointerEvents = Stream.merge(
             BrowserStream.fromEventListenerDocument('pointermove').pipe(
               Stream.mapEffect(event =>
-                Effect.sync((): infer _ =>
+                Effect.sync(() =>
                   Option.map(findTrackElement(id, getTrackRoot()), track =>
                     Message.MovedDragPointer({
                       value: valueFromPointer(
@@ -427,18 +427,18 @@ export const subscriptionsForRoot = (
                 )
               ),
               Stream.filter(Option.isSome),
-              Stream.map((option): infer _ =>
+              Stream.map((option) =>
                 option.value
               ),
             ),
             BrowserStream.fromEventListenerDocument('pointerup').pipe(
-              Stream.map((): infer _ => Message.ReleasedDragPointer()),
+              Stream.map(() => Message.ReleasedDragPointer()),
             ),
           )
 
           return Stream.when(
             Stream.merge(pointerEvents, documentDragStyles),
-            Effect.sync((): infer _ => dragActivity === 'Active'),
+            Effect.sync(() => dragActivity === 'Active'),
           )
         },
       },
@@ -447,25 +447,23 @@ export const subscriptionsForRoot = (
     dragEscape: entry(
       { dragActivity: DragActivity },
       {
-        modelToDependencies: (model): infer _ => ({
+        modelToDependencies: (model) => ({
           dragActivity: dragActivityFromModel(model),
         }),
-        dependenciesToStream: ({ dragActivity }): infer _ =>
+        dependenciesToStream: ({ dragActivity }) =>
           Stream.when(
             BrowserStream.fromEventListenerDocument('keydown').pipe(
-              Stream.filter(({ key }): infer _ => key === 'Escape'),
-              Stream.map((): infer _ => Message.CancelledDrag()),
+              Stream.filter(({ key }) => key === 'Escape'),
+              Stream.map(() => Message.CancelledDrag()),
             ),
-            Effect.sync((): infer _ => dragActivity === 'Active'),
+            Effect.sync(() => dragActivity === 'Active'),
           ),
       },
     ),
   }))
 
 /** Default drag Subscriptions, with the track looked up via `document`. */
-export const subscriptions = subscriptionsForRoot((): infer _ =>
-  browserDocument()
-)
+export const subscriptions = subscriptionsForRoot(() => browserDocument())
 
 // VIEW
 
@@ -661,7 +659,7 @@ export const view = defineView<Model, Message, ViewInputs>(
       orientation = 'Horizontal',
       thumbAlignment = 'Center',
       thumbSize = '0.75rem',
-      getTrackRoot = (): infer _ => browserDocument(),
+      getTrackRoot = () => browserDocument(),
     } = viewInputs
     const { id, min, max } = model
     const isDragging = model.dragState._tag === 'Dragging'
@@ -670,8 +668,7 @@ export const view = defineView<Model, Message, ViewInputs>(
     const handleKeyDown = (key: string): Option<Message> =>
       Option.map(
         keyToDirection(key),
-        (direction): infer _ =>
-          Message.PressedKeyboardNavigation({ direction, value }),
+        (direction) => Message.PressedKeyboardNavigation({ direction, value }),
       )
 
     const pressedPointerMessageAt = (
@@ -680,7 +677,7 @@ export const view = defineView<Model, Message, ViewInputs>(
     ): Option<Message> =>
       Option.map(
         findTrackElement(id, getTrackRoot()),
-        (track): infer _ =>
+        (track) =>
           Message.PressedPointer({
             value: valueFromPointer(clientX, clientY, track, min, max),
             originValue: value,
@@ -697,14 +694,14 @@ export const view = defineView<Model, Message, ViewInputs>(
       clientY: number,
     ): Option<Message> =>
       Option.liftPredicate(Equal.equals(LEFT_MOUSE_BUTTON))(button)
-        .flatMap((): infer _ => pressedPointerMessageAt(clientX, clientY))
+        .flatMap(() => pressedPointerMessageAt(clientX, clientY))
 
     const thumbPointerHandler = (
       _pointerType: string,
       button: number,
     ): Option<Message> =>
       Option.liftPredicate(Equal.equals(LEFT_MOUSE_BUTTON))(button)
-        .map((): infer _ => Message.PressedThumb({ originValue: value }))
+        .map(() => Message.PressedThumb({ originValue: value }))
 
     const stateAttributes = [
       ...(isDragging ? [h.DataAttribute('dragging', '')] : []),

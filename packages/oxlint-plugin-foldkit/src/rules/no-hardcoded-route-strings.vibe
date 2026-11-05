@@ -56,7 +56,7 @@ const routingFunctionName = (
 ): Option<string> => {
   if (references === undefined) {
     return helperCalleeName(callee)
-      .filter((name): infer _ => Arr.contains(ROUTING_FUNCTION_NAMES, name))
+      .filter((name) => Arr.contains(ROUTING_FUNCTION_NAMES, name))
   }
 
   if (isFoldkitHtmlBuilderMember(callee, 'Href', references)) {
@@ -65,7 +65,7 @@ const routingFunctionName = (
 
   return Option.flatMap(
     resolveFoldkitApiPath(references, callee),
-    (path): infer _ => {
+    (path) => {
       const [namespace, functionName, extraMember] = path
 
       return namespace === 'Navigation'
@@ -87,9 +87,7 @@ const templateCookedHead = (
   node: ESTree.TemplateLiteral,
 ): Option<string> =>
   Arr.head(node.quasis)
-    .flatMap((headQuasi): infer _ =>
-      Option.fromNullishOr(headQuasi.value.cooked)
-    )
+    .flatMap((headQuasi) => Option.fromNullishOr(headQuasi.value.cooked))
 
 const hardcodedRouteStringMessage = (
   functionName: string,
@@ -154,7 +152,7 @@ export const noHardcodedRouteStrings = Rule.define({
         }
         if (isTemplateLiteral(firstArgument)) {
           return match (templateCookedHead(firstArgument)
-              .filter((cookedHead): infer _ =>
+              .filter((cookedHead) =>
                 isHardcodedRouteString(functionName, cookedHead)
               )) {
             when Option.None: undefined;

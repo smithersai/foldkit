@@ -8,19 +8,19 @@ export const groupContiguous = <A>(
   items: ReadonlyArray<A>,
   toKey: (item: A, index: number) => string,
 ): ReadonlyArray<Segment<A>> => {
-  const tagged = Array.map(items, (item, index): infer _ => ({
+  const tagged = Array.map(items, (item, index) => ({
     key: toKey(item, index),
     item,
   }))
 
-  return Array.chop(tagged, (nonEmpty): infer _ => {
+  return Array.chop(tagged, (nonEmpty) => {
     const key = Array.headNonEmpty(nonEmpty).key
     const [matching, rest] = Array.span(
       nonEmpty,
-      (tagged): infer _ => tagged.key === key,
+      (tagged) => tagged.key === key,
     )
     return [
-      { key, items: Array.map(matching, ({ item }): infer _ => item) },
+      { key, items: Array.map(matching, ({ item }) => item) },
       rest,
     ]
   })

@@ -49,7 +49,7 @@ export const generateGameText = effect (
   const availableTexts = pipe(
     Array.difference(GAME_TEXTS, usedGameTexts),
     Array.match({
-      onEmpty: (): infer _ => GAME_TEXTS,
+      onEmpty: () => GAME_TEXTS,
       onNonEmpty: Function.identity,
     }),
   )

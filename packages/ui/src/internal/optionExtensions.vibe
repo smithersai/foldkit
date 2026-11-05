@@ -6,5 +6,5 @@ export const when: {
 } = Fn.dual(
   2,
   <A>(condition: boolean, value: A): Option<A> =>
-    Option.liftPredicate(value, (): infer _ => condition),
+    Option.liftPredicate(value, () => condition),
 )

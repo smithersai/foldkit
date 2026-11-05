@@ -24,7 +24,7 @@ const isModifyFieldsCall = (
   if (references !== undefined) {
     return Option.exists(
       resolveFoldkitApiPath(references, node.callee),
-      (path): infer _ => {
+      (path) => {
         const [namespace, methodName, extraMember] = path
 
         return (
@@ -61,7 +61,7 @@ const updaterBodyObject = (
     return pipe(
       body.body,
       Arr.findFirst(isReturnStatement),
-      Option.flatMap((returnStatement): infer _ =>
+      Option.flatMap((returnStatement) =>
         Option.fromNullishOr(returnStatement.argument)
       ),
       Option.filter(isObjectExpression),
@@ -74,12 +74,12 @@ const hasSpreadProperty = (
   objectExpression: ESTree.ObjectExpression,
 ): boolean =>
   objectExpression.properties.some(
-    (property): infer _ => property.type === 'SpreadElement',
+    (property) => property.type === 'SpreadElement',
   )
 
 const hasComputedKey = (objectExpression: ESTree.ObjectExpression): boolean =>
   objectExpression.properties.some(
-    (property): infer _ => property.type === 'Property' && property.computed,
+    (property) => property.type === 'Property' && property.computed,
   )
 
 const updaterFieldName = (property: ESTree.ObjectProperty): string =>
@@ -96,15 +96,15 @@ const spreadRebuiltFields = (
   if (!isModifyFieldsCall(node, references)) return []
   const [, updates] = node.arguments
   if (updates === undefined || updates.type !== 'ObjectExpression') return []
-  return updates.properties.flatMap((property): infer _ => {
+  return updates.properties.flatMap((property) => {
     if (property.type !== 'Property') return []
     if (property.value.type !== 'ArrowFunctionExpression') return []
     return updaterBodyObject(property.value)
       .filter(hasSpreadProperty)
-      .filter((bodyObject): infer _ => !hasComputedKey(bodyObject))
+      .filter((bodyObject) => !hasComputedKey(bodyObject))
       .match({
-        onNone: (): infer _ => [],
-        onSome: (bodyObject): infer _ => [
+        onNone: () => [],
+        onSome: (bodyObject) => [
           { fieldName: updaterFieldName(property), bodyObject },
         ],
       })

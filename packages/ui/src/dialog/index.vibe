@@ -242,7 +242,7 @@ export const AcquireResources = Mount.define('AcquireResources', {
 export const CloseDialog = Command.define('CloseDialog', {
   args: { id: Schema.String },
   messages: [Message.CompletedCloseDialog],
-  execute: ({ id }): infer _ => {
+  execute: ({ id }) => {
     const completed = Message.CompletedCloseDialog()
     return effect {
       effect {
@@ -263,7 +263,7 @@ export const CloseDialog = Command.define('CloseDialog', {
 export const ReleaseDialogResources = Command.define('ReleaseDialogResources', {
   args: { id: Schema.String },
   messages: [Message.CompletedReleaseDialogResources],
-  execute: ({ id }): infer _ => {
+  execute: ({ id }) => {
     const nativeCommandArg26_0 = id
     const nativeCommandCompletion26 = Message.CompletedReleaseDialogResources()
     return effect {
@@ -282,13 +282,13 @@ const isOpenOrAnimating = (model: Model): boolean =>
 
 const resetAnimationToClosed = (animation: Animation.Model): Animation.Model =>
   modifyFields(animation, {
-    isShowing: (): infer _ => false,
-    transitionState: (): infer _ => 'Idle',
+    isShowing: () => false,
+    transitionState: () => 'Idle',
   })
 
 const resetToClosed = (model: Model): Model =>
   modifyFields(model, {
-    isOpen: (): infer _ => false,
+    isOpen: () => false,
     animation: resetAnimationToClosed,
   })
 
@@ -350,15 +350,15 @@ const resumeAnimationAfterAcquisition = (
 const foldAnimationOutMessage: (
   outMessage: Animation.OutMessage,
   context: Update.FoldContext<Animation.Message, Message>,
-) => Update.Step<Model, Message> = (outMessage, { liftCommand }): infer _ =>
+) => Update.Step<Model, Message> = (outMessage, { liftCommand }) =>
   Animation.OutMessage.match<Update.Step<Model, Message>>(outMessage, {
-    StartedLeaveAnimating: (): infer _ => (model): infer _ => ({
+    StartedLeaveAnimating: () => (model) => ({
       model,
       commands: [
         liftCommand(AnimationUpdate.defaultLeaveCommand(model.animation)),
       ],
     }),
-    TransitionedOut: (): infer _ => (model): infer _ => ({
+    TransitionedOut: () => (model) => ({
       model,
       commands: [CloseDialog({ id: model.id })],
     }),
@@ -366,55 +366,55 @@ const foldAnimationOutMessage: (
 
 const foldAnimation = Update.foldChild({
   update: AnimationUpdate.update,
-  read: (model: Model): infer _ => Option.some(model.animation),
-  write: (model, nextAnimation): infer _ =>
-    modifyFields(model, { animation: (): infer _ => nextAnimation }),
+  read: (model: Model) => Option.some(model.animation),
+  write: (model, nextAnimation) =>
+    modifyFields(model, { animation: () => nextAnimation }),
   toParentMessage: wrapAnimationMessage,
   foldOutMessage: foldAnimationOutMessage,
 })
 
 const foldAnimationShow = Update.foldChildStep({
   update: AnimationUpdate.show,
-  read: (model: Model): infer _ => Option.some(model.animation),
-  write: (model, nextAnimation): infer _ =>
-    modifyFields(model, { animation: (): infer _ => nextAnimation }),
+  read: (model: Model) => Option.some(model.animation),
+  write: (model, nextAnimation) =>
+    modifyFields(model, { animation: () => nextAnimation }),
   toParentMessage: wrapAnimationMessage,
 })
 
 const foldAnimationHide = Update.foldChildStep({
   update: AnimationUpdate.hide,
-  read: (model: Model): infer _ => Option.some(model.animation),
-  write: (model, nextAnimation): infer _ =>
-    modifyFields(model, { animation: (): infer _ => nextAnimation }),
+  read: (model: Model) => Option.some(model.animation),
+  write: (model, nextAnimation) =>
+    modifyFields(model, { animation: () => nextAnimation }),
   toParentMessage: wrapAnimationMessage,
 })
 
 /** Processes a Dialog Message and returns the next Model and optional Commands. */
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
-    RequestedOpen: (): infer _ => {
+    RequestedOpen: () => {
       const wasClosed = !model.isOpen
       const maybeShow = Option.liftPredicate(
         ShowDialog({
           id: model.id,
           focusSelector: Option.getOrElse(
             model.maybeFocusSelector,
-            (): infer _ => initialFocusMarkerSelector,
+            () => initialFocusMarkerSelector,
           ),
         }),
-        (): infer _ => wasClosed,
+        () => wasClosed,
       )
       const commands = Option.toArray(maybeShow)
       const dialogOpen: Update.Return<Model, Message> = model.isAnimated
         ? Update.combine(model, [
-          (stepModel): infer _ => ({ model: stepModel, commands }),
+          (stepModel) => ({ model: stepModel, commands }),
           foldAnimationShow,
-          (stepModel): infer _ => ({
-            model: modifyFields(stepModel, { isOpen: (): infer _ => true }),
+          (stepModel) => ({
+            model: modifyFields(stepModel, { isOpen: () => true }),
           }),
         ])
         : {
-          model: modifyFields(model, { isOpen: (): infer _ => true }),
+          model: modifyFields(model, { isOpen: () => true }),
           commands,
         }
 
@@ -423,7 +423,7 @@ export const update = (model: Model, message: Message): infer _ =>
         : dialogOpen
     },
 
-    RequestedClose: (): infer _ => {
+    RequestedClose: () => {
       if (isLeaving(model)) {
         return { model }
       }
@@ -431,8 +431,8 @@ export const update = (model: Model, message: Message): infer _ =>
       const wasOpen = model.isOpen
       if (model.isAnimated) {
         const dialogClose = Update.combine(model, [
-          (stepModel): infer _ => ({
-            model: modifyFields(stepModel, { isOpen: (): infer _ => false }),
+          (stepModel) => ({
+            model: modifyFields(stepModel, { isOpen: () => false }),
           }),
           foldAnimationHide,
         ])
@@ -444,12 +444,12 @@ export const update = (model: Model, message: Message): infer _ =>
 
       const maybeClose = Option.liftPredicate(
         CloseDialog({ id: model.id }),
-        (): infer _ => wasOpen,
+        () => wasOpen,
       )
 
       const commands = Option.toArray(maybeClose)
       const dialogClose: Update.Return<Model, Message> = {
-        model: modifyFields(model, { isOpen: (): infer _ => false }),
+        model: modifyFields(model, { isOpen: () => false }),
         commands,
       }
       return wasOpen
@@ -457,10 +457,10 @@ export const update = (model: Model, message: Message): infer _ =>
         : dialogClose
     },
 
-    GotAnimationMessage: ({ message: animationMessage }): infer _ =>
+    GotAnimationMessage: ({ message: animationMessage }) =>
       foldAnimation(model, animationMessage),
 
-    Unmounted: (): infer _ => {
+    Unmounted: () => {
       if (isOpenOrAnimating(model)) {
         return {
           model: resetToClosed(model),
@@ -471,7 +471,7 @@ export const update = (model: Model, message: Message): infer _ =>
       }
     },
 
-    SucceededShowDialog: (): infer _ => {
+    SucceededShowDialog: () => {
       if (model.isOpen || isLeaving(model)) {
         return { model }
       } else {
@@ -479,7 +479,7 @@ export const update = (model: Model, message: Message): infer _ =>
       }
     },
 
-    FailedShowDialog: (): infer _ => {
+    FailedShowDialog: () => {
       if (isOpenOrAnimating(model)) {
         return { model: resetToClosed(model) }
       } else {
@@ -487,7 +487,7 @@ export const update = (model: Model, message: Message): infer _ =>
       }
     },
 
-    SucceededAcquireResources: (): infer _ => {
+    SucceededAcquireResources: () => {
       if (model.isOpen || isLeaving(model)) {
         return resumeAnimationAfterAcquisition(model)
       } else {
@@ -495,7 +495,7 @@ export const update = (model: Model, message: Message): infer _ =>
       }
     },
 
-    FailedAcquireResources: (): infer _ => {
+    FailedAcquireResources: () => {
       if (isOpenOrAnimating(model)) {
         return { model: resetToClosed(model) }
       } else {
@@ -503,8 +503,8 @@ export const update = (model: Model, message: Message): infer _ =>
       }
     },
 
-    CompletedCloseDialog: (): infer _ => ({ model }),
-    CompletedReleaseDialogResources: (): infer _ => ({ model }),
+    CompletedCloseDialog: () => ({ model }),
+    CompletedReleaseDialogResources: () => ({ model }),
   })
 
 /** Creates a Dialog and opens it through the normal update path. Use the
@@ -680,7 +680,7 @@ export const view = defineView<Model, Message, ViewInputs>(
               id,
               focusSelector: Option.getOrElse(
                 model.maybeFocusSelector,
-                (): infer _ => initialFocusMarkerSelector,
+                () => initialFocusMarkerSelector,
               ),
             }),
           ),

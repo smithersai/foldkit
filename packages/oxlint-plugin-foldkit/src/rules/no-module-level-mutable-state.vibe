@@ -8,7 +8,7 @@ const isMutableDeclaration = (node: ESTree.VariableDeclaration): boolean =>
 const topLevelMutableDeclarations = (
   program: ESTree.Program,
 ): ReadonlyArray<ESTree.VariableDeclaration> =>
-  program.body.flatMap((statement): infer _ => {
+  program.body.flatMap((statement) => {
     const declaration = statement.type === 'ExportNamedDeclaration'
       ? statement.declaration
       : statement

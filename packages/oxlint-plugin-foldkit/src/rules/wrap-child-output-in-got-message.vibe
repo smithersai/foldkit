@@ -118,9 +118,9 @@ const commandMapperArrow = (
 ): Option<ESTree.ArrowFunctionExpression> => {
   const maybePathForMapping4 = foldkitApiPath(node.callee, references)
   const mapPath4_1 = Array.join('.')
-  return maybePathForMapping4.map(mapPath4_1).filter((calleePath): infer _ =>
+  return maybePathForMapping4.map(mapPath4_1).filter((calleePath) =>
     commandMapperPaths.includes(calleePath)
-  ).flatMap((): infer _ => {
+  ).flatMap(() => {
     const [, mapperArgument] = node.arguments
     return isArrowFunctionExpression(mapperArgument)
       ? Option.some(mapperArgument)
@@ -139,16 +139,16 @@ const subscriptionLiftMapperArrow = (
   {
     const maybePathForMapping5 = foldkitApiPath(innerCall.callee, references)
     const mapPath5_1 = Array.join('.')
-    return maybePathForMapping5.map(mapPath5_1).filter((calleePath): infer _ =>
+    return maybePathForMapping5.map(mapPath5_1).filter((calleePath) =>
       calleePath === 'Subscription.lift'
-    ).flatMap((): infer _ => {
+    ).flatMap(() => {
       const [configArgument] = node.arguments
       if (!isObjectExpression(configArgument)) {
         return Option.none()
       }
       return pipe(
         configArgument.properties,
-        Array.findFirst((property): infer _ =>
+        Array.findFirst((property) =>
           property.type === 'Property'
             && !property.computed
             && isPropertyKeyNamed(property.key, 'toParentMessage')
@@ -156,7 +156,7 @@ const subscriptionLiftMapperArrow = (
             : Option.none()
         ),
       )
-    }).flatMap((mapperValue): infer _ =>
+    }).flatMap((mapperValue) =>
       isArrowFunctionExpression(mapperValue)
         ? Option.some(mapperValue)
         : Option.none()
@@ -184,7 +184,7 @@ const analyzableMapperCall = (
     return Option.none()
   }
   return singleStatement(body)
-    .flatMap((statement): infer _ => {
+    .flatMap((statement) => {
       if (!isReturnStatement(statement)) {
         return Option.none()
       }
@@ -205,7 +205,7 @@ const isFoldkitMessageUnionVariable = (
   references: WeakMap<ESTree.Node, Reference>,
 ): boolean =>
   variable.defs.some(
-    (definition): infer _ =>
+    (definition) =>
       definition.type === 'Variable'
       && isVariableDeclarator(definition.node)
       && isCallExpression(definition.node.init)
@@ -221,14 +221,14 @@ const nonGotMapperOffense = (
   references: WeakMap<ESTree.Node, Reference> | undefined,
 ): Option<MapperOffense> =>
   analyzableMapperCall(arrow)
-    .flatMap((call): infer _ => {
+    .flatMap((call) => {
       const maybeCalleePath = resolveMemberPath(call.callee)
       const isGotWrapper = references === undefined
-        ? Option.exists(maybeCalleePath, (calleePath): infer _ =>
+        ? Option.exists(maybeCalleePath, (calleePath) =>
           gotMessagePattern.test(Array.lastNonEmpty(calleePath)))
         : Option.exists(
           resolveImportedPath(references, call.callee),
-          (importedPath): infer _ => {
+          (importedPath) => {
             const [constructorName] = importedPath.members.slice(-1)
 
             return (
@@ -239,7 +239,7 @@ const nonGotMapperOffense = (
         )
           || Option.exists(
             staticMemberPath(call.callee),
-            (calleePath): infer _ => {
+            (calleePath) => {
               const [constructorName, extraMember] = calleePath.members
 
               return (
@@ -248,7 +248,7 @@ const nonGotMapperOffense = (
                 && gotMessagePattern.test(constructorName)
                 && Option.exists(
                   resolvedVariable(references, calleePath.root),
-                  (variable): infer _ =>
+                  (variable) =>
                     isFoldkitMessageUnionVariable(variable, references),
                 )
               )
@@ -317,12 +317,12 @@ export const wrapChildOutputInGotMessage = Rule.define({
         if (!isCallExpression(node)) {
           return undefined
         }
-        return match (commandMapperArrow(node, references).flatMap((arrow): infer _ =>
+        return match (commandMapperArrow(node, references).flatMap((arrow) =>
             nonGotMapperOffense(arrow, references)
           )) {
           when Option.None: match (subscriptionLiftMapperArrow(node, references).flatMap((
               arrow,
-            ): infer _ => nonGotMapperOffense(arrow, references))) {
+            ) => nonGotMapperOffense(arrow, references))) {
             when Option.None: undefined;
             when Option.Some(let offense):
               try (reportOffense(offense, subscriptionMapperMessage));

@@ -146,7 +146,7 @@ const LEFT_MOUSE_BUTTON = 0
  *  export const Toast = Toast.make(ToastPayload)
  *  ```
  */
-export const make = <A, I>(payloadSchema: Schema.Codec<A, I>): infer _ => {
+export const make = <A, I>(payloadSchema: Schema.Codec<A, I>) => {
   const toast = makeRuntime(payloadSchema)
   type Entry = typeof toast.Entry.Type
 
@@ -228,18 +228,18 @@ export const make = <A, I>(payloadSchema: Schema.Codec<A, I>): infer _ => {
         const maybeSwipePhase = SwipeState.match<
           Option<'move' | 'settling' | 'end'>
         >(entry.swipeState, {
-          Idle: (): infer _ => Option.none(),
-          Dragging: (): infer _ => Option.some('move'),
-          Settling: (): infer _ => Option.some('settling'),
-          Dismissing: (): infer _ => Option.some('end'),
+          Idle: () => Option.none(),
+          Dragging: () => Option.some('move'),
+          Settling: () => Option.some('settling'),
+          Dismissing: () => Option.some('end'),
         })
         const swipeExitTranslate = SwipeState.match<string | undefined>(
           entry.swipeState,
           {
-            Idle: (): infer _ => undefined,
-            Dragging: (): infer _ => undefined,
-            Settling: (): infer _ => undefined,
-            Dismissing: ({ direction }): infer _ => {
+            Idle: () => undefined,
+            Dragging: () => undefined,
+            Settling: () => undefined,
+            Dismissing: ({ direction }) => {
               if (transitionState !== 'LeaveAnimating') {
                 return undefined
               }

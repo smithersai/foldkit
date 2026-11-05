@@ -6,16 +6,16 @@ import { Model, capturesKeyboard } from './model.vibe'
 
 export const subscriptions = Subscription.make<Model, Message>()((
   entry,
-): infer _ => ({
+) => ({
   homeKeyboard: entry(
     { shouldCaptureKeyboard: Schema.Boolean },
     {
-      modelToDependencies: (model): infer _ => ({
+      modelToDependencies: (model) => ({
         shouldCaptureKeyboard: capturesKeyboard(model),
       }),
-      dependenciesToStream: ({ shouldCaptureKeyboard }): infer _ =>
+      dependenciesToStream: ({ shouldCaptureKeyboard }) =>
         Stream.when(
-          capturedKeyDownStream((key): infer _ => Message.PressedKey({ key })),
+          capturedKeyDownStream((key) => Message.PressedKey({ key })),
           Effect.sync(() => shouldCaptureKeyboard),
         ),
     },

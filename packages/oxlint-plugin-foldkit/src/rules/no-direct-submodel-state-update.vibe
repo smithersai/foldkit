@@ -227,7 +227,7 @@ const isModifyFieldsCall = (
 ): boolean => {
   if (references === undefined) {
     return (
-      Option.exists(staticMemberPath(node.callee), (path): infer _ => {
+      Option.exists(staticMemberPath(node.callee), (path) => {
         const [namespace, helperName, extraMember] = [
           path.root.name,
           ...path.members,
@@ -242,7 +242,7 @@ const isModifyFieldsCall = (
   }
   return Option.exists(
     resolveFoldkitApiPath(references, node.callee),
-    (path): infer _ => {
+    (path) => {
       const [namespace, helperName, extraMember] = path
       return (
         namespace === 'Struct'
@@ -274,7 +274,7 @@ const foldKind = (
 
   if (references === undefined) {
     return Option.getOrUndefined(
-      Option.flatMap(staticMemberPath(node.callee), (path): infer _ => {
+      Option.flatMap(staticMemberPath(node.callee), (path) => {
         const [namespace, helperName, extraMember] = [
           path.root.name,
           ...path.members,
@@ -292,7 +292,7 @@ const foldKind = (
   return Option.getOrUndefined(
     Option.flatMap(
       resolveFoldkitApiPath(references, node.callee),
-      (path): infer _ => {
+      (path) => {
         const [namespace, helperName, extraMember] = path
         if (namespace !== 'Update' || extraMember !== undefined) {
           return Option.none()
@@ -311,7 +311,7 @@ const isCombineCall = (
   references: WeakMap<ESTree.Node, Reference> | undefined,
 ): boolean => {
   if (references === undefined) {
-    return Option.exists(staticMemberPath(node.callee), (path): infer _ => {
+    return Option.exists(staticMemberPath(node.callee), (path) => {
       const [namespace, helperName, extraMember] = [
         path.root.name,
         ...path.members,
@@ -325,7 +325,7 @@ const isCombineCall = (
   }
   return Option.exists(
     resolveFoldkitApiPath(references, node.callee),
-    (path): infer _ => {
+    (path) => {
       const [namespace, helperName, extraMember] = path
       return (
         namespace === 'Update'
@@ -459,9 +459,7 @@ const foldDefinitions = (
       for (const scope of scopes ?? []) {
         for (const variable of scope.variables) {
           if (
-            variable.defs.some((candidate): infer _ =>
-              candidate.node === declarator
-            )
+            variable.defs.some((candidate) => candidate.node === declarator)
           ) {
             byVariable.set(variable, definition)
           }
@@ -490,8 +488,7 @@ const foldDefinitionFor = (
   return Option.getOrUndefined(
     Option.flatMap(
       resolvedVariable(references, callee),
-      (variable): infer _ =>
-        Option.fromNullishOr(definitions.byVariable.get(variable)),
+      (variable) => Option.fromNullishOr(definitions.byVariable.get(variable)),
     ),
   )
 }
@@ -557,7 +554,7 @@ const combineStepDefinitions = (
   const byVariable = new WeakMap<Variable, CombineStepDefinition>()
   const fallbackByName = new Map<string, CombineStepDefinition>()
 
-  walk(program, (node): infer _ => {
+  walk(program, (node) => {
     if (
       node.type !== 'VariableDeclarator'
       || !isIdentifier(node.id)
@@ -584,7 +581,7 @@ const combineStepDefinitions = (
     for (const scope of scopes ?? []) {
       for (const variable of scope.variables) {
         if (
-          variable.defs.some((candidate): infer _ => candidate.node === node)
+          variable.defs.some((candidate) => candidate.node === node)
         ) {
           byVariable.set(variable, definition)
         }
@@ -612,8 +609,7 @@ const combineStepDefinitionFor = (
   return Option.getOrUndefined(
     Option.flatMap(
       resolvedVariable(references, callee),
-      (variable): infer _ =>
-        Option.fromNullishOr(definitions.byVariable.get(variable)),
+      (variable) => Option.fromNullishOr(definitions.byVariable.get(variable)),
     ),
   )
 }
@@ -623,8 +619,7 @@ const isDataLastFoldCall = (
   ancestors: ReadonlyArray<ESTree.Node>,
 ): boolean =>
   ancestors.some(
-    (ancestor): infer _ =>
-      isCallExpression(ancestor) && ancestor.callee === node,
+    (ancestor) => isCallExpression(ancestor) && ancestor.callee === node,
   )
 
 const invokedModel = (
@@ -632,8 +627,7 @@ const invokedModel = (
   ancestors: ReadonlyArray<ESTree.Node>,
 ): ESTree.IdentifierReference | undefined => {
   const invocation = ancestors.find(
-    (candidate): infer _ =>
-      isCallExpression(candidate) && candidate.callee === node,
+    (candidate) => isCallExpression(candidate) && candidate.callee === node,
   )
   if (invocation === undefined || !isCallExpression(invocation)) {
     return undefined
@@ -676,7 +670,7 @@ const addDefinitionEvidence = (
 
   Option.map(
     resolvedVariable(references, parentModel),
-    (variable): infer _ =>
+    (variable) =>
       addChildField(childFieldsByParentModel, variable, definition.childField),
   )
 }
@@ -696,7 +690,7 @@ const foldEvidence = (
   const childFieldsByParentModel = new Map<Variable, Set<string>>()
   const fallbackChildFieldsByParentModel = new Map<string, Set<string>>()
 
-  walk(program, (node, ancestors): infer _ => {
+  walk(program, (node, ancestors) => {
     if (!isCallExpression(node)) {
       return
     }
@@ -808,7 +802,7 @@ const directChildModifyFieldsField = (
     : Option.getOrUndefined(
       Option.flatMap(
         resolvedVariable(references, model),
-        (variable): infer _ =>
+        (variable) =>
           Option.fromNullishOr(
             evidence.childFieldsByParentModel.get(variable),
           ),
@@ -874,16 +868,16 @@ export const noDirectSubmodelStateUpdate = Rule.define({
           return undefined
         }
         return try Effect.forEach(
-          ((): infer _ => {
+          (() => {
             const findings: Array<
               Readonly<{ node: ESTree.CallExpression; fieldName: string }>
             > = []
-            walk(node, (candidate, ancestors): infer _ => {
+            walk(node, (candidate, ancestors) => {
               if (!isCallExpression(candidate)) {
                 return
               }
               if (
-                ancestors.some((ancestor): infer _ =>
+                ancestors.some((ancestor) =>
                   evidence.writeCallbacks.has(ancestor)
                 )
               ) {

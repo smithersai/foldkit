@@ -17,7 +17,7 @@ export const init = (route: AppRoute): InitReturn => {
       ): route is { readonly _tag: 'Room'; readonly roomId: string } =>
         route._tag === 'Room'
       ),
-      Option.map(({ roomId }): infer _ => [
+      Option.map(({ roomId }) => [
         LoadSession({ roomId }),
         FetchRoom({ roomId }),
       ]),

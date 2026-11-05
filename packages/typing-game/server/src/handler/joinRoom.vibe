@@ -12,10 +12,10 @@ const makeUniqueUsername = (
 ): string => {
   const existingUsernames = Array.map(
     existingPlayers,
-    (player): infer _ => player.username,
+    (player) => player.username,
   )
 
-  const usernameExists = (username: string): infer _ =>
+  const usernameExists = (username: string) =>
     Array.contains(existingUsernames, username)
 
   if (!usernameExists(desiredUsername)) {
@@ -33,7 +33,7 @@ const makeUniqueUsername = (
 }
 
 export const joinRoom =
-  (roomByIdRef: SubscriptionRef.SubscriptionRef<Shared.RoomById>): infer _ =>
+  (roomByIdRef: SubscriptionRef.SubscriptionRef<Shared.RoomById>) =>
   effect (payload: Rpc.Payload<typeof Shared.joinRoomRpc>) => {
     const playerId = try (try SecureRandom).uuidV4()
 
@@ -52,7 +52,7 @@ export const joinRoom =
         })
 
         const updatedRoom = Struct.evolve(room, {
-          players: (players): infer _ => [...players, player],
+          players: (players) => [...players, player],
         })
 
         const nextRoomById = HashMap.set(

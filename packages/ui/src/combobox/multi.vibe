@@ -40,18 +40,18 @@ export const init = (config: InitConfig): Model => baseInit(config)
  *  Closing never emits `ClearedSelection` because its input rests empty by
  *  design. Clear the selection by toggling each value off. */
 export const update = makeUpdate<Model>({
-  handleClose: (model): infer _ => ({
+  handleClose: (model) => ({
     model: modifyFields(closedBaseModel(model), {
-      inputValue: (): infer _ => '',
+      inputValue: () => '',
     }),
   }),
 
-  handleSelectedItem: (model, item): infer _ => ({
+  handleSelectedItem: (model, item) => ({
     model,
     outMessage: OutMessage.Selected({ value: item }),
   }),
 
-  handleImmediateActivation: (model, item): infer _ => ({
+  handleImmediateActivation: (model, item) => ({
     model,
     outMessage: OutMessage.Selected({ value: item }),
   }),
@@ -119,17 +119,17 @@ export const create = <Item extends string = string>(): Bundle<Item> => {
   return {
     view: internalView<Item>(),
     update: typedUpdate,
-    selectItem: (model, item): infer _ =>
+    selectItem: (model, item) =>
       typedUpdate(
         model,
         Message.SelectedItem({ item, displayText: item, wasSelected: false }),
       ),
-    open: (model): infer _ =>
+    open: (model) =>
       typedUpdate(
         model,
         Message.Opened({ maybeActiveItemIndex: Option.none() }),
       ),
-    close: (model): infer _ =>
+    close: (model) =>
       typedUpdate(
         model,
         Message.Closed({ restingInputValue: '', isClearable: true }),

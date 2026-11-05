@@ -117,7 +117,7 @@ const selectionFactoryLabel = (
   const maybePath = references === undefined
     ? resolveMemberPath(call.callee)
     : resolveImportedPath(references, call.callee)
-      .flatMap((path): infer _ => {
+      .flatMap((path) => {
         if (path.source === '@foldkit/ui') {
           return Option.some(path.members)
         }
@@ -156,8 +156,8 @@ const selectionFactorySelfMatch = (
   const call = value
   return selectionFactoryLabel(call, references)
     .match({
-      onNone: (): infer _ => [],
-      onSome: (label): infer _ => [{ call, label }],
+      onNone: () => [],
+      onSome: (label) => [{ call, label }],
     })
 }
 
@@ -169,7 +169,7 @@ const collectSelectionFactoryCalls = (
     return []
   }
   const childEntries = Object.entries(value)
-  const childMatches = childEntries.flatMap(([key, child]): infer _ =>
+  const childMatches = childEntries.flatMap(([key, child]) =>
     key === 'parent' ? [] : collectSelectionFactoryCalls(child, references)
   )
   return [...selectionFactorySelfMatch(value, references), ...childMatches]
@@ -179,7 +179,7 @@ const topLevelInitializerCalls = (
   program: ESTree.Program,
 ): ReadonlyArray<ESTree.CallExpression> => {
   const statements = program.body
-  return statements.flatMap((statement): infer _ => {
+  return statements.flatMap((statement) => {
     const declaration = statement.type === 'ExportNamedDeclaration'
       ? statement.declaration
       : statement
@@ -187,7 +187,7 @@ const topLevelInitializerCalls = (
       return []
     }
     const declarators = declaration.declarations
-    return declarators.flatMap((declarator): infer _ => {
+    return declarators.flatMap((declarator) => {
       const initializer = unwrapExpression(declarator.init)
       return isCallExpression(initializer) ? [initializer] : []
     })
@@ -222,7 +222,7 @@ export const selectionSubmodelFactoryAtModuleScope = Rule.define({
       const allowedCalls = topLevelInitializerCalls(node)
       const factoryCalls = collectSelectionFactoryCalls(node, references)
       const offendingCalls = factoryCalls.filter(
-        (factoryCall): infer _ => !allowedCalls.includes(factoryCall.call),
+        (factoryCall) => !allowedCalls.includes(factoryCall.call),
       )
       return effect {
         try Effect.forEach(

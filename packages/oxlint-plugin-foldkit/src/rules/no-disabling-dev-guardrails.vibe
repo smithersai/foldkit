@@ -29,7 +29,7 @@ const isFactoryCallee = (
   if (references !== undefined) {
     return Option.exists(
       resolveFoldkitApiPath(references, callee),
-      (path): infer _ => {
+      (path) => {
         const [namespace, factoryName, extraMember] = path
 
         return (
@@ -113,9 +113,9 @@ export const noDisablingDevGuardrails = Rule.define({
           return undefined
         }
         const disabledGuardrails = node.arguments.flatMap(
-          (argument): infer _ => {
+          (argument) => {
             if (argument.type !== 'ObjectExpression') return []
-            return argument.properties.flatMap((property): infer _ => match (disabledGuardrailMessage(property)) {
+            return argument.properties.flatMap((property) => match (disabledGuardrailMessage(property)) {
               when Option.None: [];
               when Option.Some(let message): [{ property, message }];
             })

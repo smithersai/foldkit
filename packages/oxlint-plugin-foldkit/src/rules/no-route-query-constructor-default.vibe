@@ -24,7 +24,7 @@ const isRouteQueryCall = (
     ? AST.isCallOf(node, 'Route', 'query')
     : Option.exists(
       resolveFoldkitApiPath(references, node.callee),
-      (path): infer _ => {
+      (path) => {
         const [namespace, member, extraMember] = path
         return (
           namespace === 'Route'
@@ -46,7 +46,7 @@ const isWithConstructorDefaultCall = (
   }
   return Option.exists(
     resolveImportedPath(references, node.callee),
-    (path): infer _ => {
+    (path) => {
       if (path.source === 'effect') {
         const [namespace, member, extraMember] = path.members
         return (
@@ -78,12 +78,12 @@ const collectWithConstructorDefaultCalls = (
 
   visited.add(node)
   if (Arr.isArray(node)) {
-    return node.flatMap((item): infer _ =>
+    return node.flatMap((item) =>
       collectWithConstructorDefaultCalls(item, references, visited)
     )
   }
   const here = isWithConstructorDefaultCall(node, references) ? [node] : []
-  const nested = Object.entries(node).flatMap(([key, value]): infer _ =>
+  const nested = Object.entries(node).flatMap(([key, value]) =>
     key === 'parent'
       ? []
       : collectWithConstructorDefaultCalls(value, references, visited)
@@ -118,7 +118,7 @@ export const noRouteQueryConstructorDefault = Rule.define({
         if (!isCallExpression(node) || !isRouteQueryCall(node, references)) {
           return undefined
         }
-        const offendingCalls = node.arguments.flatMap((argument): infer _ =>
+        const offendingCalls = node.arguments.flatMap((argument) =>
           collectWithConstructorDefaultCalls(
             argument,
             references,

@@ -35,7 +35,7 @@ export const init = (config: InitConfig): Model => baseInit(config)
  *  and an optional OutMessage. Selection leaves the multi-select Listbox open
  *  and emits `Selected({ value })` for the parent to fold by toggling
  *  membership. */
-export const update = makeUpdate<Model>((model, item): infer _ => ({
+export const update = makeUpdate<Model>((model, item) => ({
   model,
   outMessage: OutMessage.Selected({ value: item }),
 }))
@@ -110,13 +110,13 @@ export const create = <
   return {
     view: internalView<Item, Value>(),
     update: typedUpdate,
-    selectItem: (model, item): infer _ =>
+    selectItem: (model, item) =>
       typedUpdate(model, Message.SelectedItem({ item })),
-    open: (model): infer _ =>
+    open: (model) =>
       typedUpdate(
         model,
         Message.Opened({ maybeActiveItemIndex: Option.none() }),
       ),
-    close: (model): infer _ => typedUpdate(model, Message.Closed()),
+    close: (model) => typedUpdate(model, Message.Closed()),
   }
 }

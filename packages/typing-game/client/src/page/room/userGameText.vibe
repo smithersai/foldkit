@@ -11,23 +11,23 @@ export const validateUserTextInput = (
   const maybeInput = toNonEmptyStringOption(newUserText)
   const findWrongCharIndex = findFirstWrongCharIndex(newUserText)
   return maybeInput
-    .flatMap((): infer _ => maybeGameText)
+    .flatMap(() => maybeGameText)
     .flatMap(findWrongCharIndex)
-    .map((firstWrongIndex): infer _ => {
+    .map((firstWrongIndex) => {
       const wrongCharCount = Str.length(newUserText) - firstWrongIndex
       return wrongCharCount > MAX_WRONG_CHARS
         ? Str.slice(0, firstWrongIndex + MAX_WRONG_CHARS)(newUserText)
         : newUserText
     })
-    .getOrElse((): infer _ => newUserText)
+    .getOrElse(() => newUserText)
 }
 
 export const findFirstWrongCharIndex =
-  (userGameText: string): infer _ => (gameText: string): Option<number> =>
+  (userGameText: string) => (gameText: string): Option<number> =>
     pipe(
       userGameText,
       Str.split(''),
-      Arr.findFirstIndex((char, index): infer _ =>
+      Arr.findFirstIndex((char, index) =>
         pipe(
           gameText,
           Str.at(index),

@@ -41,7 +41,7 @@ const schemaMemberName = (
   references: WeakMap<ESTree.Node, Reference> | undefined,
 ): Option.Option<string> => {
   if (references === undefined) {
-    return Option.flatMap(staticMemberPath(node), (path): infer _ => {
+    return Option.flatMap(staticMemberPath(node), (path) => {
       const [member, extraMember] = path.members
       return SCHEMA_ALIASES.has(path.root.name)
           && member !== undefined
@@ -53,7 +53,7 @@ const schemaMemberName = (
 
   return Option.flatMap(
     resolveImportedPath(references, node),
-    (path): infer _ => {
+    (path) => {
       const [namespace, member, extraMember] = path.members
       if (
         path.source === 'effect'
@@ -90,7 +90,7 @@ const nullableMember = (
     !isNode(node)
     || !Option.exists(
       schemaMemberName(node, references),
-      (name): infer _ => NULLABLE_MEMBERS.has(name),
+      (name) => NULLABLE_MEMBERS.has(name),
     )
   ) {
     return Option.none()
@@ -120,7 +120,7 @@ const nullableFieldMember = (
   if (Option.isSome(baseMember)) {
     return baseMember
   }
-  return Arr.findFirst(value.arguments, (argument): infer _ => {
+  return Arr.findFirst(value.arguments, (argument) => {
     const member = isCallExpression(argument)
       ? nullableMember(argument.callee, references)
       : nullableMember(argument, references)

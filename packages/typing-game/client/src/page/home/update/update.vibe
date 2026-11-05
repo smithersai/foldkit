@@ -16,18 +16,18 @@ export type UpdateReturn = Update.ReturnWithOutMessage<
   RoomsClient
 >
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
-    CompletedFocusUsernameInput: (): infer _ => ({ model }),
+    CompletedFocusUsernameInput: () => ({ model }),
 
-    CompletedFocusRoomIdInput: (): infer _ => ({ model }),
+    CompletedFocusRoomIdInput: () => ({ model }),
 
-    SubmittedUsernameForm: (): infer _ =>
+    SubmittedUsernameForm: () =>
       match (model.homeStep) {
         when { _tag: 'EnterUsername', let username }: do {
           const nextModel = Str.isNonEmpty(username)
             ? modifyFields(model, {
-              homeStep: (): infer _ =>
+              homeStep: () =>
                 HomeStep.SelectAction({
                   username,
                   selectedAction: 'CreateRoom',
@@ -40,49 +40,49 @@ export const update = (model: Model, message: Message): infer _ =>
         default: ({ model });
       },
 
-    PressedKey: (message): infer _ => handleKeyPressed(model)(message),
+    PressedKey: (message) => handleKeyPressed(model)(message),
 
-    ChangedUsername: ({ value }): infer _ => match (model.homeStep) {
+    ChangedUsername: ({ value }) => match (model.homeStep) {
       when { _tag: 'EnterUsername' }: ({
         model: modifyFields(model, {
-          homeStep: (): infer _ => HomeStep.EnterUsername({ username: value }),
-          formError: (): infer _ => Option.none(),
+          homeStep: () => HomeStep.EnterUsername({ username: value }),
+          formError: () => Option.none(),
         }),
       });
       default: ({ model });
     },
 
-    BlurredUsernameInput: (): infer _ => ({
+    BlurredUsernameInput: () => ({
       model,
       commands: [FocusUsernameInput()],
     }),
 
-    BlurredRoomIdInput: (): infer _ => ({
+    BlurredRoomIdInput: () => ({
       model,
       commands: [FocusRoomIdInput()],
     }),
 
-    ChangedRoomId: ({ value }): infer _ => match (model.homeStep) {
+    ChangedRoomId: ({ value }) => match (model.homeStep) {
       when { _tag: 'EnterRoomId', let username }: ({
         model: modifyFields(model, {
-          homeStep: (): infer _ =>
+          homeStep: () =>
             HomeStep.EnterRoomId({
               username,
               roomId: value,
             }),
-          formError: (): infer _ => Option.none(),
+          formError: () => Option.none(),
         }),
       });
       default: ({ model });
     },
 
-    SubmittedJoinRoomForm: (): infer _ =>
+    SubmittedJoinRoomForm: () =>
       match (model.homeStep) {
         when { _tag: 'EnterRoomId', let username, let roomId }:
           roomId === 'exit'
             ? {
               model: modifyFields(model, {
-                homeStep: (): infer _ =>
+                homeStep: () =>
                   HomeStep.SelectAction({
                     username,
                     selectedAction: 'JoinRoom',
@@ -92,7 +92,7 @@ export const update = (model: Model, message: Message): infer _ =>
             : do {
               const maybeJoin = optionWhen(
                 Str.isNonEmpty(roomId),
-                (): infer _ => JoinRoom({ username, roomId }),
+                () => JoinRoom({ username, roomId }),
               )
               const result = { model, commands: Arr.fromOption(maybeJoin) }
               result
@@ -100,25 +100,25 @@ export const update = (model: Model, message: Message): infer _ =>
         default: ({ model });
       },
 
-    SucceededCreateRoom: ({ roomId, player }): infer _ => ({
+    SucceededCreateRoom: ({ roomId, player }) => ({
       model,
       outMessage: OutMessage.CreatedRoom({ roomId, player }),
     }),
 
-    SucceededJoinRoom: ({ roomId, player }): infer _ => ({
+    SucceededJoinRoom: ({ roomId, player }) => ({
       model,
       outMessage: OutMessage.JoinedRoom({ roomId, player }),
     }),
 
-    FailedCreateRoom: ({ error }): infer _ => ({
+    FailedCreateRoom: ({ error }) => ({
       model: modifyFields(model, {
-        formError: (): infer _ => Option.some(error),
+        formError: () => Option.some(error),
       }),
     }),
 
-    FailedJoinRoom: ({ error }): infer _ => ({
+    FailedJoinRoom: ({ error }) => ({
       model: modifyFields(model, {
-        formError: (): infer _ => Option.some(error),
+        formError: () => Option.some(error),
       }),
     }),
   })

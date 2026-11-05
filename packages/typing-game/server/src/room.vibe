@@ -26,10 +26,9 @@ const generateRoomId = effect (words: ReadonlyArray<string>) => {
 }
 
 const indicesToRoomId =
-  (words: ReadonlyArray<string>): infer _ =>
-  (indices: ReadonlyArray<number>): infer _ =>
+  (words: ReadonlyArray<string>) => (indices: ReadonlyArray<number>) =>
     pipe(
       indices,
-      Array.map((i): infer _ => Array.getUnsafe(words, i)),
+      Array.map((i) => Array.getUnsafe(words, i)),
       Array.join(DELIMITER),
     )

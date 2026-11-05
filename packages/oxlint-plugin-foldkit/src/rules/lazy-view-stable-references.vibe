@@ -75,7 +75,7 @@ const childValuesOf = (node: ESTree.Node): ReadonlyArray<unknown> => {
   )
   return pipe(
     entries,
-    Arr.flatMap(([key, value]): infer _ => (key === 'parent' ? [] : [value])),
+    Arr.flatMap(([key, value]) => (key === 'parent' ? [] : [value])),
   )
 }
 
@@ -101,7 +101,7 @@ const matchLazyFactoryCall = (
 
   return Option.flatMap(
     resolveFoldkitApiPath(references, callee),
-    (path): infer _ => {
+    (path) => {
       const [namespace, factoryName, extraMember] = path
 
       return namespace === 'Html'
@@ -144,28 +144,28 @@ const registeredSlotsOf = (
 ): ReadonlyArray<RegisteredSlot> =>
   pipe(
     program.body,
-    Arr.flatMap((statement): infer _ =>
+    Arr.flatMap((statement) =>
       declarationOf(statement)
-        .filter((declaration): infer _ => declaration.kind === 'const')
+        .filter((declaration) => declaration.kind === 'const')
         .match({
-          onNone: (): infer _ => [],
-          onSome: (declaration): infer _ => declaration.declarations,
+          onNone: () => [],
+          onSome: (declaration) => declaration.declarations,
         })
     ),
-    Arr.flatMap((declarator): infer _ => {
+    Arr.flatMap((declarator) => {
       if (declarator.id.type !== 'Identifier' || declarator.init === null) {
         return []
       }
       const slotName = declarator.id.name
       return matchLazyFactoryCall(declarator.init, references)
         .match({
-          onNone: (): infer _ => [],
-          onSome: (factoryCall): infer _ => [
+          onNone: () => [],
+          onSome: (factoryCall) => [
             {
               slotName,
               variable: scopeManager
                 ?.getDeclaredVariables(declarator)
-                .find((variable): infer _ => variable.name === slotName),
+                .find((variable) => variable.name === slotName),
               viewArgumentIndex:
                 VIEW_ARGUMENT_INDEX_BY_FACTORY[factoryCall.factoryName],
               initializerCall: factoryCall.call,
@@ -180,7 +180,7 @@ const parameterNames = (
 ): ReadonlyArray<string> =>
   pipe(
     functionNode.params,
-    Arr.flatMap((parameter): infer _ =>
+    Arr.flatMap((parameter) =>
       parameter.type === 'Identifier' ? [parameter.name] : []
     ),
   )
@@ -196,7 +196,7 @@ const bodyBindingNames = (value: unknown): ReadonlyArray<string> => {
   if (Arr.isArray(value)) {
     return pipe(
       value,
-      Arr.flatMap((element): infer _ => bodyBindingNames(element)),
+      Arr.flatMap((element) => bodyBindingNames(element)),
     )
   }
   if (!isEstreeNode(value)) {
@@ -217,7 +217,7 @@ const bodyBindingNames = (value: unknown): ReadonlyArray<string> => {
       : []
   const childBindings = pipe(
     childValuesOf(value),
-    Arr.flatMap((child): infer _ => bodyBindingNames(child)),
+    Arr.flatMap((child) => bodyBindingNames(child)),
   )
   return [...ownBinding, ...childBindings]
 }
@@ -234,7 +234,7 @@ const functionBindingNames = (
 const isFunctionScopedName = (
   name: string,
   functionScopes: ReadonlyArray<ReadonlySet<string>>,
-): boolean => functionScopes.some((scope): infer _ => scope.has(name))
+): boolean => functionScopes.some((scope) => scope.has(name))
 
 const isNestedInFunctionScope = (scope: Variable['scope']): boolean =>
   scope.type === 'function'
@@ -248,7 +248,7 @@ const isFunctionScopedView = (
     ? isFunctionScopedName(identifier.name, context.functionScopes)
     : Option.exists(
       resolvedVariable(context.references, identifier),
-      (variable): infer _ => isNestedInFunctionScope(variable.scope),
+      (variable) => isNestedInFunctionScope(variable.scope),
     )
 
 const MISPLACED_CREATION_MESSAGE =
@@ -306,7 +306,7 @@ const unstableViewOffenses = (
     && (slot.variable === undefined
       || !Option.exists(
         resolvedVariable(context.references, callee),
-        (variable): infer _ => variable === slot.variable,
+        (variable) => variable === slot.variable,
       ))
   ) {
     return []
@@ -362,7 +362,7 @@ const collectOffenses = (
   if (Arr.isArray(value)) {
     return pipe(
       value,
-      Arr.flatMap((element): infer _ => collectOffenses(element, context)),
+      Arr.flatMap((element) => collectOffenses(element, context)),
     )
   }
   if (!isEstreeNode(value)) {
@@ -380,7 +380,7 @@ const collectOffenses = (
     : context
   const childOffenses = pipe(
     childValuesOf(value),
-    Arr.flatMap((child): infer _ => collectOffenses(child, childContext)),
+    Arr.flatMap((child) => collectOffenses(child, childContext)),
   )
   return [...ownOffenses, ...childOffenses]
 }
@@ -420,7 +420,7 @@ export const lazyViewStableReferences = Rule.define({
           ),
         )
         const registeredInitializers = new Set(
-          Arr.map(registeredSlots, (slot): infer _ => slot.initializerCall),
+          Arr.map(registeredSlots, (slot) => slot.initializerCall),
         )
         const offenses = collectOffenses(node, {
           slotsByName,

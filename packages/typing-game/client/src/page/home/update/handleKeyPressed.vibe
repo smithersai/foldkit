@@ -14,7 +14,7 @@ import { HOME_ACTIONS, HomeAction, HomeStep, Model } from '../model.vibe'
 type UpdateReturn = Update.Return<Model, Message, RoomsClient>
 
 export const handleKeyPressed =
-  (model: Model): infer _ => ({ key }: { key: string }): UpdateReturn => {
+  (model: Model) => ({ key }: { key: string }): UpdateReturn => {
     const homeStep = model.homeStep
     const selectAction = whenSelectAction(model, key)
     return match (homeStep) {
@@ -24,7 +24,7 @@ export const handleKeyPressed =
   }
 
 const whenSelectAction =
-  (model: Model, key: string): infer _ =>
+  (model: Model, key: string) =>
   (selectAction: typeof HomeStep.SelectAction.Type): UpdateReturn => match (key) {
     when 'ArrowUp': moveSelection(Num.decrement)(model, selectAction);
     when 'ArrowDown': moveSelection(Num.increment)(model, selectAction);
@@ -32,13 +32,13 @@ const whenSelectAction =
     default: ({ model });
   }
 
-const moveSelection = (f: (index: number) => number): infer _ =>
+const moveSelection = (f: (index: number) => number) =>
 (
   model: Model,
   { username, selectedAction }: typeof HomeStep.SelectAction.Type,
 ): UpdateReturn => ({
   model: modifyFields(model, {
-    homeStep: (): infer _ =>
+    homeStep: () =>
       HomeStep.SelectAction({
         username,
         selectedAction: cycleAction(f)(selectedAction),
@@ -47,28 +47,27 @@ const moveSelection = (f: (index: number) => number): infer _ =>
 })
 
 const cycleAction =
-  (f: (a: number) => number): infer _ =>
-  (selectedAction: HomeAction): infer _ => {
+  (f: (a: number) => number) => (selectedAction: HomeAction) => {
     const homeActionsLength = Arr.length(HOME_ACTIONS)
 
     return pipe(
       HOME_ACTIONS,
-      Arr.findFirstIndex((action): infer _ => action === selectedAction),
+      Arr.findFirstIndex((action) => action === selectedAction),
       Option.map(
         flow(
           f,
           Num.remainder(homeActionsLength),
-          (remainder): infer _ =>
+          (remainder) =>
             remainder < 0 ? remainder + homeActionsLength : remainder,
-          (nextIndex): infer _ => Arr.getUnsafe(HOME_ACTIONS, nextIndex),
+          (nextIndex) => Arr.getUnsafe(HOME_ACTIONS, nextIndex),
         ),
       ),
-      Option.getOrElse((): infer _ => selectedAction),
+      Option.getOrElse(() => selectedAction),
     )
   }
 
 const confirmSelection =
-  (model: Model): infer _ =>
+  (model: Model) =>
   (selectAction: typeof HomeStep.SelectAction.Type): UpdateReturn => match (selectAction.selectedAction) {
     when 'CreateRoom': ({
       model,
@@ -76,7 +75,7 @@ const confirmSelection =
     });
     when 'JoinRoom': ({
       model: modifyFields(model, {
-        homeStep: (): infer _ =>
+        homeStep: () =>
           HomeStep.EnterRoomId({
             username: selectAction.username,
             roomId: '',
@@ -86,7 +85,7 @@ const confirmSelection =
     });
     when 'ChangeUsername': ({
       model: modifyFields(model, {
-        homeStep: (): infer _ => HomeStep.EnterUsername({ username: '' }),
+        homeStep: () => HomeStep.EnterUsername({ username: '' }),
       }),
       commands: [FocusUsernameInput()],
     });

@@ -65,8 +65,8 @@ const elementCallTarget = (
 ): Option<string> =>
   node.arguments.length === 2
     ? builderCallee(node.callee, references)
-      .filter(({ property }): infer _ => ELEMENT_BUILDER_NAMES.has(property))
-      .map(({ binding, property }): infer _ => `${binding}.${property}([...])`)
+      .filter(({ property }) => ELEMENT_BUILDER_NAMES.has(property))
+      .map(({ binding, property }) => `${binding}.${property}([...])`)
     : Option.none()
 
 // `keyed` applies the tag before the element arguments, so the children slot is
@@ -79,10 +79,8 @@ const keyedCallTarget = (
     return Option.none()
   }
   return builderCallee(node.callee.callee, references)
-    .filter(({ property }): infer _ => property === KEYED_PROPERTY)
-    .map(({ binding }): infer _ =>
-      `${binding}.${KEYED_PROPERTY}(tag)(key, [...])`
-    )
+    .filter(({ property }) => property === KEYED_PROPERTY)
+    .map(({ binding }) => `${binding}.${KEYED_PROPERTY}(tag)(key, [...])`)
 }
 
 const childrenArgument = (
@@ -113,7 +111,7 @@ export const noEmptyChildrenArray = Rule.define({
         }
         const maybeTarget = Option.orElse(
           elementCallTarget(node, references),
-          (): infer _ => keyedCallTarget(node, references),
+          () => keyedCallTarget(node, references),
         )
         if (Option.isNone(maybeTarget)) {
           return undefined

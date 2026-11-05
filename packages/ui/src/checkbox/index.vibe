@@ -111,7 +111,7 @@ export const view = <Message>(
     default: Option.none();
   }
 
-  const resolveStateAttributes = (): infer _ => {
+  const resolveStateAttributes = () => {
     if (isIndeterminate) {
       return [h.DataAttribute('indeterminate', '')]
     } else if (isChecked) {

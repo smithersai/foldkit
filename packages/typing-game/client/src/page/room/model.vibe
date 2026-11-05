@@ -28,8 +28,7 @@ export type Model = typeof Model.Type
 export const capturesKeyboard = (model: Model): boolean => {
   const isRoomPlayable = Option.exists(
     AsyncData.getData(model.roomAsyncData),
-    ({ status }): infer _ =>
-      status._tag === 'Waiting' || status._tag === 'Finished',
+    ({ status }) => status._tag === 'Waiting' || status._tag === 'Finished',
   )
 
   return Option.isSome(model.maybeSession) && isRoomPlayable

@@ -14,7 +14,7 @@ import type { UpdateReturn } from './update.vibe'
 
 const EXIT_COUNTDOWN_SECONDS = 3
 
-export const handleRoomUpdated = (model: Model): infer _ =>
+export const handleRoomUpdated = (model: Model) =>
 ({
   room,
   maybePlayerProgress,
@@ -26,7 +26,7 @@ export const handleRoomUpdated = (model: Model): infer _ =>
   const hadRoom = Option.isSome(maybePreviousRoom)
   const hadStatusPlaying = Option.exists(
     maybePreviousRoom,
-    ({ status }): infer _ => status._tag === 'Playing',
+    ({ status }) => status._tag === 'Playing',
   )
   const isStatusPlaying = room.status._tag === 'Playing'
 
@@ -34,7 +34,7 @@ export const handleRoomUpdated = (model: Model): infer _ =>
 
   const hadStatusFinished = Option.exists(
     maybePreviousRoom,
-    ({ status }): infer _ => status._tag === 'Finished',
+    ({ status }) => status._tag === 'Finished',
   )
   const isStatusFinished = room.status._tag === 'Finished'
   const gameJustFinished = hadRoom && !hadStatusFinished && isStatusFinished
@@ -64,19 +64,19 @@ export const handleRoomUpdated = (model: Model): infer _ =>
 
   const maybeExitCountdown = optionWhen(
     gameJustFinished,
-    (): infer _ => WaitForExitCountdownInterval(),
+    () => WaitForExitCountdownInterval(),
   )
   const maybeFocusUserGameText = optionWhen(
     gameJustStarted,
-    (): infer _ => FocusUserGameTextInput(),
+    () => FocusUserGameTextInput(),
   )
 
   return {
     model: modifyFields(model, {
-      roomAsyncData: (): infer _ => RoomAsyncData.Success({ data: room }),
-      userGameText: (): infer _ => nextUserGameText,
-      charsTyped: (): infer _ => nextCharsTyped,
-      exitCountdownSecondsLeft: (): infer _ =>
+      roomAsyncData: () => RoomAsyncData.Success({ data: room }),
+      userGameText: () => nextUserGameText,
+      charsTyped: () => nextCharsTyped,
+      exitCountdownSecondsLeft: () =>
         gameJustFinished
           ? EXIT_COUNTDOWN_SECONDS
           : model.exitCountdownSecondsLeft,

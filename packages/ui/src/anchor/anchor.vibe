@@ -125,8 +125,7 @@ const getOrCreateDialogPortalRoot = (
 // portaled into that dialog instead. `closest` must be read here, before the
 // element is relocated out of the mounting tree.
 const getOrCreatePortalRoot = (element: Element): HTMLElement => match (Option.fromNullishOr(element.closest('dialog'))) {
-  when Option.None:
-    ((): infer _ => getOrCreateContainingRootPortalRoot(element))();
+  when Option.None: (() => getOrCreateContainingRootPortalRoot(element))();
   when Option.Some(let optionValue1): getOrCreateDialogPortalRoot(optionValue1);
 }
 
@@ -154,7 +153,7 @@ const findWrapperInsideDialog = (element: Element): Option<Element> => {
   const dialog = element.closest('dialog')
 
   return Option.fromNullishOr(element.parentElement)
-    .filter((parent): infer _ => dialog !== null && parent !== dialog)
+    .filter((parent) => dialog !== null && parent !== dialog)
 }
 
 /** Relocates a click-outside backdrop and returns a cleanup function that
@@ -189,7 +188,7 @@ export const portalBackdrop = (element: Element): (() => void) =>
       // cover the trigger too, and prepended, the dialog panel would cover the
       // backdrop. `closest` and `parentElement` must be read before the move.
       wrapper.before(element)
-      const optionResult24 = (): infer _ => element.remove()
+      const optionResult24 = () => element.remove()
       optionResult24
     };
   }
@@ -340,8 +339,8 @@ export const anchorSetup = (
   // Floating UI's `arrow` takes any `Element` and a triangle arrow is usually
   // an `<svg>`.
   const maybeArrowElement = Option.fromNullishOr(config.arrowId)
-    .flatMapNullishOr((arrowId): infer _ => owner.getElementById(arrowId))
-    .filter((candidate): infer _ => element.contains(candidate))
+    .flatMapNullishOr((arrowId) => owner.getElementById(arrowId))
+    .filter((candidate) => element.contains(candidate))
 
   const arrowMiddleware = match (maybeArrowElement) {
     when Option.None: [];
@@ -400,7 +399,7 @@ export const anchorSetup = (
         shift({ padding: padding ?? 0 }),
         size({
           padding: padding ?? 0,
-          apply({ rects, availableHeight }): infer _ {
+          apply({ rects, availableHeight }) {
             if (!isActive) {
               return
             }
@@ -437,7 +436,7 @@ export const anchorSetup = (
 
     tick
       .then(
-        ({ x, y, placement: resolvedPlacement, middlewareData }): infer _ => {
+        ({ x, y, placement: resolvedPlacement, middlewareData }) => {
           hasWarnedFailure = false
 
           if (!isActive) {
@@ -467,7 +466,7 @@ export const anchorSetup = (
             element.style.visibility = ''
 
             if (config.focusAfterPosition ?? false) {
-              requestFrame((): infer _ => {
+              requestFrame(() => {
                 if (!isActive) {
                   return
                 }
@@ -487,7 +486,7 @@ export const anchorSetup = (
         // once per run of consecutive failures, since `autoUpdate` would
         // otherwise repeat a persistent failure on every scroll and resize,
         // while a fresh failure after a recovery still gets its own report.
-        (error: unknown): infer _ => {
+        (error: unknown) => {
           if (!hasWarnedFailure) {
             hasWarnedFailure = true
             Console.Console.defaultValue().error(
@@ -497,7 +496,7 @@ export const anchorSetup = (
           }
         },
       )
-      .finally((): infer _ => {
+      .finally(() => {
         isPositioning = false
 
         if (isActive && isPositioningQueued) {
@@ -520,7 +519,7 @@ export const anchorSetup = (
     element.addEventListener('keydown', handleTabKey)
   }
 
-  return (): infer _ => {
+  return () => {
     isActive = false
     isPositioningQueued = false
     floatingCleanup()

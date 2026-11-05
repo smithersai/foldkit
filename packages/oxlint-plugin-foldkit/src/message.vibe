@@ -63,7 +63,7 @@ export const isFoldkitMessageUnionCall = (
 
   return Option.exists(
     resolveFoldkitApiPath(references, node.callee),
-    (path): infer _ => {
+    (path) => {
       const [namespace, helperName, extraMember] = path
 
       return (
@@ -89,7 +89,7 @@ export const messageCases = (
     return []
   }
 
-  return casesByTag.properties.flatMap((property): infer _ => {
+  return casesByTag.properties.flatMap((property) => {
     if (property.type !== 'Property') {
       return []
     }
@@ -113,7 +113,7 @@ export const hasMessagePayloadProperty = (
   fields: ESTree.ObjectExpression,
 ): boolean =>
   fields.properties.some(
-    (property): infer _ =>
+    (property) =>
       property.type === 'Property'
       && (isIdentifier(property.key, 'message')
         || (isStringLiteral(property.key) && property.key.value === 'message')),
@@ -123,7 +123,7 @@ const isLocalQueryMessageReference = (
   node: unknown,
   references: WeakMap<ESTree.Node, Reference>,
 ): boolean =>
-  Option.exists(staticMemberPath(node), (memberPath): infer _ => {
+  Option.exists(staticMemberPath(node), (memberPath) => {
     const [memberName, extraMember] = memberPath.members
     if (memberName !== 'Message' || extraMember !== undefined) {
       return false
@@ -131,8 +131,8 @@ const isLocalQueryMessageReference = (
 
     return Option.exists(
       resolvedVariable(references, memberPath.root),
-      (variable): infer _ =>
-        variable.defs.some((definition): infer _ => {
+      (variable) =>
+        variable.defs.some((definition) => {
           if (
             definition.type !== 'Variable'
             || !isVariableDeclarator(definition.node)
@@ -143,7 +143,7 @@ const isLocalQueryMessageReference = (
 
           return Option.exists(
             resolveFoldkitApiPath(references, definition.node.init.callee),
-            (apiPath): infer _ => {
+            (apiPath) => {
               const apiName = apiPath.join('.')
 
               return (
@@ -171,7 +171,7 @@ const containsMessageReference = (
   }
 
   if (
-    Option.exists(resolveImportedPath(references, node), (path): infer _ => {
+    Option.exists(resolveImportedPath(references, node), (path) => {
       const [messageName] = path.members.slice(-1)
 
       return messageName === 'Message'
@@ -181,10 +181,10 @@ const containsMessageReference = (
   }
 
   return Object.entries(node).some(
-    ([key, value]): infer _ =>
+    ([key, value]) =>
       key !== 'parent'
       && (Array.isArray(value)
-        ? value.some((element): infer _ =>
+        ? value.some((element) =>
           containsMessageReference(element, references, visited)
         )
         : containsMessageReference(value, references, visited)),
@@ -199,7 +199,7 @@ export const hasSubmodelMessagePayload = (
     return hasMessagePayloadProperty(fields)
   }
 
-  return fields.properties.some((property): infer _ => {
+  return fields.properties.some((property) => {
     if (
       property.type !== 'Property'
       || !(

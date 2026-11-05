@@ -37,7 +37,7 @@ const sameNames = (
   Arr.length(actual) === Arr.length(expected)
   && Arr.every(
     Arr.zip(actual, expected),
-    ([actualName, expectedName]): infer _ => actualName === expectedName,
+    ([actualName, expectedName]) => actualName === expectedName,
   )
 
 const sameIdentifierName = (
@@ -52,13 +52,13 @@ const isFoldkitModifyFieldsCall = (
   if (references !== undefined) {
     return Option.exists(
       resolveFoldkitApiPath(references, node.callee),
-      (path): infer _ => sameNames(path, ['Struct', 'modifyFields']),
+      (path) => sameNames(path, ['Struct', 'modifyFields']),
     )
   }
 
   return Option.exists(
     staticMemberPath(node.callee),
-    (path): infer _ =>
+    (path) =>
       (path.root.name === 'modifyFields'
         && Arr.isReadonlyArrayEmpty(path.members))
       || (path.root.name === 'Struct'
@@ -84,7 +84,7 @@ const isFoldCall = (
 
   return Option.exists(
     staticMemberPath(node.callee),
-    (path): infer _ => isFoldPath([path.root.name, ...path.members]),
+    (path) => isFoldPath([path.root.name, ...path.members]),
   )
 }
 
@@ -99,7 +99,7 @@ const isInsideFoldWrite = (
       isObjectProperty(ancestor)
       && Option.exists(
         staticPropertyName(ancestor),
-        (propertyName): infer _ =>
+        (propertyName) =>
           propertyName === 'write' || propertyName === 'writeAt',
       )
       && isObjectExpression(ancestor.parent)
@@ -165,7 +165,7 @@ const returnedExpression = (
   }
 
   return Arr.head(returnStatements)
-    .flatMap((statement): infer _ => Option.fromNullishOr(statement.argument))
+    .flatMap((statement) => Option.fromNullishOr(statement.argument))
     .getOrUndefined()
 }
 
@@ -179,14 +179,14 @@ const modelFieldNames = (
   }
 
   const fieldNames = new Set<string>()
-  walk(returned, (node): infer _ => {
+  walk(returned, (node) => {
     staticMemberPath(node)
-      .filter((path): infer _ =>
+      .filter((path) =>
         Arr.length(path.members) === 1
         && sameIdentifierName(path.root, parentModel)
       )
-      .flatMap((path): infer _ => Arr.head(path.members))
-      .map((fieldName): infer _ => fieldNames.add(fieldName))
+      .flatMap((path) => Arr.head(path.members))
+      .map((fieldName) => fieldNames.add(fieldName))
   })
   return fieldNames
 }
@@ -205,7 +205,7 @@ const modifyFieldsFieldNames = (
   }
 
   const fieldNames = new Set<string>()
-  walk(functionNode.body, (node): infer _ => {
+  walk(functionNode.body, (node) => {
     if (
       !isCallExpression(node)
       || !isFoldkitModifyFieldsCall(node, references)
@@ -240,7 +240,7 @@ const modifyFieldsFieldNames = (
       }
 
       staticPropertyName(property)
-        .map((fieldName): infer _ => fieldNames.add(fieldName))
+        .map((fieldName) => fieldNames.add(fieldName))
     }
   })
   return fieldNames
@@ -286,7 +286,7 @@ const foldChildFieldsByNamespace = (
 ): ReadonlyMap<string, ReadonlySet<string>> => {
   const fieldsByNamespace = new Map<string, Set<string>>()
   const callbacks = moduleCallbacks(program)
-  walk(program, (node): infer _ => {
+  walk(program, (node) => {
     if (!isCallExpression(node) || !isFoldCall(node, references)) {
       return
     }
@@ -306,14 +306,14 @@ const foldChildFieldsByNamespace = (
 
       if (Option.contains(staticPropertyName(property), 'update')) {
         staticMemberPath(property.value)
-          .filter((path): infer _ => Arr.length(path.members) === 1)
-          .map((path): infer _ => {
+          .filter((path) => Arr.length(path.members) === 1)
+          .map((path) => {
             namespace = path.root.name
           })
       } else if (
         Option.exists(
           staticPropertyName(property),
-          (propertyName): infer _ =>
+          (propertyName) =>
             propertyName === 'read' || propertyName === 'readAt',
         )
       ) {
@@ -324,7 +324,7 @@ const foldChildFieldsByNamespace = (
       } else if (
         Option.exists(
           staticPropertyName(property),
-          (propertyName): infer _ =>
+          (propertyName) =>
             propertyName === 'write' || propertyName === 'writeAt',
         )
       ) {
@@ -368,7 +368,7 @@ const childModelField = (
     parentModel: ESTree.IdentifierReference
   }>
 > =>
-  Option.flatMap(staticMemberPath(node), (path): infer _ => {
+  Option.flatMap(staticMemberPath(node), (path) => {
     const [fieldName, extraFieldName] = path.members
     return fieldName !== undefined && extraFieldName === undefined
       ? Option.some({ fieldName, parentModel: path.root })
@@ -440,7 +440,7 @@ const resultBinding = (
 ): Option<ESTree.IdentifierReference> =>
   Option.fromNullishOr(returnedExpression(updater))
     .flatMap(staticMemberPath)
-    .flatMap((path): infer _ =>
+    .flatMap((path) =>
       sameNames(path.members, ['model'])
         ? Option.some(path.root)
         : Option.none()
@@ -508,7 +508,7 @@ export const requireFoldForChildUpdateResult = Rule.define({
         for (const scope of scopes ?? []) {
           for (const variable of scope.variables) {
             const definition = variable.defs.find(
-              (candidate): infer _ =>
+              (candidate) =>
                 candidate.type === 'Variable'
                 && isVariableDeclarator(candidate.node),
             )
@@ -524,7 +524,7 @@ export const requireFoldForChildUpdateResult = Rule.define({
               references,
               foldFieldsByNamespace,
             )
-              .map((origin): infer _ => originsByVariable.set(variable, origin))
+              .map((origin) => originsByVariable.set(variable, origin))
           }
         }
         return undefined
@@ -572,20 +572,20 @@ export const requireFoldForChildUpdateResult = Rule.define({
                 childFieldName: staticPropertyName(property),
                 result: resultBinding(property.value),
               })
-                .flatMap(({ childFieldName, result }): infer _ => {
+                .flatMap(({ childFieldName, result }) => {
                   const origin = references === undefined
                     ? fallbackOriginsByName.get(result.name)
                     : Option.getOrUndefined(
                       Option.map(
                         resolvedVariable(references, result),
-                        (variable): infer _ => originsByVariable.get(variable),
+                        (variable) => originsByVariable.get(variable),
                       ),
                     )
                   return origin === undefined
                     ? Option.none()
                     : Option.some({ childFieldName, origin, result })
                 })
-                .filter(({ childFieldName, origin, result }): infer _ =>
+                .filter(({ childFieldName, origin, result }) =>
                   childFieldName === origin.childFieldName
                   && sameBinding(parentModel, origin.parentModel, references)
                   && !sameBinding(result, origin.parentModel, references)

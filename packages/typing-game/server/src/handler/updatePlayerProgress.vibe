@@ -7,7 +7,7 @@ type ProgressByGamePlayer = HashMap<
 
 export const updatePlayerProgress = (
   progressByGamePlayerRef: SubscriptionRef<ProgressByGamePlayer>,
-): infer _ =>
+) =>
 effect (payload: Rpc.Payload<typeof Shared.updatePlayerProgressRpc>) => {
   const updatedAt = try Clock.currentTimeMillis
 
@@ -26,7 +26,7 @@ effect (payload: Rpc.Payload<typeof Shared.updatePlayerProgressRpc>) => {
 
   try SubscriptionRef.update(
     progressByGamePlayerRef,
-    (progressByGamePlayer): infer _ =>
+    (progressByGamePlayer) =>
       HashMap.set(progressByGamePlayer, gamePlayer, progress),
   )
 }

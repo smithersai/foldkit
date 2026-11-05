@@ -59,7 +59,7 @@ const hasMessageTypeAnnotation = (node: ESTree.VariableDeclarator): boolean => {
 const hasTagPropertyWithStringLiteral = (
   node: ESTree.ObjectExpression,
 ): boolean =>
-  node.properties.some((property): infer _ => {
+  node.properties.some((property) => {
     if (property.type !== 'Property') return false
     const isTagKey = isIdentifier(property.key, '_tag')
       || (isStringLiteral(property.key) && property.key.value === '_tag')

@@ -8,7 +8,7 @@ export const getById = effect (roomById: Shared.RoomById, id: string) => match (
 export const updateRoom = (
   roomByIdRef: SubscriptionRef<Shared.RoomById>,
   roomId: string,
-): infer _ =>
+) =>
 effect (f: (room: Shared.Room) => Shared.Room) =>
   try SubscriptionRef.updateEffect(roomByIdRef, effect roomById => {
     const room = try getById(roomById, roomId)
@@ -19,8 +19,8 @@ effect (f: (room: Shared.Room) => Shared.Room) =>
 export const updateRoomStatus = (
   roomByIdRef: SubscriptionRef<Shared.RoomById>,
   roomId: string,
-): infer _ =>
+) =>
 effect (status: Shared.GameStatus) =>
   try updateRoom(roomByIdRef, roomId)(
-    Struct.evolve({ status: (): infer _ => status }),
+    Struct.evolve({ status: () => status }),
   )

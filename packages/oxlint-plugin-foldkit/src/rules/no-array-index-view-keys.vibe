@@ -69,7 +69,7 @@ const isCreateKeyedLazyCall = (
 
   return Option.exists(
     resolveFoldkitApiPath(references, node.callee),
-    (path): infer _ => {
+    (path) => {
       const [namespace, factoryName, extraMember] = path
 
       return (
@@ -110,7 +110,7 @@ const mapCallbackIndexParameter = (
   const name = secondParameter.name
   const variable = scopeManager
     ?.getDeclaredVariables(node)
-    .find((candidate): infer _ => candidate.name === name)
+    .find((candidate) => candidate.name === name)
 
   return Option.some({ name, variable })
 }
@@ -141,7 +141,7 @@ const slotIdValue = (
 ): Option.Option<ESTree.Expression> =>
   Option.map(
     EffectArray.findFirst(configObject.properties, isSlotIdProperty),
-    (property): infer _ => property.value,
+    (property) => property.value,
   )
 
 type KeyedLazySlot = Readonly<{
@@ -172,13 +172,13 @@ const keySinkExpression = (
   if (isIdentifierReference(node.callee)) {
     const slotCallee = node.callee
     const isRegisteredSlot = slots.some(
-      (slot): infer _ =>
+      (slot) =>
         slot.name === slotCallee.name
         && (references === undefined
           || (slot.variable !== undefined
             && Option.exists(
               resolvedVariable(references, slotCallee),
-              (variable): infer _ => variable === slot.variable,
+              (variable) => variable === slot.variable,
             ))),
     )
     if (isRegisteredSlot) {
@@ -194,7 +194,7 @@ const referencesIndexBinding = (
   references: WeakMap<ESTree.Node, Reference> | undefined,
 ): boolean => {
   if (EffectArray.isArray(value)) {
-    return value.some((element): infer _ =>
+    return value.some((element) =>
       referencesIndexBinding(element, indexBinding, references)
     )
   }
@@ -207,7 +207,7 @@ const referencesIndexBinding = (
       || (indexBinding.variable !== undefined
         && Option.exists(
           resolvedVariable(references, value),
-          (variable): infer _ => variable === indexBinding.variable,
+          (variable) => variable === indexBinding.variable,
         ))
     )
   }
@@ -231,7 +231,7 @@ const referencesIndexBinding = (
   }
   if (references === undefined && isArrowFunctionExpression(value)) {
     const parameters = value.params
-    const isShadowed = parameters.some((parameter): infer _ =>
+    const isShadowed = parameters.some((parameter) =>
       isIdentifier(parameter, indexBinding.name)
     )
     if (isShadowed) {
@@ -248,7 +248,7 @@ const referencesIndexBindingAcrossFields = (
 ): boolean => {
   const fieldEntries = Object.entries(value)
   return fieldEntries.some(
-    ([fieldName, fieldValue]): infer _ =>
+    ([fieldName, fieldValue]) =>
       fieldName !== 'parent'
       && referencesIndexBinding(fieldValue, indexBinding, references),
   )
@@ -313,7 +313,7 @@ export const noArrayIndexViewKeys = Rule.define({
       'ArrowFunctionExpression:exit': effect (node: ESTree.Node) => match (mapCallbackIndexParameter(node, scopeManager)) {
         when Option.None: undefined;
         when Option.Some:
-          try (Ref.update(indexBindingStack, (activeIndexBindings): infer _ =>
+          try (Ref.update(indexBindingStack, (activeIndexBindings) =>
             EffectArray.dropRight(activeIndexBindings, 1)));
       },
       CallExpression: effect (node: ESTree.Node) => {
@@ -336,7 +336,7 @@ export const noArrayIndexViewKeys = Rule.define({
         const { value: keyExpression } = maybeKeyExpression
         const maybeIndexBinding = EffectArray.findFirst(
           activeIndexBindings,
-          (indexBinding): infer _ =>
+          (indexBinding) =>
             referencesIndexBinding(keyExpression, indexBinding, references),
         )
         if (Option.isNone(maybeIndexBinding)) {

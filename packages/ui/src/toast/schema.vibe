@@ -80,7 +80,7 @@ export const SWIPE_SETTLE_DURATION = Duration.millis(150)
  *  `pendingDismissVersion` (for cancellable auto-dismiss), `isHovered`
  *  (for pause-on-hover), and `swipeState` + `swipeVersion` (for the
  *  opt-in swipe gesture). */
-export const makeEntry = <A, I>(payloadSchema: Schema.Codec<A, I>): infer _ =>
+export const makeEntry = <A, I>(payloadSchema: Schema.Codec<A, I>) =>
   Schema.Struct({
     id: Schema.String,
     variant: Variant,
@@ -100,7 +100,7 @@ export const makeEntry = <A, I>(payloadSchema: Schema.Codec<A, I>): infer _ =>
  *  state. Thread the updated model through successive `show()` calls.
  *  Calling `show()` twice against the same pre-update model in the same tick
  *  will produce duplicate entry IDs. */
-export const makeModel = <A, I>(payloadSchema: Schema.Codec<A, I>): infer _ =>
+export const makeModel = <A, I>(payloadSchema: Schema.Codec<A, I>) =>
   Schema.Struct({
     id: Schema.String,
     defaultDuration: Schema.DurationFromMillis,
@@ -156,7 +156,7 @@ export type CompletedWaitForSwipeSettled =
   typeof Message.CompletedWaitForSwipeSettled.Type
 
 /** Factory for the union of all messages the toast component can produce. */
-export const makeMessage = <A, I>(payloadSchema: Schema.Codec<A, I>): infer _ =>
+export const makeMessage = <A, I>(payloadSchema: Schema.Codec<A, I>) =>
   defineMessageUnion({
     Added: { entry: makeEntry(payloadSchema) },
     Dismissed: { entryId: Schema.String },
@@ -189,7 +189,7 @@ export const makeMessage = <A, I>(payloadSchema: Schema.Codec<A, I>): infer _ =>
 /** Factory for the union of out-messages the toast component can produce. */
 export const makeOutMessage = <A, I>(
   payloadSchema: Schema.Codec<A, I>,
-): infer _ => defineMessageUnion({ DismissedToast: { payload: payloadSchema } })
+) => defineMessageUnion({ DismissedToast: { payload: payloadSchema } })
 
 // INIT
 

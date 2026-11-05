@@ -53,7 +53,7 @@ const readHome = (model: Model): Option<Home.Model.Model> =>
   Option.some(model.home)
 
 const writeHome = (model: Model, nextHome: Home.Model.Model): Model =>
-  modifyFields(model, { home: (): infer _ => nextHome })
+  modifyFields(model, { home: () => nextHome })
 
 const toGotHomeMessage = (message: Home.Message): Message =>
   Message.GotHomeMessage({ message })
@@ -62,12 +62,12 @@ const readRoom = (model: Model): Option<Room.Model.Model> =>
   Option.some(model.room)
 
 const writeRoom = (model: Model, nextRoom: Room.Model.Model): Model =>
-  modifyFields(model, { room: (): infer _ => nextRoom })
+  modifyFields(model, { room: () => nextRoom })
 
 const toGotRoomMessage = (message: Room.Message): Message =>
   Message.GotRoomMessage({ message })
 
-const navigateToRoom = (roomId: string): UpdateStep => (model): infer _ => ({
+const navigateToRoom = (roomId: string): UpdateStep => (model) => ({
   model,
   commands: [NavigateToRoom({ roomId })],
 })
@@ -79,7 +79,7 @@ const enterJoinedRoom = (roomId: string, player: Shared.Player): UpdateStep =>
       update: (
         roomModel: Room.Model.Model,
         joinedPlayer: Shared.Player,
-      ): infer _ => Room.informJoined(roomModel, joinedPlayer, { roomId }),
+      ) => Room.informJoined(roomModel, joinedPlayer, { roomId }),
       read: readRoom,
       write: writeRoom,
       toParentMessage: toGotRoomMessage,
@@ -88,10 +88,8 @@ const enterJoinedRoom = (roomId: string, player: Shared.Player): UpdateStep =>
 
 const foldHomeOutMessage = (outMessage: Home.OutMessage): UpdateStep =>
   Home.OutMessage.match<UpdateStep>(outMessage, {
-    CreatedRoom: ({ roomId, player }): infer _ =>
-      enterJoinedRoom(roomId, player),
-    JoinedRoom: ({ roomId, player }): infer _ =>
-      enterJoinedRoom(roomId, player),
+    CreatedRoom: ({ roomId, player }) => enterJoinedRoom(roomId, player),
+    JoinedRoom: ({ roomId, player }) => enterJoinedRoom(roomId, player),
   })
 
 const foldHomeMessage = Update.foldChild({
@@ -102,45 +100,45 @@ const foldHomeMessage = Update.foldChild({
   foldOutMessage: foldHomeOutMessage,
 })
 
-const foldRoomMessage = (roomId: string): infer _ =>
+const foldRoomMessage = (roomId: string) =>
   Update.foldChild({
-    update: (roomModel: Room.Model.Model, message: Room.Message): infer _ =>
+    update: (roomModel: Room.Model.Model, message: Room.Message) =>
       Room.update(roomModel, message, { roomId }),
     read: readRoom,
     write: writeRoom,
     toParentMessage: toGotRoomMessage,
   })
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn<Model, Message>>(message, {
-    ClickedLink: ({ request }): infer _ =>
+    ClickedLink: ({ request }) =>
       UrlRequest.match<UpdateReturn<Model, Message>>(request, {
-        Internal: ({ url }): infer _ => ({
+        Internal: ({ url }) => ({
           model,
           commands: [NavigateInternal({ url: Url.toString(url) })],
         }),
-        External: ({ href }): infer _ => ({
+        External: ({ href }) => ({
           model,
           commands: [LoadExternal({ href })],
         }),
       }),
 
-    ChangedUrl: ({ url }): infer _ => ({
+    ChangedUrl: ({ url }) => ({
       model: modifyFields(model, {
-        route: (): infer _ => urlToAppRoute(url),
+        route: () => urlToAppRoute(url),
       }),
     }),
 
-    GotHomeMessage: ({ message }): infer _ => foldHomeMessage(model, message),
+    GotHomeMessage: ({ message }) => foldHomeMessage(model, message),
 
-    GotRoomMessage: ({ message }): infer _ => match (model.route) {
+    GotRoomMessage: ({ message }) => match (model.route) {
       when { _tag: 'Room', let roomId }: foldRoomMessage(roomId)(
         model,
         message,
       );
       default: ({ model });
     },
-    CompletedNavigateInternal: (): infer _ => ({ model }),
-    CompletedLoadExternal: (): infer _ => ({ model }),
-    CompletedNavigateToRoom: (): infer _ => ({ model }),
+    CompletedNavigateInternal: () => ({ model }),
+    CompletedLoadExternal: () => ({ model }),
+    CompletedNavigateToRoom: () => ({ model }),
   })

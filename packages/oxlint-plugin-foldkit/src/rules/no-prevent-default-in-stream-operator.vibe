@@ -55,8 +55,8 @@ const preventDefaultCalls = (
   }
   const nested = pipe(
     Object.entries(value),
-    EffectArray.filter(([key]): infer _ => key !== 'parent'),
-    EffectArray.flatMap(([, child]): infer _ => preventDefaultCalls(child)),
+    EffectArray.filter(([key]) => key !== 'parent'),
+    EffectArray.flatMap(([, child]) => preventDefaultCalls(child)),
   )
   return isPreventDefaultCall(value) ? [value, ...nested] : nested
 }
@@ -87,7 +87,7 @@ const streamOperatorName = (
       (maybeImportedPath.value.source === 'effect'
         && Option.exists(
           EffectArray.last(maybeImportedPath.value.members),
-          (member): infer _ => member === 'Stream',
+          (member) => member === 'Stream',
         ))
       || maybeImportedPath.value.source === 'effect/Stream'
     )
@@ -119,8 +119,8 @@ const referencedFunction = (
   }
 
   return resolvedVariable(references, node)
-    .flatMap((variable): infer _ =>
-      EffectArray.findFirst(variable.defs, (definition): infer _ => {
+    .flatMap((variable) =>
+      EffectArray.findFirst(variable.defs, (definition) => {
         if (definition.type === 'FunctionName') {
           return isFunctionNode(definition.node)
         }
@@ -131,7 +131,7 @@ const referencedFunction = (
         )
       })
     )
-    .flatMap((definition): infer _ => {
+    .flatMap((definition) => {
       if (definition.type === 'FunctionName') {
         return isFunctionNode(definition.node)
           ? Option.some(definition.node)
@@ -181,7 +181,7 @@ export const noPreventDefaultInStreamOperator = Rule.define({
           when Option.Some(let operatorName): do {
             const calls = pipe(
               node.arguments,
-              EffectArray.flatMap((argument): infer _ => match (referencedFunction(argument, references)) {
+              EffectArray.flatMap((argument) => match (referencedFunction(argument, references)) {
                 when Option.None: [];
                 when Option.Some(let functionNode): [functionNode];
               }),

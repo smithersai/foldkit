@@ -148,8 +148,8 @@ const staticPath = (node: unknown): Option.Option<StaticPath> => {
 
   return Option.flatMap(
     staticPath(expression.object),
-    (path): infer _ =>
-      Option.map(staticMemberName(expression), (member): infer _ => ({
+    (path) =>
+      Option.map(staticMemberName(expression), (member) => ({
         root: path.root,
         members: [...path.members, member],
       })),
@@ -160,7 +160,7 @@ const globalPathKey = (
   references: WeakMap<ESTree.Node, Reference> | undefined,
   node: unknown,
 ): Option.Option<string> =>
-  Option.flatMap(staticPath(node), (path): infer _ => {
+  Option.flatMap(staticPath(node), (path) => {
     if (!isUnshadowedReference(references, path.root)) {
       return Option.none()
     }
@@ -176,11 +176,11 @@ const importedPath = (
   node: unknown,
 ): Option.Option<ImportedPath> =>
   references === undefined
-    ? Option.map(staticPath(node), (path): infer _ => ({
+    ? Option.map(staticPath(node), (path) => ({
       source: '',
       members: [path.root.name, ...path.members],
     }))
-    : Option.map(resolveImportedPath(references, node), (path): infer _ => ({
+    : Option.map(resolveImportedPath(references, node), (path) => ({
       source: path.source,
       members: path.members,
     }))
@@ -225,9 +225,8 @@ const apiCallKey = (
 ): Option.Option<string> =>
   Option.flatMap(
     importedPath(references, headCall(node).callee),
-    (path): infer _ =>
-      Option.map(normalizedApiPath(path), (members): infer _ =>
-        members.join('.')),
+    (path) =>
+      Option.map(normalizedApiPath(path), (members) => members.join('.')),
   )
 
 type EnclosingCallArgument = Readonly<{
@@ -241,7 +240,7 @@ const enclosingCallArgument = (
   const argument = outermostExpression(node)
   const parent = argument.parent
   return parent?.type === 'CallExpression'
-      && parent.arguments.some((candidate): infer _ => candidate === argument)
+      && parent.arguments.some((candidate) => candidate === argument)
     ? Option.some({ call: parent, argument })
     : Option.none()
 }
@@ -273,7 +272,7 @@ const directByArity = (
   ...entries: ReadonlyArray<ArgumentPositions>
 ): ReadonlyMap<number, ReadonlySet<number>> =>
   new Map(
-    entries.map(([arity, ...argumentIndices]): infer _ => [
+    entries.map(([arity, ...argumentIndices]) => [
       arity,
       new Set(argumentIndices),
     ]),
@@ -588,7 +587,7 @@ const isEffectFunctionBody = (
   return (
     Option.exists(
       maybeFirstArgument,
-      (argument): infer _ => isObjectExpression(innermostExpression(argument)),
+      (argument) => isObjectExpression(innermostExpression(argument)),
     ) && Option.contains(Arr.get(call.arguments, 1), argument)
   )
 }
@@ -604,7 +603,7 @@ const isDeferredDirectEffectApiCallback = (
 
   const maybeArgumentIndex = Arr.findFirstIndex(
     call.arguments,
-    (candidate): infer _ => candidate === argument,
+    (candidate) => candidate === argument,
   )
   const maybePositions = Option.fromNullishOr(
     deferredCallbackByApi.get(key)?.direct?.get(call.arguments.length),
@@ -612,10 +611,10 @@ const isDeferredDirectEffectApiCallback = (
 
   return Option.exists(
     maybeArgumentIndex,
-    (argumentIndex): infer _ =>
+    (argumentIndex) =>
       Option.exists(
         maybePositions,
-        (positions): infer _ => positions.has(argumentIndex),
+        (positions) => positions.has(argumentIndex),
       ),
   )
 }
@@ -628,21 +627,21 @@ const isDeferredObjectEffectApiCallback = (
 ): boolean => {
   const maybeArgumentIndex = Arr.findFirstIndex(
     call.arguments,
-    (candidate): infer _ => candidate === argument,
+    (candidate) => candidate === argument,
   )
   const maybePropertyName = staticPropertyName(property)
   const propertiesByArgument = deferredCallbackByApi
     .get(key)
     ?.properties?.get(call.arguments.length)
 
-  return Option.exists(maybeArgumentIndex, (argumentIndex): infer _ => {
+  return Option.exists(maybeArgumentIndex, (argumentIndex) => {
     const propertyNames = propertiesByArgument?.get(argumentIndex)
     return (
       propertyNames === true
       || (propertyNames !== undefined
         && Option.exists(
           maybePropertyName,
-          (propertyName): infer _ => propertyNames.has(propertyName),
+          (propertyName) => propertyNames.has(propertyName),
         ))
     )
   })
@@ -656,7 +655,7 @@ const isEffectOrStreamCallback = (
   if (Option.isSome(maybeDirectCall)) {
     return Option.exists(
       apiCallKey(references, maybeDirectCall.value.call),
-      (key): infer _ =>
+      (key) =>
         isDeferredDirectEffectApiCallback(
           maybeDirectCall.value.argument,
           maybeDirectCall.value.call,
@@ -684,8 +683,7 @@ const isEffectOrStreamCallback = (
 
   return Option.exists(
     apiCallKey(references, call),
-    (key): infer _ =>
-      isDeferredObjectEffectApiCallback(property, argument, call, key),
+    (key) => isDeferredObjectEffectApiCallback(property, argument, call, key),
   )
 }
 
@@ -704,7 +702,7 @@ const isInlineConfigFunction = (
     property.parent.type !== 'ObjectExpression'
     || !Option.exists(
       staticPropertyName(property),
-      (name): infer _ => propertyNames.has(name),
+      (name) => propertyNames.has(name),
     )
   ) {
     return false
@@ -717,7 +715,7 @@ const isInlineConfigFunction = (
 
   return Option.exists(
     apiCallKey(references, maybeCall.value.call),
-    (key): infer _ => factoryKeys.has(key),
+    (key) => factoryKeys.has(key),
   )
 }
 
@@ -770,7 +768,7 @@ const isNestedLifecycleFunction = (
 
   const isManagedResourceEffect = Option.exists(
     maybePropertyName,
-    (name): infer _ => name === 'acquire' || name === 'release',
+    (name) => name === 'acquire' || name === 'release',
   )
   return (
     isManagedResourceEffect
@@ -818,7 +816,7 @@ const callOperation = (
 ): Option.Option<ImpureOperation> =>
   Option.flatMap(
     globalPathKey(references, node.callee),
-    (key): infer _ => Option.fromNullishOr(impureCallByPath.get(key)),
+    (key) => Option.fromNullishOr(impureCallByPath.get(key)),
   )
 
 const newOperation = (

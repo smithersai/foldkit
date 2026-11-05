@@ -177,18 +177,18 @@ export const noEmptyToParentOutMessage = Rule.define({
 
         const hasSpread = EffectArray.some(
           node.properties,
-          (property): infer _ => property.type === 'SpreadElement',
+          (property) => property.type === 'SpreadElement',
         )
         const hasDynamicComputedProperty = EffectArray.some(
           node.properties,
-          (property): infer _ =>
+          (property) =>
             isObjectProperty(property)
             && property.computed
             && Option.isNone(staticPropertyName(property)),
         )
         const mapperProperties = EffectArray.filter(
           node.properties,
-          (property): infer _ =>
+          (property) =>
             isObjectProperty(property)
             && Option.contains(
               staticPropertyName(property),

@@ -39,7 +39,7 @@ export const calculateScoreboard = effect (
 ): Shared.Scoreboard!never!never => {
   return match (room.maybeGame) {
     when Option.None: [];
-    when Option.Some(let game): Array.map(room.players, (player): infer _ => {
+    when Option.Some(let game): Array.map(room.players, (player) => {
       const gamePlayer = Shared.GamePlayer.make({
         gameId: game.id,
         playerId: player.id,

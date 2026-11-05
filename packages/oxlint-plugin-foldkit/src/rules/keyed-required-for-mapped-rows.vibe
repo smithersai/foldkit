@@ -92,7 +92,7 @@ const isSingleValueMapCallee = (
 
   return Option.exists(
     resolveImportedPath(references, callee),
-    (path): infer _ => {
+    (path) => {
       const isEffectModule = path.source === 'effect'
         || path.source.startsWith('effect/')
       const members = path.source.startsWith('effect/')
@@ -124,7 +124,7 @@ const isMapCallee = (
 
   return Option.exists(
     resolveImportedPath(references, callee),
-    (path): infer _ => {
+    (path) => {
       if (path.source !== 'effect' && !path.source.startsWith('effect/')) {
         return false
       }
@@ -162,7 +162,7 @@ const referencesIdOfParameter = (
   parameterVariable: Variable | undefined,
 ): boolean => {
   if (Arr.isArray(value)) {
-    return value.some((element): infer _ =>
+    return value.some((element) =>
       referencesIdOfParameter(
         element,
         parameterName,
@@ -182,14 +182,14 @@ const referencesIdOfParameter = (
       || (parameterVariable !== undefined
         && Option.exists(
           resolvedVariable(references, value.object),
-          (variable): infer _ => variable === parameterVariable,
+          (variable) => variable === parameterVariable,
         )))
   ) {
     return true
   }
   const fieldEntries = Object.entries(value)
   return fieldEntries.some(
-    ([fieldName, fieldValue]): infer _ =>
+    ([fieldName, fieldValue]) =>
       fieldName !== 'parent'
       && referencesIdOfParameter(
         fieldValue,
@@ -204,7 +204,7 @@ const destructuresId = (
   pattern: Readonly<{ properties: ReadonlyArray<unknown> }>,
 ): boolean =>
   pattern.properties.some(
-    (property): infer _ =>
+    (property) =>
       typeof property === 'object'
       && property !== null
       && 'key' in property
@@ -218,10 +218,8 @@ const isIdentityBearing = (
 ): boolean => {
   const [firstParameter] = callback.params
   if (isIdentifier(firstParameter)) {
-    const parameterVariable = declaredVariables.find((variable): infer _ =>
-      variable.identifiers.some((identifier): infer _ =>
-        identifier === firstParameter
-      )
+    const parameterVariable = declaredVariables.find((variable) =>
+      variable.identifiers.some((identifier) => identifier === firstParameter)
     )
 
     return referencesIdOfParameter(
@@ -246,7 +244,7 @@ const callbackReturnExpression = (
   return pipe(
     callback.body.body,
     Arr.findLast(isReturnStatement),
-    Option.flatMap((returnStatement): infer _ =>
+    Option.flatMap((returnStatement) =>
       Option.fromNullishOr(returnStatement.argument)
     ),
   )
@@ -268,7 +266,7 @@ const hasKeyAttribute = (
     return false
   }
   return attributesArgument.elements.some(
-    (element): infer _ =>
+    (element) =>
       isCallExpression(element)
       && isFoldkitHtmlBuilderMember(element.callee, 'Key', references),
   )
@@ -293,11 +291,11 @@ const unkeyedRowElement = (
     return Option.none()
   }
   return helperCalleeName(returnExpression.callee)
-    .filter((tagName): infer _ => rowElementTagNames.includes(tagName))
-    .filter((tagName): infer _ =>
+    .filter((tagName) => rowElementTagNames.includes(tagName))
+    .filter((tagName) =>
       isFoldkitHtmlBuilderMember(returnExpression.callee, tagName, references)
     )
-    .map((tagName): infer _ => ({ rowElementCall: returnExpression, tagName }))
+    .map((tagName) => ({ rowElementCall: returnExpression, tagName }))
 }
 
 // RULE
@@ -330,7 +328,7 @@ export const keyedRequiredForMappedRows = Rule.define({
           return undefined
         }
         return match (arrowCallback(node)
-            .filter((callback): infer _ =>
+            .filter((callback) =>
               isIdentityBearing(
                 callback,
                 references,
@@ -339,7 +337,7 @@ export const keyedRequiredForMappedRows = Rule.define({
               )
             )
             .flatMap(callbackReturnExpression)
-            .flatMap((returnExpression): infer _ =>
+            .flatMap((returnExpression) =>
               unkeyedRowElement(returnExpression, references)
             )) {
           when Option.None: undefined;

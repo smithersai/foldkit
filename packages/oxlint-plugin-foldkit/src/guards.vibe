@@ -154,7 +154,7 @@ export const staticMemberPath = (
     return Option.some({ root: expression, members: [] })
   }
   if (isTSQualifiedName(expression)) {
-    return Option.map(staticMemberPath(expression.left), (path): infer _ => ({
+    return Option.map(staticMemberPath(expression.left), (path) => ({
       root: path.root,
       members: [...path.members, expression.right.name],
     }))
@@ -165,8 +165,8 @@ export const staticMemberPath = (
 
   return Option.flatMap(
     staticMemberPath(expression.object),
-    (path): infer _ =>
-      Option.map(staticMemberName(expression), (member): infer _ => ({
+    (path) =>
+      Option.map(staticMemberName(expression), (member) => ({
         root: path.root,
         members: [...path.members, member],
       })),
@@ -179,7 +179,7 @@ export const calleeMatchesHelperName = (
 ): boolean =>
   Option.exists(
     helperCalleeName(callee),
-    (name): infer _ => name === helperName,
+    (name) => name === helperName,
   )
 
 export const staticStringValue = (node: unknown): Option<string> => {
@@ -189,7 +189,7 @@ export const staticStringValue = (node: unknown): Option<string> => {
   if (isTemplateLiteral(node) && Arr.isArrayEmpty(node.expressions)) {
     return Option.flatMap(
       Arr.head(node.quasis),
-      (quasi): infer _ => Option.fromNullishOr(quasi.value.cooked),
+      (quasi) => Option.fromNullishOr(quasi.value.cooked),
     )
   }
   return Option.none()
@@ -235,7 +235,7 @@ export const resolvedVariable = (
 ): Option<Variable> =>
   Option.flatMap(
     Option.fromNullishOr(references.get(node)),
-    (reference): infer _ => Option.fromNullishOr(reference.resolved),
+    (reference) => Option.fromNullishOr(reference.resolved),
   )
 
 export type ImportedPath = Readonly<{
@@ -261,7 +261,7 @@ export const resolveImportedPath = (
   const variable = maybeYielded2.value
   const maybeYielded3 = Arr.findFirst(
     variable.defs,
-    (definition): infer _ => definition.type === 'ImportBinding',
+    (definition) => definition.type === 'ImportBinding',
   )
   if (maybeYielded3 is Option.None) return Option.none()
   const definition = maybeYielded3.value
@@ -311,7 +311,7 @@ export const resolveFoldkitApiPath = (
   references: WeakMap<ESTree.Node, Reference>,
   node: unknown,
 ): Option<ReadonlyArray<string>> =>
-  Option.flatMap(resolveImportedPath(references, node), (path): infer _ => {
+  Option.flatMap(resolveImportedPath(references, node), (path) => {
     if (path.source === 'foldkit') {
       return Option.some(path.members)
     }
@@ -350,7 +350,7 @@ const isFoldkitDefineViewCallback = (
 
   return Option.exists(
     resolveFoldkitApiPath(references, parent.callee),
-    (path): infer _ => {
+    (path) => {
       const [namespace, helperName, extraMember] = path
 
       return (
@@ -376,7 +376,7 @@ const hasHtmlBuilderTypeAnnotation = (
 
   return Option.exists(
     resolveFoldkitApiPath(references, typeAnnotation.typeName),
-    (path): infer _ => {
+    (path) => {
       const [namespace, typeName, extraMember] = path
 
       return (
@@ -394,8 +394,8 @@ const isHtmlBuilderParameter = (
 ): boolean =>
   Option.exists(
     resolvedVariable(references, root),
-    (variable): infer _ =>
-      variable.defs.some((definition): infer _ => {
+    (variable) =>
+      variable.defs.some((definition) => {
         if (
           definition.type !== 'Parameter'
           || !isTypeAnnotatedIdentifier(definition.name)
@@ -414,7 +414,7 @@ const isHtmlBuilderParameter = (
         return (
           Option.exists(
             Arr.last(definition.node.params),
-            (parameter): infer _ => parameter === definition.name,
+            (parameter) => parameter === definition.name,
           ) && isFoldkitDefineViewCallback(references, definition.node)
         )
       }),
@@ -431,7 +431,7 @@ export const isFoldkitHtmlBuilderMember = (
 
   const isFoldkitInertHtmlMember = Option.exists(
     resolveFoldkitApiPath(references, callee),
-    (path): infer _ => {
+    (path) => {
       const [namespace, builderName, importedMember, extraImportedMember] = path
       return (
         namespace === 'Html'
@@ -445,7 +445,7 @@ export const isFoldkitHtmlBuilderMember = (
     return true
   }
 
-  return Option.exists(staticMemberPath(callee), (path): infer _ => {
+  return Option.exists(staticMemberPath(callee), (path) => {
     const [member, extraMember] = path.members
 
     return (

@@ -91,10 +91,10 @@ export const WaitForSwipeSettled = Command.define('WaitForSwipeSettled', {
  *  the offset the release left behind; `Idle` and `Settling` report zero. */
 export const swipeOffset = (swipeState: typeof SwipeState.Type): number =>
   SwipeState.match(swipeState, {
-    Idle: (): infer _ => 0,
-    Dragging: (dragging): infer _ => dragging.currentX - dragging.startX,
-    Settling: (settling): infer _ => settling.offsetX,
-    Dismissing: (dismissing): infer _ => dismissing.offsetX,
+    Idle: () => 0,
+    Dragging: (dragging) => dragging.currentX - dragging.startX,
+    Settling: (settling) => settling.offsetX,
+    Dismissing: (dismissing) => dismissing.offsetX,
   })
 
 const clampSwipeClientX = (
@@ -111,7 +111,7 @@ const documentStylesWhileSwiping = Stream.callback<never>(effect () => {
     const documentService = try Experimental.Document.Document
     const hostDocument = try documentService.current
     try Effect.acquireRelease(
-      Effect.sync((): infer _ => {
+      Effect.sync(() => {
         const styleElement = hostDocument.createElement('style')
         styleElement.textContent = `
         :root {
@@ -126,7 +126,7 @@ const documentStylesWhileSwiping = Stream.callback<never>(effect () => {
         return styleElement
       }),
       effect styleElement =>
-        try Effect.sync((): infer _ => {
+        try Effect.sync(() => {
           styleElement.remove()
         }),
     )
@@ -143,7 +143,7 @@ const documentStylesWhileSwiping = Stream.callback<never>(effect () => {
  *  only exported so `index.ts` can wire the view into the bound runtime. */
 export const makeRuntime = <A, I>(
   payloadSchema: Schema.Codec<A, I>,
-): infer _ => {
+) => {
   const EntrySchema = makeEntry(payloadSchema)
   const ModelSchema = makeModel(payloadSchema)
   const MessageSchema = makeMessage(payloadSchema)
@@ -166,12 +166,12 @@ export const makeRuntime = <A, I>(
     modifyFields(model, {
       entries: Array.map((
         entry,
-      ): infer _ => (entry.id === entryId ? f(entry) : entry)),
+      ) => (entry.id === entryId ? f(entry) : entry)),
     })
 
   const removeEntry = (model: Model, entryId: string): Model =>
     modifyFields(model, {
-      entries: Array.filter(({ id }): infer _ => id !== entryId),
+      entries: Array.filter(({ id }) => id !== entryId),
     })
 
   const isEntryLeaving = (entry: Entry): boolean => {
@@ -182,7 +182,7 @@ export const makeRuntime = <A, I>(
   }
 
   const isDraggingWithPointerId =
-    (pointerId: number): infer _ => (entry: Entry): boolean =>
+    (pointerId: number) => (entry: Entry): boolean =>
       SwipeState.guards.Dragging(entry.swipeState)
       && entry.swipeState.pointerId === pointerId
 
@@ -192,7 +192,7 @@ export const makeRuntime = <A, I>(
   const isAnyDragging = (model: Model): boolean =>
     Array.some(
       model.entries,
-      (entry): infer _ => SwipeState.guards.Dragging(entry.swipeState),
+      (entry) => SwipeState.guards.Dragging(entry.swipeState),
     )
 
   const findDraggingEntry = (
@@ -200,14 +200,14 @@ export const makeRuntime = <A, I>(
     pointerId: number,
   ): Option<Readonly<{ entry: Entry; startX: number }>> =>
     Array.findFirst(model.entries, isDraggingWithPointerId(pointerId))
-      .flatMap((entry): infer _ =>
+      .flatMap((entry) =>
         SwipeState.matchOrElse(
           entry.swipeState,
           {
-            Dragging: (dragging): infer _ =>
+            Dragging: (dragging) =>
               Option.some({ entry, startX: dragging.startX }),
           },
-          (): infer _ => Option.none(),
+          () => Option.none(),
         )
       )
 
@@ -223,7 +223,7 @@ export const makeRuntime = <A, I>(
     } else {
       return Option.map(
         entry.maybeDuration,
-        (duration): infer _ =>
+        (duration) =>
           WaitBeforeDismissal({
             entryId: entry.id,
             version: entry.pendingDismissVersion,
@@ -234,14 +234,14 @@ export const makeRuntime = <A, I>(
   }
 
   const settleSnapBack =
-    (entry: Entry): Update.Step<Model, Message> => (model): infer _ => {
+    (entry: Entry): Update.Step<Model, Message> => (model) => {
       const nextSwipeVersion = Number.increment(entry.swipeVersion)
       const nextEntry = modifyFields(entry, {
         pendingDismissVersion: Number.increment,
-        swipeState: (): infer _ => SwipeState.Settling({ offsetX: 0 }),
-        swipeVersion: (): infer _ => nextSwipeVersion,
+        swipeState: () => SwipeState.Settling({ offsetX: 0 }),
+        swipeVersion: () => nextSwipeVersion,
       })
-      const nextModel = updateEntry(model, entry.id, (): infer _ => nextEntry)
+      const nextModel = updateEntry(model, entry.id, () => nextEntry)
       return {
         model: nextModel,
         commands: [
@@ -252,30 +252,28 @@ export const makeRuntime = <A, I>(
     }
 
   const readEntryAnimation =
-    (entryId: string): infer _ => (model: Model): Option<Entry['animation']> =>
-      Array.findFirst(model.entries, ({ id }): infer _ => id === entryId)
-        .map(({ animation }): infer _ => animation)
+    (entryId: string) => (model: Model): Option<Entry['animation']> =>
+      Array.findFirst(model.entries, ({ id }) => id === entryId)
+        .map(({ animation }) => animation)
 
   const writeEntryAnimation =
-    (entryId: string): infer _ =>
+    (entryId: string) =>
     (model: Model, nextAnimation: Entry['animation']): Model =>
       updateEntry(
         model,
         entryId,
-        (entry): infer _ =>
-          modifyFields(entry, { animation: (): infer _ => nextAnimation }),
+        (entry) => modifyFields(entry, { animation: () => nextAnimation }),
       )
 
   const toGotAnimationMessage =
-    (entryId: string): infer _ => (message: AnimationMessage): Message =>
+    (entryId: string) => (message: AnimationMessage): Message =>
       MessageSchema.GotAnimationMessage({ entryId, message })
 
   const toDismissedToastOutMessage =
-    (payload: A): infer _ => (outMessage: AnimationOutMessage): infer _ =>
+    (payload: A) => (outMessage: AnimationOutMessage) =>
       AnimationOutMessage.match<OutMessage | undefined>(outMessage, {
-        StartedLeaveAnimating: (): infer _ => undefined,
-        TransitionedOut: (): infer _ =>
-          OutMessageSchema.DismissedToast({ payload }),
+        StartedLeaveAnimating: () => undefined,
+        TransitionedOut: () => OutMessageSchema.DismissedToast({ payload }),
       })
 
   const foldEntryAnimationOutMessage: (
@@ -284,21 +282,21 @@ export const makeRuntime = <A, I>(
     outMessage: AnimationOutMessage,
     context: Update.FoldContext<AnimationMessage, Message>,
   ) => Update.Step<Model, Message> =
-    (entryId): infer _ => (outMessage, { liftCommand }): infer _ =>
+    (entryId) => (outMessage, { liftCommand }) =>
       AnimationOutMessage.match<Update.Step<Model, Message>>(outMessage, {
-        StartedLeaveAnimating: (): infer _ => (model): infer _ => match (readEntryAnimation(entryId)(model)) {
+        StartedLeaveAnimating: () => (model) => match (readEntryAnimation(entryId)(model)) {
           when Option.None: ({ model });
           when Option.Some(let animation): ({
             model,
             commands: [liftCommand(animationDefaultLeaveCommand(animation))],
           });
         },
-        TransitionedOut: (): infer _ => (model): infer _ => ({
+        TransitionedOut: () => (model) => ({
           model: removeEntry(model, entryId),
         }),
       })
 
-  const foldEntryAnimation = (entry: Entry): infer _ =>
+  const foldEntryAnimation = (entry: Entry) =>
     Update.foldChild({
       update: animationUpdate,
       read: readEntryAnimation(entry.id),
@@ -308,18 +306,18 @@ export const makeRuntime = <A, I>(
       foldOutMessage: foldEntryAnimationOutMessage(entry.id),
     })
 
-  const foldEntryAnimationShow = (entry: Entry): infer _ =>
+  const foldEntryAnimationShow = (entry: Entry) =>
     Update.foldChildStep({
-      update: (animation: AnimationModel): infer _ =>
+      update: (animation: AnimationModel) =>
         animationUpdate(animation, AnimationMessage.Showed()),
       read: readEntryAnimation(entry.id),
       write: writeEntryAnimation(entry.id),
       toParentMessage: toGotAnimationMessage(entry.id),
     })
 
-  const foldEntryAnimationHide = (entry: Entry): infer _ =>
+  const foldEntryAnimationHide = (entry: Entry) =>
     Update.foldChildStep({
-      update: (animation: AnimationModel): infer _ =>
+      update: (animation: AnimationModel) =>
         animationUpdate(animation, AnimationMessage.Hid()),
       read: readEntryAnimation(entry.id),
       write: writeEntryAnimation(entry.id),
@@ -330,7 +328,7 @@ export const makeRuntime = <A, I>(
     model: Model,
     entryId: string,
     animationMessage: AnimationMessage,
-  ): UpdateReturn => match (Array.findFirst(model.entries, ({ id }): infer _ => id === entryId)) {
+  ): UpdateReturn => match (Array.findFirst(model.entries, ({ id }) => id === entryId)) {
     when Option.None: ({ model });
     when Option.Some(let entry): foldEntryAnimation(entry)(
       model,
@@ -370,7 +368,7 @@ export const makeRuntime = <A, I>(
     entries: [],
     nextEntryKey: 0,
     maybeSwipeConfig: Option.fromNullishOr(config.swipeToDismiss)
-      .map(({ threshold, direction }): infer _ => ({
+      .map(({ threshold, direction }) => ({
         threshold: threshold ?? DEFAULT_SWIPE_THRESHOLD,
         direction: direction ?? DEFAULT_SWIPE_DIRECTION,
       })),
@@ -379,23 +377,23 @@ export const makeRuntime = <A, I>(
   /** Processes a Toast Message and returns the next Model, optional Commands,
    *  and an optional `DismissedToast` OutMessage emitted once an entry has
    *  finished its leave animation. */
-  const update = (model: Model, message: Message): infer _ =>
+  const update = (model: Model, message: Message) =>
     MessageSchema.match<UpdateReturn>(message, {
-      Added: ({ entry }): infer _ => {
+      Added: ({ entry }) => {
         return Update.combine(model, [
-          (stepModel): infer _ => ({
+          (stepModel) => ({
             model: modifyFields(stepModel, {
-              entries: (entries): infer _ => Array.append(entries, entry),
+              entries: (entries) => Array.append(entries, entry),
               nextEntryKey: Number.increment,
             }),
           }),
           foldEntryAnimationShow(entry),
-          (stepModel): infer _ => ({
+          (stepModel) => ({
             model: stepModel,
             commands: pipe(
               Array.findFirst(
                 stepModel.entries,
-                ({ id }): infer _ => id === entry.id,
+                ({ id }) => id === entry.id,
               ),
               Option.flatMap(scheduleWaitBeforeDismissal),
               Array.fromOption,
@@ -404,15 +402,15 @@ export const makeRuntime = <A, I>(
         ])
       },
 
-      Dismissed: ({ entryId }): infer _ => {
+      Dismissed: ({ entryId }) => {
         const maybeEntry = Array.findFirst(
           model.entries,
-          ({ id }): infer _ => id === entryId,
+          ({ id }) => id === entryId,
         )
 
         return match (maybeEntry) {
-          when Option.None: ((): infer _ => ({ model }))();
-          when Option.Some(let optionValue6): ((entry): infer _ => {
+          when Option.None: (() => ({ model }))();
+          when Option.Some(let optionValue6): ((entry) => {
             if (isEntryLeaving(entry)) {
               return { model }
             } else {
@@ -422,25 +420,25 @@ export const makeRuntime = <A, I>(
         }
       },
 
-      DismissedAll: (): infer _ =>
+      DismissedAll: () =>
         Update.combine(
           model,
           pipe(
             model.entries,
-            Array.filter((entry): infer _ => !isEntryLeaving(entry)),
+            Array.filter((entry) => !isEntryLeaving(entry)),
             Array.map(foldEntryAnimationHide),
           ),
         ),
 
-      CompletedWaitBeforeDismissal: ({ entryId, version }): infer _ => {
+      CompletedWaitBeforeDismissal: ({ entryId, version }) => {
         const maybeEntry = Array.findFirst(
           model.entries,
-          ({ id }): infer _ => id === entryId,
+          ({ id }) => id === entryId,
         )
 
         return match (maybeEntry) {
-          when Option.None: ((): infer _ => ({ model }))();
-          when Option.Some(let optionValue5): ((entry): infer _ => {
+          when Option.None: (() => ({ model }))();
+          when Option.Some(let optionValue5): ((entry) => {
             const isStale = version !== entry.pendingDismissVersion
             if (isStale || isEntryLeaving(entry)) {
               return { model }
@@ -451,35 +449,35 @@ export const makeRuntime = <A, I>(
         }
       },
 
-      HoveredEntry: ({ entryId }): infer _ => ({
+      HoveredEntry: ({ entryId }) => ({
         model: updateEntry(
           model,
           entryId,
-          (entry): infer _ =>
+          (entry) =>
             modifyFields(entry, {
-              isHovered: (): infer _ => true,
+              isHovered: () => true,
               pendingDismissVersion: Number.increment,
             }),
         ),
       }),
 
-      LeftEntry: ({ entryId }): infer _ => {
+      LeftEntry: ({ entryId }) => {
         const maybeEntry = Array.findFirst(
           model.entries,
-          ({ id }): infer _ => id === entryId,
+          ({ id }) => id === entryId,
         )
 
         return match (maybeEntry) {
           when Option.None: ({ model });
           when Option.Some(let entry): do {
             const nextEntry: Entry = modifyFields(entry, {
-              isHovered: (): infer _ => false,
+              isHovered: () => false,
               pendingDismissVersion: Number.increment,
             })
             const nextModel = updateEntry(
               model,
               entryId,
-              (): infer _ => nextEntry,
+              () => nextEntry,
             )
             const optionResult2 = {
               model: nextModel,
@@ -492,17 +490,17 @@ export const makeRuntime = <A, I>(
         }
       },
 
-      PressedEntryPointer: ({ entryId, pointerId, clientX }): infer _ => {
+      PressedEntryPointer: ({ entryId, pointerId, clientX }) => {
         if (Option.isNone(model.maybeSwipeConfig)) {
           return { model }
         }
         const maybeEntry = Array.findFirst(
           model.entries,
-          ({ id }): infer _ => id === entryId,
+          ({ id }) => id === entryId,
         )
         return match (maybeEntry) {
-          when Option.None: ((): infer _ => ({ model }))();
-          when Option.Some(let optionValue4): ((entry): infer _ => {
+          when Option.None: (() => ({ model }))();
+          when Option.Some(let optionValue4): ((entry) => {
             if (
               isEntryLeaving(entry)
               || SwipeState.guards.Dragging(entry.swipeState)
@@ -512,7 +510,7 @@ export const makeRuntime = <A, I>(
             } else {
               const nextEntry = modifyFields(entry, {
                 pendingDismissVersion: Number.increment,
-                swipeState: (): infer _ =>
+                swipeState: () =>
                   SwipeState.Dragging({
                     pointerId,
                     startX: clientX,
@@ -521,14 +519,14 @@ export const makeRuntime = <A, I>(
                 swipeVersion: Number.increment,
               })
               return {
-                model: updateEntry(model, entryId, (): infer _ => nextEntry),
+                model: updateEntry(model, entryId, () => nextEntry),
               }
             }
           })(optionValue4);
         }
       },
 
-      MovedSwipePointer: ({ pointerId, clientX }): infer _ =>
+      MovedSwipePointer: ({ pointerId, clientX }) =>
         match (Option.all({
             swipeConfig: model.maybeSwipeConfig,
             draggingEntry: findDraggingEntry(model, pointerId),
@@ -541,9 +539,9 @@ export const makeRuntime = <A, I>(
               model: updateEntry(
                 model,
                 entry.id,
-                (currentEntry): infer _ =>
+                (currentEntry) =>
                   modifyFields(currentEntry, {
-                    swipeState: (): infer _ =>
+                    swipeState: () =>
                       SwipeState.Dragging({
                         pointerId,
                         startX,
@@ -560,14 +558,14 @@ export const makeRuntime = <A, I>(
           };
         },
 
-      ReleasedSwipePointer: ({ pointerId, clientX }): infer _ => match (Option.all({
+      ReleasedSwipePointer: ({ pointerId, clientX }) => match (Option.all({
           swipeConfig: model.maybeSwipeConfig,
           draggingEntry: findDraggingEntry(model, pointerId),
         })) {
-        when Option.None: ((): infer _ => ({ model }))();
+        when Option.None: (() => ({ model }))();
         when Option.Some(let optionValue3): ((
           { swipeConfig, draggingEntry: { entry, startX } },
-        ): infer _ => {
+        ) => {
           const offset =
             clampSwipeClientX(startX, clientX, swipeConfig.direction)
             - startX
@@ -578,17 +576,17 @@ export const makeRuntime = <A, I>(
 
           const nextSwipeVersion = Number.increment(entry.swipeVersion)
           const nextEntry = modifyFields(entry, {
-            swipeState: (): infer _ =>
+            swipeState: () =>
               SwipeState.Dismissing({
                 offsetX: offset,
                 direction: swipeConfig.direction,
               }),
-            swipeVersion: (): infer _ => nextSwipeVersion,
+            swipeVersion: () => nextSwipeVersion,
           })
           const nextModel = updateEntry(
             model,
             entry.id,
-            (): infer _ => nextEntry,
+            () => nextEntry,
           )
           if (isEntryLeaving(entry)) {
             return { model: nextModel }
@@ -598,7 +596,7 @@ export const makeRuntime = <A, I>(
         })(optionValue3);
       },
 
-      CancelledSwipe: ({ pointerId }): infer _ =>
+      CancelledSwipe: ({ pointerId }) =>
         match (findDraggingEntry(model, pointerId)) {
           when Option.None: ({ model });
           when Option.Some(let matchedOption4): do {
@@ -608,21 +606,21 @@ export const makeRuntime = <A, I>(
           };
         },
 
-      PressedEscape: (): infer _ => {
+      PressedEscape: () => {
         const draggingEntries = Array.filter(
           model.entries,
-          (entry): infer _ => SwipeState.guards.Dragging(entry.swipeState),
+          (entry) => SwipeState.guards.Dragging(entry.swipeState),
         )
 
         return Update.combine(model, Array.map(draggingEntries, settleSnapBack))
       },
 
-      CompletedWaitForSwipeSettled: ({ entryId, version }): infer _ => match (Array.findFirst(
+      CompletedWaitForSwipeSettled: ({ entryId, version }) => match (Array.findFirst(
           model.entries,
-          ({ id }): infer _ => id === entryId,
+          ({ id }) => id === entryId,
         )) {
-        when Option.None: ((): infer _ => ({ model }))();
-        when Option.Some(let optionValue2): ((entry): infer _ => {
+        when Option.None: (() => ({ model }))();
+        when Option.Some(let optionValue2): ((entry) => {
           if (
             SwipeState.guards.Settling(entry.swipeState)
             && entry.swipeVersion === version
@@ -631,9 +629,9 @@ export const makeRuntime = <A, I>(
               model: updateEntry(
                 model,
                 entryId,
-                (current): infer _ =>
+                (current) =>
                   modifyFields(current, {
-                    swipeState: (): infer _ => SwipeState.Idle(),
+                    swipeState: () => SwipeState.Idle(),
                   }),
               ),
             }
@@ -643,7 +641,7 @@ export const makeRuntime = <A, I>(
         })(optionValue2);
       },
 
-      GotAnimationMessage: ({ entryId, message: animationMessage }): infer _ =>
+      GotAnimationMessage: ({ entryId, message: animationMessage }) =>
         delegateToEntryAnimation(model, entryId, animationMessage),
     })
 
@@ -659,14 +657,14 @@ export const makeRuntime = <A, I>(
   const dismissAll = (model: Model): UpdateReturn =>
     update(model, MessageSchema.DismissedAll())
 
-  const swipeDependencies = (model: Model): infer _ => ({
+  const swipeDependencies = (model: Model) => ({
     isSwipeEnabled: Option.isSome(model.maybeSwipeConfig),
     isAnyDragging: isAnyDragging(model),
   })
 
   const subscriptions = Subscription.make<Model, Message>()((
     entry,
-  ): infer _ => ({
+  ) => ({
     swipePointer: entry(
       {
         isSwipeEnabled: Schema.Boolean,
@@ -674,7 +672,7 @@ export const makeRuntime = <A, I>(
       },
       {
         modelToDependencies: swipeDependencies,
-        dependenciesToStream: ({ isSwipeEnabled, isAnyDragging }): infer _ =>
+        dependenciesToStream: ({ isSwipeEnabled, isAnyDragging }) =>
           Stream.unwrap(effect {
             provide ExperimentalBrowserDocument.layer {
               const documentService = try Experimental.Document.Document
@@ -682,7 +680,7 @@ export const makeRuntime = <A, I>(
               const pointerMoveStream = Dom.streamFromEvent({
                 target: hostDocument,
                 type: 'pointermove',
-                mapEvent: (event): infer _ =>
+                mapEvent: (event) =>
                   MessageSchema.MovedSwipePointer({
                     pointerId: event.pointerId,
                     clientX: event.clientX,
@@ -691,7 +689,7 @@ export const makeRuntime = <A, I>(
               const pointerUpStream = Dom.streamFromEvent({
                 target: hostDocument,
                 type: 'pointerup',
-                mapEvent: (event): infer _ =>
+                mapEvent: (event) =>
                   MessageSchema.ReleasedSwipePointer({
                     pointerId: event.pointerId,
                     clientX: event.clientX,
@@ -700,7 +698,7 @@ export const makeRuntime = <A, I>(
               const pointerCancelStream = Dom.streamFromEvent({
                 target: hostDocument,
                 type: 'pointercancel',
-                mapEvent: (event): infer _ =>
+                mapEvent: (event) =>
                   MessageSchema.CancelledSwipe({ pointerId: event.pointerId }),
               })
               const pointerMessages = Stream.mergeAll<Message, never, never>(
@@ -710,7 +708,7 @@ export const makeRuntime = <A, I>(
 
               return Stream.when(
                 Stream.merge(pointerMessages, documentStylesWhileSwiping),
-                Effect.sync((): infer _ => isSwipeEnabled && isAnyDragging),
+                Effect.sync(() => isSwipeEnabled && isAnyDragging),
               )
             }
           }),
@@ -724,7 +722,7 @@ export const makeRuntime = <A, I>(
       },
       {
         modelToDependencies: swipeDependencies,
-        dependenciesToStream: ({ isSwipeEnabled, isAnyDragging }): infer _ =>
+        dependenciesToStream: ({ isSwipeEnabled, isAnyDragging }) =>
           Stream.unwrap(effect {
             provide ExperimentalBrowserDocument.layer {
               const documentService = try Experimental.Document.Document
@@ -733,14 +731,14 @@ export const makeRuntime = <A, I>(
                 Dom.streamFromEventFilterMap({
                   target: hostDocument,
                   type: 'keydown',
-                  filterMapEvent: (event): infer _ =>
+                  filterMapEvent: (event) =>
                     Option.liftPredicate(
                       event.key,
                       (key): key is 'Escape' => key === 'Escape',
                     )
-                      .map((): infer _ => MessageSchema.PressedEscape()),
+                      .map(() => MessageSchema.PressedEscape()),
                 }),
-                Effect.sync((): infer _ => isSwipeEnabled && isAnyDragging),
+                Effect.sync(() => isSwipeEnabled && isAnyDragging),
               )
             }
           }),

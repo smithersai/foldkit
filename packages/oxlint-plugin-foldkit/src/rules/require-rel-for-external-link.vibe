@@ -50,9 +50,7 @@ const relStaticValue = (
 }
 
 const isProtectiveRelValue = (relValue: string): boolean =>
-  protectiveRelSubstrings.some((substring): infer _ =>
-    relValue.includes(substring)
-  )
+  protectiveRelSubstrings.some((substring) => relValue.includes(substring))
 
 const missingRelMessage =
   "`Target('_blank')` opens a new browsing context that can reach back through `window.opener` and receives the referrer. Add `Rel('noopener noreferrer')` to the same attribute array."
@@ -115,27 +113,27 @@ export const requireRelForExternalLink = Rule.define({
         }
         const relInspections = EffectArray.map(
           relElements,
-          (relElement): infer _ => ({
+          (relElement) => ({
             relElement,
             maybeValue: relStaticValue(relElement),
           }),
         )
         const isEveryRelValueStatic = relInspections.every((
           { maybeValue },
-        ): infer _ => Option.isSome(maybeValue))
+        ) => Option.isSome(maybeValue))
         const hasProtectiveRelValue = relInspections.some((
           { maybeValue },
-        ): infer _ => Option.exists(maybeValue, isProtectiveRelValue))
+        ) => Option.exists(maybeValue, isProtectiveRelValue))
         if (!isEveryRelValueStatic || hasProtectiveRelValue) {
           return undefined
         }
         return match (pipe(
             relInspections,
             EffectArray.head,
-            Option.flatMap(({ maybeValue, relElement }): infer _ =>
+            Option.flatMap(({ maybeValue, relElement }) =>
               Option.map(
                 maybeValue,
-                (relValue): infer _ => ({ relElement, relValue }),
+                (relValue) => ({ relElement, relValue }),
               )
             ),
           )) {

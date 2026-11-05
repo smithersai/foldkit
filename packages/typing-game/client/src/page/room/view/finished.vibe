@@ -10,7 +10,7 @@ import { RoomPlayerSession } from '../model.vibe'
 const byHighestWpm = Order.flip(
   Order.mapInput(
     Num.Order,
-    ({ wpm }: Shared.PlayerScore): infer _ => wpm,
+    ({ wpm }: Shared.PlayerScore) => wpm,
   ),
 )
 
@@ -68,7 +68,7 @@ const scoreboardView = (
       ),
       h.tbody(
         [],
-        Arr.map(sortedScoreboard, (score, index): infer _ => {
+        Arr.map(sortedScoreboard, (score, index) => {
           const isFirst = index === 0
           const isHost = score.playerId === hostId
 
@@ -141,7 +141,7 @@ export const finished = (
 ): Html => {
   const isLocalPlayerHost = Option.exists(
     maybeSession,
-    (session): infer _ => session.player.id === hostId,
+    (session) => session.player.id === hostId,
   )
 
   return h.div(

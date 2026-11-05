@@ -10,15 +10,13 @@ export const findFirstEnabledIndex = (
   itemCount: number,
   focusedIndex: number,
   isDisabled: (index: number) => boolean,
-): infer _ =>
+) =>
 (startIndex: number, direction: 1 | -1): number =>
   pipe(
     itemCount,
-    Array.makeBy((step): infer _ =>
-      wrapIndex(startIndex + step * direction, itemCount)
-    ),
+    Array.makeBy((step) => wrapIndex(startIndex + step * direction, itemCount)),
     Array.findFirst(Predicate.not(isDisabled)),
-    Option.getOrElse((): infer _ => focusedIndex),
+    Option.getOrElse(() => focusedIndex),
   )
 
 export const keyToIndex = (

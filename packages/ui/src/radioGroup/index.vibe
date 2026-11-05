@@ -96,7 +96,7 @@ const descriptionId = (id: string, index: number): string =>
 export const FocusOption = Command.define('FocusOption', {
   args: { id: Schema.String, index: Schema.Number },
   messages: [Message.CompletedFocusOption],
-  execute: ({ id, index }): infer _ => {
+  execute: ({ id, index }) => {
     const nativeCommandArg28_0 = idSelector(optionId(id, index))
     const nativeCommandCompletion28 = Message.CompletedFocusOption()
     return effect {
@@ -112,22 +112,22 @@ type UpdateReturn = Update.ReturnWithOutMessage<Model, Message, OutMessage>
  *  Commands, and an optional OutMessage. `Selected` fires when an option is
  *  committed via click or keyboard; the parent stores the new value and passes
  *  it back in as `selectedValue`. */
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
-    SelectedOption: ({ index, value }): infer _ => ({
+    SelectedOption: ({ index, value }) => ({
       model: modifyFields(model, {
-        maybeFocusedIndex: (): infer _ => Option.none(),
+        maybeFocusedIndex: () => Option.none(),
       }),
       commands: [FocusOption({ id: model.id, index })],
       outMessage: OutMessage.Selected({ value, index }),
     }),
-    FocusedOption: ({ index }): infer _ => ({
+    FocusedOption: ({ index }) => ({
       model: modifyFields(model, {
-        maybeFocusedIndex: (): infer _ => Option.some(index),
+        maybeFocusedIndex: () => Option.some(index),
       }),
       commands: [FocusOption({ id: model.id, index })],
     }),
-    CompletedFocusOption: (): infer _ => ({ model }),
+    CompletedFocusOption: () => ({ model }),
   })
 
 // VIEW
@@ -225,21 +225,20 @@ const internalView = defineView<Model, Message, ViewInputs>(
       return pipe(
         options,
         Array.get(index),
-        Option.exists((option): infer _ => isOptionDisabledFn(option, index)),
+        Option.exists((option) => isOptionDisabledFn(option, index)),
       )
     }
 
     const selectedIndex = Option.flatMap(
       selectedValue,
-      (value): infer _ =>
-        Array.findFirstIndex(options, (option): infer _ => option === value),
+      (value) => Array.findFirstIndex(options, (option) => option === value),
     )
 
     const firstEnabledIndex = pipe(
       options.length,
-      Array.makeBy((index): infer _ => index),
+      Array.makeBy((index) => index),
       Array.findFirst(Predicate.not(isDisabled)),
-      Option.getOrElse((): infer _ => 0),
+      Option.getOrElse(() => 0),
     )
 
     // NOTE: The selected index only becomes the roving tab stop when it is
@@ -248,7 +247,7 @@ const internalView = defineView<Model, Message, ViewInputs>(
     const selectionTabStopIndex = do {
       const nativeOptionInput1 = selectedIndex
       const nativeOptionStage1_0_0 = Predicate.not(isDisabled)
-      const nativeOptionStage1_1_0 = (): infer _ => firstEnabledIndex
+      const nativeOptionStage1_1_0 = () => firstEnabledIndex
       const result = nativeOptionInput1.filter(nativeOptionStage1_0_0)
         .getOrElse(nativeOptionStage1_1_0)
       result
@@ -259,7 +258,7 @@ const internalView = defineView<Model, Message, ViewInputs>(
 
     const focusedIndex = maybeFocusedIndex
       .filter(isNavigableIndex)
-      .getOrElse((): infer _ => selectionTabStopIndex)
+      .getOrElse(() => selectionTabStopIndex)
 
     const { nextKey, previousKey } = do {
       const nativeMatchInput20 = orientation
@@ -288,9 +287,7 @@ const internalView = defineView<Model, Message, ViewInputs>(
       pipe(
         options,
         Array.get(index),
-        Option.map((value): infer _ =>
-          Message.SelectedOption({ index, value })
-        ),
+        Option.map((value) => Message.SelectedOption({ index, value })),
       )
 
     const handleSelectingKeyDown = (
@@ -320,7 +317,7 @@ const internalView = defineView<Model, Message, ViewInputs>(
       }
 
     const handleKeyDown =
-      (currentIndex: number): infer _ =>
+      (currentIndex: number) =>
       (key: string): Option<SelectedOption | FocusedOption> => {
         if (isReadOnly) {
           return handleReadOnlyKeyDown(key)
@@ -331,10 +328,10 @@ const internalView = defineView<Model, Message, ViewInputs>(
 
     const optionInfos: ReadonlyArray<OptionInfo> = Array.map(
       options,
-      (value, index): infer _ => {
+      (value, index) => {
         const isSelected = Option.exists(
           selectedIndex,
-          (selectedOptionIndex): infer _ => selectedOptionIndex === index,
+          (selectedOptionIndex) => selectedOptionIndex === index,
         )
         const isActive = index === focusedIndex
         const isOptionDisabledNow = isDisabled(index)
@@ -406,14 +403,14 @@ const internalView = defineView<Model, Message, ViewInputs>(
     ]
 
     const hiddenInputAttributes = Option.fromNullishOr(name)
-      .flatMap((inputName): infer _ =>
-        Option.map(selectedValue, (value): infer _ => [
+      .flatMap((inputName) =>
+        Option.map(selectedValue, (value) => [
           h.Type('hidden'),
           h.Name(inputName),
           h.Value(value),
         ])
       )
-      .getOrElse((): infer _ => [])
+      .getOrElse(() => [])
 
     return toView({
       group: childAttributes(groupAttributes),
@@ -471,6 +468,6 @@ export const create = <Value extends string = string>(): Bundle<Value> => {
       Message,
       ViewInputs<Value>
     >,
-    update: (model, message): infer _ => cast(update(model, message)),
+    update: (model, message) => cast(update(model, message)),
   }
 }

@@ -55,8 +55,7 @@ export const view = Submodel.defineView<Model, Message, ViewInputs>(
 
     const isInLeavableState = Option.exists(
       AsyncData.getData(model.roomAsyncData),
-      ({ status }): infer _ =>
-        status._tag === 'Waiting' || status._tag === 'Finished',
+      ({ status }) => status._tag === 'Waiting' || status._tag === 'Finished',
     )
 
     const isExitCountingDown = model.exitCountdownSecondsLeft > 0
@@ -97,9 +96,9 @@ const content = (
   h: HtmlBuilder<Message>,
 ): Html =>
   AsyncData.matchData(roomAsyncData, {
-    onEmpty: (): infer _ => h.div([], ['Loading...']),
-    onFailure: (): infer _ => h.empty,
-    onData: (room): infer _ => match (maybeSession) {
+    onEmpty: () => h.div([], ['Loading...']),
+    onFailure: () => h.empty,
+    onData: (room) => match (maybeSession) {
       when Option.None: joinForm(username, h);
       when Option.Some: gameContent(room, maybeSession, userGameText, h);
     },
@@ -111,7 +110,7 @@ const gameContent = (
   userGameText: string,
   h: HtmlBuilder<Message>,
 ): Html => {
-  const maybeGameText = Option.map(room.maybeGame, ({ text }): infer _ => text)
+  const maybeGameText = Option.map(room.maybeGame, ({ text }) => text)
   const maybeWrongCharIndex = Option.flatMap(
     maybeGameText,
     findFirstWrongCharIndex(userGameText),
@@ -164,7 +163,7 @@ const joinForm = (username: string, h: HtmlBuilder<Message>): Html =>
                 h.Type('text'),
                 h.Value(username),
                 h.Class('bg-transparent px-0 py-2 outline-none w-full'),
-                h.OnInput((value): infer _ =>
+                h.OnInput((value) =>
                   Message.ChangedRoomPageUsername({ value })
                 ),
                 h.OnBlur(Message.BlurredRoomPageUsernameInput()),

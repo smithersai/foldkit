@@ -68,18 +68,18 @@ export const noEmptyCommandsArray = Rule.define({
 
         const hasSpread = EffectArray.some(
           node.properties,
-          (property): infer _ => property.type === 'SpreadElement',
+          (property) => property.type === 'SpreadElement',
         )
         const hasDynamicComputedProperty = EffectArray.some(
           node.properties,
-          (property): infer _ =>
+          (property) =>
             isObjectProperty(property)
             && property.computed
             && Option.isNone(staticPropertyName(property)),
         )
         const commandProperties = EffectArray.filter(
           node.properties,
-          (property): infer _ =>
+          (property) =>
             isObjectProperty(property)
             && Option.contains(staticPropertyName(property), COMMANDS_PROPERTY),
         )

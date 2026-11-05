@@ -182,13 +182,13 @@ export const init = (config: InitConfig): Model => ({
 
 const closedModel = (model: Model): Model =>
   modifyFields(model, {
-    isOpen: (): infer _ => false,
-    maybeActiveItemIndex: (): infer _ => Option.none(),
-    searchQuery: (): infer _ => '',
-    searchVersion: (): infer _ => 0,
-    maybeLastPointerPosition: (): infer _ => Option.none(),
-    maybeLastButtonPointerType: (): infer _ => Option.none(),
-    maybePointerOrigin: (): infer _ => Option.none(),
+    isOpen: () => false,
+    maybeActiveItemIndex: () => Option.none(),
+    searchQuery: () => '',
+    searchVersion: () => 0,
+    maybeLastPointerPosition: () => Option.none(),
+    maybeLastButtonPointerType: () => Option.none(),
+    maybePointerOrigin: () => Option.none(),
   })
 
 /** Returns the bare DOM id of the menu trigger button, derived from the
@@ -227,7 +227,7 @@ export const UnlockScroll = Command.define('UnlockScroll', {
 export const InertOthers = Command.define('InertOthers', {
   args: { id: Schema.String },
   messages: [Message.CompletedInertOthers],
-  execute: ({ id }): infer _ => {
+  execute: ({ id }) => {
     const nativeCommandArg31_0 = id
     const nativeCommandArg31_1 = [buttonSelector(id), itemsSelector(id)]
     const nativeCommandCompletion31 = Message.CompletedInertOthers()
@@ -241,7 +241,7 @@ export const InertOthers = Command.define('InertOthers', {
 export const RestoreInert = Command.define('RestoreInert', {
   args: { id: Schema.String },
   messages: [Message.CompletedRestoreInert],
-  execute: ({ id }): infer _ => {
+  execute: ({ id }) => {
     const nativeCommandArg32_0 = id
     const nativeCommandCompletion32 = Message.CompletedRestoreInert()
     return effect {
@@ -254,7 +254,7 @@ export const RestoreInert = Command.define('RestoreInert', {
 export const FocusItems = Command.define('FocusItems', {
   args: { id: Schema.String },
   messages: [Message.CompletedFocusItems],
-  execute: ({ id }): infer _ => {
+  execute: ({ id }) => {
     const nativeCommandArg33_0 = itemsSelector(id)
     const nativeCommandCompletion33 = Message.CompletedFocusItems()
     return effect {
@@ -267,7 +267,7 @@ export const FocusItems = Command.define('FocusItems', {
 export const FocusButton = Command.define('FocusButton', {
   args: { id: Schema.String },
   messages: [Message.CompletedFocusButton],
-  execute: ({ id }): infer _ => {
+  execute: ({ id }) => {
     const nativeCommandArg34_0 = buttonSelector(id)
     const nativeCommandCompletion34 = Message.CompletedFocusButton()
     return effect {
@@ -280,7 +280,7 @@ export const FocusButton = Command.define('FocusButton', {
 export const ScrollIntoView = Command.define('ScrollIntoView', {
   args: { id: Schema.String, index: Schema.Number },
   messages: [Message.CompletedScrollIntoView],
-  execute: ({ id, index }): infer _ => {
+  execute: ({ id, index }) => {
     const nativeCommandArg35_0 = itemSelector(id, index)
     const nativeCommandCompletion35 = Message.CompletedScrollIntoView()
     return effect {
@@ -293,7 +293,7 @@ export const ScrollIntoView = Command.define('ScrollIntoView', {
 export const ClickItem = Command.define('ClickItem', {
   args: { id: Schema.String, index: Schema.Number },
   messages: [Message.CompletedClickItem],
-  execute: ({ id, index }): infer _ => {
+  execute: ({ id, index }) => {
     const nativeCommandArg36_0 = itemSelector(id, index)
     const nativeCommandCompletion36 = Message.CompletedClickItem()
     return effect {
@@ -306,7 +306,7 @@ export const ClickItem = Command.define('ClickItem', {
 export const DelayClearSearch = Command.define('DelayClearSearch', {
   args: { version: Schema.Number },
   messages: [Message.CompletedDelayClearSearch],
-  execute: ({ version }): infer _ => {
+  execute: ({ version }) => {
     const nativeCommandArg37_0 = SEARCH_DEBOUNCE_MILLISECONDS
     const nativeCommandCompletion37 = Message.CompletedDelayClearSearch({
       version,
@@ -323,7 +323,7 @@ export const DetectMovementOrAnimationEnd = Command.define(
   {
     args: { id: Schema.String, generation: Schema.Number },
     messages: [Message.GotAnimationMessage],
-    execute: ({ id, generation }): infer _ => {
+    execute: ({ id, generation }) => {
       const movementTarget = buttonSelector(id)
       const movementMessage = Message.GotAnimationMessage({
         message: Animation.Message.EndedAnimation({ generation }),
@@ -351,44 +351,41 @@ export const DetectMovementOrAnimationEnd = Command.define(
 const foldAnimationOutMessage = Animation.OutMessage.match<
   Update.Step<Model, Message>
 >({
-  StartedLeaveAnimating: ({ generation }): infer _ => (model): infer _ => ({
+  StartedLeaveAnimating: ({ generation }) => (model) => ({
     model,
     commands: [DetectMovementOrAnimationEnd({ id: model.id, generation })],
   }),
-  TransitionedOut: (): infer _ => (model): infer _ => ({ model }),
+  TransitionedOut: () => (model) => ({ model }),
 })
 
 const foldAnimation = Update.foldChild({
   update: animationUpdate,
-  read: (model: Model): infer _ => Option.some(model.animation),
-  write: (model, nextAnimation): infer _ =>
-    modifyFields(model, { animation: (): infer _ => nextAnimation }),
-  toParentMessage: (message): infer _ =>
-    Message.GotAnimationMessage({ message }),
+  read: (model: Model) => Option.some(model.animation),
+  write: (model, nextAnimation) =>
+    modifyFields(model, { animation: () => nextAnimation }),
+  toParentMessage: (message) => Message.GotAnimationMessage({ message }),
   foldOutMessage: foldAnimationOutMessage,
 })
 
 const foldAnimationShow = Update.foldChildStep({
   update: animationShow,
-  read: (model: Model): infer _ => Option.some(model.animation),
-  write: (model, nextAnimation): infer _ =>
-    modifyFields(model, { animation: (): infer _ => nextAnimation }),
-  toParentMessage: (message): infer _ =>
-    Message.GotAnimationMessage({ message }),
+  read: (model: Model) => Option.some(model.animation),
+  write: (model, nextAnimation) =>
+    modifyFields(model, { animation: () => nextAnimation }),
+  toParentMessage: (message) => Message.GotAnimationMessage({ message }),
 })
 
 const foldAnimationHide = Update.foldChildStep({
   update: animationHide,
-  read: (model: Model): infer _ => Option.some(model.animation),
-  write: (model, nextAnimation): infer _ =>
-    modifyFields(model, { animation: (): infer _ => nextAnimation }),
-  toParentMessage: (message): infer _ =>
-    Message.GotAnimationMessage({ message }),
+  read: (model: Model) => Option.some(model.animation),
+  write: (model, nextAnimation) =>
+    modifyFields(model, { animation: () => nextAnimation }),
+  toParentMessage: (message) => Message.GotAnimationMessage({ message }),
 })
 
 /** Processes a Menu Message and returns the next Model, optional Commands, and
  *  an optional OutMessage. */
-export const update = (model: Model, message: Message): infer _ => {
+export const update = (model: Model, message: Message) => {
   const maybeLockScroll = OptionExt.when(model.isModal, LockScroll())
 
   const maybeUnlockScroll = OptionExt.when(model.isModal, UnlockScroll())
@@ -420,16 +417,16 @@ export const update = (model: Model, message: Message): infer _ => {
   const openMenu = (baseModel: Model): Update.Return<Model, Message> => {
     if (model.isAnimated) {
       return Update.combine(baseModel, [
-        (stepModel): infer _ => ({ model: stepModel, commands: openCommands }),
+        (stepModel) => ({ model: stepModel, commands: openCommands }),
         foldAnimationShow,
-        (stepModel): infer _ => ({
-          model: modifyFields(stepModel, { isOpen: (): infer _ => true }),
+        (stepModel) => ({
+          model: modifyFields(stepModel, { isOpen: () => true }),
         }),
       ])
     }
 
     return {
-      model: modifyFields(baseModel, { isOpen: (): infer _ => true }),
+      model: modifyFields(baseModel, { isOpen: () => true }),
       commands: openCommands,
     }
   }
@@ -446,7 +443,7 @@ export const update = (model: Model, message: Message): infer _ => {
 
     if (model.isAnimated) {
       return Update.combine(closed, [
-        (stepModel): infer _ => ({ model: stepModel, commands }),
+        (stepModel) => ({ model: stepModel, commands }),
         foldAnimationHide,
       ])
     }
@@ -455,40 +452,40 @@ export const update = (model: Model, message: Message): infer _ => {
   }
 
   return Message.match<UpdateReturn>(message, {
-    CompletedFocusItems: (): infer _ => ({ model }),
-    CompletedFocusButton: (): infer _ => ({ model }),
-    CompletedLockScroll: (): infer _ => ({ model }),
-    CompletedUnlockScroll: (): infer _ => ({ model }),
-    CompletedInertOthers: (): infer _ => ({ model }),
-    CompletedRestoreInert: (): infer _ => ({ model }),
-    CompletedScrollIntoView: (): infer _ => ({ model }),
-    CompletedClickItem: (): infer _ => ({ model }),
-    SuppressedSpaceScroll: (): infer _ => ({ model }),
-    CompletedAnchorMenu: (): infer _ => ({ model }),
-    CompletedPortalMenuBackdrop: (): infer _ => ({ model }),
+    CompletedFocusItems: () => ({ model }),
+    CompletedFocusButton: () => ({ model }),
+    CompletedLockScroll: () => ({ model }),
+    CompletedUnlockScroll: () => ({ model }),
+    CompletedInertOthers: () => ({ model }),
+    CompletedRestoreInert: () => ({ model }),
+    CompletedScrollIntoView: () => ({ model }),
+    CompletedClickItem: () => ({ model }),
+    SuppressedSpaceScroll: () => ({ model }),
+    CompletedAnchorMenu: () => ({ model }),
+    CompletedPortalMenuBackdrop: () => ({ model }),
 
-    Opened: ({ maybeActiveItemIndex }): infer _ => {
+    Opened: ({ maybeActiveItemIndex }) => {
       if (model.isOpen) {
         return { model }
       }
 
       return openMenu(
         modifyFields(model, {
-          maybeActiveItemIndex: (): infer _ => maybeActiveItemIndex,
-          activationTrigger: (): infer _ => match (maybeActiveItemIndex) {
+          maybeActiveItemIndex: () => maybeActiveItemIndex,
+          activationTrigger: () => match (maybeActiveItemIndex) {
             when Option.None: 'Pointer';
             when Option.Some: 'Keyboard';
           },
-          searchQuery: (): infer _ => '',
-          searchVersion: (): infer _ => 0,
-          maybeLastPointerPosition: (): infer _ => Option.none(),
+          searchQuery: () => '',
+          searchVersion: () => 0,
+          maybeLastPointerPosition: () => Option.none(),
         }),
       )
     },
 
-    Closed: (): infer _ => closeMenu(model, closeWithFocusCommands),
+    Closed: () => closeMenu(model, closeWithFocusCommands),
 
-    BlurredItems: (): infer _ => {
+    BlurredItems: () => {
       if (
         Option.exists(model.maybeLastButtonPointerType, Equal.equals('mouse'))
       ) {
@@ -498,20 +495,20 @@ export const update = (model: Model, message: Message): infer _ => {
       return closeMenu(model, closeWithoutFocusCommands)
     },
 
-    ActivatedItem: ({ index, activationTrigger }): infer _ => ({
+    ActivatedItem: ({ index, activationTrigger }) => ({
       model: modifyFields(model, {
-        maybeActiveItemIndex: (): infer _ => Option.some(index),
-        activationTrigger: (): infer _ => activationTrigger,
+        maybeActiveItemIndex: () => Option.some(index),
+        activationTrigger: () => activationTrigger,
       }),
       commands: activationTrigger === 'Keyboard'
         ? [ScrollIntoView({ id: model.id, index })]
         : [],
     }),
 
-    MovedPointerOverItem: ({ index, screenX, screenY }): infer _ => {
+    MovedPointerOverItem: ({ index, screenX, screenY }) => {
       const isSamePosition = Option.exists(
         model.maybeLastPointerPosition,
-        (position): infer _ =>
+        (position) =>
           position.screenX === screenX && position.screenY === screenY,
       )
 
@@ -521,61 +518,60 @@ export const update = (model: Model, message: Message): infer _ => {
 
       return {
         model: modifyFields(model, {
-          maybeActiveItemIndex: (): infer _ => Option.some(index),
-          activationTrigger: (): infer _ => 'Pointer',
-          maybeLastPointerPosition: (): infer _ =>
-            Option.some({ screenX, screenY }),
+          maybeActiveItemIndex: () => Option.some(index),
+          activationTrigger: () => 'Pointer',
+          maybeLastPointerPosition: () => Option.some({ screenX, screenY }),
         }),
       }
     },
 
-    DeactivatedItem: (): infer _ =>
+    DeactivatedItem: () =>
       model.activationTrigger === 'Pointer'
         ? {
           model: modifyFields(model, {
-            maybeActiveItemIndex: (): infer _ => Option.none(),
+            maybeActiveItemIndex: () => Option.none(),
           }),
         }
         : { model },
 
-    SelectedItem: ({ index, item }): infer _ =>
+    SelectedItem: ({ index, item }) =>
       pipe(
         closeMenu(model, closeWithFocusCommands),
         Update.withOutMessage(OutMessage.Selected({ value: item, index })),
       ),
 
-    RequestedItemClick: ({ index }): infer _ => ({
+    RequestedItemClick: ({ index }) => ({
       model,
       commands: [ClickItem({ id: model.id, index })],
     }),
 
-    Searched: ({ key, maybeTargetIndex }): infer _ => {
+    Searched: ({ key, maybeTargetIndex }) => {
       const nextSearchQuery = model.searchQuery + key
       const nextSearchVersion = model.searchVersion + 1
 
       return {
         model: modifyFields(model, {
-          searchQuery: (): infer _ => nextSearchQuery,
-          searchVersion: (): infer _ => nextSearchVersion,
-          maybeActiveItemIndex: (): infer _ =>
+          searchQuery: () => nextSearchQuery,
+          searchVersion: () => nextSearchVersion,
+          maybeActiveItemIndex: () =>
             Option.orElse(
               maybeTargetIndex,
-              (): infer _ => model.maybeActiveItemIndex,
+              () => model.maybeActiveItemIndex,
             ),
         }),
         commands: [DelayClearSearch({ version: nextSearchVersion })],
       }
     },
 
-    CompletedDelayClearSearch: ({ version }): infer _ => {
+    CompletedDelayClearSearch: ({ version }) => {
       if (version !== model.searchVersion) {
         return { model }
       }
 
-      return { model: modifyFields(model, { searchQuery: (): infer _ => '' }) }
+      return { model: modifyFields(model, { searchQuery: () => '' }) }
     },
 
-    GotAnimationMessage: ({ message: animationMessage }): infer _ =>
+    GotAnimationMessage: ({ message: animationMessage }) =>
       foldAnimation(model, animationMessage),
 
     PressedPointerOnButton: ({
@@ -584,9 +580,9 @@ export const update = (model: Model, message: Message): infer _ => {
       screenX,
       screenY,
       timeStamp,
-    }): infer _ => {
+    }) => {
       const withPointerType = modifyFields(model, {
-        maybeLastButtonPointerType: (): infer _ => Option.some(pointerType),
+        maybeLastButtonPointerType: () => Option.some(pointerType),
       })
 
       if (pointerType !== 'mouse' || button !== LEFT_MOUSE_BUTTON) {
@@ -595,11 +591,10 @@ export const update = (model: Model, message: Message): infer _ => {
 
       if (model.isOpen) {
         return Update.combine(withPointerType, [
-          (stepModel): infer _ => closeMenu(stepModel, closeWithFocusCommands),
-          (stepModel): infer _ => ({
+          (stepModel) => closeMenu(stepModel, closeWithFocusCommands),
+          (stepModel) => ({
             model: modifyFields(stepModel, {
-              maybeLastButtonPointerType: (): infer _ =>
-                Option.some(pointerType),
+              maybeLastButtonPointerType: () => Option.some(pointerType),
             }),
           }),
         ])
@@ -607,25 +602,25 @@ export const update = (model: Model, message: Message): infer _ => {
 
       return openMenu(
         modifyFields(withPointerType, {
-          maybeActiveItemIndex: (): infer _ => Option.none(),
-          activationTrigger: (): infer _ => 'Pointer',
-          searchQuery: (): infer _ => '',
-          searchVersion: (): infer _ => 0,
-          maybeLastPointerPosition: (): infer _ => Option.none(),
-          maybePointerOrigin: (): infer _ =>
+          maybeActiveItemIndex: () => Option.none(),
+          activationTrigger: () => 'Pointer',
+          searchQuery: () => '',
+          searchVersion: () => 0,
+          maybeLastPointerPosition: () => Option.none(),
+          maybePointerOrigin: () =>
             Option.some({ screenX, screenY, timeStamp }),
         }),
       )
     },
 
-    ReleasedPointerOnItems: ({ screenX, screenY, timeStamp }): infer _ => {
+    ReleasedPointerOnItems: ({ screenX, screenY, timeStamp }) => {
       const hasNoOrigin = Option.isNone(model.maybePointerOrigin)
 
       const hasNoActiveItem = Option.isNone(model.maybeActiveItemIndex)
 
       const isMovementBelowThreshold = Option.exists(
         model.maybePointerOrigin,
-        (origin): infer _ =>
+        (origin) =>
           Math.abs(screenX - origin.screenX)
             < POINTER_MOVEMENT_THRESHOLD_PIXELS
           && Math.abs(screenY - origin.screenY)
@@ -634,7 +629,7 @@ export const update = (model: Model, message: Message): infer _ => {
 
       const isHoldTimeBelowThreshold = Option.exists(
         model.maybePointerOrigin,
-        (origin): infer _ =>
+        (origin) =>
           timeStamp - origin.timeStamp < POINTER_HOLD_THRESHOLD_MILLISECONDS,
       )
 
@@ -658,18 +653,18 @@ export const update = (model: Model, message: Message): infer _ => {
       }
     },
 
-    IgnoredMouseClick: (): infer _ => ({
+    IgnoredMouseClick: () => ({
       model: modifyFields(model, {
-        maybeLastButtonPointerType: (): infer _ => Option.none(),
+        maybeLastButtonPointerType: () => Option.none(),
       }),
     }),
-    ClickedButton: (): infer _ => {
+    ClickedButton: () => {
       if (
         Option.exists(model.maybeLastButtonPointerType, Equal.equals('mouse'))
       ) {
         return {
           model: modifyFields(model, {
-            maybeLastButtonPointerType: (): infer _ => Option.none(),
+            maybeLastButtonPointerType: () => Option.none(),
           }),
         }
       }
@@ -680,11 +675,11 @@ export const update = (model: Model, message: Message): infer _ => {
 
       return openMenu(
         modifyFields(model, {
-          maybeActiveItemIndex: (): infer _ => Option.none(),
-          activationTrigger: (): infer _ => 'Pointer',
-          searchQuery: (): infer _ => '',
-          searchVersion: (): infer _ => 0,
-          maybeLastPointerPosition: (): infer _ => Option.none(),
+          maybeActiveItemIndex: () => Option.none(),
+          activationTrigger: () => 'Pointer',
+          searchQuery: () => '',
+          searchVersion: () => 0,
+          maybeLastPointerPosition: () => Option.none(),
         }),
       )
     },
@@ -711,7 +706,7 @@ export const AnchorMenu = Mount.define('AnchorMenu', {
   messages: [Message.CompletedAnchorMenu],
   execute: effect ({ element, buttonId, anchor }) => {
     try Effect.acquireRelease(
-      Effect.sync((): infer _ =>
+      Effect.sync(() =>
         anchorSetup(element, {
           buttonId,
           anchor,
@@ -736,7 +731,7 @@ export const PortalMenuBackdrop = Mount.define('PortalMenuBackdrop', {
   messages: [Message.CompletedPortalMenuBackdrop],
   execute: effect ({ element }) => {
     try Effect.acquireRelease(
-      Effect.sync((): infer _ => portalBackdrop(element)),
+      Effect.sync(() => portalBackdrop(element)),
       effect cleanup => try Effect.sync(cleanup),
     )
     return (try Effect.orDie(
@@ -832,12 +827,12 @@ type ViewForItem<Item extends string> = SubmodelView<
   ViewInputs<Item>
 >
 
-const internalView = <Item extends string>(): infer _ =>
+const internalView = <Item extends string>() =>
   /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
   menuViewImpl as unknown as ViewForItem<Item>
 
 const menuViewImpl = defineView<Model, Message, ViewInputs<string>>(
-  (model, viewInputs, h): infer _ => {
+  (model, viewInputs, h) => {
     const {
       id,
       isOpen,
@@ -850,7 +845,7 @@ const menuViewImpl = defineView<Model, Message, ViewInputs<string>>(
       items,
       itemToConfig,
       isItemDisabled,
-      itemToSearchText = (item: string): infer _ => item,
+      itemToSearchText = (item: string) => item,
       isButtonDisabled,
       buttonContent,
       buttonClassName,
@@ -874,7 +869,7 @@ const menuViewImpl = defineView<Model, Message, ViewInputs<string>>(
       ariaLabelledBy,
     } = viewInputs
 
-    const dispatchSelectedItem = (item: string, index: number): infer _ =>
+    const dispatchSelectedItem = (item: string, index: number) =>
       Message.SelectedItem({ index, item })
 
     const isLeaving = transitionState === 'LeaveStart'
@@ -910,7 +905,7 @@ const menuViewImpl = defineView<Model, Message, ViewInputs<string>>(
       && pipe(
         items,
         Array.get(index),
-        Option.exists((item): infer _ => isItemDisabled(item, index)),
+        Option.exists((item) => isItemDisabled(item, index)),
       )
 
     const firstEnabledIndex = findFirstEnabledIndex(
@@ -969,7 +964,7 @@ const menuViewImpl = defineView<Model, Message, ViewInputs<string>>(
       'ArrowDown',
       'ArrowUp',
       items.length,
-      Option.getOrElse(maybeActiveItemIndex, (): infer _ => 0),
+      Option.getOrElse(maybeActiveItemIndex, () => 0),
       isDisabled,
     )
 
@@ -993,13 +988,13 @@ const menuViewImpl = defineView<Model, Message, ViewInputs<string>>(
           when 'Escape': Option.some(Message.Closed());
           when 'Enter': Option.map(
             maybeActiveItemIndex,
-            (index): infer _ => Message.RequestedItemClick({ index }),
+            (index) => Message.RequestedItemClick({ index }),
           );
           when ' ': String.isNonEmpty(searchQuery)
             ? searchForKey(' ')
             : Option.map(
               maybeActiveItemIndex,
-              (index): infer _ => Message.RequestedItemClick({ index }),
+              (index) => Message.RequestedItemClick({ index }),
             );
           when ('ArrowDown') or ('ArrowUp') or ('Home') or ('End') or ('PageUp') or ('PageDown'):
             Option.some(
@@ -1025,7 +1020,7 @@ const menuViewImpl = defineView<Model, Message, ViewInputs<string>>(
         Message.ReleasedPointerOnItems({ screenX, screenY, timeStamp }),
       )
 
-    const resolveButtonLabel = (): infer _ => {
+    const resolveButtonLabel = () => {
       if (Predicate.isNotUndefined(ariaLabel)) {
         return [h.AriaLabel(ariaLabel)]
       } else if (Predicate.isNotUndefined(ariaLabelledBy)) {
@@ -1092,10 +1087,10 @@ const menuViewImpl = defineView<Model, Message, ViewInputs<string>>(
       ...itemsAttributes,
     ]
 
-    const menuItems = Array.map(items, (item, index): infer _ => {
+    const menuItems = Array.map(items, (item, index) => {
       const isActiveItem = Option.exists(
         maybeActiveItemIndex,
-        (activeIndex): infer _ => activeIndex === index,
+        (activeIndex) => activeIndex === index,
       )
       const isDisabledItem = isDisabled(index)
       const itemConfig = itemToConfig(item, {
@@ -1120,7 +1115,7 @@ const menuViewImpl = defineView<Model, Message, ViewInputs<string>>(
               ...(isActiveItem
                 ? []
                 : [
-                  h.OnPointerMove((screenX, screenY, pointerType): infer _ =>
+                  h.OnPointerMove((screenX, screenY, pointerType) =>
                     OptionExt.when(
                       pointerType !== 'touch',
                       Message.MovedPointerOverItem({
@@ -1131,7 +1126,7 @@ const menuViewImpl = defineView<Model, Message, ViewInputs<string>>(
                     )
                   ),
                 ]),
-              h.OnPointerLeave((pointerType): infer _ =>
+              h.OnPointerLeave((pointerType) =>
                 OptionExt.when(
                   pointerType !== 'touch',
                   Message.DeactivatedItem(),
@@ -1152,15 +1147,15 @@ const menuViewImpl = defineView<Model, Message, ViewInputs<string>>(
 
       const segments = groupContiguous(
         menuItems,
-        (_, index): infer _ =>
+        (_, index) =>
           Array.get(items, index)
             .match({
-              onNone: (): infer _ => '',
-              onSome: (item): infer _ => itemGroupKey(item, index),
+              onNone: () => '',
+              onSome: (item) => itemGroupKey(item, index),
             }),
       )
 
-      return Array.flatMap(segments, (segment, segmentIndex): infer _ => {
+      return Array.flatMap(segments, (segment, segmentIndex) => {
         const maybeHeading = Option.fromNullishOr(
           groupToHeading && groupToHeading(segment.key),
         )
@@ -1311,10 +1306,9 @@ export const create = <Item extends string = string>(): Bundle<Item> => {
 
   return {
     view: internalView<Item>(),
-    update: (model, message): infer _ => cast(update(model, message)),
-    selectItem: (model, item, index): infer _ =>
-      cast(selectItem(model, item, index)),
-    open: (model): infer _ => cast(open(model)),
-    close: (model): infer _ => cast(close(model)),
+    update: (model, message) => cast(update(model, message)),
+    selectItem: (model, item, index) => cast(selectItem(model, item, index)),
+    open: (model) => cast(open(model)),
+    close: (model) => cast(close(model)),
   }
 }

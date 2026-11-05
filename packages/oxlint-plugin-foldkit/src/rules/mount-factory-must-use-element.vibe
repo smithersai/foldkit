@@ -27,7 +27,7 @@ const isMountDefinitionCall = (
 
   return Option.exists(
     resolveFoldkitApiPath(references, node.callee),
-    (path): infer _ => {
+    (path) => {
       const [namespace, methodName, extraMember] = path
 
       return (
@@ -72,7 +72,7 @@ const shadowsBindingName = (
   const parameters = functionNode.params
   if (!isRecord(parameters)) return false
   return Object.values(parameters).some(
-    (parameter): infer _ =>
+    (parameter) =>
       isRecord(parameter)
       && parameter.type === 'Identifier'
       && parameter.name === bindingName,
@@ -98,8 +98,7 @@ const referencesName = (value: unknown, bindingName: string): boolean => {
     return computedKeyReferences || referencesName(value.value, bindingName)
   }
   return Object.entries(value).some(
-    ([key, child]): infer _ =>
-      key !== 'parent' && referencesName(child, bindingName),
+    ([key, child]) => key !== 'parent' && referencesName(child, bindingName),
   )
 }
 
@@ -150,7 +149,7 @@ const inputUses = (
     return ['MaybeElement']
   }
 
-  return Object.entries(value).flatMap(([key, child]): infer _ =>
+  return Object.entries(value).flatMap(([key, child]) =>
     key === 'parent' ? [] : inputUses(child, inputName)
   )
 }
@@ -176,7 +175,7 @@ const restBindingName = (
 ): Option<string> =>
   pipe(
     pattern.properties,
-    Arr.findFirst((property): infer _ =>
+    Arr.findFirst((property) =>
       property.type === 'RestElement' && property.argument.type === 'Identifier'
         ? Option.some(property.argument.name)
         : Option.none<string>()
@@ -208,7 +207,7 @@ const unpackedDiagnostic = (
     return Option.some(unusedInputMessage(bindingName))
   }
 
-  return uses.every((use): infer _ => use === 'OtherField')
+  return uses.every((use) => use === 'OtherField')
     ? Option.some(unreadElementFieldMessage(bindingName))
     : Option.none()
 }
@@ -246,7 +245,7 @@ const executeFunction = (
 ): Option<ExecuteFunction> =>
   Arr.get(node.arguments, 1)
     .filter(isObjectExpression)
-    .flatMap((config): infer _ => AST.objectGetValue(config, 'execute'))
+    .flatMap((config) => AST.objectGetValue(config, 'execute'))
     .filter(isExecuteFunction)
 
 /** Flags Mount.define and Mount.defineStream definitions whose `execute` never uses its element. A Mount exists for element-caused, element-targeted work; work that ignores the element belongs in a Command, Subscription, or ManagedResource. */

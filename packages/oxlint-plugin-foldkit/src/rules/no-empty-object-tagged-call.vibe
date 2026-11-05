@@ -77,7 +77,7 @@ const isUnionHelperCall = (
 
   return Option.exists(
     resolveFoldkitApiPath(references, node.callee),
-    (path): infer _ => {
+    (path) => {
       const [namespace, helperName, extraMember] = path
       const expectedHelperByNamespace: Readonly<Record<string, string>> = {
         Message: 'defineMessageUnion',
@@ -116,12 +116,12 @@ const constructorName = (
         || isConventionalUnionNamespace(namespace.name)
       : Option.exists(
         resolvedVariable(references, namespace),
-        (variable): infer _ => {
+        (variable) => {
           return (
             unionNamespaceVariables.has(variable)
             || (isConventionalUnionNamespace(namespace.name)
               && variable.defs.some(
-                (definition): infer _ => definition.type === 'ImportBinding',
+                (definition) => definition.type === 'ImportBinding',
               ))
           )
         },
@@ -167,7 +167,7 @@ export const noEmptyObjectTaggedCall = Rule.define({
           unionNamespaceNames.add(unionName)
           const unionVariable = ctx.sourceCode.scopeManager
             ?.getDeclaredVariables(node)
-            .find((variable): infer _ => variable.name === unionName)
+            .find((variable) => variable.name === unionName)
           if (unionVariable !== undefined) {
             unionNamespaceVariables.add(unionVariable)
           }

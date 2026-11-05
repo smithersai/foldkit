@@ -8,7 +8,7 @@ export const HOME_ACTIONS: ReadonlyArray<HomeAction> = [
   'ChangeUsername',
 ] as const
 
-export const homeActionToLabel = (u: HomeAction): infer _ => match (u) {
+export const homeActionToLabel = (u: HomeAction) => match (u) {
   when 'CreateRoom': 'Create room';
   when 'JoinRoom': 'Join room';
   when 'ChangeUsername': 'Change username';

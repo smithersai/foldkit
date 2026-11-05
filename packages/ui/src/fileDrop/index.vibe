@@ -57,22 +57,22 @@ export const init = (config: InitConfig): Model => ({
 
 /** Processes a file-drop Message and returns the next Model, optional Commands,
  *  and an optional OutMessage. */
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<Update.ReturnWithOutMessage<Model, Message, OutMessage>>(
     message,
     {
-      EnteredDragZone: (): infer _ => ({
-        model: modifyFields(model, { isDragOver: (): infer _ => true }),
+      EnteredDragZone: () => ({
+        model: modifyFields(model, { isDragOver: () => true }),
       }),
-      LeftDragZone: (): infer _ => ({
-        model: modifyFields(model, { isDragOver: (): infer _ => false }),
+      LeftDragZone: () => ({
+        model: modifyFields(model, { isDragOver: () => false }),
       }),
-      DroppedFiles: ({ files }): infer _ => ({
-        model: modifyFields(model, { isDragOver: (): infer _ => false }),
+      DroppedFiles: ({ files }) => ({
+        model: modifyFields(model, { isDragOver: () => false }),
         outMessage: OutMessage.ReceivedFiles({ files }),
       }),
-      DroppedNonFiles: (): infer _ => ({
-        model: modifyFields(model, { isDragOver: (): infer _ => false }),
+      DroppedNonFiles: () => ({
+        model: modifyFields(model, { isDragOver: () => false }),
         outMessage: OutMessage.RejectedNonFiles(),
       }),
     },
@@ -101,10 +101,10 @@ export type ViewInputs = Readonly<{
   isDisabled?: boolean
 }>
 
-const dispatchDroppedFiles = (files: ReadonlyArray<File.File>): infer _ =>
+const dispatchDroppedFiles = (files: ReadonlyArray<File.File>) =>
   Array.match(files, {
-    onEmpty: (): infer _ => Message.DroppedNonFiles(),
-    onNonEmpty: (nonEmptyFiles): infer _ =>
+    onEmpty: () => Message.DroppedNonFiles(),
+    onNonEmpty: (nonEmptyFiles) =>
       Message.DroppedFiles({ files: [...nonEmptyFiles] }),
   })
 

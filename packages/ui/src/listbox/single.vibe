@@ -35,7 +35,7 @@ export const init = (config: InitConfig): Model => baseInit(config)
 /** Processes a Listbox Message and returns the next Model, optional Commands,
  *  and an optional OutMessage. Selection closes the Listbox and emits
  *  `Selected({ value })` for the parent to store. */
-export const update = makeUpdate<Model>((model, item, context): infer _ =>
+export const update = makeUpdate<Model>((model, item, context) =>
   context.closeWithFocus(model, OutMessage.Selected({ value: item }))
 )
 
@@ -81,7 +81,7 @@ const internalView = makeView<Model>({ ariaMultiSelectable: false })
 const arrayBasedView = internalView<unknown, string>()
 
 const singleViewImpl = defineView<Model, Message, ViewInputs<unknown, string>>(
-  (model, { maybeSelectedValue, ...baseInputs }, h): infer _ =>
+  (model, { maybeSelectedValue, ...baseInputs }, h) =>
     arrayBasedView(
       model,
       {
@@ -154,13 +154,13 @@ export const create = <
   return {
     view,
     update: typedUpdate,
-    selectItem: (model, item): infer _ =>
+    selectItem: (model, item) =>
       typedUpdate(model, Message.SelectedItem({ item })),
-    open: (model): infer _ =>
+    open: (model) =>
       typedUpdate(
         model,
         Message.Opened({ maybeActiveItemIndex: Option.none() }),
       ),
-    close: (model): infer _ => typedUpdate(model, Message.Closed()),
+    close: (model) => typedUpdate(model, Message.Closed()),
   }
 }

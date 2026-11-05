@@ -80,7 +80,7 @@ const importedMessagePath = (
   isTypeReference(node)
     ? Option.map(
       resolveImportedPath(references, node.typeName),
-      (path): infer _ => ({
+      (path) => ({
         source: path.source,
         members: path.members,
       }),
@@ -90,7 +90,7 @@ const importedMessagePath = (
 const pascalCaseModuleSegment = (segment: string): string =>
   moduleSegmentName(segment)
     .split(/[-_]/)
-    .map((part): infer _ => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
+    .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
     .join('')
 
 const messageModuleSegments = (
@@ -98,7 +98,7 @@ const messageModuleSegments = (
 ): ReadonlyArray<string> => {
   const sourceSegments = path.source
     .split('/')
-    .filter((segment): infer _ => segment !== '.')
+    .filter((segment) => segment !== '.')
   const [lastSourceSegment] = sourceSegments.slice(-1)
   const moduleSourceSegments = isMessageModuleSegment(lastSourceSegment)
     ? sourceSegments.slice(0, -1)
@@ -123,8 +123,7 @@ const sameSegments = (
   b: ReadonlyArray<string>,
 ): boolean =>
   Arr.length(a) === Arr.length(b)
-  && Arr.every(Arr.zip(a, b), ([aSegment, bSegment]): infer _ =>
-    aSegment === bSegment)
+  && Arr.every(Arr.zip(a, b), ([aSegment, bSegment]) => aSegment === bSegment)
 
 const sameImportedMessagePath = (
   a: ImportedMessagePath,
@@ -155,7 +154,7 @@ const htmlBuilderMessagePath = (
 
   const isHtmlBuilder = Option.exists(
     resolveFoldkitApiPath(references, typeAnnotation.typeName),
-    (path): infer _ => {
+    (path) => {
       const [namespace, typeName, extraMember] = path
       return (
         namespace === 'Html'
@@ -197,7 +196,7 @@ const defineViewMessagePath = (
 
   const isDefineView = Option.exists(
     resolveFoldkitApiPath(references, parent.callee),
-    (path): infer _ => {
+    (path) => {
       const [namespace, helperName, extraMember] = path
       return (
         namespace === 'Submodel'
@@ -237,10 +236,10 @@ const isOwnedByEnclosingView = (
     }
 
     if (isFunction(ancestor)) {
-      const ownsAnnotatedBuilder = ancestor.params.some((parameter): infer _ =>
+      const ownsAnnotatedBuilder = ancestor.params.some((parameter) =>
         Option.exists(
           htmlBuilderMessagePath(references, parameter),
-          (builderMessagePath): infer _ =>
+          (builderMessagePath) =>
             sameImportedMessagePath(builderMessagePath, messagePath),
         )
       )
@@ -250,7 +249,7 @@ const isOwnedByEnclosingView = (
 
       const ownsDefinedView = Option.exists(
         defineViewMessagePath(references, ancestor),
-        (viewMessagePath): infer _ =>
+        (viewMessagePath) =>
           sameImportedMessagePath(viewMessagePath, messagePath),
       )
       if (ownsDefinedView) {
@@ -268,9 +267,7 @@ const hasComputedMember = (node: unknown): boolean =>
   isMemberExpression(node) && (node.computed || hasComputedMember(node.object))
 
 const relativeModuleSegments = (source: string): ReadonlyArray<string> =>
-  source.split('/').filter((segment): infer _ =>
-    segment !== '.' && segment !== '..'
-  )
+  source.split('/').filter((segment) => segment !== '.' && segment !== '..')
 
 const isTopLevelRootAlias = (source: string): boolean => {
   if (!source.startsWith('@/') && !source.startsWith('~/')) {
@@ -384,7 +381,7 @@ const childMessageConstruction = (
   }
 
   if (references === undefined) {
-    return Option.flatMap(staticMemberPath(callee), (path): infer _ => {
+    return Option.flatMap(staticMemberPath(callee), (path) => {
       const [namespace, middle, constructorName, extraSegment] = [
         path.root.name,
         ...path.members,
@@ -405,7 +402,7 @@ const childMessageConstruction = (
 
   return Option.flatMap(
     resolveImportedPathThroughConst(references, callee),
-    (path): infer _ => {
+    (path) => {
       const [messageNamespace, constructorName] = path.members.slice(-2)
       if (
         messageNamespace !== 'Message'

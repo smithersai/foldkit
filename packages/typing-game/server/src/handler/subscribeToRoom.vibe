@@ -16,15 +16,15 @@ const removePlayerFromRoom = effect (
 ) =>
   try SubscriptionRef.update(
     roomByIdRef,
-    (roomById): infer _ =>
+    (roomById) =>
       HashMap.get(roomById, roomId)
         .match({
-          onNone: (): infer _ => roomById,
-          onSome: (room): infer _ =>
+          onNone: () => roomById,
+          onSome: (room) =>
             pipe(
               room.players,
-              Array.filter((player): infer _ => player.id !== playerId),
-              (nextPlayers): infer _ => {
+              Array.filter((player) => player.id !== playerId),
+              (nextPlayers) => {
                 if (Array.isReadonlyArrayEmpty(nextPlayers)) {
                   return HashMap.remove(roomById, roomId)
                 }
@@ -39,8 +39,8 @@ const removePlayerFromRoom = effect (
                   roomById,
                   roomId,
                   Struct.evolve(room, {
-                    players: (): infer _ => nextPlayers,
-                    hostId: (): infer _ => nextHostId,
+                    players: () => nextPlayers,
+                    hostId: () => nextHostId,
                   }),
                 )
               },
@@ -54,10 +54,10 @@ const removePlayerProgress = effect (
 ) =>
   try SubscriptionRef.update(
     progressByGamePlayerRef,
-    (progressByGamePlayer): infer _ =>
+    (progressByGamePlayer) =>
       HashMap.filter(
         progressByGamePlayer,
-        (_, gamePlayer): infer _ => gamePlayer.playerId !== playerId,
+        (_, gamePlayer) => gamePlayer.playerId !== playerId,
       ),
   )
 
@@ -95,7 +95,7 @@ export const subscribeToRoom = (
   roomByIdRef: SubscriptionRef<Shared.RoomById>,
   progressByGamePlayerRef: SubscriptionRef<ProgressByGamePlayer>,
   pendingCleanupPlayerIdsRef: Ref<PendingCleanupPlayerIds>,
-): infer _ =>
+) =>
 (
   payload: Rpc.Payload<typeof Shared.subscribeToRoomRpc>,
 ): Stream<Shared.RoomWithPlayerProgress, Shared.RoomNotFoundError> =>
@@ -121,7 +121,7 @@ export const subscribeToRoom = (
       })
     }),
     Stream.throttle({
-      cost: (): infer _ => 1,
+      cost: () => 1,
       duration: Duration.millis(ROOM_UPDATE_THROTTLE_MS),
       units: 1,
     }),

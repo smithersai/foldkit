@@ -38,11 +38,11 @@ export const init = (config: InitConfig): Model => baseInit(config)
  *  `Selected({ value })` for the parent to store. A nullable Combobox also
  *  emits `ClearedSelection` when it closes with an empty input. */
 export const update = makeUpdate<Model>({
-  handleClose: (model, restingInputValue, isClearable): infer _ => {
+  handleClose: (model, restingInputValue, isClearable) => {
     if (isClearable && model.nullable && model.inputValue === '') {
       return {
         model: modifyFields(closedBaseModel(model), {
-          inputValue: (): infer _ => '',
+          inputValue: () => '',
         }),
         outMessage: OutMessage.ClearedSelection(),
       }
@@ -50,7 +50,7 @@ export const update = makeUpdate<Model>({
 
     return {
       model: modifyFields(closedBaseModel(model), {
-        inputValue: (): infer _ => restingInputValue,
+        inputValue: () => restingInputValue,
       }),
     }
   },
@@ -61,18 +61,18 @@ export const update = makeUpdate<Model>({
     displayText,
     wasSelected,
     context,
-  ): infer _ => {
+  ) => {
     const nullableDeselect = model.nullable && wasSelected
 
     return context.closeWithFocus(
       modifyFields(closedBaseModel(model), {
-        inputValue: (): infer _ => (nullableDeselect ? '' : displayText),
+        inputValue: () => (nullableDeselect ? '' : displayText),
       }),
       OutMessage.Selected({ value: item }),
     )
   },
 
-  handleImmediateActivation: (model, item): infer _ => ({
+  handleImmediateActivation: (model, item) => ({
     model,
     outMessage: OutMessage.Selected({ value: item }),
   }),
@@ -160,7 +160,7 @@ export const create = <Item extends string = string>(): Bundle<Item> => {
   const typedUpdate = update as (model: Model, message: Message) => UpdateReturn
   const arrayBasedView = internalView<Item>()
   const view = defineView<Model, Message, ViewInputs<Item>>(
-    (model, { maybeSelectedValue, ...baseInputs }, h): infer _ =>
+    (model, { maybeSelectedValue, ...baseInputs }, h) =>
       arrayBasedView(
         model,
         {
@@ -173,17 +173,17 @@ export const create = <Item extends string = string>(): Bundle<Item> => {
   return {
     view,
     update: typedUpdate,
-    selectItem: (model, item, displayText): infer _ =>
+    selectItem: (model, item, displayText) =>
       typedUpdate(
         model,
         Message.SelectedItem({ item, displayText, wasSelected: false }),
       ),
-    open: (model): infer _ =>
+    open: (model) =>
       typedUpdate(
         model,
         Message.Opened({ maybeActiveItemIndex: Option.none() }),
       ),
-    close: (model, restingInputValue): infer _ =>
+    close: (model, restingInputValue) =>
       typedUpdate(
         model,
         Message.Closed({ restingInputValue, isClearable: true }),

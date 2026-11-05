@@ -194,12 +194,12 @@ const modifyBaseFields = makeModifyFieldsFor<BaseModel>()
 
 export const closedModel = <Model extends BaseModel>(model: Model): Model =>
   modifyBaseFields(model, {
-    isOpen: (): infer _ => false,
-    maybeActiveItemIndex: (): infer _ => Option.none(),
-    searchQuery: (): infer _ => '',
-    searchVersion: (): infer _ => 0,
-    maybeLastPointerPosition: (): infer _ => Option.none(),
-    maybeLastButtonPointerType: (): infer _ => Option.none(),
+    isOpen: () => false,
+    maybeActiveItemIndex: () => Option.none(),
+    searchQuery: () => '',
+    searchVersion: () => 0,
+    maybeLastPointerPosition: () => Option.none(),
+    maybeLastButtonPointerType: () => Option.none(),
   })
 
 // UPDATE FACTORY
@@ -238,7 +238,7 @@ export const UnlockScroll = Command.define('UnlockScroll', {
 export const InertOthers = Command.define('InertOthers', {
   args: { id: Schema.String },
   messages: [Message.CompletedInertOthers],
-  execute: ({ id }): infer _ => {
+  execute: ({ id }) => {
     const nativeCommandArg19_0 = id
     const nativeCommandArg19_1 = [buttonSelector(id), itemsSelector(id)]
     const nativeCommandCompletion19 = Message.CompletedInertOthers()
@@ -252,7 +252,7 @@ export const InertOthers = Command.define('InertOthers', {
 export const RestoreInert = Command.define('RestoreInert', {
   args: { id: Schema.String },
   messages: [Message.CompletedRestoreInert],
-  execute: ({ id }): infer _ => {
+  execute: ({ id }) => {
     const nativeCommandArg20_0 = id
     const nativeCommandCompletion20 = Message.CompletedRestoreInert()
     return effect {
@@ -265,7 +265,7 @@ export const RestoreInert = Command.define('RestoreInert', {
 export const FocusButton = Command.define('FocusButton', {
   args: { id: Schema.String },
   messages: [Message.CompletedFocusButton],
-  execute: ({ id }): infer _ => {
+  execute: ({ id }) => {
     const nativeCommandArg21_0 = buttonSelector(id)
     const nativeCommandCompletion21 = Message.CompletedFocusButton()
     return effect {
@@ -278,7 +278,7 @@ export const FocusButton = Command.define('FocusButton', {
 export const FocusItems = Command.define('FocusItems', {
   args: { id: Schema.String },
   messages: [Message.CompletedFocusItems],
-  execute: ({ id }): infer _ => {
+  execute: ({ id }) => {
     const nativeCommandArg22_0 = itemsSelector(id)
     const nativeCommandCompletion22 = Message.CompletedFocusItems()
     return effect {
@@ -291,7 +291,7 @@ export const FocusItems = Command.define('FocusItems', {
 export const ScrollIntoView = Command.define('ScrollIntoView', {
   args: { id: Schema.String, index: Schema.Number },
   messages: [Message.CompletedScrollIntoView],
-  execute: ({ id, index }): infer _ => {
+  execute: ({ id, index }) => {
     const nativeCommandArg23_0 = itemSelector(id, index)
     const nativeCommandCompletion23 = Message.CompletedScrollIntoView()
     return effect {
@@ -304,7 +304,7 @@ export const ScrollIntoView = Command.define('ScrollIntoView', {
 export const ClickItem = Command.define('ClickItem', {
   args: { id: Schema.String, index: Schema.Number },
   messages: [Message.CompletedClickItem],
-  execute: ({ id, index }): infer _ => {
+  execute: ({ id, index }) => {
     const nativeCommandArg24_0 = itemSelector(id, index)
     const nativeCommandCompletion24 = Message.CompletedClickItem()
     return effect {
@@ -317,7 +317,7 @@ export const ClickItem = Command.define('ClickItem', {
 export const DelayClearSearch = Command.define('DelayClearSearch', {
   args: { version: Schema.Number },
   messages: [Message.CompletedDelayClearSearch],
-  execute: ({ version }): infer _ => {
+  execute: ({ version }) => {
     const nativeCommandArg25_0 = SEARCH_DEBOUNCE_MILLISECONDS
     const nativeCommandCompletion25 = Message.CompletedDelayClearSearch({
       version,
@@ -334,7 +334,7 @@ export const DetectMovementOrAnimationEnd = Command.define(
   {
     args: { id: Schema.String, generation: Schema.Number },
     messages: [Message.GotAnimationMessage],
-    execute: ({ id, generation }): infer _ => {
+    execute: ({ id, generation }) => {
       const movementTarget = buttonSelector(id)
       const movementMessage = Message.GotAnimationMessage({
         message: Animation.Message.EndedAnimation({ generation }),
@@ -365,46 +365,43 @@ export const makeUpdate = <Model extends BaseModel>(
     item: string,
     context: SelectedItemContext<Model>,
   ) => Update.ReturnWithOutMessage<Model, Message, OutMessage>,
-): infer _ => {
+) => {
   type PlainUpdateReturn = Update.Return<Model, Message>
   type UpdateReturn = Update.ReturnWithOutMessage<Model, Message, OutMessage>
 
   const foldAnimationOutMessage = Animation.OutMessage.match<
     Update.Step<Model, Message>
   >({
-    StartedLeaveAnimating: ({ generation }): infer _ => (model): infer _ => ({
+    StartedLeaveAnimating: ({ generation }) => (model) => ({
       model,
       commands: [DetectMovementOrAnimationEnd({ id: model.id, generation })],
     }),
-    TransitionedOut: (): infer _ => (model): infer _ => ({ model }),
+    TransitionedOut: () => (model) => ({ model }),
   })
 
   const foldAnimation = Update.foldChild({
     update: animationUpdate,
-    read: (model: Model): infer _ => Option.some(model.animation),
-    write: (model, nextAnimation): infer _ =>
-      modifyBaseFields(model, { animation: (): infer _ => nextAnimation }),
-    toParentMessage: (message): infer _ =>
-      Message.GotAnimationMessage({ message }),
+    read: (model: Model) => Option.some(model.animation),
+    write: (model, nextAnimation) =>
+      modifyBaseFields(model, { animation: () => nextAnimation }),
+    toParentMessage: (message) => Message.GotAnimationMessage({ message }),
     foldOutMessage: foldAnimationOutMessage,
   })
 
   const foldAnimationShow = Update.foldChildStep({
     update: animationShow,
-    read: (model: Model): infer _ => Option.some(model.animation),
-    write: (model, nextAnimation): infer _ =>
-      modifyBaseFields(model, { animation: (): infer _ => nextAnimation }),
-    toParentMessage: (message): infer _ =>
-      Message.GotAnimationMessage({ message }),
+    read: (model: Model) => Option.some(model.animation),
+    write: (model, nextAnimation) =>
+      modifyBaseFields(model, { animation: () => nextAnimation }),
+    toParentMessage: (message) => Message.GotAnimationMessage({ message }),
   })
 
   const foldAnimationHide = Update.foldChildStep({
     update: animationHide,
-    read: (model: Model): infer _ => Option.some(model.animation),
-    write: (model, nextAnimation): infer _ =>
-      modifyBaseFields(model, { animation: (): infer _ => nextAnimation }),
-    toParentMessage: (message): infer _ =>
-      Message.GotAnimationMessage({ message }),
+    read: (model: Model) => Option.some(model.animation),
+    write: (model, nextAnimation) =>
+      modifyBaseFields(model, { animation: () => nextAnimation }),
+    toParentMessage: (message) => Message.GotAnimationMessage({ message }),
   })
 
   const openListbox = (
@@ -413,19 +410,19 @@ export const makeUpdate = <Model extends BaseModel>(
   ): PlainUpdateReturn => {
     if (baseModel.isAnimated) {
       return Update.combine(baseModel, [
-        (stepModel): infer _ => ({
+        (stepModel) => ({
           model: stepModel,
           commands: openCommands,
         }),
         foldAnimationShow,
-        (stepModel): infer _ => ({
-          model: modifyBaseFields(stepModel, { isOpen: (): infer _ => true }),
+        (stepModel) => ({
+          model: modifyBaseFields(stepModel, { isOpen: () => true }),
         }),
       ])
     }
 
     return {
-      model: modifyBaseFields(baseModel, { isOpen: (): infer _ => true }),
+      model: modifyBaseFields(baseModel, { isOpen: () => true }),
       commands: openCommands,
     }
   }
@@ -442,7 +439,7 @@ export const makeUpdate = <Model extends BaseModel>(
 
     if (baseModel.isAnimated) {
       return Update.combine(closed, [
-        (stepModel): infer _ => ({ model: stepModel, commands }),
+        (stepModel) => ({ model: stepModel, commands }),
         foldAnimationHide,
       ])
     }
@@ -479,41 +476,41 @@ export const makeUpdate = <Model extends BaseModel>(
       Array.getSomes([maybeUnlockScroll, maybeRestoreInert])
 
     return Message.match<UpdateReturn>(message, {
-      CompletedLockScroll: (): infer _ => ({ model }),
-      CompletedUnlockScroll: (): infer _ => ({ model }),
-      CompletedInertOthers: (): infer _ => ({ model }),
-      CompletedRestoreInert: (): infer _ => ({ model }),
-      CompletedFocusButton: (): infer _ => ({ model }),
-      CompletedFocusItems: (): infer _ => ({ model }),
-      CompletedScrollIntoView: (): infer _ => ({ model }),
-      CompletedClickItem: (): infer _ => ({ model }),
-      SuppressedSpaceScroll: (): infer _ => ({ model }),
-      SuppressedItemCommit: (): infer _ => ({ model }),
-      CompletedAnchorListbox: (): infer _ => ({ model }),
-      CompletedPortalListboxBackdrop: (): infer _ => ({ model }),
-      Opened: ({ maybeActiveItemIndex }): infer _ => {
+      CompletedLockScroll: () => ({ model }),
+      CompletedUnlockScroll: () => ({ model }),
+      CompletedInertOthers: () => ({ model }),
+      CompletedRestoreInert: () => ({ model }),
+      CompletedFocusButton: () => ({ model }),
+      CompletedFocusItems: () => ({ model }),
+      CompletedScrollIntoView: () => ({ model }),
+      CompletedClickItem: () => ({ model }),
+      SuppressedSpaceScroll: () => ({ model }),
+      SuppressedItemCommit: () => ({ model }),
+      CompletedAnchorListbox: () => ({ model }),
+      CompletedPortalListboxBackdrop: () => ({ model }),
+      Opened: ({ maybeActiveItemIndex }) => {
         if (model.isOpen) {
           return { model }
         }
 
         return openListbox(
           modifyBaseFields(model, {
-            maybeActiveItemIndex: (): infer _ => maybeActiveItemIndex,
-            activationTrigger: (): infer _ => match (maybeActiveItemIndex) {
+            maybeActiveItemIndex: () => maybeActiveItemIndex,
+            activationTrigger: () => match (maybeActiveItemIndex) {
               when Option.None: 'Pointer' as const;
               when Option.Some: 'Keyboard' as const;
             },
-            searchQuery: (): infer _ => '',
-            searchVersion: (): infer _ => 0,
-            maybeLastPointerPosition: (): infer _ => Option.none(),
+            searchQuery: () => '',
+            searchVersion: () => 0,
+            maybeLastPointerPosition: () => Option.none(),
           }),
           openCommands,
         )
       },
 
-      Closed: (): infer _ => closeListbox(model, closeWithFocusCommands),
+      Closed: () => closeListbox(model, closeWithFocusCommands),
 
-      BlurredItems: (): infer _ => {
+      BlurredItems: () => {
         if (
           Option.exists(model.maybeLastButtonPointerType, Equal.equals('mouse'))
         ) {
@@ -523,20 +520,20 @@ export const makeUpdate = <Model extends BaseModel>(
         return closeListbox(model, closeWithoutFocusCommands)
       },
 
-      ActivatedItem: ({ index, activationTrigger }): infer _ => ({
+      ActivatedItem: ({ index, activationTrigger }) => ({
         model: modifyBaseFields(model, {
-          maybeActiveItemIndex: (): infer _ => Option.some(index),
-          activationTrigger: (): infer _ => activationTrigger,
+          maybeActiveItemIndex: () => Option.some(index),
+          activationTrigger: () => activationTrigger,
         }),
         commands: activationTrigger === 'Keyboard'
           ? [ScrollIntoView({ id: model.id, index })]
           : [],
       }),
 
-      MovedPointerOverItem: ({ index, screenX, screenY }): infer _ => {
+      MovedPointerOverItem: ({ index, screenX, screenY }) => {
         const isSamePosition = Option.exists(
           model.maybeLastPointerPosition,
-          (position): infer _ =>
+          (position) =>
             position.screenX === screenX && position.screenY === screenY,
         )
 
@@ -546,76 +543,75 @@ export const makeUpdate = <Model extends BaseModel>(
 
         return {
           model: modifyBaseFields(model, {
-            maybeActiveItemIndex: (): infer _ => Option.some(index),
-            activationTrigger: (): infer _ => 'Pointer' as const,
-            maybeLastPointerPosition: (): infer _ =>
-              Option.some({ screenX, screenY }),
+            maybeActiveItemIndex: () => Option.some(index),
+            activationTrigger: () => 'Pointer' as const,
+            maybeLastPointerPosition: () => Option.some({ screenX, screenY }),
           }),
         }
       },
 
-      DeactivatedItem: (): infer _ =>
+      DeactivatedItem: () =>
         model.activationTrigger === 'Pointer'
           ? {
             model: modifyBaseFields(model, {
-              maybeActiveItemIndex: (): infer _ => Option.none(),
+              maybeActiveItemIndex: () => Option.none(),
             }),
           }
           : { model },
 
-      SelectedItem: ({ item }): infer _ =>
+      SelectedItem: ({ item }) =>
         handleSelectedItem(model, item, {
-          closeWithFocus: (closeModel, outMessage): infer _ =>
+          closeWithFocus: (closeModel, outMessage) =>
             pipe(
               closeListbox(closeModel, closeWithFocusCommands),
               Update.withOutMessage(outMessage),
             ),
-          closeWithoutFocus: (closeModel, outMessage): infer _ =>
+          closeWithoutFocus: (closeModel, outMessage) =>
             pipe(
               closeListbox(closeModel, closeWithoutFocusCommands),
               Update.withOutMessage(outMessage),
             ),
         }),
 
-      RequestedItemClick: ({ index }): infer _ => ({
+      RequestedItemClick: ({ index }) => ({
         model,
         commands: [ClickItem({ id: model.id, index })],
       }),
 
-      Searched: ({ key, maybeTargetIndex }): infer _ => {
+      Searched: ({ key, maybeTargetIndex }) => {
         const nextSearchQuery = model.searchQuery + key
         const nextSearchVersion = Number.increment(model.searchVersion)
 
         return {
           model: modifyBaseFields(model, {
-            searchQuery: (): infer _ => nextSearchQuery,
-            searchVersion: (): infer _ => nextSearchVersion,
-            maybeActiveItemIndex: (): infer _ =>
+            searchQuery: () => nextSearchQuery,
+            searchVersion: () => nextSearchVersion,
+            maybeActiveItemIndex: () =>
               Option.orElse(
                 maybeTargetIndex,
-                (): infer _ => model.maybeActiveItemIndex,
+                () => model.maybeActiveItemIndex,
               ),
           }),
           commands: [DelayClearSearch({ version: nextSearchVersion })],
         }
       },
 
-      CompletedDelayClearSearch: ({ version }): infer _ => {
+      CompletedDelayClearSearch: ({ version }) => {
         if (version !== model.searchVersion) {
           return { model }
         }
 
         return {
-          model: modifyBaseFields(model, { searchQuery: (): infer _ => '' }),
+          model: modifyBaseFields(model, { searchQuery: () => '' }),
         }
       },
 
-      GotAnimationMessage: ({ message: animationMessage }): infer _ =>
+      GotAnimationMessage: ({ message: animationMessage }) =>
         foldAnimation(model, animationMessage),
 
-      PressedPointerOnButton: ({ pointerType, button }): infer _ => {
+      PressedPointerOnButton: ({ pointerType, button }) => {
         const withPointerType = modifyBaseFields(model, {
-          maybeLastButtonPointerType: (): infer _ => Option.some(pointerType),
+          maybeLastButtonPointerType: () => Option.some(pointerType),
         })
 
         if (pointerType !== 'mouse' || button !== LEFT_MOUSE_BUTTON) {
@@ -624,12 +620,10 @@ export const makeUpdate = <Model extends BaseModel>(
 
         if (model.isOpen) {
           return Update.combine(withPointerType, [
-            (stepModel): infer _ =>
-              closeListbox(stepModel, closeWithFocusCommands),
-            (stepModel): infer _ => ({
+            (stepModel) => closeListbox(stepModel, closeWithFocusCommands),
+            (stepModel) => ({
               model: modifyBaseFields(stepModel, {
-                maybeLastButtonPointerType: (): infer _ =>
-                  Option.some(pointerType),
+                maybeLastButtonPointerType: () => Option.some(pointerType),
               }),
             }),
           ])
@@ -637,28 +631,28 @@ export const makeUpdate = <Model extends BaseModel>(
 
         return openListbox(
           modifyBaseFields(withPointerType, {
-            maybeActiveItemIndex: (): infer _ => Option.none(),
-            activationTrigger: (): infer _ => 'Pointer' as const,
-            searchQuery: (): infer _ => '',
-            searchVersion: (): infer _ => 0,
-            maybeLastPointerPosition: (): infer _ => Option.none(),
+            maybeActiveItemIndex: () => Option.none(),
+            activationTrigger: () => 'Pointer' as const,
+            searchQuery: () => '',
+            searchVersion: () => 0,
+            maybeLastPointerPosition: () => Option.none(),
           }),
           openCommands,
         )
       },
 
-      IgnoredMouseClick: (): infer _ => ({
+      IgnoredMouseClick: () => ({
         model: modifyBaseFields(model, {
-          maybeLastButtonPointerType: (): infer _ => Option.none(),
+          maybeLastButtonPointerType: () => Option.none(),
         }),
       }),
-      ClickedButton: (): infer _ => {
+      ClickedButton: () => {
         if (
           Option.exists(model.maybeLastButtonPointerType, Equal.equals('mouse'))
         ) {
           return {
             model: modifyBaseFields(model, {
-              maybeLastButtonPointerType: (): infer _ => Option.none(),
+              maybeLastButtonPointerType: () => Option.none(),
             }),
           }
         }
@@ -669,11 +663,11 @@ export const makeUpdate = <Model extends BaseModel>(
 
         return openListbox(
           modifyBaseFields(model, {
-            maybeActiveItemIndex: (): infer _ => Option.none(),
-            activationTrigger: (): infer _ => 'Pointer',
-            searchQuery: (): infer _ => '',
-            searchVersion: (): infer _ => 0,
-            maybeLastPointerPosition: (): infer _ => Option.none(),
+            maybeActiveItemIndex: () => Option.none(),
+            activationTrigger: () => 'Pointer',
+            searchQuery: () => '',
+            searchVersion: () => 0,
+            maybeLastPointerPosition: () => Option.none(),
           }),
           openCommands,
         )
@@ -704,7 +698,7 @@ export const AnchorListbox = Mount.define('AnchorListbox', {
   messages: [Message.CompletedAnchorListbox],
   execute: effect ({ element, buttonId, anchor }) => {
     try Effect.acquireRelease(
-      Effect.sync((): infer _ =>
+      Effect.sync(() =>
         anchorSetup(element, {
           buttonId,
           anchor,
@@ -729,7 +723,7 @@ export const PortalListboxBackdrop = Mount.define('PortalListboxBackdrop', {
   messages: [Message.CompletedPortalListboxBackdrop],
   execute: effect ({ element }) => {
     try Effect.acquireRelease(
-      Effect.sync((): infer _ => portalBackdrop(element)),
+      Effect.sync(() => portalBackdrop(element)),
       effect cleanup => try Effect.sync(cleanup),
     )
     return (try Effect.orDie(
@@ -849,9 +843,9 @@ type ViewBehavior = Readonly<{
 
 export const makeView = <Model extends BaseModel>(
   behavior: ViewBehavior,
-): infer _ => {
+) => {
   const impl = defineView<Model, Message, BaseViewInputs<unknown, string>>(
-    (model, viewInputs, h): infer _ => {
+    (model, viewInputs, h) => {
       const {
         id,
         isOpen,
@@ -895,11 +889,11 @@ export const makeView = <Model extends BaseModel>(
       } = viewInputs
 
       const itemToValue = viewInputs.itemToValue
-        ?? ((item: unknown): infer _ => globalThis.String(item))
+        ?? ((item: unknown) => globalThis.String(item))
       const isValueSelected = (itemValue: string): boolean =>
         Array.contains(selectedValues, itemValue)
       const itemToSearchText = viewInputs.itemToSearchText
-        ?? ((item: unknown): infer _ => itemToValue(item))
+        ?? ((item: unknown) => itemToValue(item))
 
       const isLeaving = transitionState === 'LeaveStart'
         || transitionState === 'LeaveAnimating'
@@ -934,7 +928,7 @@ export const makeView = <Model extends BaseModel>(
         && pipe(
           items,
           Array.get(index),
-          Option.exists((item): infer _ => isItemDisabled(item, index)),
+          Option.exists((item) => isItemDisabled(item, index)),
         )
 
       const isButtonEffectivelyDisabled = isDisabled || isButtonDisabled
@@ -968,10 +962,10 @@ export const makeView = <Model extends BaseModel>(
       const selectedItemIndex = pipe(
         selectedValues,
         Array.head,
-        Option.flatMap((selectedValue): infer _ =>
+        Option.flatMap((selectedValue) =>
           Array.findFirstIndex(
             items,
-            (item): infer _ => itemToValue(item) === selectedValue,
+            (item) => itemToValue(item) === selectedValue,
           )
         ),
       )
@@ -986,7 +980,7 @@ export const makeView = <Model extends BaseModel>(
             Message.Opened({
               maybeActiveItemIndex: Option.orElse(
                 selectedItemIndex,
-                (): infer _ => Option.some(firstEnabledIndex),
+                () => Option.some(firstEnabledIndex),
               ),
             }),
           );
@@ -994,7 +988,7 @@ export const makeView = <Model extends BaseModel>(
             Message.Opened({
               maybeActiveItemIndex: Option.orElse(
                 selectedItemIndex,
-                (): infer _ => Option.some(lastEnabledIndex),
+                () => Option.some(lastEnabledIndex),
               ),
             }),
           );
@@ -1050,7 +1044,7 @@ export const makeView = <Model extends BaseModel>(
         } else {
           return Option.map(
             maybeActiveItemIndex,
-            (index): infer _ => Message.RequestedItemClick({ index }),
+            (index) => Message.RequestedItemClick({ index }),
           )
         }
       }
@@ -1077,7 +1071,7 @@ export const makeView = <Model extends BaseModel>(
           nativeMatchResult14
         }
 
-      const resolveButtonLabel = (): infer _ => {
+      const resolveButtonLabel = () => {
         if (Predicate.isNotUndefined(ariaLabel)) {
           return [h.AriaLabel(ariaLabel)]
         } else if (Predicate.isNotUndefined(ariaLabelledBy)) {
@@ -1156,10 +1150,10 @@ export const makeView = <Model extends BaseModel>(
         ...itemsAttributes,
       ]
 
-      const listboxItems = Array.map(items, (item, index): infer _ => {
+      const listboxItems = Array.map(items, (item, index) => {
         const isActiveItem = Option.exists(
           maybeActiveItemIndex,
-          (activeIndex): infer _ => activeIndex === index,
+          (activeIndex) => activeIndex === index,
         )
         const isDisabledItem = isItemDisabledByIndex(index)
         const isSelectedItem = isValueSelected(itemToValue(item))
@@ -1193,7 +1187,7 @@ export const makeView = <Model extends BaseModel>(
                 ...(isActiveItem
                   ? []
                   : [
-                    h.OnPointerMove((screenX, screenY, pointerType): infer _ =>
+                    h.OnPointerMove((screenX, screenY, pointerType) =>
                       OptionExt.when(
                         pointerType !== 'touch',
                         Message.MovedPointerOverItem({
@@ -1204,7 +1198,7 @@ export const makeView = <Model extends BaseModel>(
                       )
                     ),
                   ]),
-                h.OnPointerLeave((pointerType): infer _ =>
+                h.OnPointerLeave((pointerType) =>
                   OptionExt.when(
                     pointerType !== 'touch',
                     Message.DeactivatedItem(),
@@ -1225,15 +1219,15 @@ export const makeView = <Model extends BaseModel>(
 
         const segments = groupContiguous(
           listboxItems,
-          (_, index): infer _ =>
+          (_, index) =>
             Array.get(items, index)
               .match({
-                onNone: (): infer _ => '',
-                onSome: (item): infer _ => itemGroupKey(item, index),
+                onNone: () => '',
+                onSome: (item) => itemGroupKey(item, index),
               }),
         )
 
-        return Array.flatMap(segments, (segment, segmentIndex): infer _ => {
+        return Array.flatMap(segments, (segment, segmentIndex) => {
           const maybeHeading = Option.fromNullishOr(
             groupToHeading?.(segment.key),
           )
@@ -1325,10 +1319,10 @@ export const makeView = <Model extends BaseModel>(
 
       const hiddenInputs = name
         ? Array.match(selectedValues, {
-          onEmpty: (): infer _ => [
+          onEmpty: () => [
             h.input([h.Type('hidden'), h.Name(name), ...formAttribute]),
           ],
-          onNonEmpty: Array.map((selectedValue): infer _ =>
+          onNonEmpty: Array.map((selectedValue) =>
             h.input([
               h.Type('hidden'),
               h.Name(name),

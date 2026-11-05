@@ -208,10 +208,10 @@ const modifyBaseFields = makeModifyFieldsFor<BaseModel>()
 /** Resets only shared base fields to their closed state. Does not touch inputValue. That is variant-specific. */
 export const closedBaseModel = <Model extends BaseModel>(model: Model): Model =>
   modifyBaseFields(model, {
-    isOpen: (): infer _ => false,
-    maybeActiveItemIndex: (): infer _ => Option.none(),
-    activationTrigger: (): infer _ => 'Keyboard' as const,
-    maybeLastPointerPosition: (): infer _ => Option.none(),
+    isOpen: () => false,
+    maybeActiveItemIndex: () => Option.none(),
+    activationTrigger: () => 'Keyboard' as const,
+    maybeLastPointerPosition: () => Option.none(),
   })
 
 // UPDATE FACTORY
@@ -251,7 +251,7 @@ export const UnlockScroll = Command.define('UnlockScroll', {
 export const InertOthers = Command.define('InertOthers', {
   args: { id: Schema.String },
   messages: [Message.CompletedInertOthers],
-  execute: ({ id }): infer _ => {
+  execute: ({ id }) => {
     const nativeCommandArg11_0 = id
     const nativeCommandArg11_1 = [
       inputWrapperSelector(id),
@@ -269,7 +269,7 @@ export const InertOthers = Command.define('InertOthers', {
 export const RestoreInert = Command.define('RestoreInert', {
   args: { id: Schema.String },
   messages: [Message.CompletedRestoreInert],
-  execute: ({ id }): infer _ => {
+  execute: ({ id }) => {
     const nativeCommandArg12_0 = id
     const nativeCommandCompletion12 = Message.CompletedRestoreInert()
     return effect {
@@ -282,7 +282,7 @@ export const RestoreInert = Command.define('RestoreInert', {
 export const FocusInput = Command.define('FocusInput', {
   args: { id: Schema.String },
   messages: [Message.CompletedFocusInput],
-  execute: ({ id }): infer _ => {
+  execute: ({ id }) => {
     const nativeCommandArg13_0 = inputSelector(id)
     const nativeCommandCompletion13 = Message.CompletedFocusInput()
     return effect {
@@ -295,7 +295,7 @@ export const FocusInput = Command.define('FocusInput', {
 export const ScrollIntoView = Command.define('ScrollIntoView', {
   args: { id: Schema.String, index: Schema.Number },
   messages: [Message.CompletedScrollIntoView],
-  execute: ({ id, index }): infer _ => {
+  execute: ({ id, index }) => {
     const nativeCommandArg14_0 = itemSelector(id, index)
     const nativeCommandCompletion14 = Message.CompletedScrollIntoView()
     return effect {
@@ -308,7 +308,7 @@ export const ScrollIntoView = Command.define('ScrollIntoView', {
 export const ClickItem = Command.define('ClickItem', {
   args: { id: Schema.String, index: Schema.Number },
   messages: [Message.CompletedClickItem],
-  execute: ({ id, index }): infer _ => {
+  execute: ({ id, index }) => {
     const nativeCommandArg15_0 = itemSelector(id, index)
     const nativeCommandCompletion15 = Message.CompletedClickItem()
     return effect {
@@ -323,7 +323,7 @@ export const DetectMovementOrAnimationEnd = Command.define(
   {
     args: { id: Schema.String, generation: Schema.Number },
     messages: [Message.GotAnimationMessage],
-    execute: ({ id, generation }): infer _ => {
+    execute: ({ id, generation }) => {
       const movementTarget = inputWrapperSelector(id)
       const movementMessage = Message.GotAnimationMessage({
         message: Animation.Message.EndedAnimation({ generation }),
@@ -368,46 +368,43 @@ export const makeUpdate = <Model extends BaseModel>(
       item: string,
     ) => HandlerReturn<Model>
   }>,
-): infer _ => {
+) => {
   type PlainUpdateReturn = Update.Return<Model, Message>
   type UpdateReturn = Update.ReturnWithOutMessage<Model, Message, OutMessage>
 
   const foldAnimationOutMessage = Animation.OutMessage.match<
     Update.Step<Model, Message>
   >({
-    StartedLeaveAnimating: ({ generation }): infer _ => (model): infer _ => ({
+    StartedLeaveAnimating: ({ generation }) => (model) => ({
       model,
       commands: [DetectMovementOrAnimationEnd({ id: model.id, generation })],
     }),
-    TransitionedOut: (): infer _ => (model): infer _ => ({ model }),
+    TransitionedOut: () => (model) => ({ model }),
   })
 
   const foldAnimation = Update.foldChild({
     update: animationUpdate,
-    read: (model: Model): infer _ => Option.some(model.animation),
-    write: (model, nextAnimation): infer _ =>
-      modifyBaseFields(model, { animation: (): infer _ => nextAnimation }),
-    toParentMessage: (message): infer _ =>
-      Message.GotAnimationMessage({ message }),
+    read: (model: Model) => Option.some(model.animation),
+    write: (model, nextAnimation) =>
+      modifyBaseFields(model, { animation: () => nextAnimation }),
+    toParentMessage: (message) => Message.GotAnimationMessage({ message }),
     foldOutMessage: foldAnimationOutMessage,
   })
 
   const foldAnimationShow = Update.foldChildStep({
     update: animationShow,
-    read: (model: Model): infer _ => Option.some(model.animation),
-    write: (model, nextAnimation): infer _ =>
-      modifyBaseFields(model, { animation: (): infer _ => nextAnimation }),
-    toParentMessage: (message): infer _ =>
-      Message.GotAnimationMessage({ message }),
+    read: (model: Model) => Option.some(model.animation),
+    write: (model, nextAnimation) =>
+      modifyBaseFields(model, { animation: () => nextAnimation }),
+    toParentMessage: (message) => Message.GotAnimationMessage({ message }),
   })
 
   const foldAnimationHide = Update.foldChildStep({
     update: animationHide,
-    read: (model: Model): infer _ => Option.some(model.animation),
-    write: (model, nextAnimation): infer _ =>
-      modifyBaseFields(model, { animation: (): infer _ => nextAnimation }),
-    toParentMessage: (message): infer _ =>
-      Message.GotAnimationMessage({ message }),
+    read: (model: Model) => Option.some(model.animation),
+    write: (model, nextAnimation) =>
+      modifyBaseFields(model, { animation: () => nextAnimation }),
+    toParentMessage: (message) => Message.GotAnimationMessage({ message }),
   })
 
   const internalUpdate = (model: Model, message: Message): UpdateReturn => {
@@ -445,7 +442,7 @@ export const makeUpdate = <Model extends BaseModel>(
         return pipe(
           nextModel,
           Update.combine([
-            (stepModel): infer _ => ({ model: stepModel, commands }),
+            (stepModel) => ({ model: stepModel, commands }),
             foldAnimationHide,
           ]),
           Update.withOutMessage(outMessage),
@@ -458,19 +455,19 @@ export const makeUpdate = <Model extends BaseModel>(
     const openCombobox = (baseModel: Model): PlainUpdateReturn => {
       if (model.isAnimated) {
         return Update.combine(baseModel, [
-          (stepModel): infer _ => ({
+          (stepModel) => ({
             model: stepModel,
             commands: Array.getSomes([maybeLockScroll, maybeInertOthers]),
           }),
           foldAnimationShow,
-          (stepModel): infer _ => ({
-            model: modifyBaseFields(stepModel, { isOpen: (): infer _ => true }),
+          (stepModel) => ({
+            model: modifyBaseFields(stepModel, { isOpen: () => true }),
           }),
         ])
       }
 
       return {
-        model: modifyBaseFields(baseModel, { isOpen: (): infer _ => true }),
+        model: modifyBaseFields(baseModel, { isOpen: () => true }),
         commands: Array.getSomes([maybeLockScroll, maybeInertOthers]),
       }
     }
@@ -491,7 +488,7 @@ export const makeUpdate = <Model extends BaseModel>(
         return pipe(
           comboboxClose.model,
           Update.combine([
-            (stepModel): infer _ => ({ model: stepModel, commands }),
+            (stepModel) => ({ model: stepModel, commands }),
             foldAnimationHide,
           ]),
           Update.withOutMessage(comboboxClose.outMessage),
@@ -505,32 +502,32 @@ export const makeUpdate = <Model extends BaseModel>(
     }
 
     return Message.match<UpdateReturn>(message, {
-      CompletedLockScroll: (): infer _ => ({ model }),
-      CompletedUnlockScroll: (): infer _ => ({ model }),
-      CompletedInertOthers: (): infer _ => ({ model }),
-      CompletedRestoreInert: (): infer _ => ({ model }),
-      CompletedFocusInput: (): infer _ => ({ model }),
-      CompletedScrollIntoView: (): infer _ => ({ model }),
-      CompletedClickItem: (): infer _ => ({ model }),
-      SuppressedItemCommit: (): infer _ => ({ model }),
-      SuppressedEmptyItemNavigation: (): infer _ => ({ model }),
-      CompletedAnchorCombobox: (): infer _ => ({ model }),
-      CompletedAttachComboboxPreventBlur: (): infer _ => ({ model }),
-      CompletedAttachComboboxSelectOnFocus: (): infer _ => ({ model }),
-      CompletedPortalComboboxBackdrop: (): infer _ => ({ model }),
-      Opened: ({ maybeActiveItemIndex }): infer _ => {
+      CompletedLockScroll: () => ({ model }),
+      CompletedUnlockScroll: () => ({ model }),
+      CompletedInertOthers: () => ({ model }),
+      CompletedRestoreInert: () => ({ model }),
+      CompletedFocusInput: () => ({ model }),
+      CompletedScrollIntoView: () => ({ model }),
+      CompletedClickItem: () => ({ model }),
+      SuppressedItemCommit: () => ({ model }),
+      SuppressedEmptyItemNavigation: () => ({ model }),
+      CompletedAnchorCombobox: () => ({ model }),
+      CompletedAttachComboboxPreventBlur: () => ({ model }),
+      CompletedAttachComboboxSelectOnFocus: () => ({ model }),
+      CompletedPortalComboboxBackdrop: () => ({ model }),
+      Opened: ({ maybeActiveItemIndex }) => {
         if (model.isOpen) {
           return { model }
         }
 
         return openCombobox(
           modifyBaseFields(model, {
-            maybeActiveItemIndex: (): infer _ => maybeActiveItemIndex,
-            activationTrigger: (): infer _ => match (maybeActiveItemIndex) {
+            maybeActiveItemIndex: () => maybeActiveItemIndex,
+            activationTrigger: () => match (maybeActiveItemIndex) {
               when Option.None: 'Pointer' as const;
               when Option.Some: 'Keyboard' as const;
             },
-            maybeLastPointerPosition: (): infer _ => Option.none(),
+            maybeLastPointerPosition: () => Option.none(),
           }),
         )
       },
@@ -538,7 +535,7 @@ export const makeUpdate = <Model extends BaseModel>(
       // NOTE: A blur Message can arrive after selection has already closed the
       // Combobox. Ignore that stale Message so it cannot restore an old input
       // value or emit ClearedSelection again.
-      Closed: ({ restingInputValue, isClearable }): infer _ =>
+      Closed: ({ restingInputValue, isClearable }) =>
         model.isOpen
           ? closeCombobox(
             model,
@@ -548,7 +545,7 @@ export const makeUpdate = <Model extends BaseModel>(
           )
           : { model },
 
-      BlurredInput: ({ restingInputValue, isClearable }): infer _ =>
+      BlurredInput: ({ restingInputValue, isClearable }) =>
         model.isOpen
           ? closeCombobox(
             model,
@@ -562,10 +559,10 @@ export const makeUpdate = <Model extends BaseModel>(
         index,
         activationTrigger,
         maybeImmediateSelection,
-      }): infer _ => {
+      }) => {
         const highlightedModel = modifyBaseFields(model, {
-          maybeActiveItemIndex: (): infer _ => Option.some(index),
-          activationTrigger: (): infer _ => activationTrigger,
+          maybeActiveItemIndex: () => Option.some(index),
+          activationTrigger: () => activationTrigger,
         })
 
         const skippedActivation: HandlerReturn<Model> = {
@@ -597,10 +594,10 @@ export const makeUpdate = <Model extends BaseModel>(
         }
       },
 
-      MovedPointerOverItem: ({ index, screenX, screenY }): infer _ => {
+      MovedPointerOverItem: ({ index, screenX, screenY }) => {
         const isSamePosition = Option.exists(
           model.maybeLastPointerPosition,
-          (position): infer _ =>
+          (position) =>
             position.screenX === screenX && position.screenY === screenY,
         )
 
@@ -610,55 +607,54 @@ export const makeUpdate = <Model extends BaseModel>(
 
         return {
           model: modifyBaseFields(model, {
-            maybeActiveItemIndex: (): infer _ => Option.some(index),
-            activationTrigger: (): infer _ => 'Pointer' as const,
-            maybeLastPointerPosition: (): infer _ =>
-              Option.some({ screenX, screenY }),
+            maybeActiveItemIndex: () => Option.some(index),
+            activationTrigger: () => 'Pointer' as const,
+            maybeLastPointerPosition: () => Option.some({ screenX, screenY }),
           }),
         }
       },
 
-      DeactivatedItem: (): infer _ =>
+      DeactivatedItem: () =>
         model.activationTrigger === 'Pointer'
           ? {
             model: modifyBaseFields(model, {
-              maybeActiveItemIndex: (): infer _ => Option.none(),
+              maybeActiveItemIndex: () => Option.none(),
             }),
           }
           : { model },
 
-      SelectedItem: ({ item, displayText, wasSelected }): infer _ =>
+      SelectedItem: ({ item, displayText, wasSelected }) =>
         handlers.handleSelectedItem(model, item, displayText, wasSelected, {
           closeWithFocus: closeSelectedItemWithFocus,
         }),
 
-      RequestedItemClick: ({ index }): infer _ => ({
+      RequestedItemClick: ({ index }) => ({
         model,
         commands: [ClickItem({ id: model.id, index })],
       }),
 
-      UpdatedInputValue: ({ value }): infer _ => {
+      UpdatedInputValue: ({ value }) => {
         if (model.isOpen) {
           return {
             model: modifyBaseFields(model, {
-              inputValue: (): infer _ => value,
-              maybeActiveItemIndex: (): infer _ => Option.some(0),
-              activationTrigger: (): infer _ => 'Keyboard' as const,
+              inputValue: () => value,
+              maybeActiveItemIndex: () => Option.some(0),
+              activationTrigger: () => 'Keyboard' as const,
             }),
           }
         }
 
         return openCombobox(
           modifyBaseFields(model, {
-            inputValue: (): infer _ => value,
-            maybeActiveItemIndex: (): infer _ => Option.some(0),
-            activationTrigger: (): infer _ => 'Keyboard' as const,
-            maybeLastPointerPosition: (): infer _ => Option.none(),
+            inputValue: () => value,
+            maybeActiveItemIndex: () => Option.some(0),
+            activationTrigger: () => 'Keyboard' as const,
+            maybeLastPointerPosition: () => Option.none(),
           }),
         )
       },
 
-      PressedToggleButton: ({ restingInputValue, isClearable }): infer _ => {
+      PressedToggleButton: ({ restingInputValue, isClearable }) => {
         if (model.isOpen) {
           return closeCombobox(
             model,
@@ -670,12 +666,12 @@ export const makeUpdate = <Model extends BaseModel>(
 
         return Update.combine(
           modifyBaseFields(model, {
-            maybeActiveItemIndex: (): infer _ => Option.none(),
-            activationTrigger: (): infer _ => 'Pointer' as const,
-            maybeLastPointerPosition: (): infer _ => Option.none(),
+            maybeActiveItemIndex: () => Option.none(),
+            activationTrigger: () => 'Pointer' as const,
+            maybeLastPointerPosition: () => Option.none(),
           }),
           [
-            (stepModel): infer _ => ({
+            (stepModel) => ({
               model: stepModel,
               commands: [focusInput],
             }),
@@ -684,7 +680,7 @@ export const makeUpdate = <Model extends BaseModel>(
         )
       },
 
-      GotAnimationMessage: ({ message: animationMessage }): infer _ =>
+      GotAnimationMessage: ({ message: animationMessage }) =>
         foldAnimation(model, animationMessage),
     })
   }
@@ -705,7 +701,7 @@ export const AnchorCombobox = Mount.define('AnchorCombobox', {
   messages: [Message.CompletedAnchorCombobox],
   execute: effect ({ element, buttonId, anchor }) => {
     try Effect.acquireRelease(
-      Effect.sync((): infer _ => {
+      Effect.sync(() => {
         const preventBlur = (event: Event): void => {
           event.preventDefault()
         }
@@ -717,7 +713,7 @@ export const AnchorCombobox = Mount.define('AnchorCombobox', {
           anchor,
           interceptTab: false,
         })
-        return (): infer _ => {
+        return () => {
           element.removeEventListener('pointerdown', preventBlur, {
             capture: true,
           })
@@ -745,7 +741,7 @@ export const AttachComboboxPreventBlur = Mount.define(
     messages: [Message.CompletedAttachComboboxPreventBlur],
     execute: effect ({ element }) => {
       try Effect.acquireRelease(
-        Effect.sync((): infer _ => {
+        Effect.sync(() => {
           const handler = (event: Event): void => {
             event.preventDefault()
           }
@@ -753,7 +749,7 @@ export const AttachComboboxPreventBlur = Mount.define(
           return handler
         }),
         effect handler =>
-          try Effect.sync((): infer _ =>
+          try Effect.sync(() =>
             element.removeEventListener('pointerdown', handler, {
               capture: true,
             })
@@ -778,7 +774,7 @@ export const AttachComboboxSelectOnFocus = Mount.define(
     messages: [Message.CompletedAttachComboboxSelectOnFocus],
     execute: effect ({ element }) => {
       try Effect.acquireRelease(
-        Effect.sync((): infer _ => {
+        Effect.sync(() => {
           const handler = (): void => {
             if (isHtmlInputElement(element)) {
               element.select()
@@ -788,9 +784,7 @@ export const AttachComboboxSelectOnFocus = Mount.define(
           return handler
         }),
         effect handler =>
-          try Effect.sync((): infer _ =>
-            element.removeEventListener('focus', handler)
-          ),
+          try Effect.sync(() => element.removeEventListener('focus', handler)),
       )
       return (try Effect.orDie(
         Effect.try({
@@ -809,7 +803,7 @@ export const PortalComboboxBackdrop = Mount.define('PortalComboboxBackdrop', {
   messages: [Message.CompletedPortalComboboxBackdrop],
   execute: effect ({ element }) => {
     try Effect.acquireRelease(
-      Effect.sync((): infer _ => portalBackdrop(element)),
+      Effect.sync(() => portalBackdrop(element)),
       effect cleanup => try Effect.sync(cleanup),
     )
     return (try Effect.orDie(
@@ -931,7 +925,7 @@ export type ViewBehavior = Readonly<{
 /** Creates a combobox view function from variant-specific behavior. Shared rendering logic (input, items, transitions, keyboard navigation) is handled internally; only listbox multi-select semantics vary by variant. */
 export const makeView = <Model extends BaseModel>(
   behavior: ViewBehavior,
-): infer _ => {
+) => {
   const impl = defineView<Model, Message, BaseViewInputs<string>>(
     (model, viewInputs, h): Html => {
       const {
@@ -982,7 +976,7 @@ export const makeView = <Model extends BaseModel>(
         ariaLabelledBy,
       } = viewInputs
 
-      const resolveInputLabel = (): infer _ => {
+      const resolveInputLabel = () => {
         if (Predicate.isNotUndefined(ariaLabel)) {
           return [h.AriaLabel(ariaLabel)]
         } else if (Predicate.isNotUndefined(ariaLabelledBy)) {
@@ -1034,7 +1028,7 @@ export const makeView = <Model extends BaseModel>(
         && pipe(
           items,
           Array.get(index),
-          Option.exists((item): infer _ => isItemDisabled(item, index)),
+          Option.exists((item) => isItemDisabled(item, index)),
         )
 
       const firstEnabledIndex = findFirstEnabledIndex(
@@ -1053,7 +1047,7 @@ export const makeView = <Model extends BaseModel>(
         'ArrowDown',
         'ArrowUp',
         items.length,
-        Option.getOrElse(maybeActiveItemIndex, (): infer _ => -1),
+        Option.getOrElse(maybeActiveItemIndex, () => -1),
         isDisabledAtIndex,
       )
 
@@ -1064,8 +1058,8 @@ export const makeView = <Model extends BaseModel>(
           return Option.none()
         } else {
           return OptionExt.when(immediate, targetIndex)
-            .flatMap((index): infer _ => Array.get(items, index))
-            .map((targetItem): infer _ => ({
+            .flatMap((index) => Array.get(items, index))
+            .map((targetItem) => ({
               item: itemToValue(targetItem, targetIndex),
             }))
         }
@@ -1073,7 +1067,7 @@ export const makeView = <Model extends BaseModel>(
 
       const maybeValidActiveItemIndex = Option.flatMap(
         maybeActiveItemIndex,
-        (index): infer _ => Option.as(Array.get(items, index), index),
+        (index) => Option.as(Array.get(items, index), index),
       )
 
       const resolveCommitMessage = (): Option<Message> => {
@@ -1085,7 +1079,7 @@ export const makeView = <Model extends BaseModel>(
         } else {
           return Option.map(
             maybeValidActiveItemIndex,
-            (index): infer _ => Message.RequestedItemClick({ index }),
+            (index) => Message.RequestedItemClick({ index }),
           )
         }
       }
@@ -1094,7 +1088,7 @@ export const makeView = <Model extends BaseModel>(
         do {
           const nativeMatchInput10 = key
           const nativeMatchResult10 = match (nativeMatchInput10) {
-            when 'ArrowDown': ((): infer _ => {
+            when 'ArrowDown': (() => {
               if (Array.isReadonlyArrayEmpty(items)) {
                 return Option.some(Message.SuppressedEmptyItemNavigation())
               }
@@ -1117,7 +1111,7 @@ export const makeView = <Model extends BaseModel>(
                 }),
               )
             })();
-            when 'ArrowUp': ((): infer _ => {
+            when 'ArrowUp': (() => {
               if (Array.isReadonlyArrayEmpty(items)) {
                 return Option.some(Message.SuppressedEmptyItemNavigation())
               }
@@ -1140,13 +1134,13 @@ export const makeView = <Model extends BaseModel>(
                 }),
               )
             })();
-            when 'Enter': ((): infer _ => {
+            when 'Enter': (() => {
               if (!isOpen) {
                 return Option.none()
               }
               return resolveCommitMessage()
             })();
-            when 'Escape': ((): infer _ => {
+            when 'Escape': (() => {
               if (!isOpen) {
                 return Option.none()
               }
@@ -1154,7 +1148,7 @@ export const makeView = <Model extends BaseModel>(
                 Message.Closed({ restingInputValue, isClearable: !isReadOnly }),
               )
             })();
-            when ('Home') or ('End'): ((): infer _ => {
+            when ('Home') or ('End'): (() => {
               if (!isOpen) {
                 return Option.none()
               }
@@ -1188,7 +1182,7 @@ export const makeView = <Model extends BaseModel>(
 
       const onInputAttributes = isReadOnly
         ? []
-        : [h.OnInput((value): infer _ => Message.UpdatedInputValue({ value }))]
+        : [h.OnInput((value) => Message.UpdatedInputValue({ value }))]
 
       const resolvedInputAttributes = [
         h.Id(`${id}-input`),
@@ -1268,10 +1262,10 @@ export const makeView = <Model extends BaseModel>(
         ...itemsAttributes,
       ]
 
-      const comboboxItems = Array.map(items, (item, index): infer _ => {
+      const comboboxItems = Array.map(items, (item, index) => {
         const isActiveItem = Option.exists(
           maybeActiveItemIndex,
-          (activeIndex): infer _ => activeIndex === index,
+          (activeIndex) => activeIndex === index,
         )
         const isDisabledItem = isDisabledAtIndex(index)
         const isSelectedItem = isValueSelected(itemToValue(item, index))
@@ -1313,7 +1307,7 @@ export const makeView = <Model extends BaseModel>(
                 ...(isActiveItem
                   ? []
                   : [
-                    h.OnPointerMove((screenX, screenY, pointerType): infer _ =>
+                    h.OnPointerMove((screenX, screenY, pointerType) =>
                       OptionExt.when(
                         pointerType !== 'touch',
                         Message.MovedPointerOverItem({
@@ -1324,7 +1318,7 @@ export const makeView = <Model extends BaseModel>(
                       )
                     ),
                   ]),
-                h.OnPointerLeave((pointerType): infer _ =>
+                h.OnPointerLeave((pointerType) =>
                   OptionExt.when(
                     pointerType !== 'touch',
                     Message.DeactivatedItem(),
@@ -1345,15 +1339,15 @@ export const makeView = <Model extends BaseModel>(
 
         const segments = groupContiguous(
           comboboxItems,
-          (_, index): infer _ =>
+          (_, index) =>
             Array.get(items, index)
               .match({
-                onNone: (): infer _ => '',
-                onSome: (item): infer _ => itemGroupKey(item, index),
+                onNone: () => '',
+                onSome: (item) => itemGroupKey(item, index),
               }),
         )
 
-        return Array.flatMap(segments, (segment, segmentIndex): infer _ => {
+        return Array.flatMap(segments, (segment, segmentIndex) => {
           const maybeHeading = Option.fromNullishOr(
             groupToHeading && groupToHeading(segment.key),
           )
@@ -1484,9 +1478,8 @@ export const makeView = <Model extends BaseModel>(
 
       const hiddenInputs = formName
         ? Array.match(selectedValues, {
-          onEmpty:
-            (): infer _ => [h.input([h.Type('hidden'), h.Name(formName)])],
-          onNonEmpty: Array.map((selectedValue): infer _ =>
+          onEmpty: () => [h.input([h.Type('hidden'), h.Name(formName)])],
+          onNonEmpty: Array.map((selectedValue) =>
             h.input([
               h.Type('hidden'),
               h.Name(formName),

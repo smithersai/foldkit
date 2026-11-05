@@ -121,8 +121,8 @@ export const init = (config: InitConfig): Model => ({
 
 const closedModel = (model: Model): Model =>
   modifyFields(model, {
-    isOpen: (): infer _ => false,
-    maybeLastButtonPointerType: (): infer _ => Option.none(),
+    isOpen: () => false,
+    maybeLastButtonPointerType: () => Option.none(),
   })
 
 const buttonSelector = (id: string): string => idSelector(`${id}-button`)
@@ -165,7 +165,7 @@ export const UnlockScroll = Command.define('UnlockScroll', {
 export const InertOthers = Command.define('InertOthers', {
   args: { id: Schema.String },
   messages: [Message.CompletedInertOthers],
-  execute: ({ id }): infer _ => {
+  execute: ({ id }) => {
     const nativeCommandArg2_0 = id
     const nativeCommandArg2_1 = [buttonSelector(id), panelSelector(id)]
     const nativeCommandCompletion2 = Message.CompletedInertOthers()
@@ -179,7 +179,7 @@ export const InertOthers = Command.define('InertOthers', {
 export const RestoreInert = Command.define('RestoreInert', {
   args: { id: Schema.String },
   messages: [Message.CompletedRestoreInert],
-  execute: ({ id }): infer _ => {
+  execute: ({ id }) => {
     const nativeCommandArg3_0 = id
     const nativeCommandCompletion3 = Message.CompletedRestoreInert()
     return effect {
@@ -192,7 +192,7 @@ export const RestoreInert = Command.define('RestoreInert', {
 export const FocusPanel = Command.define('FocusPanel', {
   args: { id: Schema.String },
   messages: [Message.CompletedFocusPanel],
-  execute: ({ id }): infer _ => {
+  execute: ({ id }) => {
     const nativeCommandArg4_0 = panelSelector(id)
     const nativeCommandCompletion4 = Message.CompletedFocusPanel()
     return effect {
@@ -205,7 +205,7 @@ export const FocusPanel = Command.define('FocusPanel', {
 export const FocusButton = Command.define('FocusButton', {
   args: { id: Schema.String },
   messages: [Message.CompletedFocusButton],
-  execute: ({ id }): infer _ => {
+  execute: ({ id }) => {
     const nativeCommandArg5_0 = buttonSelector(id)
     const nativeCommandCompletion5 = Message.CompletedFocusButton()
     return effect {
@@ -220,7 +220,7 @@ export const DetectMovementOrAnimationEnd = Command.define(
   {
     args: { id: Schema.String, generation: Schema.Number },
     messages: [Message.GotAnimationMessage],
-    execute: ({ id, generation }): infer _ => {
+    execute: ({ id, generation }) => {
       const movementTarget = buttonSelector(id)
       const movementMessage = Message.GotAnimationMessage({
         message: Animation.Message.EndedAnimation({ generation }),
@@ -248,44 +248,41 @@ export const DetectMovementOrAnimationEnd = Command.define(
 const foldAnimationOutMessage = Animation.OutMessage.match<
   Update.Step<Model, Message>
 >({
-  StartedLeaveAnimating: ({ generation }): infer _ => (model): infer _ => ({
+  StartedLeaveAnimating: ({ generation }) => (model) => ({
     model,
     commands: [DetectMovementOrAnimationEnd({ id: model.id, generation })],
   }),
-  TransitionedOut: (): infer _ => (model): infer _ => ({ model }),
+  TransitionedOut: () => (model) => ({ model }),
 })
 
 const foldAnimation = Update.foldChild({
   update: animationUpdate,
-  read: (model: Model): infer _ => Option.some(model.animation),
-  write: (model, nextAnimation): infer _ =>
-    modifyFields(model, { animation: (): infer _ => nextAnimation }),
-  toParentMessage: (message): infer _ =>
-    Message.GotAnimationMessage({ message }),
+  read: (model: Model) => Option.some(model.animation),
+  write: (model, nextAnimation) =>
+    modifyFields(model, { animation: () => nextAnimation }),
+  toParentMessage: (message) => Message.GotAnimationMessage({ message }),
   foldOutMessage: foldAnimationOutMessage,
 })
 
 const foldAnimationShow = Update.foldChildStep({
   update: animationShow,
-  read: (model: Model): infer _ => Option.some(model.animation),
-  write: (model, nextAnimation): infer _ =>
-    modifyFields(model, { animation: (): infer _ => nextAnimation }),
-  toParentMessage: (message): infer _ =>
-    Message.GotAnimationMessage({ message }),
+  read: (model: Model) => Option.some(model.animation),
+  write: (model, nextAnimation) =>
+    modifyFields(model, { animation: () => nextAnimation }),
+  toParentMessage: (message) => Message.GotAnimationMessage({ message }),
 })
 
 const foldAnimationHide = Update.foldChildStep({
   update: animationHide,
-  read: (model: Model): infer _ => Option.some(model.animation),
-  write: (model, nextAnimation): infer _ =>
-    modifyFields(model, { animation: (): infer _ => nextAnimation }),
-  toParentMessage: (message): infer _ =>
-    Message.GotAnimationMessage({ message }),
+  read: (model: Model) => Option.some(model.animation),
+  write: (model, nextAnimation) =>
+    modifyFields(model, { animation: () => nextAnimation }),
+  toParentMessage: (message) => Message.GotAnimationMessage({ message }),
 })
 
 /** Processes a Popover Message and returns the next Model, optional Commands,
  *  and an optional OutMessage. */
-export const update = (model: Model, message: Message): infer _ => {
+export const update = (model: Model, message: Message) => {
   const maybeLockScroll = OptionExt.when(model.isModal, LockScroll())
   const maybeUnlockScroll = OptionExt.when(model.isModal, UnlockScroll())
   const maybeInertOthers = OptionExt.when(
@@ -320,10 +317,10 @@ export const update = (model: Model, message: Message): infer _ => {
 
     if (model.isAnimated) {
       const popoverOpen = Update.combine(baseModel, [
-        (stepModel): infer _ => ({ model: stepModel, commands: openCommands }),
+        (stepModel) => ({ model: stepModel, commands: openCommands }),
         foldAnimationShow,
-        (stepModel): infer _ => ({
-          model: modifyFields(stepModel, { isOpen: (): infer _ => true }),
+        (stepModel) => ({
+          model: modifyFields(stepModel, { isOpen: () => true }),
         }),
       ])
 
@@ -331,7 +328,7 @@ export const update = (model: Model, message: Message): infer _ => {
     }
 
     return {
-      model: modifyFields(baseModel, { isOpen: (): infer _ => true }),
+      model: modifyFields(baseModel, { isOpen: () => true }),
       commands: openCommands,
       outMessage: OutMessage.Opened(),
     }
@@ -348,7 +345,7 @@ export const update = (model: Model, message: Message): infer _ => {
 
     if (model.isAnimated) {
       return Update.combine(closed, [
-        (stepModel): infer _ => ({ model: stepModel, commands }),
+        (stepModel) => ({ model: stepModel, commands }),
         foldAnimationHide,
       ])
     }
@@ -371,11 +368,11 @@ export const update = (model: Model, message: Message): infer _ => {
   }
 
   return Message.match<UpdateReturn>(message, {
-    RequestedOpen: (): infer _ => openPopover(model),
+    RequestedOpen: () => openPopover(model),
 
-    RequestedClose: (): infer _ => closePopover(model, closeWithFocusCommands),
+    RequestedClose: () => closePopover(model, closeWithFocusCommands),
 
-    BlurredPanel: (): infer _ => {
+    BlurredPanel: () => {
       if (
         Option.exists(model.maybeLastButtonPointerType, Equal.equals('mouse'))
       ) {
@@ -385,9 +382,9 @@ export const update = (model: Model, message: Message): infer _ => {
       return closePopover(model, closeWithoutFocusCommands)
     },
 
-    PressedPointerOnButton: ({ pointerType, button }): infer _ => {
+    PressedPointerOnButton: ({ pointerType, button }) => {
       const withPointerType = modifyFields(model, {
-        maybeLastButtonPointerType: (): infer _ => Option.some(pointerType),
+        maybeLastButtonPointerType: () => Option.some(pointerType),
       })
 
       if (pointerType !== 'mouse' || button !== LEFT_MOUSE_BUTTON) {
@@ -396,12 +393,10 @@ export const update = (model: Model, message: Message): infer _ => {
 
       if (model.isOpen) {
         const popoverClose = Update.combine(withPointerType, [
-          (stepModel): infer _ =>
-            closePopoverModel(stepModel, closeWithFocusCommands),
-          (stepModel): infer _ => ({
+          (stepModel) => closePopoverModel(stepModel, closeWithFocusCommands),
+          (stepModel) => ({
             model: modifyFields(stepModel, {
-              maybeLastButtonPointerType: (): infer _ =>
-                Option.some(pointerType),
+              maybeLastButtonPointerType: () => Option.some(pointerType),
             }),
           }),
         ])
@@ -412,30 +407,30 @@ export const update = (model: Model, message: Message): infer _ => {
       return openPopover(withPointerType)
     },
 
-    GotAnimationMessage: ({ message: animationMessage }): infer _ =>
+    GotAnimationMessage: ({ message: animationMessage }) =>
       foldAnimation(model, animationMessage),
 
-    CompletedFocusPanel: (): infer _ => ({ model }),
-    CompletedFocusButton: (): infer _ => ({ model }),
-    CompletedLockScroll: (): infer _ => ({ model }),
-    CompletedUnlockScroll: (): infer _ => ({ model }),
-    CompletedInertOthers: (): infer _ => ({ model }),
-    CompletedRestoreInert: (): infer _ => ({ model }),
-    IgnoredMouseClick: (): infer _ => ({
+    CompletedFocusPanel: () => ({ model }),
+    CompletedFocusButton: () => ({ model }),
+    CompletedLockScroll: () => ({ model }),
+    CompletedUnlockScroll: () => ({ model }),
+    CompletedInertOthers: () => ({ model }),
+    CompletedRestoreInert: () => ({ model }),
+    IgnoredMouseClick: () => ({
       model: modifyFields(model, {
-        maybeLastButtonPointerType: (): infer _ => Option.none(),
+        maybeLastButtonPointerType: () => Option.none(),
       }),
     }),
-    SuppressedSpaceScroll: (): infer _ => ({ model }),
-    CompletedAnchorPopover: (): infer _ => ({ model }),
-    CompletedPortalPopoverBackdrop: (): infer _ => ({ model }),
-    ClickedButton: (): infer _ => {
+    SuppressedSpaceScroll: () => ({ model }),
+    CompletedAnchorPopover: () => ({ model }),
+    CompletedPortalPopoverBackdrop: () => ({ model }),
+    ClickedButton: () => {
       if (
         Option.exists(model.maybeLastButtonPointerType, Equal.equals('mouse'))
       ) {
         return {
           model: modifyFields(model, {
-            maybeLastButtonPointerType: (): infer _ => Option.none(),
+            maybeLastButtonPointerType: () => Option.none(),
           }),
         }
       }
@@ -470,7 +465,7 @@ export const AnchorPopover = Mount.define('AnchorPopover', {
     arrowPadding,
   }) => {
     try Effect.acquireRelease(
-      Effect.sync((): infer _ =>
+      Effect.sync(() =>
         anchorSetup(element, {
           buttonId,
           anchor,
@@ -499,7 +494,7 @@ export const PortalPopoverBackdrop = Mount.define('PortalPopoverBackdrop', {
   messages: [Message.CompletedPortalPopoverBackdrop],
   execute: effect ({ element }) => {
     try Effect.acquireRelease(
-      Effect.sync((): infer _ => portalBackdrop(element)),
+      Effect.sync(() => portalBackdrop(element)),
       effect cleanup => try Effect.sync(cleanup),
     )
     return (try Effect.orDie(
@@ -638,7 +633,7 @@ export const view = defineView<Model, Message, ViewInputs>(
       default: Option.none();
     }
 
-    const resolveButtonLabel = (): infer _ => {
+    const resolveButtonLabel = () => {
       if (Predicate.isNotUndefined(ariaLabel)) {
         return [h.AriaLabel(ariaLabel)]
       } else if (Predicate.isNotUndefined(ariaLabelledBy)) {

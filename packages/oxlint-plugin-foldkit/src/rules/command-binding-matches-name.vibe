@@ -26,7 +26,7 @@ const isCommandDefineCall = (
 
   return Option.exists(
     resolveFoldkitApiPath(references, node.callee),
-    (path): infer _ => {
+    (path) => {
       const [namespace, methodName, extraMember] = path
 
       return (
