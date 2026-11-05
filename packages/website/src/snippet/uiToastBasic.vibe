@@ -147,12 +147,16 @@ const view = (h: HtmlBuilder<Message>) =>
                     ),
                   ],
                 ),
-                ...Option.match(entry.payload.maybeLink, {
-                  onNone: () => [],
-                  onSome: ({ href, text }) => [
-                    h.a([h.Class('text-sm underline'), h.Href(href)], [text]),
-                  ],
-                }),
+                ...match (entry.payload.maybeLink) {
+                  when Option.None: [];
+                  when Option.Some(let link): do {
+                    const { href, text } = link
+                    const children = [
+                      h.a([h.Class('text-sm underline'), h.Href(href)], [text]),
+                    ]
+                    children
+                  };
+                },
               ],
             ),
             h.button([...handlers.dismiss], ['Close']),

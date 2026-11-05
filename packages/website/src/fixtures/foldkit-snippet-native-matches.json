@@ -1,0 +1,10 @@
+{
+  "seed": 88044,
+  "runs": 200,
+  "files": [
+    "asyncDataMap",
+    "domainModule",
+    "fieldValidationAsync",
+    "uiToastBasic"
+  ]
+}

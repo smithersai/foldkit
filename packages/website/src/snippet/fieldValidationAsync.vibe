@@ -39,21 +39,22 @@ const update = (model: Model, message: Message) =>
       const syncResult = validateEmail(value)
       const validationId = Num.increment(model.emailValidationId)
 
-      return Match.value(syncResult).pipe(
-        Match.tag('Valid', () => ({
+      const result: Update.Return<Model, Message> = match (syncResult) {
+        when { _tag: 'Valid' }: {
           model: modifyFields(model, {
             email: () => Validating({ value }),
             emailValidationId: () => validationId,
           }),
           commands: [CheckEmailAvailable({ email: value, validationId })],
-        })),
-        Match.orElse(() => ({
+        };
+        default: {
           model: modifyFields(model, {
             email: () => syncResult,
             emailValidationId: () => validationId,
           }),
-        })),
-      )
+        };
+      }
+      return result
     },
 
     CompletedCheckEmailAvailable: ({ validationId, field }) => {

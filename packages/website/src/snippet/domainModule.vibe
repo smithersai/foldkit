@@ -13,14 +13,13 @@ export const addItem = (item: Item) => (cart: Cart): Cart => {
     cartItem => cartItem.item.id === item.id,
   )
 
-  return Option.match(existing, {
-    onNone: () => [...cart, { item, quantity: 1 }],
-    onSome: () =>
-      Arr.map(cart, cartItem =>
-        cartItem.item.id === item.id
-          ? modifyFields(cartItem, { quantity: quantity => quantity + 1 })
-          : cartItem),
-  })
+  return match (existing) {
+    when Option.None: [...cart, { item, quantity: 1 }];
+    default: Arr.map(cart, cartItem =>
+      cartItem.item.id === item.id
+        ? modifyFields(cartItem, { quantity: quantity => quantity + 1 })
+        : cartItem);
+  }
 }
 
 export const removeItem = (itemId: string) => (cart: Cart): Cart =>
