@@ -1,4 +1,5 @@
 import { ManagedResource } from 'foldkit'
+import { createChessEngineWorker } from './chessWorker.platform.ts'
 import { Message } from './message'
 import { Model } from './model'
 
@@ -16,7 +17,7 @@ const engineLayer: Layer.Layer<ChessEngineService> = Layer.effect(
   ChessEngineService,
   effect {
     const worker = try Effect.acquireRelease(
-      sync(() => new globalThis.Worker('/chess-engine-worker.js')),
+      Effect.sync(() => createChessEngineWorker()),
       worker => sync(worker => worker.terminate(), worker),
     )
 
