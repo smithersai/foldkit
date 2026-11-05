@@ -231,9 +231,7 @@ const decodeInput = effect <Input>(
   schema: Schema.Codec<Input>,
   rawInput: unknown,
 ): Input!InvalidToolInput => {
-  try {
-    return try Schema.decodeUnknownEffect(schema)(rawInput)
-  } catch (error) {
+  return Schema.decodeUnknownEffect(schema)(rawInput) catch effect (error) => {
     throw new InvalidToolInput({ message: `Invalid input: ${error.message}` })
   }
 }
@@ -241,10 +239,32 @@ const decodeInput = effect <Input>(
 const listedRuntimeOutput = (
   { runtime, maybeProjectRoot }: ListedRuntime,
 ): infer _ =>
-  Option.match(maybeProjectRoot, {
-    onNone: () => runtime,
-    onSome: projectRoot => ({ ...runtime, projectRoot }),
-  })
+  do {
+    const $optionSubject = maybeProjectRoot
+    const $optionHandlers: {
+      onNone: () => {
+        readonly connectionId: string
+        readonly url: string
+        readonly title: string
+      }
+      onSome: (
+        projectRoot: string,
+      ) => {
+        connectionId: string
+        url: string
+        title: string
+        projectRoot: string
+      }
+    } = {
+      onNone: () => runtime,
+      onSome: projectRoot => ({ ...runtime, projectRoot }),
+    }
+    const { onNone: $optionNone, onSome: $optionSome } = $optionHandlers
+    match ($optionSubject) {
+      when Option.Some(let $optionValue): $optionSome($optionValue);
+      default: $optionNone();
+    }
+  }
 
 const responseToToolResult = (response: typeof Response.Type): ToolResult =>
   response._tag === 'ResponseError'
@@ -256,13 +276,13 @@ const callRuntimeRequest = effect (
   explicitRuntimeId: string | undefined,
   buildRequest: () => typeof Request.Type,
 ): ToolResult!! => {
-  try {
+  return effect {
     const response = try relayClient.sendRequest(
       buildRequest(),
       Option.fromNullishOr(explicitRuntimeId),
     )
     return responseToToolResult(response)
-  } catch (error) {
+  } catch effect (error) => {
     return formatError(
       try sync((failure: Error) => errorReason(failure), error),
     )
@@ -282,7 +302,7 @@ const runRuntimeTool = <Input extends RuntimeToolInput>(
   relayClient: RelayClient,
 ): (rawInput: unknown) => ToolResult!! =>
 effect (rawInput: unknown): ToolResult!! => {
-  try {
+  return effect {
     const input = try decodeInput(inputSchema, rawInput)
 
     return try callRuntimeRequest(
@@ -290,7 +310,7 @@ effect (rawInput: unknown): ToolResult!! => {
       input.runtime_id,
       () => buildRequest(input),
     )
-  } catch (error) {
+  } catch effect (error) => {
     return formatError(
       try sync((failure: Error) => errorReason(failure), error),
     )
@@ -493,18 +513,15 @@ export const buildTools = (
       'List Foldkit runtimes (browser tabs) connected to every Foldkit dev server under the project root, or else to every dev server at the nearest root that encloses the project root, oldest dev server first. Each runtime carries `projectRoot`, the root of the dev server it belongs to, unless the MCP server uses a fixed relay address.',
     inputSchema: NO_INPUT_SCHEMA,
     handle: () =>
-      relayClient.listRuntimes.pipe(
-        Effect.map(listed =>
-          formatResult({
-            _tag: 'ResponseRuntimes',
-            runtimes: EffectArray.map(listed, listedRuntimeOutput),
-          })
-        ),
-        Effect.catch(effect error =>
-          formatError(
-            try sync((failure: Error) => errorReason(failure), error),
-          )
-        ),
-      ),
+      relayClient.listRuntimes
+      |> Effect.map(%, listed =>
+        formatResult({
+          _tag: 'ResponseRuntimes',
+          runtimes: EffectArray.map(listed, listedRuntimeOutput),
+        }))
+      |> Effect.catch(%, effect error =>
+        formatError(
+          try sync((failure: Error) => errorReason(failure), error),
+        )),
   },
 ]

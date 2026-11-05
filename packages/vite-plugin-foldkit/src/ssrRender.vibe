@@ -37,7 +37,7 @@ const renderRequest = effect (
   options: FoldkitSsrOptions,
   nodeRequest: Connect.IncomingMessage,
   requestUrl: string,
-): globalThis.Response!!(FileSystem.FileSystem | Path.Path) => {
+): globalThis.Response!!(FileSystem.FileSystem | Path) => {
   const { pathname, search } = new URL(requestUrl)
   const route = `${pathname}${search}`
 

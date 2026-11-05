@@ -25,7 +25,7 @@ const RECORD_FILE_MODE = 0o600
 const PENDING_RECORD_SUFFIX = '.pending'
 const RETIRING_RECORD_SUFFIX = '.retiring'
 
-type RelayRegistryServices = FileSystem.FileSystem | Path.Path
+type RelayRegistryServices = FileSystem.FileSystem | Path
 
 export type RelayPublisherServices =
   | RelayRegistryServices
@@ -43,15 +43,15 @@ const encodeRelayRecord = Schema.encodeUnknownSync(
   Schema.fromJsonString(RelayRecord),
 )
 
-const defaultRegistryParent = (path: Path.Path): string =>
+const defaultRegistryParent = (path: Path): string =>
   platform() === 'win32'
     ? temporaryDirectory()
     : path.join(homeDirectory(), '.cache')
 
 // A directory variable the environment cannot read is a defect, as before.
-const relayRegistryDirectory = effect (): string!!Path.Path => {
+const relayRegistryDirectory = effect (): string!!Path => {
   const path = try Path.Path
-  try {
+  return effect {
     const maybeConfigured = try Config.option(
       Config.String(RELAY_REGISTRY_DIRECTORY_VARIABLE),
     )
@@ -64,7 +64,7 @@ const relayRegistryDirectory = effect (): string!!Path.Path => {
         RELAY_REGISTRY_DIRECTORY_NAME,
       )
     )
-  } catch (error) {
+  } catch effect (error) => {
     return try die(error)
   }
 }
@@ -79,7 +79,7 @@ const locationRefusal = (directory: string): Option<string> =>
 const relayRecordPath = effect (
   directory: string,
   id: string,
-): string!!Path.Path => {
+): string!!Path => {
   const path = try Path.Path
   return path.join(
     directory,
@@ -91,9 +91,9 @@ const readRecordFile = effect (
   filePath: string,
 ): Option<RelayRecord>!!FileSystem.FileSystem => {
   const fileSystem = try FileSystem.FileSystem
-  try {
+  return effect {
     return decodeRelayRecord(try fileSystem.readFileString(filePath))
-  } catch {
+  } catch () => {
     return Option.none()
   }
 }
@@ -103,9 +103,8 @@ const recordFilePaths = effect (
 ): ReadonlyArray<string>!!RelayRegistryServices => {
   const fileSystem = try FileSystem.FileSystem
   const path = try Path.Path
-  const fileNames: ReadonlyArray<string> = try (
-    fileSystem.readDirectory(directory) catch () => []
-  )
+  const fileNames: ReadonlyArray<string> = fileSystem.readDirectory(directory)
+    catch () => []
   return Effect.Array.map(
     Effect.Array.filter(
       fileNames,
@@ -126,9 +125,8 @@ const retireStaleRecord = effect (
   const retiringPath = `${filePath}.${
     encodeURIComponent(record.id)
   }${RETIRING_RECORD_SUFFIX}`
-  const wasRecordMoved = try (
-    fileSystem.rename(filePath, retiringPath).as(true) catch () => false
-  )
+  const wasRecordMoved = fileSystem.rename(filePath, retiringPath).as(true)
+    catch () => false
 
   if (!wasRecordMoved) {
     return
@@ -140,14 +138,14 @@ const retireStaleRecord = effect (
   )
 
   if (!isOriginalRecord) {
-    try {
+    effect {
       try fileSystem.link(retiringPath, filePath)
-    } catch {}
+    } catch () => {}
   }
 
-  try {
+  effect {
     try fileSystem.remove(retiringPath, { force: true })
-  } catch {}
+  } catch () => {}
 }
 
 const removeDeadRecords = effect (

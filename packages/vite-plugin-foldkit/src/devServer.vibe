@@ -1,4 +1,3 @@
-import { Hex } from 'effect/encoding'
 import {
   Event as DevToolsEvent,
   EventFrame,
@@ -114,18 +113,20 @@ const handlePreserveModelReceived = effect (state: State, payload: unknown) => {
       '[foldkit:preserve] failed to decode preserve-model payload',
       cause,
     )
-  } else if (decoded is Exit.Success(let message)) {
-    const { id, model, isReloadFlush } = message
-    try Ref.update(state.preservedModels, current => {
-      const existingFlag = HashMap.get(current, id).exists(
-        ({ isReloadFlush }) => isReloadFlush,
-      )
-      const entry: PreservedEntry = {
-        model,
-        isReloadFlush: isReloadFlush === true || existingFlag,
-      }
-      return HashMap.set(current, id, entry)
-    })
+  } else {
+    if (decoded is Exit.Success(let message)) {
+      const { id, model, isReloadFlush } = message
+      try Ref.update(state.preservedModels, current => {
+        const existingFlag = HashMap.get(current, id).exists(
+          ({ isReloadFlush }) => isReloadFlush,
+        )
+        const entry: PreservedEntry = {
+          model,
+          isReloadFlush: isReloadFlush === true || existingFlag,
+        }
+        return HashMap.set(current, id, entry)
+      })
+    }
   }
 }
 
@@ -135,14 +136,14 @@ const sendRestore = effect (
   id: string,
   model: unknown,
 ) => {
-  try {
+  return effect {
     const frame = RestoreModelMessage.make({ id, model })
     const encoded = try Schema.encodeEffect(RestoreModelMessage)(frame)
     try Effect.try({
       try: () => server.ws.send('foldkit:restore-model', encoded),
       catch: cause => new WebSocketSendFailed({ cause }),
     })
-  } catch (error) {
+  } catch effect (error) => {
     try Console.warn(
       '[foldkit:preserve] failed to send restore-model payload',
       error,
@@ -161,20 +162,22 @@ const handleRequestModelReceived = effect (
       '[foldkit:preserve] failed to decode request-model payload',
       cause,
     )
-  } else if (decoded is Exit.Success(let message)) {
-    const { id } = message
-    const current = try Ref.get(state.preservedModels)
-    if (HashMap.get(current, id) is Option.Some(let entry)) {
-      if (entry.isReloadFlush) {
-        const served: PreservedEntry = { ...entry, isReloadFlush: false }
-        try Ref.update(state.preservedModels, HashMap.set(id, served))
-        try sendRestore(server, id, entry.model)
+  } else {
+    if (decoded is Exit.Success(let message)) {
+      const { id } = message
+      const current = try Ref.get(state.preservedModels)
+      if (HashMap.get(current, id) is Option.Some(let entry)) {
+        if (entry.isReloadFlush) {
+          const served: PreservedEntry = { ...entry, isReloadFlush: false }
+          try Ref.update(state.preservedModels, HashMap.set(id, served))
+          try sendRestore(server, id, entry.model)
+        } else {
+          try Ref.update(state.preservedModels, HashMap.remove(id))
+          try sendRestore(server, id, undefined)
+        }
       } else {
-        try Ref.update(state.preservedModels, HashMap.remove(id))
         try sendRestore(server, id, undefined)
       }
-    } else {
-      try sendRestore(server, id, undefined)
     }
   }
 }
@@ -231,17 +234,19 @@ const handleBrowserEventFrameReceived = effect (
       '[foldkit:devTools] failed to decode browser event frame',
       cause,
     )
-  } else if (decoded is Exit.Success(let frame)) {
-    match (frame.event) {
-      when { _tag: 'EventConnected' }: try handleConnectedEvent(
-        state,
-        frame.event,
-        client,
-      );
-      when { _tag: 'EventDisconnected' }: try handleDisconnectedEvent(
-        state,
-        frame.event,
-      );
+  } else {
+    if (decoded is Exit.Success(let frame)) {
+      match (frame.event) {
+        when { _tag: 'EventConnected' }: try handleConnectedEvent(
+          state,
+          frame.event,
+          client,
+        );
+        when { _tag: 'EventDisconnected' }: try handleDisconnectedEvent(
+          state,
+          frame.event,
+        );
+      }
     }
   }
 }
@@ -296,8 +301,10 @@ const handleBrowserResponseFrameReceived = effect (
       '[foldkit:devTools] failed to decode browser response frame',
       cause,
     )
-  } else if (decoded is Exit.Success(let frame)) {
-    try broadcastResponseToMcpClients(state, frame)
+  } else {
+    if (decoded is Exit.Success(let frame)) {
+      try broadcastResponseToMcpClients(state, frame)
+    }
   }
 }
 
@@ -346,13 +353,13 @@ const forwardRequestToBrowsers = effect (
   server: ViteDevServer,
   frame: typeof RequestFrame.Type,
 ) => {
-  try {
+  return effect {
     const encoded = try Schema.encodeEffect(RequestFrame)(frame)
     try Effect.try({
       try: () => server.ws.send('foldkit:devTools:request', encoded),
       catch: cause => new WebSocketSendFailed({ cause }),
     })
-  } catch (error) {
+  } catch effect (error) => {
     try Console.warn('[foldkit:devTools] failed to send request frame', error)
   }
 }
@@ -393,14 +400,16 @@ const handleMcpRequestReceived = effect (
       '[foldkit:devTools] failed to decode MCP request frame',
       cause,
     )
-  } else if (decoded is Exit.Success(let frame)) {
-    match (frame.request) {
-      when { _tag: 'RequestListRuntimes' }: try replyListRuntimes(
-        state,
-        client,
-        frame.id,
-      );
-      default: try routeRequestToRuntime(server, state, client, frame);
+  } else {
+    if (decoded is Exit.Success(let frame)) {
+      match (frame.request) {
+        when { _tag: 'RequestListRuntimes' }: try replyListRuntimes(
+          state,
+          client,
+          frame.id,
+        );
+        default: try routeRequestToRuntime(server, state, client, frame);
+      }
     }
   }
 }
@@ -413,26 +422,27 @@ const dispatchEvent = effect (
   event: Event,
 ) => {
   match (event) {
-    when Event.PreserveModelReceived { let payload }:
+    when { _tag: 'PreserveModelReceived', let payload }:
       try handlePreserveModelReceived(state, payload);
-    when Event.RequestModelReceived { let payload }:
+    when { _tag: 'RequestModelReceived', let payload }:
       try handleRequestModelReceived(server, state, payload);
-    when Event.BrowserEventFrameReceived { let data, let client }:
+    when { _tag: 'BrowserEventFrameReceived', let data, let client }:
       try handleBrowserEventFrameReceived(state, data, client);
-    when Event.BrowserResponseFrameReceived { let data }:
+    when { _tag: 'BrowserResponseFrameReceived', let data }:
       try handleBrowserResponseFrameReceived(state, data);
-    when Event.ViteClientClosed { let client }: try handleViteClientClosed(
+    when { _tag: 'ViteClientClosed', let client }: try handleViteClientClosed(
       state,
       client,
     );
-    when Event.HotUpdateFired: try handleHotUpdateFired(state);
-    when Event.McpClientConnected { let client }: try handleMcpClientConnected(
-      state,
-      client,
-    );
-    when Event.McpClientDisconnected { let client }:
+    when { _tag: 'HotUpdateFired' }: try handleHotUpdateFired(state);
+    when { _tag: 'McpClientConnected', let client }:
+      try handleMcpClientConnected(
+        state,
+        client,
+      );
+    when { _tag: 'McpClientDisconnected', let client }:
       try handleMcpClientDisconnected(state, client);
-    when Event.McpRequestReceived { let client, let raw }:
+    when { _tag: 'McpRequestReceived', let client, let raw }:
       try handleMcpRequestReceived(server, state, client, raw);
   }
 }
@@ -521,7 +531,7 @@ type Relay = Readonly<{
   closeListener: () => void
 }>
 
-const relayId = effect (): string!!SecureRandom.SecureRandom => {
+const relayId = effect (): string!!SecureRandom => {
   const secureRandom = try SecureRandom.SecureRandom
   return try secureRandom.uuidV4()
 }
@@ -555,7 +565,7 @@ const boundPort = (address: AddressInfo | string | null): Option<number> =>
 const RELAY_HAS_NO_BOUND_PORT =
   '[foldkit:devTools] the MCP relay listener has no bound port'
 
-const relayToken = effect (): string!!SecureRandom.SecureRandom => {
+const relayToken = effect (): string!!SecureRandom => {
   const secureRandom = try SecureRandom.SecureRandom
   const bytes = try secureRandom.randomBytes(RELAY_TOKEN_BYTES)
   return Hex.encode(bytes)
@@ -769,7 +779,7 @@ const unpublishedRelayMessage = (reason: string): string =>
 // Publishing never fails the relay: a refused or unwritable registry is
 // reported and the relay keeps serving the configured port.
 const publishRelay = effect (root: string, relay: Relay) => {
-  try {
+  return effect {
     const host = try Experimental.Process.Process
     const startedAt = try Clock.currentTimeMillis
     const directory = try publishRelayRecord(
@@ -785,7 +795,7 @@ const publishRelay = effect (root: string, relay: Relay) => {
     )
 
     return Option.some(directory)
-  } catch (error) {
+  } catch effect (error) => {
     match (error) {
       when RelayRegistryDirectoryRefused: try Console.error(
         unpublishedRelayMessage(
@@ -808,9 +818,9 @@ const releaseRelay = effect (
   const maybeDirectory = try Ref.get(publishedDirectory)
 
   if (maybeDirectory is Option.Some(let directory)) {
-    try {
+    effect {
       try retireRelayRecord(relay.id, directory)
-    } catch (error) {
+    } catch effect (error) => {
       try Console.error(
         '[foldkit:devTools] could not remove the MCP relay registry record',
         error,
@@ -835,7 +845,7 @@ const startMcpRelay = effect (
   const publishedDirectory = try Ref.make<Option<string>>(Option.none())
   // NOTE: A configured port accepts unauthenticated connections on every
   // interface. An assigned port binds to loopback and requires discovery.
-  const acquire = effect (): Relay!RelayBindFailed!SecureRandom.SecureRandom => {
+  const acquire = effect (): Relay!RelayBindFailed!SecureRandom => {
     const id = try relayId()
     if (devToolsMcpPort !== undefined) {
       return try bindStandaloneRelay(devToolsMcpPort, id, enqueue)
@@ -846,7 +856,7 @@ const startMcpRelay = effect (
     return try bindLoopbackRelay(id, token, enqueue)
   }
 
-  try {
+  return effect {
     // The relay belongs to the enclosing scope: it is released when the dev
     // server program ends, not when this function returns.
     const relay = try retry(
@@ -867,7 +877,7 @@ const startMcpRelay = effect (
       const maybeDirectory = try publishRelay(root, relay)
       try Ref.set(publishedDirectory, maybeDirectory)
     }
-  } catch (error) {
+  } catch effect (error) => {
     try reportRelayBindFailed(error.maybePort, error.cause)
   }
 }

@@ -1,7 +1,5 @@
-import { Config, Option } from 'effect'
 import type { ChildProcessSpawner } from 'effect/process'
 import * as NodePath from '@effect/platform-node/NodePath'
-import { NetAddress } from 'effect/net'
 
 import { isScopedIPv6 } from './relayLocation.platform.ts'
 
@@ -19,15 +17,15 @@ const RELAY_TOKEN_PARAMETER = 'token'
 const RELAY_TOKEN_PATTERN = /^[0-9a-f]{64}$/
 
 export type Settings = Readonly<{
-  maybeConfiguredPort: Option.Option<string>
-  maybeConfiguredHost: Option.Option<string>
+  maybeConfiguredPort: Option<string>
+  maybeConfiguredHost: Option<string>
   projectRoot: string
 }>
 
 export type RelayTarget = Readonly<{
   key: string
   url: string
-  maybeProjectRoot: Option.Option<string>
+  maybeProjectRoot: Option<string>
 }>
 
 export const loadSettings: Settings!! = effect {
@@ -112,7 +110,7 @@ const isPublishedRelayUrl = (value: string): boolean =>
 
 export const configuredRelayUrl = (
   settings: Settings,
-): Option.Option<string> => {
+): Option<string> => {
   const { maybeConfiguredHost, maybeConfiguredPort } = settings
 
   if (
