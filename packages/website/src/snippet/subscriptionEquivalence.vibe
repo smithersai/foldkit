@@ -1,3 +1,4 @@
+import { ExperimentalBrowserWindow } from 'vibelang-runtime/experimental/platform-browser'
 import { Subscription } from 'foldkit'
 import { defineMessageUnion } from 'foldkit/message'
 
@@ -35,40 +36,39 @@ const subscriptions = Subscription.make<Model, Message>()(entry => ({
           Stream.callback<typeof Message.AdvancedAutoScrollFrame.Type>(
             (queue): never!never!Scope =>
               effect {
-                try Effect.acquireRelease(
-                  // sync's argument is plain TypeScript: the animation frame loop.
-                  sync(
-                    (queue, readDependencies, Message) => {
+                provide ExperimentalBrowserWindow.layer {
+                  const browser = try (try Experimental.Window.Window).current
+                  try Effect.acquireRelease(
+                    Effect.sync(() => {
                       const animationFrameIdRef = { current: 0 }
                       const step = () => {
                         const { clientY } = readDependencies()
-                        window.scrollBy(
+                        browser.scrollBy(
                           0,
-                          clientY > window.innerHeight - 40 ? 5 : 0,
+                          clientY > browser.innerHeight - 40 ? 5 : 0,
                         )
                         Queue.offerUnsafe(
                           queue,
                           Message.AdvancedAutoScrollFrame(),
                         )
-                        animationFrameIdRef.current = requestAnimationFrame(
-                          step,
-                        )
+                        animationFrameIdRef.current = browser
+                          .requestAnimationFrame(
+                            step,
+                          )
                       }
-                      animationFrameIdRef.current = requestAnimationFrame(step)
+                      animationFrameIdRef.current = browser
+                        .requestAnimationFrame(step)
                       return animationFrameIdRef
-                    },
-                    queue,
-                    readDependencies,
-                    Message,
-                  ),
-                  animationFrameIdRef =>
-                    sync(
-                      animationFrameIdRef =>
-                        cancelAnimationFrame(animationFrameIdRef.current),
-                      animationFrameIdRef,
-                    ),
-                )
-                return try Effect.never
+                    }),
+                    animationFrameIdRef =>
+                      Effect.sync(() =>
+                        browser.cancelAnimationFrame(
+                          animationFrameIdRef.current,
+                        )
+                      ),
+                  )
+                  return try Effect.never
+                }
               },
           ),
           effect {
