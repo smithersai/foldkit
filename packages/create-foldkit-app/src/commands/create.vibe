@@ -112,7 +112,7 @@ const validateProject = effect (
     throw 'Directory ' + name + ' already exists!'
   }
   let exitCode: number | null = null
-  try {
+  effect {
     provide Layer.merge(NodeChildProcessSpawner.layer, ExperimentalNodeProcess.layer) {
       const host = try Process.Process
       const isWindows = (try host.platform) === 'win32'
@@ -132,8 +132,7 @@ const validateProject = effect (
       const spawner = try ChildProcessSpawner.ChildProcessSpawner
       exitCode = try spawner.exitCode(command)
     }
-  } catch (_error) {
-  }
+  } catch () => {}
   if (exitCode !== 0) {
     throw "Package manager '" + packageManager
       + "' is not available. Please install it first."

@@ -21,9 +21,7 @@ type FileContent = string
 type FileContentByPath = Readonly<globalThis.Record<FilePath, FileContent>>
 
 const templatePath = effect (path: Path.Path): string!! => {
-  try {
-    return try path.fromFileUrl(new URL(import.meta.url))
-  } catch (cause) {
+  return path.fromFileUrl(new URL(import.meta.url)) catch effect (cause) => {
     return try die(cause)
   }
 }
