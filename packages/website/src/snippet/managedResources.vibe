@@ -1,3 +1,4 @@
+import { acquireCamera, releaseCamera } from './camera.platform.ts'
 import { ExperimentalBrowserDocument } from 'vibelang-runtime/experimental/platform-browser'
 import { pipe } from 'effect'
 import { ManagedResource, Runtime } from 'foldkit'
@@ -21,13 +22,8 @@ const managedResources = ManagedResource.make<Model, Message>()(entry => ({
         facingMode: callState.facingMode,
       })),
     acquire: ({ facingMode }) =>
-      Effect.tryPromise(() =>
-        navigator.mediaDevices.getUserMedia({
-          video: { facingMode },
-        })
-      ),
-    release: stream =>
-      Effect.sync(() => stream.getTracks().forEach(track => track.stop())),
+      Effect.tryPromise(() => acquireCamera(facingMode)),
+    release: stream => Effect.sync(() => releaseCamera(stream)),
     onAcquired: () => AcquiredCamera(),
     onReleased: () => ReleasedCamera(),
     onAcquireError: error => FailedAcquireCamera({ error: String(error) }),
