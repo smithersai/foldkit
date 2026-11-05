@@ -2,8 +2,10 @@ import { Command, Runtime } from 'foldkit'
 import { Model } from './model'
 
 service ApiClientService: ApiClient {
-  static readonly Default = Layer.effect(ApiClientService, makeApiClient)
+  static readonly key = 'ApiClientService'
 }
+
+const ApiClientLive = Layer.effect(ApiClientService, makeApiClient)
 
 const LoadUser = Command.define('LoadUser', {
   args: { userId: Schema.String },
@@ -21,5 +23,5 @@ const application = Runtime.makeApplication({
   update,
   view,
   container: document.getElementById('root'),
-  resources: ApiClientService.Default,
+  resources: ApiClientLive,
 })

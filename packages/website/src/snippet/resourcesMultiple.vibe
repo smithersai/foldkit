@@ -8,7 +8,7 @@ const application = Runtime.makeApplication({
   view,
   container: document.getElementById('root'),
   resources: Layer.mergeAll(
-    ApiClientService.Default,
+    ApiClientLive,
     AnalyticsService.Default,
     ComputeWorkerService.Default,
   ),
