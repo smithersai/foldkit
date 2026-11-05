@@ -1,0 +1,5 @@
+{
+  "seed": 88049,
+  "runs": 100,
+  "files": ["antiPatternLiveHandleGood", "managedResourcesLift"]
+}

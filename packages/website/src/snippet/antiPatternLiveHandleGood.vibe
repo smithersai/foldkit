@@ -1,10 +1,11 @@
+import { Socket } from 'effect/socket'
 // ✅ Good: Model state controls the WebSocket's lifetime.
 
 import { Command, ManagedResource } from 'foldkit'
 import { Message } from './message'
 import { Model } from './model'
 
-const ChatSocket = ManagedResource.tag<WebSocket>()('ChatSocket')
+const ChatSocket = ManagedResource.tag<Socket.WebSocketLike>()('ChatSocket')
 schema RoomRequirements {
   readonly roomId: string
 }
@@ -14,7 +15,12 @@ const managedResources = ManagedResource.make<Model, Message>()(entry => ({
     resource: ChatSocket,
     modelToMaybeRequirements: model => model.maybeRoomRequirements,
     acquire: ({ roomId }) =>
-      Effect.try(() => new WebSocket(`/rooms/${roomId}`)),
+      effect {
+        provide Socket.layerWebSocketConstructorGlobal {
+          const createSocket = try Socket.WebSocketConstructor
+          return try Effect.try(() => createSocket(`/rooms/${roomId}`))
+        }
+      },
     release: socket => Effect.sync(() => socket.close()),
     onAcquired: () => Message.AcquiredChatSocket(),
     onReleased: () => Message.ReleasedChatSocket(),

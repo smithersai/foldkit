@@ -53,6 +53,8 @@ A child Submodel defines its Managed Resources in its own Model and Message term
 
 `read` returns an `Option` of the child Model. Returning `None` releases the child’s resources without reading their requirements. Returning `Some` lets the child determine which resources it needs. Wrap an always-present child in `Option.some`.
 
+The socket constructor service returns a `Socket.WebSocketLike` handle immediately. The managed release owns its `close()` call.
+
 ::Snippet{name="managedResourcesLift" label="Composing child ManagedResources"}
 
 ### Multiple Submodel Levels
