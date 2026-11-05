@@ -1,11 +1,13 @@
 import { Effect, Exit } from 'effect'
 import fc from 'fast-check'
 import type { Root } from 'mdast'
+import { readFileSync } from 'node:fs'
+import { URL as NodeURL } from 'node:url'
 import { expect, it, vi } from 'vitest'
 
-const fault = vi.hoisted(() => ({
+const fault = vi.hoisted((): { constructor: string; value: unknown } => ({
   constructor: '',
-  value: undefined as unknown,
+  value: undefined,
 }))
 vi.mock('../ast/index.js', async importOriginal => {
   const original = await importOriginal<Record<string, unknown>>()
@@ -33,18 +35,33 @@ vi.mock('../ast/index.js', async importOriginal => {
   ]) {
     result[name] = (...args: Array<unknown>) => {
       if (fault.constructor === name) throw fault.value
-      return Reflect.apply(
-        original[name] as (...args: Array<unknown>) => unknown,
-        undefined,
-        args,
-      )
+      const constructor = original[name]
+      if (typeof constructor !== 'function') {
+        throw new TypeError(`Missing AST constructor: ${name}`)
+      }
+      return Reflect.apply(constructor, undefined, args)
     }
   }
   return result
 })
 
-import corpus from './corpus/foldkit-markdown-ast-constructors.json' with { type: 'json' }
 import { normalize } from './normalize.vibe'
+
+const corpus: Readonly<{
+  seed: number
+  runs: number
+  cases: ReadonlyArray<
+    Readonly<{ constructor: string; node: Root['children'][number] }>
+  >
+}> = JSON.parse(
+  readFileSync(
+    new NodeURL(
+      './corpus/foldkit-markdown-ast-constructors.json',
+      import.meta.url,
+    ),
+    'utf8',
+  ),
+)
 
 it('preserves the exact defect from every AST constructor', () => {
   fc.assert(
@@ -53,7 +70,7 @@ it('preserves the exact defect from every AST constructor', () => {
         fault.constructor = name
         fault.value = failure
         try {
-          const root = { type: 'root', children: [node] } as unknown as Root
+          const root: Root = { type: 'root', children: [node] }
           const result = Effect.runSyncExit(normalize(root, {}))
           expect(result, name).toEqual(Exit.die(failure))
           if (Exit.isFailure(result)) {
