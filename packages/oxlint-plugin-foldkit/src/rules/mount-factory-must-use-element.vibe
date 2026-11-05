@@ -273,7 +273,12 @@ export const mountFactoryMustUseElement = Rule.define({
         if (maybeExecute is Option.Some(let execute)) {
           const maybeMessage = executeDiagnostic(execute)
           if (maybeMessage is Option.Some(let message)) {
-            try ctx.report(Diagnostic.make({ node: execute, message }))
+            try ctx.report(
+              try Effect.orDie(Effect.try({
+                try: () => Diagnostic.make({ node: execute, message }),
+                catch: error => error,
+              })),
+            )
           }
         }
       },

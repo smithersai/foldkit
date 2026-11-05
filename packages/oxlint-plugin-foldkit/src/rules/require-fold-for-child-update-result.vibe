@@ -594,14 +594,18 @@ export const requireFoldForChildUpdateResult = Rule.define({
               when Option.Some(let matchedOptionValue4): do {
                 const { childFieldName, origin, result } = matchedOptionValue4
                 try (ctx.report(
-                  Diagnostic.make({
-                    node: property.value,
-                    message: manualChildResultMessage(
-                      childFieldName,
-                      origin.helperLabel,
-                      result.name,
-                    ),
-                  }),
+                  try Effect.orDie(Effect.try({
+                    try: () =>
+                      Diagnostic.make({
+                        node: property.value,
+                        message: manualChildResultMessage(
+                          childFieldName,
+                          origin.helperLabel,
+                          result.name,
+                        ),
+                      }),
+                    catch: error => error,
+                  })),
                 ))
               };
             }

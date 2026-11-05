@@ -191,10 +191,14 @@ export const noPreventDefaultInStreamOperator = Rule.define({
               calls,
               effect call =>
                 try ctx.report(
-                  Diagnostic.make({
-                    node: call,
-                    message: diagnosticMessage(operatorName),
-                  }),
+                  try Effect.orDie(Effect.try({
+                    try: () =>
+                      Diagnostic.make({
+                        node: call,
+                        message: diagnosticMessage(operatorName),
+                      }),
+                    catch: error => error,
+                  })),
                 ),
               { discard: true },
             ))

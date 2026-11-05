@@ -39,11 +39,15 @@ export const gotPrefixRequiresSubmodelPayload = Rule.define({
             /^Got[A-Z]/.test(messageCase.name)
               && !hasSubmodelMessagePayload(messageCase.fields, references)
               ? try ctx.report(
-                Diagnostic.make({
-                  node: messageCase.nameNode,
-                  message:
-                    'Got* is reserved for Submodel wrappers. Add a { message: Child.Message } payload or choose a Message name that does not start with Got.',
-                }),
+                try Effect.orDie(Effect.try({
+                  try: () =>
+                    Diagnostic.make({
+                      node: messageCase.nameNode,
+                      message:
+                        'Got* is reserved for Submodel wrappers. Add a { message: Child.Message } payload or choose a Message name that does not start with Got.',
+                    }),
+                  catch: error => error,
+                })),
               )
               : undefined,
           { discard: true },

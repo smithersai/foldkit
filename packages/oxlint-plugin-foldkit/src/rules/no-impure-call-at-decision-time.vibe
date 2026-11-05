@@ -861,10 +861,14 @@ export const noImpureCallAtDecisionTime = Rule.define({
         && !isInsideEffectBoundary(references, node)
       ) {
         try ctx.report(
-          Diagnostic.make({
-            node,
-            message: diagnosticMessage(maybeOperation.value),
-          }),
+          try Effect.orDie(Effect.try({
+            try: () =>
+              Diagnostic.make({
+                node,
+                message: diagnosticMessage(maybeOperation.value),
+              }),
+            catch: error => error,
+          })),
         )
       }
     }

@@ -291,9 +291,13 @@ export const noArrayIndexViewKeys = Rule.define({
           return undefined
         }
         const slotName = node.id.name
-        const variable = scopeManager
-          ?.getDeclaredVariables(node)
-          .find((candidate): infer _ => candidate.name === slotName)
+        const variable = try Effect.orDie(Effect.try({
+          try: () =>
+            scopeManager
+              ?.getDeclaredVariables(node)
+              .find(candidate => candidate.name === slotName),
+          catch: error => error,
+        }))
         return try Ref.update(
           slots,
           EffectArray.append({ name: slotName, variable }),
@@ -339,11 +343,16 @@ export const noArrayIndexViewKeys = Rule.define({
           return
         }
         try ctx.report(
-          Diagnostic.make({
-            node: keyExpression,
-            message:
-              `The array index parameter \`${maybeIndexBinding.value.name}\` is used as a view key. Positions shift when the list reorders or loses an item, so the runtime patches the wrong rows. Key this row or Submodel by a stable Model identifier such as \`item.id\` instead.`,
-          }),
+          try Effect.orDie(Effect.try({
+            try: () =>
+              Diagnostic.make({
+                node: keyExpression,
+                message:
+                  `The array index parameter \`${maybeIndexBinding.value.name}\` is used as a view key. Positions shift when the list reorders or loses an item, so the runtime patches the wrong rows. Key this row or Submodel by a stable Model identifier such as \`item.id\` instead.`,
+              }),
+            catch: error =>
+              error,
+          })),
         )
       },
     }

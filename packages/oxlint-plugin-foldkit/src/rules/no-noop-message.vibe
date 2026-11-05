@@ -37,11 +37,15 @@ export const noNoopMessage = Rule.define({
           effect messageCase =>
             ['NoOp', 'Noop', 'NoOperation'].includes(messageCase.name)
               ? try ctx.report(
-                Diagnostic.make({
-                  node: messageCase.nameNode,
-                  message:
-                    'Every Foldkit Message should describe what happened; avoid generic NoOp Messages.',
-                }),
+                try Effect.orDie(Effect.try({
+                  try: () =>
+                    Diagnostic.make({
+                      node: messageCase.nameNode,
+                      message:
+                        'Every Foldkit Message should describe what happened; avoid generic NoOp Messages.',
+                    }),
+                  catch: error => error,
+                })),
               )
               : undefined,
           { discard: true },

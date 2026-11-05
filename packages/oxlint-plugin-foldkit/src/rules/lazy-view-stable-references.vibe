@@ -430,7 +430,13 @@ export const lazyViewStableReferences = Rule.define({
         })
         return try Effect.forEach(
           offenses,
-          effect offense => try ctx.report(Diagnostic.make(offense)),
+          effect offense =>
+            try ctx.report(
+              try Effect.orDie(Effect.try({
+                try: () => Diagnostic.make(offense),
+                catch: error => error,
+              })),
+            ),
           { discard: true },
         )
       },

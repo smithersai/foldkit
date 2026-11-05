@@ -90,11 +90,15 @@ export const preferCallableMessageConstructor = Rule.define({
           return undefined
         }
         return try ctx.report(
-          Diagnostic.make({
-            node,
-            message:
-              'Construct Messages with their callable Schema constructor (e.g. Message.Foo({ ... })) instead of typing an object literal with a _tag.',
-          }),
+          try Effect.orDie(Effect.try({
+            try: () =>
+              Diagnostic.make({
+                node,
+                message:
+                  'Construct Messages with their callable Schema constructor (e.g. Message.Foo({ ... })) instead of typing an object literal with a _tag.',
+              }),
+            catch: error => error,
+          })),
         )
       },
       TSAsExpression: effect (node: ESTree.Node) => {
@@ -106,11 +110,15 @@ export const preferCallableMessageConstructor = Rule.define({
           return undefined
         }
         return try ctx.report(
-          Diagnostic.make({
-            node,
-            message:
-              'Construct Messages with their callable Schema constructor (e.g. Message.Foo({ ... })) instead of casting an object literal with a _tag.',
-          }),
+          try Effect.orDie(Effect.try({
+            try: () =>
+              Diagnostic.make({
+                node,
+                message:
+                  'Construct Messages with their callable Schema constructor (e.g. Message.Foo({ ... })) instead of casting an object literal with a _tag.',
+              }),
+            catch: error => error,
+          })),
         )
       },
     }

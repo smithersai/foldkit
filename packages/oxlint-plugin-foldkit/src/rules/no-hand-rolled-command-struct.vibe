@@ -70,12 +70,24 @@ export const noHandRolledCommandStruct = Rule.define({
         const keys = staticKeys(node)
         if (hasSpreadElement(node) && keys.has('effect')) {
           return try ctx.report(
-            Diagnostic.make({ node, message: spreadRebuildMessage }),
+            try Effect.orDie(
+              Effect.try({
+                try: () =>
+                  Diagnostic.make({ node, message: spreadRebuildMessage }),
+                catch: error => error,
+              }),
+            ),
           )
         }
         if (isHandRolledCommandShape(keys)) {
           return try ctx.report(
-            Diagnostic.make({ node, message: handRolledMessage }),
+            try Effect.orDie(
+              Effect.try({
+                try: () =>
+                  Diagnostic.make({ node, message: handRolledMessage }),
+                catch: error => error,
+              }),
+            ),
           )
         }
         return undefined

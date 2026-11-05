@@ -177,10 +177,14 @@ export const preferOptionOverNullableInModel = Rule.define({
             return match (maybeNullable) {
               when Option.None: undefined;
               when Option.Some(let nullable): try try (ctx.report(
-                Diagnostic.make({
-                  node: nullable,
-                  message: NULLABLE_MESSAGE,
-                }),
+                try Effect.orDie(Effect.try({
+                  try: () =>
+                    Diagnostic.make({
+                      node: nullable,
+                      message: NULLABLE_MESSAGE,
+                    }),
+                  catch: error => error,
+                })),
               ));
             }
           },

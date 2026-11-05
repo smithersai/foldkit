@@ -37,11 +37,15 @@ export const noModuleLevelMutableState = Rule.define({
           topLevelMutableDeclarations(node),
           effect declaration =>
             try ctx.report(
-              Diagnostic.make({
-                node: declaration,
-                message:
-                  'Module-level let/var holds state outside the Model. Move the data into the Model, or scope a live handle to a lifecycle primitive like Mount or ManagedResource.',
-              }),
+              try Effect.orDie(Effect.try({
+                try: () =>
+                  Diagnostic.make({
+                    node: declaration,
+                    message:
+                      'Module-level let/var holds state outside the Model. Move the data into the Model, or scope a live handle to a lifecycle primitive like Mount or ManagedResource.',
+                  }),
+                catch: error => error,
+              })),
             ),
           { discard: true },
         )

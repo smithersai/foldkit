@@ -215,7 +215,7 @@ export const selectionSubmodelFactoryAtModuleScope = Rule.define({
     const references = scopes === undefined
       ? undefined
       : indexReferences(scopes)
-    return Visitor.onExit('Program', (node: ESTree.Node) => {
+    const onProgramExit = (node: ESTree.Node) => {
       if (!isProgram(node)) {
         return effect {}
       }
@@ -229,14 +229,22 @@ export const selectionSubmodelFactoryAtModuleScope = Rule.define({
           offendingCalls,
           effect factoryCall =>
             try ctx.report(
-              Diagnostic.make({
-                node: factoryCall.call,
-                message: moduleScopeFactoryMessage(factoryCall.label),
-              }),
+              try Effect.orDie(Effect.try({
+                try: () =>
+                  Diagnostic.make({
+                    node: factoryCall.call,
+                    message: moduleScopeFactoryMessage(factoryCall.label),
+                  }),
+                catch: error => error,
+              })),
             ),
           { discard: true },
         )
       }
-    })
+    }
+    return try Effect.orDie(Effect.try({
+      try: () => Visitor.onExit('Program', onProgramExit),
+      catch: error => error,
+    }))
   },
 })

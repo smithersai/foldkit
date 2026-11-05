@@ -132,10 +132,14 @@ export const noSpreadInModifyFields = Rule.define({
           spreadRebuiltFields(node, references),
           effect ({ fieldName, bodyObject }) =>
             try ctx.report(
-              Diagnostic.make({
-                node: bodyObject,
-                message: nestedModifyFieldsMessage(fieldName),
-              }),
+              try Effect.orDie(Effect.try({
+                try: () =>
+                  Diagnostic.make({
+                    node: bodyObject,
+                    message: nestedModifyFieldsMessage(fieldName),
+                  }),
+                catch: error => error,
+              })),
             ),
           { discard: true },
         )

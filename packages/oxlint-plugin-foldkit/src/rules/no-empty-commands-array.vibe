@@ -97,10 +97,16 @@ export const noEmptyCommandsArray = Rule.define({
               return undefined
             }
 
-            const diagnostic = Diagnostic.make({
-              node: property,
-              message: emptyCommandsMessage,
-            })
+            const diagnostic = try Effect.orDie(
+              Effect.try({
+                try: () =>
+                  Diagnostic.make({
+                    node: property,
+                    message: emptyCommandsMessage,
+                  }),
+                catch: error => error,
+              }),
+            )
             if (
               hasSpread
               || hasDynamicComputedProperty
@@ -113,13 +119,22 @@ export const noEmptyCommandsArray = Rule.define({
             }
 
             return try ctx.report(
-              Diagnostic.withFix(
-                diagnostic,
-                (fixer): infer _ =>
-                  fixer.removeRange(
-                    removalRange(ctx.sourceCode.text, node, property, index),
+              try Effect.orDie(Effect.try({
+                try: () =>
+                  Diagnostic.withFix(
+                    diagnostic,
+                    (fixer) =>
+                      fixer.removeRange(
+                        removalRange(
+                          ctx.sourceCode.text,
+                          node,
+                          property,
+                          index,
+                        ),
+                      ),
                   ),
-              ),
+                catch: error => error,
+              })),
             )
           },
           { discard: true },

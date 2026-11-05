@@ -219,11 +219,15 @@ export const noRawDomEventAttributes = Rule.define({
           )) {
           when Option.None: undefined;
           when Option.Some(let attributeName): try try (ctx.report(
-            Diagnostic.make({
-              node,
-              message:
-                `Raw DOM event attribute \`${attributeName}\` bypasses the Foldkit runtime: nothing it does flows through update as a Message. Use the typed \`On*\` attribute constructors instead, for example \`OnClick(SomeMessage())\`. If this is a crash view rendered outside the dispatch loop, suppress this rule with a disable comment.`,
-            }),
+            try Effect.orDie(Effect.try({
+              try: () =>
+                Diagnostic.make({
+                  node,
+                  message:
+                    `Raw DOM event attribute \`${attributeName}\` bypasses the Foldkit runtime: nothing it does flows through update as a Message. Use the typed \`On*\` attribute constructors instead, for example \`OnClick(SomeMessage())\`. If this is a crash view rendered outside the dispatch loop, suppress this rule with a disable comment.`,
+                }),
+              catch: error => error,
+            })),
           ));
         }
       },

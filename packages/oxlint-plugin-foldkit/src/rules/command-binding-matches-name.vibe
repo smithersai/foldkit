@@ -84,12 +84,16 @@ export const commandBindingMatchesName = Rule.define({
         ) {
           return undefined
         }
+        const diagnosticOptions = {
+          node: node.id,
+          message:
+            `Command binding "${node.id.name}" does not match its Command.define name "${nameArgument.value}".`,
+        }
         return try ctx.report(
-          Diagnostic.make({
-            node: node.id,
-            message:
-              `Command binding "${node.id.name}" does not match its Command.define name "${nameArgument.value}".`,
-          }),
+          try Effect.orDie(Effect.try({
+            try: () => Diagnostic.make(diagnosticOptions),
+            catch: error => error,
+          })),
         )
       },
     }

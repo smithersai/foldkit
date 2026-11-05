@@ -902,10 +902,14 @@ export const noDirectSubmodelStateUpdate = Rule.define({
           })(),
           effect ({ node: findingNode, fieldName }) =>
             try ctx.report(
-              Diagnostic.make({
-                node: findingNode,
-                message: directSubmodelStateUpdateMessage(fieldName),
-              }),
+              try Effect.orDie(Effect.try({
+                try: () =>
+                  Diagnostic.make({
+                    node: findingNode,
+                    message: directSubmodelStateUpdateMessage(fieldName),
+                  }),
+                catch: error => error,
+              })),
             ),
           { discard: true },
         )

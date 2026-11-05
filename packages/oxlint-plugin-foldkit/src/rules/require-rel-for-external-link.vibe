@@ -103,10 +103,14 @@ export const requireRelForExternalLink = Rule.define({
         )
         if (EffectArray.isArrayEmpty(relElements)) {
           return try ctx.report(
-            Diagnostic.make({
-              node: maybeTargetBlank.value,
-              message: missingRelMessage,
-            }),
+            try Effect.orDie(Effect.try({
+              try: () =>
+                Diagnostic.make({
+                  node: maybeTargetBlank.value,
+                  message: missingRelMessage,
+                }),
+              catch: error => error,
+            })),
           )
         }
         const relInspections = EffectArray.map(
@@ -139,10 +143,14 @@ export const requireRelForExternalLink = Rule.define({
           when Option.Some(let matchedOptionValue5): do {
             const { relElement, relValue } = matchedOptionValue5
             try (ctx.report(
-              Diagnostic.make({
-                node: relElement,
-                message: insufficientRelMessage(relValue),
-              }),
+              try Effect.orDie(Effect.try({
+                try: () =>
+                  Diagnostic.make({
+                    node: relElement,
+                    message: insufficientRelMessage(relValue),
+                  }),
+                catch: error => error,
+              })),
             ))
           };
         }

@@ -124,7 +124,12 @@ export const noDisablingDevGuardrails = Rule.define({
         return try Effect.forEach(
           disabledGuardrails,
           effect ({ property, message }) =>
-            try ctx.report(Diagnostic.make({ node: property, message })),
+            try ctx.report(
+              try Effect.orDie(Effect.try({
+                try: () => Diagnostic.make({ node: property, message }),
+                catch: error => error,
+              })),
+            ),
           { discard: true },
         )
       },

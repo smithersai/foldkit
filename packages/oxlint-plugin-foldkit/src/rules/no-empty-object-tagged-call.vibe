@@ -193,11 +193,15 @@ export const noEmptyObjectTaggedCall = Rule.define({
           return undefined
         }
         return try ctx.report(
-          Diagnostic.make({
-            node,
-            message:
-              `Call ${name}() with no arguments. ${name}({}) passes an unnecessary empty object.`,
-          }),
+          try Effect.orDie(Effect.try({
+            try: () =>
+              Diagnostic.make({
+                node,
+                message:
+                  `Call ${name}() with no arguments. ${name}({}) passes an unnecessary empty object.`,
+              }),
+            catch: error => error,
+          })),
         )
       },
     }

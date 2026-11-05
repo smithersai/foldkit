@@ -91,13 +91,17 @@ export const gotWrapperCarriesOnlyRouting = Rule.define({
                       try (isRoutingKey(keyName)
                         ? effect {}
                         : ctx.report(
-                          Diagnostic.make({
-                            node: keyNode,
-                            message: extraFieldMessage(
-                              messageCase.name,
-                              keyName,
-                            ),
-                          }),
+                          try Effect.orDie(Effect.try({
+                            try: () =>
+                              Diagnostic.make({
+                                node: keyNode,
+                                message: extraFieldMessage(
+                                  messageCase.name,
+                                  keyName,
+                                ),
+                              }),
+                            catch: error => error,
+                          })),
                         ))
                     };
                   },

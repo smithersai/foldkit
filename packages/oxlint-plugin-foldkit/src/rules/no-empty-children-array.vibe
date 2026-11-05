@@ -136,10 +136,14 @@ export const noEmptyChildrenArray = Rule.define({
           return undefined
         }
         return try ctx.report(
-          Diagnostic.make({
-            node: maybeChildren.value,
-            message: emptyChildrenMessage(maybeTarget.value),
-          }),
+          try Effect.orDie(Effect.try({
+            try: () =>
+              Diagnostic.make({
+                node: maybeChildren.value,
+                message: emptyChildrenMessage(maybeTarget.value),
+              }),
+            catch: error => error,
+          })),
         )
       },
     }

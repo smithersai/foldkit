@@ -129,10 +129,14 @@ export const noRouteQueryConstructorDefault = Rule.define({
           offendingCalls,
           effect offendingCall =>
             try ctx.report(
-              Diagnostic.make({
-                node: offendingCall,
-                message: CONSTRUCTOR_DEFAULT_MESSAGE,
-              }),
+              try Effect.orDie(Effect.try({
+                try: () =>
+                  Diagnostic.make({
+                    node: offendingCall,
+                    message: CONSTRUCTOR_DEFAULT_MESSAGE,
+                  }),
+                catch: error => error,
+              })),
             ),
           { discard: true },
         )

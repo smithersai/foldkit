@@ -9,7 +9,13 @@ export const nativeRule = Rule.define({
     return {
       ThrowStatement: effect (node: ESTree.Node) => {
         try context.report(
-          Diagnostic.make({ node, message: 'native Foldkit callback' }),
+          try Effect.orDie(
+            Effect.try({
+              try: () =>
+                Diagnostic.make({ node, message: 'native Foldkit callback' }),
+              catch: error => error,
+            }),
+          ),
         )
       },
     }

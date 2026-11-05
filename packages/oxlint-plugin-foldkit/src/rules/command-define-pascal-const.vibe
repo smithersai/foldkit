@@ -148,8 +148,14 @@ export const commandDefinePascalConst = Rule.define({
         }
         return match (diagnosticMessage(node, references)) {
           when Option.None: undefined;
-          when Option.Some(let message):
-            try try (ctx.report(Diagnostic.make({ node, message })));
+          when Option.Some(let message): try try (ctx.report(
+            try Effect.orDie(
+              Effect.try({
+                try: () => Diagnostic.make({ node, message }),
+                catch: error => error,
+              }),
+            ),
+          ));
         }
       },
     }

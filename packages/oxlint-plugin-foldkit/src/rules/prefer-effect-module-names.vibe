@@ -227,12 +227,18 @@ export const preferEffectModuleNames = Rule.define({
           ({ specifier, name }): infer _ =>
             `\`${name}\` instead of \`${specifier.local.name}\``,
         )
-        const diagnostic = Diagnostic.make({
-          node,
-          message: `Use Effect module names without aliases: ${
-            replacements.join(', ')
-          }. Qualify same-named globals through \`globalThis\`.`,
-        })
+        const diagnostic = try Effect.orDie(
+          Effect.try({
+            try: () =>
+              Diagnostic.make({
+                node,
+                message: `Use Effect module names without aliases: ${
+                  replacements.join(', ')
+                }. Qualify same-named globals through \`globalThis\`.`,
+              }),
+            catch: error => error,
+          }),
+        )
         const fixes = EffectArray.flatMap(
           aliases,
           (alias): infer _ => fixesForAlias(ctx, alias),
@@ -241,7 +247,16 @@ export const preferEffectModuleNames = Rule.define({
         return try ctx.report(
           EffectArray.isReadonlyArrayEmpty(fixes)
             ? diagnostic
-            : Diagnostic.withFix(diagnostic, Diagnostic.composeFixes(...fixes)),
+            : (try Effect.orDie(
+              Effect.try({
+                try: () =>
+                  Diagnostic.withFix(
+                    diagnostic,
+                    Diagnostic.composeFixes(...fixes),
+                  ),
+                catch: error => error,
+              }),
+            )),
         )
       },
     }

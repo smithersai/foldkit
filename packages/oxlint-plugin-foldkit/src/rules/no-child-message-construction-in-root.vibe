@@ -466,10 +466,14 @@ export const noChildMessageConstructionInRoot = Rule.define({
             return
           }
           try ctx.report(
-            Diagnostic.make({
-              node,
-              message: childMessageConstructionMessage(calleeLabel),
-            }),
+            try Effect.orDie(Effect.try({
+              try: () =>
+                Diagnostic.make({
+                  node,
+                  message: childMessageConstructionMessage(calleeLabel),
+                }),
+              catch: error => error,
+            })),
           )
         }
       },

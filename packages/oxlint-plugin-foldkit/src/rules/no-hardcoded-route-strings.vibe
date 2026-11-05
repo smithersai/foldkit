@@ -139,13 +139,17 @@ export const noHardcodedRouteStrings = Rule.define({
           && isHardcodedRouteString(functionName, firstArgument.value)
         ) {
           return try ctx.report(
-            Diagnostic.make({
-              node,
-              message: hardcodedRouteStringMessage(
-                functionName,
-                firstArgument.value,
-              ),
-            }),
+            try Effect.orDie(Effect.try({
+              try: () =>
+                Diagnostic.make({
+                  node,
+                  message: hardcodedRouteStringMessage(
+                    functionName,
+                    firstArgument.value,
+                  ),
+                }),
+              catch: error => error,
+            })),
           )
         }
         if (isTemplateLiteral(firstArgument)) {
@@ -155,13 +159,17 @@ export const noHardcodedRouteStrings = Rule.define({
               )) {
             when Option.None: undefined;
             when Option.Some(let cookedHead): try try (ctx.report(
-              Diagnostic.make({
-                node,
-                message: hardcodedRouteTemplateMessage(
-                  functionName,
-                  cookedHead,
-                ),
-              }),
+              try Effect.orDie(Effect.try({
+                try: () =>
+                  Diagnostic.make({
+                    node,
+                    message: hardcodedRouteTemplateMessage(
+                      functionName,
+                      cookedHead,
+                    ),
+                  }),
+                catch: error => error,
+              })),
             ));
           }
         }

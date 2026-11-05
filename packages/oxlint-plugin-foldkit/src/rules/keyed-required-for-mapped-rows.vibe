@@ -346,11 +346,15 @@ export const keyedRequiredForMappedRows = Rule.define({
           when Option.Some(let matchedOptionValue2): do {
             const { rowElementCall, tagName } = matchedOptionValue2
             try (ctx.report(
-              Diagnostic.make({
-                node: rowElementCall,
-                message:
-                  `This map callback returns \`${tagName}(...)\` without a \`keyed\` wrapper. When the list reorders or loses a row, the runtime patches surviving rows in place and event handlers can end up on the wrong row. Wrap it as \`keyed('${tagName}')(item.id, attributes, children)\` using a stable Model identifier, or suppress a genuinely identity-free row with \`// oxlint-disable-next-line foldkit/keyed-required-for-mapped-rows\`.`,
-              }),
+              try Effect.orDie(Effect.try({
+                try: () =>
+                  Diagnostic.make({
+                    node: rowElementCall,
+                    message:
+                      `This map callback returns \`${tagName}(...)\` without a \`keyed\` wrapper. When the list reorders or loses a row, the runtime patches surviving rows in place and event handlers can end up on the wrong row. Wrap it as \`keyed('${tagName}')(item.id, attributes, children)\` using a stable Model identifier, or suppress a genuinely identity-free row with \`// oxlint-disable-next-line foldkit/keyed-required-for-mapped-rows\`.`,
+                  }),
+                catch: error => error,
+              })),
             ))
           };
         }

@@ -39,11 +39,15 @@ export const gotSubmodelMessageName = Rule.define({
             hasSubmodelMessagePayload(messageCase.fields, references)
               && !/^Got[A-Z].*Message$/.test(messageCase.name)
               ? try ctx.report(
-                Diagnostic.make({
-                  node: messageCase.nameNode,
-                  message:
-                    'Submodel wrapper Messages should be named Got*Message so Foldkit DevTools can filter them.',
-                }),
+                try Effect.orDie(Effect.try({
+                  try: () =>
+                    Diagnostic.make({
+                      node: messageCase.nameNode,
+                      message:
+                        'Submodel wrapper Messages should be named Got*Message so Foldkit DevTools can filter them.',
+                    }),
+                  catch: error => error,
+                })),
               )
               : undefined,
           { discard: true },
