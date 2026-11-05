@@ -100,9 +100,7 @@ export const FocusOption = Command.define('FocusOption', {
     const nativeCommandArg28_0 = idSelector(optionId(id, index))
     const nativeCommandCompletion28 = Message.CompletedFocusOption()
     return effect {
-      try {
-        try Dom.focus(nativeCommandArg28_0)
-      } catch {}
+      Dom.focus(nativeCommandArg28_0) catch () => undefined
       return nativeCommandCompletion28
     }
   },

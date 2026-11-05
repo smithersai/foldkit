@@ -140,9 +140,7 @@ export const FocusGrid = Command.define('FocusGrid', {
     const nativeCommandArg8_0 = gridSelector(id)
     const nativeCommandCompletion8 = Message.CompletedFocusGrid()
     return effect {
-      try {
-        try Dom.focus(nativeCommandArg8_0)
-      } catch {}
+      Dom.focus(nativeCommandArg8_0) catch () => undefined
       return nativeCommandCompletion8
     }
   },

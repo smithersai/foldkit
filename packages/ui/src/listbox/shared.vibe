@@ -269,9 +269,7 @@ export const FocusButton = Command.define('FocusButton', {
     const nativeCommandArg21_0 = buttonSelector(id)
     const nativeCommandCompletion21 = Message.CompletedFocusButton()
     return effect {
-      try {
-        try Dom.focus(nativeCommandArg21_0)
-      } catch {}
+      Dom.focus(nativeCommandArg21_0) catch () => undefined
       return nativeCommandCompletion21
     }
   },
@@ -284,9 +282,7 @@ export const FocusItems = Command.define('FocusItems', {
     const nativeCommandArg22_0 = itemsSelector(id)
     const nativeCommandCompletion22 = Message.CompletedFocusItems()
     return effect {
-      try {
-        try Dom.focus(nativeCommandArg22_0)
-      } catch {}
+      Dom.focus(nativeCommandArg22_0) catch () => undefined
       return nativeCommandCompletion22
     }
   },
@@ -299,9 +295,7 @@ export const ScrollIntoView = Command.define('ScrollIntoView', {
     const nativeCommandArg23_0 = itemSelector(id, index)
     const nativeCommandCompletion23 = Message.CompletedScrollIntoView()
     return effect {
-      try {
-        try Dom.scrollIntoView(nativeCommandArg23_0)
-      } catch {}
+      Dom.scrollIntoView(nativeCommandArg23_0) catch () => undefined
       return nativeCommandCompletion23
     }
   },
@@ -314,9 +308,7 @@ export const ClickItem = Command.define('ClickItem', {
     const nativeCommandArg24_0 = itemSelector(id, index)
     const nativeCommandCompletion24 = Message.CompletedClickItem()
     return effect {
-      try {
-        try Dom.clickElement(nativeCommandArg24_0)
-      } catch {}
+      Dom.clickElement(nativeCommandArg24_0) catch () => undefined
       return nativeCommandCompletion24
     }
   },
@@ -721,7 +713,12 @@ export const AnchorListbox = Mount.define('AnchorListbox', {
       ),
       effect cleanup => try Effect.sync(cleanup),
     )
-    return Message.CompletedAnchorListbox()
+    return (try Effect.orDie(
+      Effect.try({
+        try: () => Message.CompletedAnchorListbox(),
+        catch: error => error,
+      }),
+    ))
   },
 })
 
@@ -735,7 +732,12 @@ export const PortalListboxBackdrop = Mount.define('PortalListboxBackdrop', {
       Effect.sync((): infer _ => portalBackdrop(element)),
       effect cleanup => try Effect.sync(cleanup),
     )
-    return Message.CompletedPortalListboxBackdrop()
+    return (try Effect.orDie(
+      Effect.try({
+        try: () => Message.CompletedPortalListboxBackdrop(),
+        catch: error => error,
+      }),
+    ))
   },
 })
 

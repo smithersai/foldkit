@@ -196,9 +196,7 @@ export const FocusPanel = Command.define('FocusPanel', {
     const nativeCommandArg4_0 = panelSelector(id)
     const nativeCommandCompletion4 = Message.CompletedFocusPanel()
     return effect {
-      try {
-        try Dom.focus(nativeCommandArg4_0)
-      } catch {}
+      Dom.focus(nativeCommandArg4_0) catch () => undefined
       return nativeCommandCompletion4
     }
   },
@@ -211,9 +209,7 @@ export const FocusButton = Command.define('FocusButton', {
     const nativeCommandArg5_0 = buttonSelector(id)
     const nativeCommandCompletion5 = Message.CompletedFocusButton()
     return effect {
-      try {
-        try Dom.focus(nativeCommandArg5_0)
-      } catch {}
+      Dom.focus(nativeCommandArg5_0) catch () => undefined
       return nativeCommandCompletion5
     }
   },
@@ -487,7 +483,12 @@ export const AnchorPopover = Mount.define('AnchorPopover', {
       ),
       effect cleanup => try Effect.sync(cleanup),
     )
-    return Message.CompletedAnchorPopover()
+    return (try Effect.orDie(
+      Effect.try({
+        try: () => Message.CompletedAnchorPopover(),
+        catch: error => error,
+      }),
+    ))
   },
 })
 
@@ -501,7 +502,12 @@ export const PortalPopoverBackdrop = Mount.define('PortalPopoverBackdrop', {
       Effect.sync((): infer _ => portalBackdrop(element)),
       effect cleanup => try Effect.sync(cleanup),
     )
-    return Message.CompletedPortalPopoverBackdrop()
+    return (try Effect.orDie(
+      Effect.try({
+        try: () => Message.CompletedPortalPopoverBackdrop(),
+        catch: error => error,
+      }),
+    ))
   },
 })
 

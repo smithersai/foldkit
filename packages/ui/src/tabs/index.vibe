@@ -105,9 +105,7 @@ export const FocusTab = Command.define('FocusTab', {
     const nativeCommandArg16_0 = idSelector(tabId(id, index))
     const nativeCommandCompletion16 = Message.CompletedFocusTab()
     return effect {
-      try {
-        try Dom.focus(nativeCommandArg16_0)
-      } catch {}
+      Dom.focus(nativeCommandArg16_0) catch () => undefined
       return nativeCommandCompletion16
     }
   },

@@ -94,7 +94,12 @@ export const AnchorTooltip = Mount.define('AnchorTooltip', {
       ),
       effect cleanup => try Effect.sync(cleanup),
     )
-    return Message.CompletedAnchorTooltip()
+    return (try Effect.orDie(
+      Effect.try({
+        try: () => Message.CompletedAnchorTooltip(),
+        catch: error => error,
+      }),
+    ))
   },
 })
 

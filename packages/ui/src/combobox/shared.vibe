@@ -286,9 +286,7 @@ export const FocusInput = Command.define('FocusInput', {
     const nativeCommandArg13_0 = inputSelector(id)
     const nativeCommandCompletion13 = Message.CompletedFocusInput()
     return effect {
-      try {
-        try Dom.focus(nativeCommandArg13_0)
-      } catch {}
+      Dom.focus(nativeCommandArg13_0) catch () => undefined
       return nativeCommandCompletion13
     }
   },
@@ -301,9 +299,7 @@ export const ScrollIntoView = Command.define('ScrollIntoView', {
     const nativeCommandArg14_0 = itemSelector(id, index)
     const nativeCommandCompletion14 = Message.CompletedScrollIntoView()
     return effect {
-      try {
-        try Dom.scrollIntoView(nativeCommandArg14_0)
-      } catch {}
+      Dom.scrollIntoView(nativeCommandArg14_0) catch () => undefined
       return nativeCommandCompletion14
     }
   },
@@ -316,9 +312,7 @@ export const ClickItem = Command.define('ClickItem', {
     const nativeCommandArg15_0 = itemSelector(id, index)
     const nativeCommandCompletion15 = Message.CompletedClickItem()
     return effect {
-      try {
-        try Dom.clickElement(nativeCommandArg15_0)
-      } catch {}
+      Dom.clickElement(nativeCommandArg15_0) catch () => undefined
       return nativeCommandCompletion15
     }
   },
@@ -732,7 +726,12 @@ export const AnchorCombobox = Mount.define('AnchorCombobox', {
       }),
       effect cleanup => try Effect.sync(cleanup),
     )
-    return Message.CompletedAnchorCombobox()
+    return (try Effect.orDie(
+      Effect.try({
+        try: () => Message.CompletedAnchorCombobox(),
+        catch: error => error,
+      }),
+    ))
   },
 })
 
@@ -760,7 +759,12 @@ export const AttachComboboxPreventBlur = Mount.define(
             })
           ),
       )
-      return Message.CompletedAttachComboboxPreventBlur()
+      return (try Effect.orDie(
+        Effect.try({
+          try: () => Message.CompletedAttachComboboxPreventBlur(),
+          catch: error => error,
+        }),
+      ))
     },
   },
 )
@@ -788,7 +792,12 @@ export const AttachComboboxSelectOnFocus = Mount.define(
             element.removeEventListener('focus', handler)
           ),
       )
-      return Message.CompletedAttachComboboxSelectOnFocus()
+      return (try Effect.orDie(
+        Effect.try({
+          try: () => Message.CompletedAttachComboboxSelectOnFocus(),
+          catch: error => error,
+        }),
+      ))
     },
   },
 )
@@ -803,7 +812,12 @@ export const PortalComboboxBackdrop = Mount.define('PortalComboboxBackdrop', {
       Effect.sync((): infer _ => portalBackdrop(element)),
       effect cleanup => try Effect.sync(cleanup),
     )
-    return Message.CompletedPortalComboboxBackdrop()
+    return (try Effect.orDie(
+      Effect.try({
+        try: () => Message.CompletedPortalComboboxBackdrop(),
+        catch: error => error,
+      }),
+    ))
   },
 })
 

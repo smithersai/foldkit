@@ -142,13 +142,22 @@ const acquireDialogResources = effect (
 const acquireDialogResourcesResult = effect (
   id: string,
   focusSelector: string,
-): SucceededShowDialog | FailedShowDialog!! => {
-  try {
+): (SucceededShowDialog | FailedShowDialog)!! => {
+  return effect {
     try acquireDialogResources(id, focusSelector)
-    return Message.SucceededShowDialog()
-  } catch {
-    return Message.FailedShowDialog()
-  }
+    return (try Effect.orDie(
+      Effect.try({
+        try: () => Message.SucceededShowDialog(),
+        catch: error => error,
+      }),
+    ))
+  } catch effect () =>
+    try Effect.orDie(
+      Effect.try({
+        try: () => Message.FailedShowDialog(),
+        catch: error => error,
+      }),
+    )
 }
 
 /** Opens the native dialog element through `Dom.showDialog`, then locks page
@@ -185,15 +194,30 @@ export const AcquireResources = Mount.define('AcquireResources', {
       !(try Effect.sync((): boolean => isHtmlDialogElement(element)))
       || element.id !== id
     ) {
-      return Message.FailedAcquireResources()
+      return (try Effect.orDie(
+        Effect.try({
+          try: () => Message.FailedAcquireResources(),
+          catch: error => error,
+        }),
+      ))
     }
     const acquisition = effect {
-      try {
+      return effect {
         const isAcquired = try acquireDialogResources(id, focusSelector)
-        return { isAcquired, message: Message.SucceededAcquireResources() }
-      } catch {
-        return { isAcquired: false, message: Message.FailedAcquireResources() }
-      }
+        return {
+          isAcquired,
+          message: (try Effect.orDie(Effect.try({
+            try: () => Message.SucceededAcquireResources(),
+            catch: error => error,
+          }))),
+        }
+      } catch effect () => ({
+        isAcquired: false,
+        message: (try Effect.orDie(Effect.try({
+          try: () => Message.FailedAcquireResources(),
+          catch: error => error,
+        }))),
+      })
     }
     const { message } = try Effect.acquireRelease(
       acquisition,
@@ -221,10 +245,10 @@ export const CloseDialog = Command.define('CloseDialog', {
   execute: ({ id }): infer _ => {
     const completed = Message.CompletedCloseDialog()
     return effect {
-      try {
+      effect {
         const isReleased = try Dom.closeDialog(dialogSelector(id))
         if (isReleased) try Dom.unlockScroll
-      } catch {
+      } catch effect () => {
         try Dom.releaseDialogResources(id)
       }
       return completed

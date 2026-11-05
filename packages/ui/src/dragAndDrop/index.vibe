@@ -184,9 +184,7 @@ export const FocusItem = Command.define('FocusItem', {
     const nativeCommandArg38_0 = attributeSelector('data-draggable-id', itemId)
     const nativeCommandCompletion38 = Message.CompletedFocusItem()
     return effect {
-      try {
-        try Dom.focus(nativeCommandArg38_0)
-      } catch {}
+      Dom.focus(nativeCommandArg38_0) catch () => undefined
       return nativeCommandCompletion38
     }
   },
