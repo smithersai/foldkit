@@ -1,5 +1,4 @@
 import { NodeRuntime } from '@effect/platform-node'
-import { ChildProcess, ChildProcessSpawner } from 'effect/process'
 import { ExperimentalNodeServices } from 'vibelang-runtime/experimental/platform-node'
 
 import { examples } from '../packages/website/src/page/example/meta.vibe'
@@ -16,14 +15,12 @@ type BuildPaths = Readonly<{
 const checked = effect <A, E extends { readonly cause?: unknown }, R>(
   operation: A!E!R,
 ): A!never!R => {
-  try {
-    return try operation
-  } catch (error) {
+  return operation catch effect (error) => {
     return try die(error.cause ?? error)
   }
 }
 
-const buildPaths = effect (): BuildPaths!never!Path.Path => {
+const buildPaths = effect (): BuildPaths!never!Path => {
   const path = try Path.Path
   const script = try checked(path.fromFileUrl(new URL(import.meta.url)))
   const root = path.resolve(path.dirname(script), '..')
@@ -72,7 +69,10 @@ const runExampleCommand = effect (
     )))
     const decoder = new TextDecoder('utf-8', { ignoreBOM: true })
     for try (const chunk of child.all) {
-      const text = decoder.decode(chunk)
+      const text = try Effect.orDie(Effect.try({
+        try: () => decoder.decode(chunk),
+        catch: cause => cause,
+      }))
       for (const line of text.split('\n')) {
         if (line !== '') try Console.log(`[${slug}] ${line}`)
       }
@@ -84,7 +84,7 @@ const runExampleCommand = effect (
 
 const collectHtmlPaths = effect (
   directory: string,
-): ReadonlyArray<string>!never!FileSystem.FileSystem | Path.Path => {
+): ReadonlyArray<string>!never!(FileSystem.FileSystem | Path) => {
   const fs = try FileSystem.FileSystem
   const path = try Path.Path
   const files: Array<string> = []
@@ -105,7 +105,10 @@ const injectBridgeScript = effect (paths: BuildPaths, outputDir: string) => {
   try checked(fs.copyFile(paths.bridge, path.resolve(outputDir, 'bridge.js')))
   for (const htmlPath of try collectHtmlPaths(outputDir)) {
     const bytes = try checked(fs.readFile(htmlPath))
-    const html = new TextDecoder('utf-8', { ignoreBOM: true }).decode(bytes)
+    const html = try Effect.orDie(Effect.try({
+      try: () => new TextDecoder('utf-8', { ignoreBOM: true }).decode(bytes),
+      catch: cause => cause,
+    }))
     try checked(
       fs.writeFileString(htmlPath, html.replace('</head>', BRIDGE_SCRIPT_TAG)),
     )
@@ -123,7 +126,7 @@ const NATIVE_CONFIG_LOADER = '--configLoader native'
 const configLoaderArguments = effect (exampleDir: string) => {
   const fs = try FileSystem.FileSystem
   const path = try Path.Path
-  const manifest = try fs.readFileString(
+  const manifest = fs.readFileString(
     path.resolve(exampleDir, 'package.json'),
   )
     catch () => ''
@@ -215,7 +218,7 @@ const main = effect () => {
   const stdio = try Stdio.Stdio
   const only = requestedSlugs(try stdio.args)
   const paths = try buildPaths()
-  const exists = try fs.exists(paths.output) catch () => false
+  const exists = fs.exists(paths.output) catch () => false
   if (only.size === 0 && exists) {
     try checked(fs.remove(paths.output, { recursive: true, force: true }))
   }
@@ -243,7 +246,7 @@ const main = effect () => {
     offset < selected.length;
     offset += MAX_CONCURRENT_EXAMPLE_BUILDS
   ) {
-    const firstFailure = try Ref.make(Option.none<Cause.Cause<unknown>>())
+    const firstFailure = try Ref.make(Option.none<Cause<unknown>>())
     for concurrent(MAX_CONCURRENT_EXAMPLE_BUILDS) (
       const example of selected.slice(
         offset,
@@ -256,7 +259,7 @@ const main = effect () => {
       if (result is Exit.Failure) {
         const previous = try Ref.getAndUpdate(
           firstFailure,
-          (before): Option<Cause.Cause<unknown>> => match (before) {
+          (before): Option<Cause<unknown>> => match (before) {
             when Option.Some: before;
             when Option.None: Option.some(result.cause);
           },
