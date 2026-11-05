@@ -1,4 +1,4 @@
-import { Context, Layer } from "effect";
+import { Context, Layer } from 'effect';
 type PagefindResult = Readonly<{
     data: () => Promise<Readonly<{
         url: string;

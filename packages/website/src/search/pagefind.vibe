@@ -1,3 +1,5 @@
+import { loadPagefindModule } from './pagefind.platform.ts'
+
 error PagefindUnavailable { message: string }
 
 type PagefindResult = Readonly<{
@@ -35,7 +37,7 @@ export const pagefindLive = Layer.effect(
     return (effect {
       return try Effect.tryPromise({
         try: (): Promise<PagefindModule> =>
-          new Function('path', 'return import(path)')(PAGEFIND_PATH),
+          loadPagefindModule<PagefindModule>(PAGEFIND_PATH),
         catch: () =>
           new PagefindUnavailable({ message: 'Pagefind not available' }),
       })
