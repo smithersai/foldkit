@@ -1,4 +1,4 @@
-import { Array as Arr, Option, Order, pipe } from 'effect'
+import { Array, Option, Order, pipe } from 'effect'
 import * as fc from 'fast-check'
 import { expect, test } from 'vitest'
 
@@ -60,7 +60,7 @@ test('keeps contributor ranking descending and stable at the cutoff', () => {
 test('preserves the original comparator getter-read order', () => {
   fc.assert(
     fc.property(counts, fc.boolean(), (values, repeatReferences) => {
-      const makeContributors = (reads: Array<number>) => {
+      const makeContributors = (reads: globalThis.Array<number>) => {
         const contributors = values.map((value, index) => ({
           login: 'contributor-' + index,
           get contributions() {
@@ -73,8 +73,8 @@ test('preserves the original comparator getter-read order', () => {
           ? contributors.flatMap(contributor => [contributor, contributor])
           : contributors
       }
-      const expectedReads: Array<number> = []
-      const expected = Arr.sort(
+      const expectedReads: globalThis.Array<number> = []
+      const expected = Array.sort(
         makeContributors(expectedReads),
         pipe(
           Order.Number,
@@ -87,7 +87,7 @@ test('preserves the original comparator getter-read order', () => {
       )
         .slice(0, 6)
         .map(contributorSummary)
-      const actualReads: Array<number> = []
+      const actualReads: globalThis.Array<number> = []
       const actual = transformTelemetry(
         rawTelemetry(makeContributors(actualReads)),
       ).topContributors
