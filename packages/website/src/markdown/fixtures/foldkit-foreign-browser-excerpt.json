@@ -3,8 +3,6 @@
     "lintAcquireReleaseConstructsInAcquireBody",
     "lintNoPreventDefaultInStreamOperator",
     "routingQueryParams",
-    "subscriptionFromEvent",
-    "subscriptionOrganizationComposing",
     "lintNoImpureCallAtDecisionTime"
   ],
   "foreignWitness": {
@@ -29,6 +27,8 @@
     "atomCompareFoldkitEffect",
     "domFilteredEvent",
     "domPreventDefault",
-    "subscriptionOrganizationChild"
+    "subscriptionOrganizationChild",
+    "subscriptionFromEvent",
+    "subscriptionOrganizationComposing"
   ]
 }

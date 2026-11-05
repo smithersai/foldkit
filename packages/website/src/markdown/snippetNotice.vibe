@@ -5,8 +5,6 @@ const foreignBrowserExamples: ReadonlyArray<string> = [
   'lintNoImpureCallAtDecisionTime',
   'lintNoPreventDefaultInStreamOperator',
   'routingQueryParams',
-  'subscriptionFromEvent',
-  'subscriptionOrganizationComposing',
 ]
 
 export const snippetNotice = (name: string, language: string): Html =>

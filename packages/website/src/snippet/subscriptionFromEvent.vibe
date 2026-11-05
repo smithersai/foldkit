@@ -1,3 +1,4 @@
+import { ExperimentalBrowserWindow } from 'vibelang-runtime/experimental/platform-browser'
 import { Dom, Subscription } from 'foldkit'
 import { defineMessageUnion } from 'foldkit/message'
 
@@ -24,7 +25,11 @@ const subscriptions = Subscription.make<Model, Message>()(entry => ({
       dependenciesToStream: ({ isListening }) =>
         Stream.when(
           Dom.streamFromEvent({
-            target: window,
+            target: Effect.runSync(effect {
+              provide ExperimentalBrowserWindow.layer {
+                return try (try Experimental.Window.Window).current
+              }
+            }),
             type: 'keydown',
             mapEvent: event => Message.PressedKey({ key: event.key }),
           }),

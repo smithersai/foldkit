@@ -1,3 +1,4 @@
+import { ExperimentalBrowserWindow } from 'vibelang-runtime/experimental/platform-browser'
 // page/settings/subscription.ts
 import { Dom, Subscription } from 'foldkit'
 
@@ -27,7 +28,11 @@ const localSubscriptions = Subscription.make<Model, Message>()(entry => ({
       dependenciesToStream: ({ hasUnsavedChanges }) =>
         Stream.when(
           Dom.streamFromEventFilterMapPreventDefault({
-            target: window,
+            target: Effect.runSync(effect {
+              provide ExperimentalBrowserWindow.layer {
+                return try (try Experimental.Window.Window).current
+              }
+            }),
             type: 'beforeunload',
             filterMapEvent: event => {
               event.returnValue = true

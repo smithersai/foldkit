@@ -6,6 +6,7 @@ import { join } from 'node:path'
 import { expect, test } from 'vitest'
 
 import corpus from './fixtures/foldkit-root-document-service.json'
+import windowCorpus from './fixtures/foldkit-window-event-service.json'
 import atom from './snippet/atomCompareFoldkitEffect.vibe?raw'
 import crash from './snippet/crashReport.vibe?raw'
 import filtered from './snippet/domFilteredEvent.vibe?raw'
@@ -15,7 +16,9 @@ import resources from './snippet/resources.vibe?raw'
 import flags from './snippet/resourcesFlags.vibe?raw'
 import multiple from './snippet/resourcesMultiple.vibe?raw'
 import slow from './snippet/slowConfig.vibe?raw'
+import windowSubscription from './snippet/subscriptionFromEvent.vibe?raw'
 import child from './snippet/subscriptionOrganizationChild.vibe?raw'
+import composed from './snippet/subscriptionOrganizationComposing.vibe?raw'
 
 const containerExpression = (
   source: string,
@@ -56,14 +59,20 @@ test('runtime snippets look up the current document root once at configuration',
         marker: 'target: ',
       })),
       { source: child, marker: 'Stream.fromEventListener<KeyboardEvent>(' },
+      ...[windowSubscription, composed].map(source => ({
+        source,
+        marker: 'target: ',
+      })),
     ]
     expect(sources).toHaveLength(
-      corpus.files.length + corpus.targetFiles.length,
+      corpus.files.length +
+        corpus.targetFiles.length +
+        windowCorpus.files.length,
     )
     writeFileSync(
       join(directory, 'roots.vibe'),
       `
-import { ExperimentalBrowserDocument } from "vibelang-runtime/experimental/platform-browser"
+import { ExperimentalBrowserDocument, ExperimentalBrowserWindow } from "vibelang-runtime/experimental/platform-browser"
 ` +
         sources
           .map(
@@ -128,11 +137,11 @@ await fc.assert(fc.asyncProperty(fc.boolean(), fc.string(), async (present, text
   const roots = await import("./dist/roots.js?case=" + iteration++)
   assert.deepEqual(lookups, Array(${corpus.files.length}).fill(${JSON.stringify(corpus.selector)}))
   for (let index = 0; index < ${sources.length}; index++) {
-    assert.equal(roots["root" + index], index < ${corpus.files.length} ? (present ? element : null) : window.document)
+    assert.equal(roots["root" + index], index < ${corpus.files.length} ? (present ? element : null) : index < ${corpus.files.length + corpus.targetFiles.length} ? window.document : window)
   }
   await window.happyDOM.close()
 }), { seed: ${corpus.seed}, numRuns: ${corpus.runs} })
-console.log("DOCUMENT_ROOT_PROPERTY 80 documents, 480 exact root lookups, 320 event-target identities")
+console.log("DOCUMENT_ROOT_PROPERTY 80 documents, 480 exact root lookups, 320 document-target identities, 160 window-target identities")
 `,
     )
     const executed = spawnSync(process.execPath, [join(directory, 'run.mjs')], {
