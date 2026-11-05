@@ -1,5 +1,6 @@
 import { Array as EffectArray } from 'effect'
 import { Command, ManagedResource } from 'foldkit'
+import { makeImageCapture } from './cameraCapture.platform.ts'
 
 const CameraStream = ManagedResource.tag<MediaStream>()('CameraStream')
 
@@ -18,7 +19,10 @@ const TakePhoto = Command.define('TakePhoto', {
           message: 'No video track available',
         });
         when Option.Some(let track): do {
-          const imageCapture = new ImageCapture(track)
+          const imageCapture = try Effect.orDie(Effect.try({
+            try: () => makeImageCapture(track),
+            catch: error => error,
+          }))
           try Effect.tryPromise(() => imageCapture.grabFrame())
         };
       }
