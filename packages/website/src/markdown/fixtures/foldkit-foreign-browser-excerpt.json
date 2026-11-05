@@ -2,7 +2,6 @@
   "foreignSnippets": [
     "lintAcquireReleaseConstructsInAcquireBody",
     "lintNoPreventDefaultInStreamOperator",
-    "routingQueryParams",
     "lintNoImpureCallAtDecisionTime"
   ],
   "foreignWitness": {
@@ -29,6 +28,7 @@
     "domPreventDefault",
     "subscriptionOrganizationChild",
     "subscriptionFromEvent",
-    "subscriptionOrganizationComposing"
+    "subscriptionOrganizationComposing",
+    "routingQueryParams"
   ]
 }
