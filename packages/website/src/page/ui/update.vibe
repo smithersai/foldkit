@@ -945,7 +945,8 @@ const foldAnimationDemoOutMessage = (
   })
 
 const foldAnimationDemo = Update.foldChild({
-  update: Animation.update,
+  update: (model: Animation.Model, message: Animation.Message): infer _ =>
+    Animation.update(model, message),
   read: (model: Model): infer _ => Option.some(model.animationDemo),
   write: (model, nextAnimationDemo): infer _ =>
     modifyFields(model, { animationDemo: (): infer _ => nextAnimationDemo }),

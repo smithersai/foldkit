@@ -433,7 +433,10 @@ const foldSnippetDisclosure = Update.foldChild({
 })
 
 const foldCoreSubmodelPage = Update.foldChild({
-  update: Core.SubmodelPage.update,
+  update: (
+    model: Core.SubmodelPage.Model,
+    message: Core.SubmodelPage.Message,
+  ): infer _ => Core.SubmodelPage.update(model, message),
   read: (model: Model): infer _ => Option.some(model.coreSubmodelPage),
   write: (model, nextCoreSubmodelPage): infer _ =>
     modifyFields(model, {

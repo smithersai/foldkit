@@ -94,7 +94,7 @@ const observeExampleUrlMessages = (element: Element): infer _ => {
   }
 
   return Dom.streamFromEventFilterMap({
-    target: browserWindow,
+    target: (): infer _ => browserWindow(),
     type: 'message',
     filterMapEvent: (event): infer _ => {
       if (!isExampleUrlMessageFromIframe(event, element)) {
