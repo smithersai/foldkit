@@ -98,12 +98,16 @@ const unwrapForeignFailure = (error: unknown): unknown =>
     ? unwrapForeignFailure(error.cause)
     : error
 
-const decodeUtf8 = (bytes: Uint8Array): string =>
-  new TextDecoder('utf-8', { ignoreBOM: true }).decode(bytes)
+const decodeUtf8 = effect (bytes: Uint8Array): string!! => {
+  return try Effect.orDie(Effect.try({
+    try: () => new TextDecoder('utf-8', { ignoreBOM: true }).decode(bytes),
+    catch: cause => cause,
+  }))
+}
 
 const readUtf8 = effect (path: string) => {
   const fileSystem = try FileSystem.FileSystem
-  return decodeUtf8(try fileSystem.readFile(path))
+  return try decodeUtf8(try fileSystem.readFile(path))
 }
 
 const collectText = effect (
@@ -112,9 +116,16 @@ const collectText = effect (
   const decoder = new TextDecoder('utf-8', { ignoreBOM: true })
   let text = ''
   for try (const chunk of stream) {
-    text = `${text}${decoder.decode(chunk, { stream: true })}`
+    text = `${text}${try Effect.orDie(
+      Effect.try({
+        try: () => decoder.decode(chunk, { stream: true }),
+        catch: cause => cause,
+      }),
+    )}`
   }
-  return `${text}${decoder.decode()}`
+  return `${text}${try Effect.orDie(
+    Effect.try({ try: () => decoder.decode(), catch: cause => cause }),
+  )}`
 }
 
 type RunOptions = Readonly<{
@@ -267,7 +278,12 @@ const startHost = effect (
   ) => {
     const decoder = new TextDecoder('utf-8', { ignoreBOM: true })
     for try (const chunk of stream) {
-      output = `${output}${decoder.decode(chunk, { stream: true })}`.slice(
+      output = `${output}${try Effect.orDie(
+        Effect.try({
+          try: () => decoder.decode(chunk, { stream: true }),
+          catch: cause => cause,
+        }),
+      )}`.slice(
         -HOST_OUTPUT_LIMIT,
       )
     }
@@ -335,11 +351,15 @@ const stopHost = effect (host: RunningHost) => {
   }
   const stopping = try Effect.cached(stopHostOnce(host))
   stoppingHosts.set(host, stopping)
-  try {
-    try stopping
-  } finally {
-    activeHosts.delete(host)
-  }
+  const stopOutcome = try Effect.onExit(
+    exit(effect {
+      try stopping
+    }),
+    effect () => {
+      activeHosts.delete(host)
+    },
+  )
+  try stopOutcome
 }
 
 // SIGINT and SIGTERM stop every generated host, then end the process with the
@@ -478,7 +498,7 @@ const openHydratedPage = effect (
     })
   })
 
-  try {
+  return effect {
     const probeServedIdentity = async (
       route: PlaywrightRoute,
     ): Promise<void> => {
@@ -585,7 +605,7 @@ const openHydratedPage = effect (
     )
     const opened: HydratedPage = { page, diagnostics }
     return opened
-  } catch (error) {
+  } catch effect (error) => {
     try Effect.tryPromise(() => page.close())
     throw error
   }
@@ -980,35 +1000,39 @@ const checkSsrInBrowser = effect (
     "document.querySelectorAll('button')[1]",
     'The generated SSR application',
   )
-  try {
-    const initialCount = try Effect.tryPromise(() =>
-      hydrated.page.locator('#count').textContent()
-    )
-    const provenance = try Effect.tryPromise(() =>
-      hydrated.page.locator('#provenance').textContent()
-    )
-    try assertScaffold(
-      initialCount === '0'
-        && provenance?.includes('Rendered on the Server') === true,
-      'the generated SSR deep route did not preserve its server-rendered state',
-    )
-    try Effect.tryPromise(() =>
-      hydrated.page.getByRole('button', { name: '+' }).click()
-    )
-    try Effect.tryPromise(() =>
-      hydrated.page.waitForFunction(
-        "document.querySelector('#count')?.textContent === '1' && document.title === 'Count 1'",
-        undefined,
-        { timeout: HYDRATION_TIMEOUT_MS },
+  const hydrationOutcome = try Effect.onExit(
+    exit(effect {
+      const initialCount = try Effect.tryPromise(() =>
+        hydrated.page.locator('#count').textContent()
       )
-    )
-    try assertNoBrowserDiagnostics(
-      'The generated SSR application',
-      hydrated.diagnostics,
-    )
-  } finally {
-    try Effect.tryPromise(() => hydrated.page.close())
-  }
+      const provenance = try Effect.tryPromise(() =>
+        hydrated.page.locator('#provenance').textContent()
+      )
+      try assertScaffold(
+        initialCount === '0'
+          && provenance?.includes('Rendered on the Server') === true,
+        'the generated SSR deep route did not preserve its server-rendered state',
+      )
+      try Effect.tryPromise(() =>
+        hydrated.page.getByRole('button', { name: '+' }).click()
+      )
+      try Effect.tryPromise(() =>
+        hydrated.page.waitForFunction(
+          "document.querySelector('#count')?.textContent === '1' && document.title === 'Count 1'",
+          undefined,
+          { timeout: HYDRATION_TIMEOUT_MS },
+        )
+      )
+      try assertNoBrowserDiagnostics(
+        'The generated SSR application',
+        hydrated.diagnostics,
+      )
+    }),
+    effect () => {
+      try Effect.tryPromise(() => hydrated.page.close())
+    },
+  )
+  try hydrationOutcome
   try log(
     'The generated SSR application hydrates in place and responds to input',
   )
@@ -1024,49 +1048,53 @@ const checkSsgInBrowser = effect (
     "document.querySelector('button')",
     'The generated SSG home page',
   )
-  try {
-    try Effect.tryPromise(() =>
-      home.page.getByRole('button', { name: 'Count: 0' }).click()
-    )
-    try Effect.tryPromise(() =>
-      home.page.waitForFunction(
-        "document.querySelector('button')?.textContent === 'Count: 1'",
-        undefined,
-        { timeout: HYDRATION_TIMEOUT_MS },
+  const homeOutcome = try Effect.onExit(
+    exit(effect {
+      try Effect.tryPromise(() =>
+        home.page.getByRole('button', { name: 'Count: 0' }).click()
       )
-    )
-    try Effect.tryPromise(() =>
-      home.page.getByRole('link', { name: 'About' }).click()
-    )
-    try Effect.tryPromise(() =>
-      home.page.waitForFunction(
-        "document.title === 'About | Foldkit App' && document.querySelector('#page-title')?.textContent === 'Statically generated about page'",
-        undefined,
-        { timeout: HYDRATION_TIMEOUT_MS },
+      try Effect.tryPromise(() =>
+        home.page.waitForFunction(
+          "document.querySelector('button')?.textContent === 'Count: 1'",
+          undefined,
+          { timeout: HYDRATION_TIMEOUT_MS },
+        )
       )
-    )
-    const currentUrl = try Effect.try(() => home.page.url())
-    try assertScaffold(
-      new URL(currentUrl).pathname === '/about',
-      `the generated SSG application navigated to ${currentUrl} instead of /about`,
-    )
-    try Effect.tryPromise(() =>
-      home.page.getByRole('link', { name: 'Home' }).click()
-    )
-    try Effect.tryPromise(() =>
-      home.page.waitForFunction(
-        "document.title === 'Home | Foldkit App' && document.querySelector('button')?.textContent === 'Count: 1'",
-        undefined,
-        { timeout: HYDRATION_TIMEOUT_MS },
+      try Effect.tryPromise(() =>
+        home.page.getByRole('link', { name: 'About' }).click()
       )
-    )
-    try assertNoBrowserDiagnostics(
-      'The generated SSG home page',
-      home.diagnostics,
-    )
-  } finally {
-    try Effect.tryPromise(() => home.page.close())
-  }
+      try Effect.tryPromise(() =>
+        home.page.waitForFunction(
+          "document.title === 'About | Foldkit App' && document.querySelector('#page-title')?.textContent === 'Statically generated about page'",
+          undefined,
+          { timeout: HYDRATION_TIMEOUT_MS },
+        )
+      )
+      const currentUrl = try Effect.try(() => home.page.url())
+      try assertScaffold(
+        new URL(currentUrl).pathname === '/about',
+        `the generated SSG application navigated to ${currentUrl} instead of /about`,
+      )
+      try Effect.tryPromise(() =>
+        home.page.getByRole('link', { name: 'Home' }).click()
+      )
+      try Effect.tryPromise(() =>
+        home.page.waitForFunction(
+          "document.title === 'Home | Foldkit App' && document.querySelector('button')?.textContent === 'Count: 1'",
+          undefined,
+          { timeout: HYDRATION_TIMEOUT_MS },
+        )
+      )
+      try assertNoBrowserDiagnostics(
+        'The generated SSG home page',
+        home.diagnostics,
+      )
+    }),
+    effect () => {
+      try Effect.tryPromise(() => home.page.close())
+    },
+  )
+  try homeOutcome
 
   const about = try openHydratedPage(
     browser,
@@ -1074,21 +1102,25 @@ const checkSsgInBrowser = effect (
     "document.querySelector('#page-title')",
     'The generated SSG about page',
   )
-  try {
-    const title = try Effect.tryPromise(() =>
-      about.page.locator('#page-title').textContent()
-    )
-    try assertScaffold(
-      title === 'Statically generated about page',
-      'the generated SSG about file did not render its own route',
-    )
-    try assertNoBrowserDiagnostics(
-      'The generated SSG about page',
-      about.diagnostics,
-    )
-  } finally {
-    try Effect.tryPromise(() => about.page.close())
-  }
+  const aboutOutcome = try Effect.onExit(
+    exit(effect {
+      const title = try Effect.tryPromise(() =>
+        about.page.locator('#page-title').textContent()
+      )
+      try assertScaffold(
+        title === 'Statically generated about page',
+        'the generated SSG about file did not render its own route',
+      )
+      try assertNoBrowserDiagnostics(
+        'The generated SSG about page',
+        about.diagnostics,
+      )
+    }),
+    effect () => {
+      try Effect.tryPromise(() => about.page.close())
+    },
+  )
+  try aboutOutcome
   try log(
     'The generated SSG pages hydrate in place and preserve state across navigation',
   )
@@ -1113,18 +1145,22 @@ const checkSsr = effect (
     PORT: String(SSR_PORT),
     ORIGIN: origin,
   })
-  try {
-    const html = try fetchServedPage(host, origin)
-    try assertBuildIdReachesBothSides(
-      'The generated SSR host',
-      html,
-      path.join(projectDir, 'dist/client'),
-    )
-    try assertGeneratedHostPolicies(origin)
-    try checkSsrInBrowser(browser, origin)
-  } finally {
-    try stopHost(host)
-  }
+  const serverOutcome = try Effect.onExit(
+    exit(effect {
+      const html = try fetchServedPage(host, origin)
+      try assertBuildIdReachesBothSides(
+        'The generated SSR host',
+        html,
+        path.join(projectDir, 'dist/client'),
+      )
+      try assertGeneratedHostPolicies(origin)
+      try checkSsrInBrowser(browser, origin)
+    }),
+    effect () => {
+      try stopHost(host)
+    },
+  )
+  try serverOutcome
 }
 
 const checkSsg = effect (
@@ -1179,12 +1215,16 @@ const checkSsg = effect (
     projectDir,
     SSG_PORT,
   )
-  try {
-    try fetchServedPage(host, origin)
-    try checkSsgInBrowser(browser, origin)
-  } finally {
-    try stopHost(host)
-  }
+  const previewOutcome = try Effect.onExit(
+    exit(effect {
+      try fetchServedPage(host, origin)
+      try checkSsgInBrowser(browser, origin)
+    }),
+    effect () => {
+      try stopHost(host)
+    },
+  )
+  try previewOutcome
 }
 
 const main = effect () => {
@@ -1202,82 +1242,92 @@ const main = effect () => {
   })
   try log(`Workspace: ${workspaceDir}`)
 
-  try {
-    try assertPortIsFree(SSR_PORT)
-    try assertPortIsFree(SSG_PORT)
-    const manifestDirectory = try prepareDependencyManifests(workspaceDir)
+  const workspaceOutcome = try Effect.onExit(
+    exit(effect {
+      try assertPortIsFree(SSR_PORT)
+      try assertPortIsFree(SSG_PORT)
+      const manifestDirectory = try prepareDependencyManifests(workspaceDir)
 
-    if (!isSkipBuild) {
-      const buildFilters = SCAFFOLD_PACKAGES.flatMap(({ name }) => [
-        '--filter',
-        name,
-      ])
+      if (!isSkipBuild) {
+        const buildFilters = SCAFFOLD_PACKAGES.flatMap(({ name }) => [
+          '--filter',
+          name,
+        ])
 
-      try runRequired(
-        'Building the packages the generated projects install...',
-        'pnpm',
-        ['--filter', 'create-foldkit-app', ...buildFilters, 'build'],
-        { inherit: true },
+        try runRequired(
+          'Building the packages the generated projects install...',
+          'pnpm',
+          ['--filter', 'create-foldkit-app', ...buildFilters, 'build'],
+          { inherit: true },
+        )
+      }
+
+      const cli = try packPackage('Packing create-foldkit-app...', CLI_DIR)
+      const packages: globalThis.Array<PackedScaffoldPackage> = []
+      for (const { directory, name } of SCAFFOLD_PACKAGES) {
+        const manifest = try readManifest(
+          path.join(REPO_ROOT, directory, 'package.json'),
+        )
+        packages.push({
+          name,
+          tarballPath: try packPackage(`Packing ${name}...`, directory),
+          peerDependencies: Object.keys(manifest.peerDependencies ?? {}),
+        })
+      }
+      const tarballs: Tarballs = { cli, packages }
+      tarballPaths.push(
+        tarballs.cli,
+        ...tarballs.packages.map(({ tarballPath }) => tarballPath),
       )
-    }
 
-    const cli = try packPackage('Packing create-foldkit-app...', CLI_DIR)
-    const packages: globalThis.Array<PackedScaffoldPackage> = []
-    for (const { directory, name } of SCAFFOLD_PACKAGES) {
-      const manifest = try readManifest(
-        path.join(REPO_ROOT, directory, 'package.json'),
-      )
-      packages.push({
-        name,
-        tarballPath: try packPackage(`Packing ${name}...`, directory),
-        peerDependencies: Object.keys(manifest.peerDependencies ?? {}),
+      try runRequired('Preparing the generation workspace...', 'npm', [
+        'init',
+        '-y',
+      ], {
+        cwd: workspaceDir,
       })
-    }
-    const tarballs: Tarballs = { cli, packages }
-    tarballPaths.push(
-      tarballs.cli,
-      ...tarballs.packages.map(({ tarballPath }) => tarballPath),
-    )
+      try runRequired(
+        'Installing the packed CLI...',
+        'npm',
+        ['install', '--no-audit', '--no-fund', tarballs.cli],
+        { cwd: workspaceDir },
+      )
 
-    try runRequired('Preparing the generation workspace...', 'npm', [
-      'init',
-      '-y',
-    ], {
-      cwd: workspaceDir,
-    })
-    try runRequired(
-      'Installing the packed CLI...',
-      'npm',
-      ['install', '--no-audit', '--no-fund', tarballs.cli],
-      { cwd: workspaceDir },
-    )
-
-    try assertRejectsRelativeManifestDirectory(workspaceDir)
-    const manifestPath = path.join(
-      REPO_ROOT,
-      'packages/examples-e2e/package.json',
-    )
-    const chromium = try Effect.try(() => loadChromium(manifestPath))
-    const executablePath = match (try Config.option(Config.String('PLAYWRIGHT_CHROMIUM_EXECUTABLE'))) {
-      when Option.Some(let value): value;
-      when Option.None: undefined;
-    }
-    const browser = try Effect.tryPromise(() =>
-      chromium.launch(executablePath === undefined ? {} : { executablePath })
-    )
-    try {
-      try checkSsr(workspaceDir, tarballs, manifestDirectory, browser)
-      try checkSsg(workspaceDir, tarballs, manifestDirectory, browser)
-    } finally {
-      try Effect.tryPromise(() => browser.close())
-    }
-  } finally {
-    try log('Cleaning up...')
-    try fileSystem.remove(workspaceDir, { recursive: true, force: true })
-    for (const tarball of tarballPaths) {
-      try fileSystem.remove(tarball, { force: true })
-    }
-  }
+      try assertRejectsRelativeManifestDirectory(workspaceDir)
+      const manifestPath = path.join(
+        REPO_ROOT,
+        'packages/examples-e2e/package.json',
+      )
+      const chromium = try Effect.try(() => loadChromium(manifestPath))
+      const executablePath = match (try Config.option(
+          Config.String('PLAYWRIGHT_CHROMIUM_EXECUTABLE'),
+        )) {
+        when Option.Some(let value): value;
+        when Option.None: undefined;
+      }
+      const browser = try Effect.tryPromise(() =>
+        chromium.launch(executablePath === undefined ? {} : { executablePath })
+      )
+      const browserOutcome = try Effect.onExit(
+        exit(effect {
+          try checkSsr(workspaceDir, tarballs, manifestDirectory, browser)
+          try checkSsg(workspaceDir, tarballs, manifestDirectory, browser)
+        }),
+        effect () => {
+          try Effect.tryPromise(() => browser.close())
+        },
+      )
+      try browserOutcome
+    }),
+    effect () => {
+      try log('Cleaning up...')
+      try fileSystem.remove(workspaceDir, { recursive: true, force: true })
+      for (const tarball of tarballPaths) {
+        try fileSystem.remove(tarball, { force: true })
+      }
+    },
+  )
+  try workspaceOutcome
 
   try log('PASS')
 }

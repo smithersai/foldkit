@@ -1151,9 +1151,9 @@ const main = effect () => {
   }
 
   const path = try Path.Path
-  const scriptPath = try path.fromFileUrl(new URL(import.meta.url)) catch effect (
-    error,
-  ) => try die(error)
+  const scriptPath = path.fromFileUrl(new URL(import.meta.url)) catch effect (error) => {
+      return try die(error)
+    }
   const manifestPath = path.resolve(
     path.dirname(scriptPath),
     '../packages/examples-e2e/package.json',
@@ -1164,115 +1164,119 @@ const main = effect () => {
   )
   const browser = try Effect.promise(() => chromium.launch({}))
   const divergences: Array<string> = []
-  try {
-    const page = try Effect.promise(() => browser.newPage())
-    try Effect.promise(() =>
-      page.setContent('<!doctype html><html><body></body></html>')
-    )
-    const reflectionFailures = try Effect.promise(() =>
-      page.evaluate<ReadonlyArray<string>>(
-        `${CHECK_REFLECTION_MATRIX}(${JSON.stringify(REFLECTION_MATRIX)})`,
+  const browserOutcome = try Effect.onExit(
+    exit(effect {
+      const page = try Effect.promise(() => browser.newPage())
+      try Effect.promise(() =>
+        page.setContent('<!doctype html><html><body></body></html>')
       )
-    )
-    divergences.push(...reflectionFailures)
-    const styleContract = try Effect.promise(() =>
-      page.evaluate<StyleContract>(CHECK_STYLE_CONTRACT)
-    )
-    if (styleContract.servedCssText !== styleContract.freshCssText) {
-      divergences.push(
-        'h.Style effective CSS differs between parsed server markup and CSSOM assignment',
-      )
-    }
-    if (
-      styleContract.servedAuthored === styleContract.freshAuthored
-      || !styleContract.servedExactSelector
-      || styleContract.freshExactSelector
-    ) {
-      divergences.push(
-        'the style contract probe no longer distinguishes effective CSS from authored attribute text',
-      )
-    }
-    for (const parityCase of rendered) {
-      // Playwright evaluates a string as an expression rather than calling it
-      // with arguments, so the case travels inside the expression.
-      const comparison = try Effect.promise(() =>
-        page.evaluate<Comparison>(
-          `(${COMPARE})(${
-            JSON.stringify([
-              parityCase.html,
-              parityCase.selector,
-              parityCase.properties,
-              parityCase.probedAttributes,
-              parityCase.attributes,
-              parityCase.values,
-              parityCase.styles,
-              parityCase.container,
-            ])
-          })`,
+      const reflectionFailures = try Effect.promise(() =>
+        page.evaluate<ReadonlyArray<string>>(
+          `${CHECK_REFLECTION_MATRIX}(${JSON.stringify(REFLECTION_MATRIX)})`,
         )
       )
-      if (comparison.freshError !== '') {
+      divergences.push(...reflectionFailures)
+      const styleContract = try Effect.promise(() =>
+        page.evaluate<StyleContract>(CHECK_STYLE_CONTRACT)
+      )
+      if (styleContract.servedCssText !== styleContract.freshCssText) {
         divergences.push(
-          `${parityCase.name}: the client render threw ${comparison.freshError}`,
+          'h.Style effective CSS differs between parsed server markup and CSSOM assignment',
         )
-        continue
       }
-      if (comparison.served['missing'] === true) {
+      if (
+        styleContract.servedAuthored === styleContract.freshAuthored
+        || !styleContract.servedExactSelector
+        || styleContract.freshExactSelector
+      ) {
         divergences.push(
-          `${parityCase.name}: the served HTML has no ${parityCase.selector}`,
+          'the style contract probe no longer distinguishes effective CSS from authored attribute text',
         )
-        continue
       }
-      for (const key of Object.keys(comparison.served)) {
-        const served = comparison.served[key]
-        const fresh = comparison.fresh[key]
-        if (served !== fresh) {
-          divergences.push(
-            `${parityCase.name}: ${key} is ${JSON.stringify(served)} when `
-              + `served and ${JSON.stringify(fresh)} when built fresh`,
+      for (const parityCase of rendered) {
+        // Playwright evaluates a string as an expression rather than calling it
+        // with arguments, so the case travels inside the expression.
+        const comparison = try Effect.promise(() =>
+          page.evaluate<Comparison>(
+            `(${COMPARE})(${
+              JSON.stringify([
+                parityCase.html,
+                parityCase.selector,
+                parityCase.properties,
+                parityCase.probedAttributes,
+                parityCase.attributes,
+                parityCase.values,
+                parityCase.styles,
+                parityCase.container,
+              ])
+            })`,
           )
+        )
+        if (comparison.freshError !== '') {
+          divergences.push(
+            `${parityCase.name}: the client render threw ${comparison.freshError}`,
+          )
+          continue
+        }
+        if (comparison.served['missing'] === true) {
+          divergences.push(
+            `${parityCase.name}: the served HTML has no ${parityCase.selector}`,
+          )
+          continue
+        }
+        for (const key of Object.keys(comparison.served)) {
+          const served = comparison.served[key]
+          const fresh = comparison.fresh[key]
+          if (served !== fresh) {
+            divergences.push(
+              `${parityCase.name}: ${key} is ${JSON.stringify(served)} when `
+                + `served and ${JSON.stringify(fresh)} when built fresh`,
+            )
+          }
         }
       }
-    }
-    try Effect.promise(() =>
-      page.setContent(
-        '<!doctype html><html><body><script>window.__foldkitParsedScript = 1</script></body></html>',
+      try Effect.promise(() =>
+        page.setContent(
+          '<!doctype html><html><body><script>window.__foldkitParsedScript = 1</script></body></html>',
+        )
       )
-    )
-    const scriptInsertion = try Effect.promise(() =>
-      page.evaluate<ScriptInsertion>(
-        CHECK_SCRIPT_INSERTION,
+      const scriptInsertion = try Effect.promise(() =>
+        page.evaluate<ScriptInsertion>(
+          CHECK_SCRIPT_INSERTION,
+        )
       )
-    )
-    if (
-      scriptInsertion.parsed !== 1
-      || scriptInsertion.innerHtml !== undefined
-    ) {
-      divergences.push(
-        'the script insertion probe no longer observes parser execution and innerHTML inertness',
+      if (
+        scriptInsertion.parsed !== 1
+        || scriptInsertion.innerHtml !== undefined
+      ) {
+        divergences.push(
+          'the script insertion probe no longer observes parser execution and innerHTML inertness',
+        )
+      }
+      try Effect.promise(() =>
+        page.setContent(
+          '<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="style-src-attr \'none\'"></head><body></body></html>',
+        )
       )
-    }
-    try Effect.promise(() =>
-      page.setContent(
-        '<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="style-src-attr \'none\'"></head><body></body></html>',
+      const styleCsp = try Effect.promise(() =>
+        page.evaluate<StyleCsp>(CHECK_STYLE_CSP)
       )
-    )
-    const styleCsp = try Effect.promise(() =>
-      page.evaluate<StyleCsp>(CHECK_STYLE_CSP)
-    )
-    if (styleCsp.cssom !== 'rgb(1, 2, 3)') {
-      divergences.push(
-        `CSSOM style assignment was blocked by style-src-attr: ${styleCsp.cssom}`,
-      )
-    }
-    if (styleCsp.attribute === 'rgb(4, 5, 6)') {
-      divergences.push(
-        'setAttribute(style) unexpectedly bypassed style-src-attr in Chromium',
-      )
-    }
-  } finally {
-    try Effect.promise(() => browser.close())
-  }
+      if (styleCsp.cssom !== 'rgb(1, 2, 3)') {
+        divergences.push(
+          `CSSOM style assignment was blocked by style-src-attr: ${styleCsp.cssom}`,
+        )
+      }
+      if (styleCsp.attribute === 'rgb(4, 5, 6)') {
+        divergences.push(
+          'setAttribute(style) unexpectedly bypassed style-src-attr in Chromium',
+        )
+      }
+    }),
+    effect () => {
+      try Effect.promise(() => browser.close())
+    },
+  )
+  try browserOutcome
 
   if (divergences.length > 0) {
     try fail(
