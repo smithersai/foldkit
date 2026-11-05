@@ -484,10 +484,10 @@ export const view = defineView<Model, Message, ViewInputs>(
       toParentMessage: (message) => Message.GotPopoverMessage({ message }),
     })
 
-    const hiddenInputValue = Option.match(maybeSelectedDate, {
-      onNone: () => '',
-      onSome: encodeIsoDate,
-    })
+    const hiddenInputValue = match (maybeSelectedDate) {
+      when Option.None: '';
+      when Option.Some(let selectedDate): encodeIsoDate(selectedDate);
+    }
 
     const maybeHiddenInput: ReadonlyArray<Html> = name !== undefined
       ? [h.input([h.Type('hidden'), h.Name(name), h.Value(hiddenInputValue)])]
