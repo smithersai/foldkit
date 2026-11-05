@@ -1,0 +1,13 @@
+{
+  "key": "foldkit:playground-timeout-error-union",
+  "before": "A!E | WebContainerError!R",
+  "after": "A!(E | WebContainerError)!R",
+  "failures": [
+    null,
+    false,
+    0,
+    "",
+    "spawn failed",
+    { "message": "spawn failed" }
+  ]
+}

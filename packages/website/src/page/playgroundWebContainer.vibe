@@ -69,7 +69,7 @@ effect function timeout<A, E, R>(
   program: A!E!R,
   duration: Duration.Input,
   message: string,
-): A!E | WebContainerError!R {
+): A!(E | WebContainerError)!R {
   return try Effect.timeoutOrElse(program, {
     duration,
     orElse: effect () => {
