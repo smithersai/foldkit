@@ -353,10 +353,16 @@ effect (route: AppRoute) => {
     const outputFilePath = paths.resolve(DIST_DIR, outputPath)
 
     const captured = try renderRoutePage(serverEntry, route)
-    const injectedHtml = Server.injectIntoTemplate(
-      baseHtml,
-      captured.application,
-      { containerId: CONTAINER_ID },
+    const injectedHtml = try Effect.orDie(
+      Effect.try({
+        try: () =>
+          Server.injectIntoTemplate(
+            baseHtml,
+            captured.application,
+            { containerId: CONTAINER_ID },
+          ),
+        catch: error => error,
+      }),
     )
     const outputHtml = injectMetaTags(
       injectedHtml,
@@ -419,10 +425,16 @@ const prerenderPlaygroundShells = effect (
   resolveApiModuleName: ApiModuleNameResolver,
 ) => {
   const captured = try renderRoutePage(serverEntry, PLAYGROUND_SHELL_ROUTE)
-  const shellHtml = Server.injectIntoTemplate(
-    baseHtml,
-    captured.application,
-    { containerId: CONTAINER_ID },
+  const shellHtml = try Effect.orDie(
+    Effect.try({
+      try: () =>
+        Server.injectIntoTemplate(
+          baseHtml,
+          captured.application,
+          { containerId: CONTAINER_ID },
+        ),
+      catch: error => error,
+    }),
   )
 
   const fs = try FileSystem.FileSystem
@@ -467,10 +479,16 @@ const prerenderNotFoundPage = effect (
   resolveApiModuleName: ApiModuleNameResolver,
 ) => {
   const captured = try renderRoutePage(serverEntry, NOT_FOUND_ROUTE)
-  const injectedHtml = Server.injectIntoTemplate(
-    baseHtml,
-    captured.application,
-    { containerId: CONTAINER_ID },
+  const injectedHtml = try Effect.orDie(
+    Effect.try({
+      try: () =>
+        Server.injectIntoTemplate(
+          baseHtml,
+          captured.application,
+          { containerId: CONTAINER_ID },
+        ),
+      catch: error => error,
+    }),
   )
   const outputHtml = injectMetaTags(
     injectedHtml,

@@ -1,0 +1,9 @@
+{
+  "source": "src/main.vibe",
+  "command": "ScrollToTop",
+  "constructor": "CompletedScrollToTop",
+  "seed": 180032,
+  "runs": 200,
+  "failureChannel": "die",
+  "coldBeforeRun": true
+}

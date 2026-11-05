@@ -465,7 +465,13 @@ export const WaitForPlaygroundServerFailure = Command.define(
           return try Deferred.await(serverFailure)
         }) catch effect (error) => {
           const reason = try Effect.sync(() => reasonFromError(error))
-          return Message.CompletedWaitForPlaygroundServerFailure({ reason })
+          return (try Effect.orDie(
+            Effect.try({
+              try: () =>
+                Message.CompletedWaitForPlaygroundServerFailure({ reason }),
+              catch: error => error,
+            }),
+          ))
         }
       }) catch effect (error) => match (error) {
         when { _tag: 'ResourceNotAvailable' }: try Effect.interrupt;
@@ -513,12 +519,21 @@ export const WritePlaygroundFile = Command.define('WritePlaygroundFile', {
           },
           { startImmediately: true },
         )
-        return Message.ScheduledWritePlaygroundFile()
+        return (try Effect.orDie(
+          Effect.try({
+            try: () => Message.ScheduledWritePlaygroundFile(),
+            catch: error => error,
+          }),
+        ))
       }) catch effect (error) => match (error) {
-        when { _tag: 'ResourceNotAvailable' }: Message
-          .FailedWritePlaygroundFile({
-            reason: 'WebContainer not yet ready',
-          });
+        when { _tag: 'ResourceNotAvailable' }: (try Effect.orDie(Effect.try({
+          try: () =>
+            Message
+              .FailedWritePlaygroundFile({
+                reason: 'WebContainer not yet ready',
+              }),
+          catch: error => error,
+        })));
         default: throw error;
       }
     },

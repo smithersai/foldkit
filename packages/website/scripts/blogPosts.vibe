@@ -87,10 +87,16 @@ const decodePostFrontmatter = Schema.decodeUnknownSync(PostFrontmatter)
 effect function readPostEntry(fileName: string) {
   const fs = try FileSystem.FileSystem
   const source = try fs.readFileString(paths.join(POST_DIR, fileName), 'utf8')
-  const { maybeFrontmatter } = parseMarkdownWithFrontmatter(source, {
-    islands: islandAttributes,
-    frontmatter: PostFrontmatter,
-  })
+  const { maybeFrontmatter } = try Effect.orDie(
+    Effect.try({
+      try: () =>
+        parseMarkdownWithFrontmatter(source, {
+          islands: islandAttributes,
+          frontmatter: PostFrontmatter,
+        }),
+      catch: error => error,
+    }),
+  )
   const input = match (maybeFrontmatter) {
     when { _tag: 'Some', let value }: value;
     when { _tag: 'None' }: throw new BlogPostError({

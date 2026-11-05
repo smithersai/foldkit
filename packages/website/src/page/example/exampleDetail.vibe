@@ -51,8 +51,20 @@ export const LoadExampleSources = Command.define('LoadExampleSources', {
           catch: error =>
             error instanceof Error ? error.message : `Unknown example: ${slug}`,
         })
-        return Message.SucceededLoadExampleSources({ sources })
-      }) catch (error) => Message.FailedLoadExampleSources({ error })
+        return (try Effect.orDie(
+          Effect.try({
+            try: () => Message.SucceededLoadExampleSources({ sources }),
+            catch: error => error,
+          }),
+        ))
+      }) catch effect (error) => {
+        return (try Effect.orDie(
+          Effect.try({
+            try: () => Message.FailedLoadExampleSources({ error }),
+            catch: error => error,
+          }),
+        ))
+      }
     },
 })
 
