@@ -6,7 +6,7 @@ import { getRootContainer } from './rootContainer.ts'
 const application = Runtime.makeApplication({
   Model,
   init,
-  update,
+  update: (model: Model, message: Message) => update(model, message),
   view,
   // Remove me to see the default crash view
   crash: {
