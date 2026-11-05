@@ -15,7 +15,8 @@ export default defineConfig({
     },
   },
   output: {
-    file: 'dist/server.js',
+    dir: 'dist',
+    entryFileNames: 'server.js',
     format: 'esm',
   },
 })
