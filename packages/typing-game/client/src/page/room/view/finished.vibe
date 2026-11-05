@@ -1,5 +1,5 @@
 import { clsx } from 'clsx'
-import { Array as Arr, Number as Num, pipe } from 'effect'
+import { Array as Arr, Number as Num } from 'effect'
 import { Html, HtmlBuilder } from 'foldkit/html'
 
 import * as Shared from '@typing-game/shared'
@@ -7,10 +7,11 @@ import * as Shared from '@typing-game/shared'
 import type { Message } from '../message.vibe'
 import { RoomPlayerSession } from '../model.vibe'
 
-const byHighestWpm = pipe(
-  Num.Order,
-  Order.mapInput(({ wpm }: Shared.PlayerScore): infer _ => wpm),
-  Order.flip,
+const byHighestWpm = Order.flip(
+  Order.mapInput(
+    Num.Order,
+    ({ wpm }: Shared.PlayerScore): infer _ => wpm,
+  ),
 )
 
 const scoreboardView = (

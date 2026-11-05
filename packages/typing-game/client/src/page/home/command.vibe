@@ -11,12 +11,22 @@ export const CreateRoom = Command.define('CreateRoom', {
   args: { username: Schema.String },
   messages: [Message.SucceededCreateRoom, Message.FailedCreateRoom],
   execute: effect ({ username }) => {
-    try {
+    return effect {
       const client = try RoomsClient
       const { player, room } = try client.createRoom({ username })
-      return Message.SucceededCreateRoom({ roomId: room.id, player })
-    } catch (error) {
-      return Message.FailedCreateRoom({ error: String(error) })
+      return (try Effect.orDie(
+        Effect.try({
+          try: () => Message.SucceededCreateRoom({ roomId: room.id, player }),
+          catch: error => error,
+        }),
+      ))
+    } catch effect (error) => {
+      return (try Effect.orDie(
+        Effect.try({
+          try: () => Message.FailedCreateRoom({ error: String(error) }),
+          catch: error => error,
+        }),
+      ))
     }
   },
 })
@@ -25,12 +35,22 @@ export const JoinRoom = Command.define('JoinRoom', {
   args: { username: Schema.String, roomId: Schema.String },
   messages: [Message.SucceededJoinRoom, Message.FailedJoinRoom],
   execute: effect ({ username, roomId }) => {
-    try {
+    return effect {
       const client = try RoomsClient
       const { player, room } = try client.joinRoom({ username, roomId })
-      return Message.SucceededJoinRoom({ roomId: room.id, player })
-    } catch (error) {
-      return Message.FailedJoinRoom({ error: String(error) })
+      return (try Effect.orDie(
+        Effect.try({
+          try: () => Message.SucceededJoinRoom({ roomId: room.id, player }),
+          catch: error => error,
+        }),
+      ))
+    } catch effect (error) => {
+      return (try Effect.orDie(
+        Effect.try({
+          try: () => Message.FailedJoinRoom({ error: String(error) }),
+          catch: error => error,
+        }),
+      ))
     }
   },
 })
@@ -38,9 +58,7 @@ export const JoinRoom = Command.define('JoinRoom', {
 export const FocusUsernameInput = Command.define('FocusUsernameInput', {
   messages: [Message.CompletedFocusUsernameInput],
   execute: effect {
-    try {
-      try Dom.focus(`#${USERNAME_INPUT_ID}`)
-    } catch {}
+    Dom.focus(`#${USERNAME_INPUT_ID}`) catch () => undefined
     return completedFocusUsernameInput
   },
 })
@@ -48,9 +66,7 @@ export const FocusUsernameInput = Command.define('FocusUsernameInput', {
 export const FocusRoomIdInput = Command.define('FocusRoomIdInput', {
   messages: [Message.CompletedFocusRoomIdInput],
   execute: effect {
-    try {
-      try Dom.focus(`#${ROOM_ID_INPUT_ID}`)
-    } catch {}
+    Dom.focus(`#${ROOM_ID_INPUT_ID}`) catch () => undefined
     return completedFocusRoomIdInput
   },
 })

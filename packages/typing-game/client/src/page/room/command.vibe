@@ -24,12 +24,22 @@ export const FetchRoom = Command.define('FetchRoom', {
   args: { roomId: Schema.String },
   messages: [Message.SucceededFetchRoom, Message.FailedFetchRoom],
   execute: effect ({ roomId }) => {
-    try {
+    return effect {
       const client = try RoomsClient
       const room = try client.getRoomById({ roomId })
-      return Message.SucceededFetchRoom({ room })
-    } catch {
-      return Message.FailedFetchRoom()
+      return (try Effect.orDie(
+        Effect.try({
+          try: () => Message.SucceededFetchRoom({ room }),
+          catch: error => error,
+        }),
+      ))
+    } catch effect () => {
+      return (try Effect.orDie(
+        Effect.try({
+          try: () => Message.FailedFetchRoom(),
+          catch: error => error,
+        }),
+      ))
     }
   },
 })
@@ -39,7 +49,7 @@ export const LoadSession = Command.define('LoadSession', {
   messages: [Message.CompletedLoadSession],
   execute: effect ({ roomId }) => {
     provide BrowserKeyValueStore.layerSessionStorage {
-      try {
+      return effect {
         const store = try KeyValueStore.KeyValueStore
         const maybeSessionJson = try store.get(ROOM_PLAYER_SESSION_KEY)
         const sessionJson = try Effect.fromOption(
@@ -48,14 +58,26 @@ export const LoadSession = Command.define('LoadSession', {
         const session = try Schema.decodeEffect(RoomPlayerSessionJsonString)(
           sessionJson,
         )
-        return Message.CompletedLoadSession({
-          maybeSession: Option.liftPredicate(
-            session,
-            (session): infer _ => session.roomId === roomId,
-          ),
-        })
-      } catch {
-        return Message.CompletedLoadSession({ maybeSession: Option.none() })
+        return (try Effect.orDie(
+          Effect.try({
+            try: () =>
+              Message.CompletedLoadSession({
+                maybeSession: Option.liftPredicate(
+                  session,
+                  (session) => session.roomId === roomId,
+                ),
+              }),
+            catch: error => error,
+          }),
+        ))
+      } catch effect () => {
+        return (try Effect.orDie(
+          Effect.try({
+            try: () =>
+              Message.CompletedLoadSession({ maybeSession: Option.none() }),
+            catch: error => error,
+          }),
+        ))
       }
     }
   },
@@ -65,12 +87,22 @@ export const JoinRoom = Command.define('JoinRoom', {
   args: { username: Schema.String, roomId: Schema.String },
   messages: [Message.SucceededJoinRoom, Message.FailedJoinRoom],
   execute: effect ({ username, roomId }) => {
-    try {
+    return effect {
       const client = try RoomsClient
       const { player } = try client.joinRoom({ username, roomId })
-      return Message.SucceededJoinRoom({ player })
-    } catch {
-      return Message.FailedJoinRoom()
+      return (try Effect.orDie(
+        Effect.try({
+          try: () => Message.SucceededJoinRoom({ player }),
+          catch: error => error,
+        }),
+      ))
+    } catch effect () => {
+      return (try Effect.orDie(
+        Effect.try({
+          try: () => Message.FailedJoinRoom(),
+          catch: error => error,
+        }),
+      ))
     }
   },
 })
@@ -79,12 +111,22 @@ export const StartGame = Command.define('StartGame', {
   args: { roomId: Schema.String, playerId: Schema.String },
   messages: [Message.SucceededStartGame, Message.FailedStartGame],
   execute: effect ({ roomId, playerId }) => {
-    try {
+    return effect {
       const client = try RoomsClient
       try client.startGame({ roomId, playerId })
-      return Message.SucceededStartGame()
-    } catch {
-      return Message.FailedStartGame()
+      return (try Effect.orDie(
+        Effect.try({
+          try: () => Message.SucceededStartGame(),
+          catch: error => error,
+        }),
+      ))
+    } catch effect () => {
+      return (try Effect.orDie(
+        Effect.try({
+          try: () => Message.FailedStartGame(),
+          catch: error => error,
+        }),
+      ))
     }
   },
 })
@@ -98,7 +140,7 @@ export const UpdatePlayerProgress = Command.define('UpdatePlayerProgress', {
   },
   messages: [Message.CompletedUpdatePlayerProgress],
   execute: effect ({ playerId, gameId, userGameText, charsTyped }) => {
-    try {
+    return effect {
       const client = try RoomsClient
       try client.updatePlayerProgress({
         playerId,
@@ -106,9 +148,19 @@ export const UpdatePlayerProgress = Command.define('UpdatePlayerProgress', {
         userText: userGameText,
         charsTyped,
       })
-      return Message.CompletedUpdatePlayerProgress()
-    } catch {
-      return Message.CompletedUpdatePlayerProgress()
+      return (try Effect.orDie(
+        Effect.try({
+          try: () => Message.CompletedUpdatePlayerProgress(),
+          catch: error => error,
+        }),
+      ))
+    } catch effect () => {
+      return (try Effect.orDie(
+        Effect.try({
+          try: () => Message.CompletedUpdatePlayerProgress(),
+          catch: error => error,
+        }),
+      ))
     }
   },
 })
@@ -118,12 +170,22 @@ export const CopyRoomId = Command.define('CopyRoomId', {
   messages: [Message.SucceededCopyRoomId, Message.FailedCopyRoomId],
   execute: effect ({ roomId }) => {
     provide Clipboard.layer {
-      try {
+      return effect {
         const clipboard = try Clipboard.Clipboard
         try clipboard.writeString(roomId)
-        return Message.SucceededCopyRoomId()
-      } catch {
-        return Message.FailedCopyRoomId()
+        return (try Effect.orDie(
+          Effect.try({
+            try: () => Message.SucceededCopyRoomId(),
+            catch: error => error,
+          }),
+        ))
+      } catch effect () => {
+        return (try Effect.orDie(
+          Effect.try({
+            try: () => Message.FailedCopyRoomId(),
+            catch: error => error,
+          }),
+        ))
       }
     }
   },
@@ -160,15 +222,25 @@ export const SavePlayerSession = Command.define('SavePlayerSession', {
   messages: [Message.CompletedSavePlayerSession],
   execute: effect ({ session }) => {
     provide BrowserKeyValueStore.layerSessionStorage {
-      try {
+      return effect {
         const store = try KeyValueStore.KeyValueStore
         const sessionJson = try Schema.encodeEffect(
           RoomPlayerSessionJsonString,
         )(session)
         try store.set(ROOM_PLAYER_SESSION_KEY, sessionJson)
-        return Message.CompletedSavePlayerSession()
-      } catch {
-        return Message.CompletedSavePlayerSession()
+        return (try Effect.orDie(
+          Effect.try({
+            try: () => Message.CompletedSavePlayerSession(),
+            catch: error => error,
+          }),
+        ))
+      } catch effect () => {
+        return (try Effect.orDie(
+          Effect.try({
+            try: () => Message.CompletedSavePlayerSession(),
+            catch: error => error,
+          }),
+        ))
       }
     }
   },
@@ -178,12 +250,22 @@ export const ClearSession = Command.define('ClearSession', {
   messages: [Message.CompletedClearSession],
   execute: effect {
     provide BrowserKeyValueStore.layerSessionStorage {
-      try {
+      return effect {
         const store = try KeyValueStore.KeyValueStore
         try store.remove(ROOM_PLAYER_SESSION_KEY)
-        return Message.CompletedClearSession()
-      } catch {
-        return Message.CompletedClearSession()
+        return (try Effect.orDie(
+          Effect.try({
+            try: () => Message.CompletedClearSession(),
+            catch: error => error,
+          }),
+        ))
+      } catch effect () => {
+        return (try Effect.orDie(
+          Effect.try({
+            try: () => Message.CompletedClearSession(),
+            catch: error => error,
+          }),
+        ))
       }
     }
   },
@@ -194,9 +276,7 @@ export const FocusRoomPageUsernameInput = Command.define(
   {
     messages: [Message.CompletedFocusRoomPageUsernameInput],
     execute: effect {
-      try {
-        try Dom.focus(`#${ROOM_PAGE_USERNAME_INPUT_ID}`)
-      } catch {}
+      Dom.focus(`#${ROOM_PAGE_USERNAME_INPUT_ID}`) catch () => undefined
       return completedFocusRoomPageUsernameInput
     },
   },
@@ -205,9 +285,7 @@ export const FocusRoomPageUsernameInput = Command.define(
 export const FocusUserGameTextInput = Command.define('FocusUserGameTextInput', {
   messages: [Message.CompletedFocusUserGameTextInput],
   execute: effect {
-    try {
-      try Dom.focus(`#${USER_GAME_TEXT_INPUT_ID}`)
-    } catch {}
+    Dom.focus(`#${USER_GAME_TEXT_INPUT_ID}`) catch () => undefined
     return completedFocusUserGameTextInput
   },
 })

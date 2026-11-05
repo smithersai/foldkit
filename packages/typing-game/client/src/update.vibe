@@ -15,7 +15,12 @@ const NavigateInternal = Command.define('NavigateInternal', {
   args: { url: Schema.String },
   messages: [Message.CompletedNavigateInternal],
   execute: effect ({ url }) => {
-    const completed = Message.CompletedNavigateInternal()
+    const completed = try Effect.orDie(
+      Effect.try({
+        try: () => Message.CompletedNavigateInternal(),
+        catch: error => error,
+      }),
+    )
     try pushUrl(url)
     return completed
   },
@@ -25,7 +30,12 @@ const LoadExternal = Command.define('LoadExternal', {
   args: { href: Schema.String },
   messages: [Message.CompletedLoadExternal],
   execute: effect ({ href }) => {
-    const completed = Message.CompletedLoadExternal()
+    const completed = try Effect.orDie(
+      Effect.try({
+        try: () => Message.CompletedLoadExternal(),
+        catch: error => error,
+      }),
+    )
     try load(href)
     return completed
   },

@@ -8,8 +8,15 @@ export const NavigateToRoom = Command.define('NavigateToRoom', {
   args: { roomId: Schema.String },
   messages: [Message.CompletedNavigateToRoom],
   execute: effect ({ roomId }) => {
-    const url = roomRouter({ roomId })
-    const completed = Message.CompletedNavigateToRoom()
+    const url = try Effect.orDie(
+      Effect.try({ try: () => roomRouter({ roomId }), catch: error => error }),
+    )
+    const completed = try Effect.orDie(
+      Effect.try({
+        try: () => Message.CompletedNavigateToRoom(),
+        catch: error => error,
+      }),
+    )
     try pushUrl(url)
     return completed
   },

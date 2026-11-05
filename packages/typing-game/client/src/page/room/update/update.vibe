@@ -27,7 +27,12 @@ import { handleRoomUpdated } from './handleRoomUpdates.vibe'
 const NavigateHome = Command.define('NavigateHome', {
   messages: [Message.CompletedNavigateHome],
   execute: effect {
-    try pushUrl(homeRouter())
+    try pushUrl(
+      try Effect.orDie(Effect.try({
+        try: () => homeRouter(),
+        catch: error => error,
+      })),
+    )
     return completedNavigateHome
   },
 })

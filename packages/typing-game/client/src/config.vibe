@@ -12,7 +12,9 @@ export service ViteEnvConfig {
 export const ViteEnvConfigLive = Layer.effect(
   ViteEnvConfig,
   effect {
-    const serverUrl = try Effect.sync(readServerUrl)
+    const serverUrl = try Effect.orDie(
+      Effect.try({ try: readServerUrl, catch: error => error }),
+    )
     if (serverUrl === null || serverUrl === undefined) {
       return try Effect.die(
         new Error('VITE_SERVER_URL environment variable is not set'),
