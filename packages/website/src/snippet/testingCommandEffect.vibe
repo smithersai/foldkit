@@ -1,9 +1,9 @@
-import { HttpClient, HttpClientResponse } from 'effect/http'
+import { HttpClient, HttpClientResponse, HttpServerResponse } from 'effect/http'
 import { expect, test } from 'vitest'
 
 error UnexpectedRequestUrl { url: string }
 
-test('fetchWeather returns SucceededFetchWeather on success', async () => {
+const testFetchWeather = async () => {
   const mockClient = HttpClient.make(effect request => {
     const responseData = match (request.url) {
       when let url and if (url.includes('geocoding')): ({
@@ -30,7 +30,9 @@ test('fetchWeather returns SucceededFetchWeather on success', async () => {
     }
     return HttpClientResponse.fromWeb(
       request,
-      new globalThis.Response(JSON.stringify(responseData), { status: 200 }),
+      HttpServerResponse.toWeb(
+        HttpServerResponse.raw(JSON.stringify(responseData), { status: 200 }),
+      ),
     )
   })
 
@@ -41,4 +43,13 @@ test('fetchWeather returns SucceededFetchWeather on success', async () => {
   )
 
   expect(message._tag).toBe('SucceededFetchWeather')
-})
+}
+
+Effect.runSync(Effect.orDie(Effect.try({
+  try: () =>
+    test(
+      'fetchWeather returns SucceededFetchWeather on success',
+      testFetchWeather,
+    ),
+  catch: error => error,
+})))
