@@ -405,7 +405,7 @@ const serverLayer = (options: ServeOptions, port: number) =>
     ),
   ).pipe(
     HttpServer.withLogAddress,
-    Layer.provide(NodeHttpServer.layer(createServer, { port })),
+    Layer.provide(NodeHttpServer.layer(() => createServer(), { port })),
   )
 
 /**
