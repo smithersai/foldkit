@@ -145,19 +145,8 @@ const acquireDialogResourcesResult = effect (
 ): (SucceededShowDialog | FailedShowDialog)!! => {
   return effect {
     try acquireDialogResources(id, focusSelector)
-    return (try Effect.orDie(
-      Effect.try({
-        try: () => Message.SucceededShowDialog(),
-        catch: error => error,
-      }),
-    ))
-  } catch effect () =>
-    try Effect.orDie(
-      Effect.try({
-        try: () => Message.FailedShowDialog(),
-        catch: error => error,
-      }),
-    )
+    return (Message.SucceededShowDialog())
+  } catch effect () => Message.FailedShowDialog()
 }
 
 /** Opens the native dialog element through `Dom.showDialog`, then locks page
@@ -194,29 +183,18 @@ export const AcquireResources = Mount.define('AcquireResources', {
       !(try Effect.sync((): boolean => isHtmlDialogElement(element)))
       || element.id !== id
     ) {
-      return (try Effect.orDie(
-        Effect.try({
-          try: () => Message.FailedAcquireResources(),
-          catch: error => error,
-        }),
-      ))
+      return (Message.FailedAcquireResources())
     }
     const acquisition = effect {
       return effect {
         const isAcquired = try acquireDialogResources(id, focusSelector)
         return {
           isAcquired,
-          message: (try Effect.orDie(Effect.try({
-            try: () => Message.SucceededAcquireResources(),
-            catch: error => error,
-          }))),
+          message: (Message.SucceededAcquireResources()),
         }
       } catch effect () => ({
         isAcquired: false,
-        message: (try Effect.orDie(Effect.try({
-          try: () => Message.FailedAcquireResources(),
-          catch: error => error,
-        }))),
+        message: (Message.FailedAcquireResources()),
       })
     }
     const { message } = try Effect.acquireRelease(

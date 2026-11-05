@@ -477,30 +477,18 @@ export const ApplyScroll = Command.define('ApplyScroll', {
       try Render.afterCommit
       const containers = mountedContainers.get(id)
       if (containers === undefined || containers.size !== 1) {
-        return (try Effect.orDie(
-          Effect.try({
-            try: () =>
-              Message.CompletedApplyScroll({
-                version,
-                outcome: ApplyScrollOutcome.Skipped(),
-              }),
-            catch: error => error,
-          }),
-        ))
+        return (Message.CompletedApplyScroll({
+          version,
+          outcome: ApplyScrollOutcome.Skipped(),
+        }))
       }
 
       const maybeElement = pipe(containers, Array.fromIterable, Array.head)
       if (Option.isNone(maybeElement)) {
-        return (try Effect.orDie(
-          Effect.try({
-            try: () =>
-              Message.CompletedApplyScroll({
-                version,
-                outcome: ApplyScrollOutcome.Skipped(),
-              }),
-            catch: error => error,
-          }),
-        ))
+        return (Message.CompletedApplyScroll({
+          version,
+          outcome: ApplyScrollOutcome.Skipped(),
+        }))
       }
 
       const element = maybeElement.value
@@ -515,16 +503,10 @@ export const ApplyScroll = Command.define('ApplyScroll', {
         Option.isNone(maybeActiveVersion)
         || maybeActiveVersion.value !== version
       ) {
-        return (try Effect.orDie(
-          Effect.try({
-            try: () =>
-              Message.CompletedApplyScroll({
-                version,
-                outcome: ApplyScrollOutcome.Skipped(),
-              }),
-            catch: error => error,
-          }),
-        ))
+        return (Message.CompletedApplyScroll({
+          version,
+          outcome: ApplyScrollOutcome.Skipped(),
+        }))
       }
 
       const maybeScrollTop = scrollTopForRequest(
@@ -533,34 +515,22 @@ export const ApplyScroll = Command.define('ApplyScroll', {
         request,
       )
       if (Option.isNone(maybeScrollTop)) {
-        return (try Effect.orDie(
-          Effect.try({
-            try: () =>
-              Message.CompletedApplyScroll({
-                version,
-                outcome: ApplyScrollOutcome.Skipped(),
-              }),
-            catch: error => error,
-          }),
-        ))
+        return (Message.CompletedApplyScroll({
+          version,
+          outcome: ApplyScrollOutcome.Skipped(),
+        }))
       }
 
       element.scrollTop = clampScrollTop(element, maybeScrollTop.value)
-      return (try Effect.orDie(
-        Effect.try({
-          try: () =>
-            Message.CompletedApplyScroll({
-              version,
-              outcome: ApplyScrollOutcome.Applied({
-                scrollTop: element.scrollTop,
-                scrollHeight: element.scrollHeight,
-                containerHeight: element.clientHeight,
-                anchor: observedAnchor(isHtmlElement, element),
-              }),
-            }),
-          catch: error => error,
+      return (Message.CompletedApplyScroll({
+        version,
+        outcome: ApplyScrollOutcome.Applied({
+          scrollTop: element.scrollTop,
+          scrollHeight: element.scrollHeight,
+          containerHeight: element.clientHeight,
+          anchor: observedAnchor(isHtmlElement, element),
         }),
-      ))
+      }))
     }
   },
 })

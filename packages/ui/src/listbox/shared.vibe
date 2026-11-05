@@ -707,12 +707,7 @@ export const AnchorListbox = Mount.define('AnchorListbox', {
       ),
       effect cleanup => try Effect.sync(cleanup),
     )
-    return (try Effect.orDie(
-      Effect.try({
-        try: () => Message.CompletedAnchorListbox(),
-        catch: error => error,
-      }),
-    ))
+    return (Message.CompletedAnchorListbox())
   },
 })
 
@@ -726,12 +721,7 @@ export const PortalListboxBackdrop = Mount.define('PortalListboxBackdrop', {
       Effect.sync(() => portalBackdrop(element)),
       effect cleanup => try Effect.sync(cleanup),
     )
-    return (try Effect.orDie(
-      Effect.try({
-        try: () => Message.CompletedPortalListboxBackdrop(),
-        catch: error => error,
-      }),
-    ))
+    return (Message.CompletedPortalListboxBackdrop())
   },
 })
 

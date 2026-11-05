@@ -56,12 +56,7 @@ export const WaitBeforeDismissal = Command.define('WaitBeforeDismissal', {
   messages: [Message.CompletedWaitBeforeDismissal],
   execute: effect ({ entryId, version, duration }) => {
     try Effect.sleep(duration)
-    return (try Effect.orDie(
-      Effect.try({
-        try: () => Message.CompletedWaitBeforeDismissal({ entryId, version }),
-        catch: error => error,
-      }),
-    ))
+    return (Message.CompletedWaitBeforeDismissal({ entryId, version }))
   },
 })
 
@@ -77,12 +72,7 @@ export const WaitForSwipeSettled = Command.define('WaitForSwipeSettled', {
   messages: [Message.CompletedWaitForSwipeSettled],
   execute: effect ({ entryId, version }) => {
     try Effect.sleep(SWIPE_SETTLE_DURATION)
-    return (try Effect.orDie(
-      Effect.try({
-        try: () => Message.CompletedWaitForSwipeSettled({ entryId, version }),
-        catch: error => error,
-      }),
-    ))
+    return (Message.CompletedWaitForSwipeSettled({ entryId, version }))
   },
 })
 

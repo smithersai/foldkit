@@ -478,12 +478,7 @@ export const AnchorPopover = Mount.define('AnchorPopover', {
       ),
       effect cleanup => try Effect.sync(cleanup),
     )
-    return (try Effect.orDie(
-      Effect.try({
-        try: () => Message.CompletedAnchorPopover(),
-        catch: error => error,
-      }),
-    ))
+    return (Message.CompletedAnchorPopover())
   },
 })
 
@@ -497,12 +492,7 @@ export const PortalPopoverBackdrop = Mount.define('PortalPopoverBackdrop', {
       Effect.sync(() => portalBackdrop(element)),
       effect cleanup => try Effect.sync(cleanup),
     )
-    return (try Effect.orDie(
-      Effect.try({
-        try: () => Message.CompletedPortalPopoverBackdrop(),
-        catch: error => error,
-      }),
-    ))
+    return (Message.CompletedPortalPopoverBackdrop())
   },
 })
 

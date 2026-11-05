@@ -722,12 +722,7 @@ export const AnchorCombobox = Mount.define('AnchorCombobox', {
       }),
       effect cleanup => try Effect.sync(cleanup),
     )
-    return (try Effect.orDie(
-      Effect.try({
-        try: () => Message.CompletedAnchorCombobox(),
-        catch: error => error,
-      }),
-    ))
+    return (Message.CompletedAnchorCombobox())
   },
 })
 
@@ -755,12 +750,7 @@ export const AttachComboboxPreventBlur = Mount.define(
             })
           ),
       )
-      return (try Effect.orDie(
-        Effect.try({
-          try: () => Message.CompletedAttachComboboxPreventBlur(),
-          catch: error => error,
-        }),
-      ))
+      return (Message.CompletedAttachComboboxPreventBlur())
     },
   },
 )
@@ -786,12 +776,7 @@ export const AttachComboboxSelectOnFocus = Mount.define(
         effect handler =>
           try Effect.sync(() => element.removeEventListener('focus', handler)),
       )
-      return (try Effect.orDie(
-        Effect.try({
-          try: () => Message.CompletedAttachComboboxSelectOnFocus(),
-          catch: error => error,
-        }),
-      ))
+      return (Message.CompletedAttachComboboxSelectOnFocus())
     },
   },
 )
@@ -806,12 +791,7 @@ export const PortalComboboxBackdrop = Mount.define('PortalComboboxBackdrop', {
       Effect.sync(() => portalBackdrop(element)),
       effect cleanup => try Effect.sync(cleanup),
     )
-    return (try Effect.orDie(
-      Effect.try({
-        try: () => Message.CompletedPortalComboboxBackdrop(),
-        catch: error => error,
-      }),
-    ))
+    return (Message.CompletedPortalComboboxBackdrop())
   },
 })
 

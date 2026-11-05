@@ -715,12 +715,7 @@ export const AnchorMenu = Mount.define('AnchorMenu', {
       ),
       effect cleanup => try Effect.sync(cleanup),
     )
-    return (try Effect.orDie(
-      Effect.try({
-        try: () => Message.CompletedAnchorMenu(),
-        catch: error => error,
-      }),
-    ))
+    return (Message.CompletedAnchorMenu())
   },
 })
 
@@ -734,12 +729,7 @@ export const PortalMenuBackdrop = Mount.define('PortalMenuBackdrop', {
       Effect.sync(() => portalBackdrop(element)),
       effect cleanup => try Effect.sync(cleanup),
     )
-    return (try Effect.orDie(
-      Effect.try({
-        try: () => Message.CompletedPortalMenuBackdrop(),
-        catch: error => error,
-      }),
-    ))
+    return (Message.CompletedPortalMenuBackdrop())
   },
 })
 

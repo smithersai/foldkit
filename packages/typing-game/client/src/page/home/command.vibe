@@ -14,19 +14,9 @@ export const CreateRoom = Command.define('CreateRoom', {
     return effect {
       const client = try RoomsClient
       const { player, room } = try client.createRoom({ username })
-      return (try Effect.orDie(
-        Effect.try({
-          try: () => Message.SucceededCreateRoom({ roomId: room.id, player }),
-          catch: error => error,
-        }),
-      ))
+      return (Message.SucceededCreateRoom({ roomId: room.id, player }))
     } catch effect (error) => {
-      return (try Effect.orDie(
-        Effect.try({
-          try: () => Message.FailedCreateRoom({ error: String(error) }),
-          catch: error => error,
-        }),
-      ))
+      return (Message.FailedCreateRoom({ error: String(error) }))
     }
   },
 })
@@ -38,19 +28,9 @@ export const JoinRoom = Command.define('JoinRoom', {
     return effect {
       const client = try RoomsClient
       const { player, room } = try client.joinRoom({ username, roomId })
-      return (try Effect.orDie(
-        Effect.try({
-          try: () => Message.SucceededJoinRoom({ roomId: room.id, player }),
-          catch: error => error,
-        }),
-      ))
+      return (Message.SucceededJoinRoom({ roomId: room.id, player }))
     } catch effect (error) => {
-      return (try Effect.orDie(
-        Effect.try({
-          try: () => Message.FailedJoinRoom({ error: String(error) }),
-          catch: error => error,
-        }),
-      ))
+      return (Message.FailedJoinRoom({ error: String(error) }))
     }
   },
 })

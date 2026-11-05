@@ -28,10 +28,7 @@ const NavigateHome = Command.define('NavigateHome', {
   messages: [Message.CompletedNavigateHome],
   execute: effect {
     try pushUrl(
-      try Effect.orDie(Effect.try({
-        try: () => homeRouter(),
-        catch: error => error,
-      })),
+      homeRouter(),
     )
     return completedNavigateHome
   },
