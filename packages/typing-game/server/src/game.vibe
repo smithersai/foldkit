@@ -8,7 +8,7 @@ export const ROOM_UPDATE_THROTTLE_MS = 100
 const getReady = Shared.GetReady.make({})
 const finished = Shared.Finished.make({})
 
-function* gameStatuses() {
+effect function* gameStatuses() {
   yield getReady
   for (let secondsLeft = COUNTDOWN_SECONDS; secondsLeft >= 1; secondsLeft--) {
     yield Shared.Countdown.make({ secondsLeft })
