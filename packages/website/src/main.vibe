@@ -976,8 +976,10 @@ const ScrollToAnchor = Command.define('ScrollToAnchor', {
         try Dom.scrollIntoViewAfterPaint(target, { block: 'start' })
         try Dom.focus(target, { preventScroll: true, makeFocusable: true })
       }
-      try scrolling catch () => undefined
-      return completed
+      return (effect {
+        try scrolling
+        return completed
+      }) catch () => completed
     }
   },
 })
@@ -993,8 +995,10 @@ export const ScrollSidebarActiveLinkIntoView = Command.define(
         )
       const completed = Message.CompletedScrollSidebarActiveLinkIntoView()
       effect {
-        try scrolling catch () => undefined
-        return completed
+        return (effect {
+          try scrolling
+          return completed
+        }) catch () => completed
       }
     },
   },
@@ -1014,8 +1018,10 @@ const ScrollMobileMenuActiveLinkIntoView = Command.define(
         )
       const completed = Message.CompletedScrollMobileMenuActiveLinkIntoView()
       effect {
-        try scrolling catch () => undefined
-        return completed
+        return (effect {
+          try scrolling
+          return completed
+        }) catch () => completed
       }
     },
   },
