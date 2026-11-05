@@ -277,11 +277,17 @@ export const isComplete = (model: Model): boolean =>
     [model.portfolioUrl, portfolioUrlRules],
   ])
 
-export const revealErrors = (model: Model): Model =>
-  modifyFields(model, {
-    firstName: revealFieldErrors(firstNameRules),
-    lastName: revealFieldErrors(lastNameRules),
-    email: revealFieldErrors(emailRules),
-    phone: revealFieldErrors(phoneRules),
-    portfolioUrl: revealFieldErrors(portfolioUrlRules),
+export const revealErrors = (model: Model): Model => {
+  const revealFirstName = revealFieldErrors(firstNameRules)
+  const revealLastName = revealFieldErrors(lastNameRules)
+  const revealEmail = revealFieldErrors(emailRules)
+  const revealPhone = revealFieldErrors(phoneRules)
+  const revealPortfolioUrl = revealFieldErrors(portfolioUrlRules)
+  return modifyFields(model, {
+    firstName: (field: Field<string>) => revealFirstName(field),
+    lastName: (field: Field<string>) => revealLastName(field),
+    email: (field: Field<string>) => revealEmail(field),
+    phone: (field: Field<string>) => revealPhone(field),
+    portfolioUrl: (field: Field<string>) => revealPortfolioUrl(field),
   })
+}

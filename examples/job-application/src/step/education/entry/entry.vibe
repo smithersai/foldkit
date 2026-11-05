@@ -149,9 +149,13 @@ export const isComplete = (entry: Model): boolean =>
     [entry.fieldOfStudy, fieldOfStudyRules],
   ])
 
-export const revealErrors = (entry: Model): Model =>
-  modifyFields(entry, {
-    school: revealFieldErrors(schoolRules),
-    degree: revealFieldErrors(degreeRules),
-    fieldOfStudy: revealFieldErrors(fieldOfStudyRules),
+export const revealErrors = (entry: Model): Model => {
+  const revealSchool = revealFieldErrors(schoolRules)
+  const revealDegree = revealFieldErrors(degreeRules)
+  const revealFieldOfStudy = revealFieldErrors(fieldOfStudyRules)
+  return modifyFields(entry, {
+    school: (field: Field<string>) => revealSchool(field),
+    degree: (field: Field<string>) => revealDegree(field),
+    fieldOfStudy: (field: Field<string>) => revealFieldOfStudy(field),
   })
+}

@@ -176,8 +176,11 @@ export const isComplete = (entry: Model): boolean =>
     [entry.title, titleRules],
   ])
 
-export const revealErrors = (entry: Model): Model =>
-  modifyFields(entry, {
-    company: revealFieldErrors(companyRules),
-    title: revealFieldErrors(titleRules),
+export const revealErrors = (entry: Model): Model => {
+  const revealCompany = revealFieldErrors(companyRules)
+  const revealTitle = revealFieldErrors(titleRules)
+  return modifyFields(entry, {
+    company: (field: Field<string>) => revealCompany(field),
+    title: (field: Field<string>) => revealTitle(field),
   })
+}

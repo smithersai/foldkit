@@ -116,5 +116,9 @@ export const hasErrors = (entry: Model): boolean => anyInvalid([entry.name])
 export const isComplete = (entry: Model): boolean =>
   allValid([[entry.name, nameRules]])
 
-export const revealErrors = (entry: Model): Model =>
-  modifyFields(entry, { name: revealFieldErrors(nameRules) })
+export const revealErrors = (entry: Model): Model => {
+  const revealName = revealFieldErrors(nameRules)
+  return modifyFields(entry, {
+    name: (field: Field<string>) => revealName(field),
+  })
+}
