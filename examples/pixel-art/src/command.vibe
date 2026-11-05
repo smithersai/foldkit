@@ -58,7 +58,7 @@ export const ExportPng = Command.define('ExportPng', {
   messages: [Message.SucceededExportPng, Message.FailedExportPng],
   execute: (
     { grid, gridSize, paletteThemeIndex },
-  ): ReturnType<typeof Message.SucceededExportPng> | ReturnType<typeof Message.FailedExportPng>!! =>
+  ): (ReturnType<typeof Message.SucceededExportPng> | ReturnType<typeof Message.FailedExportPng>)!! =>
     effect {
       const theme = PALETTE_THEMES[paletteThemeIndex] ?? PALETTE_THEMES[0]
       const scale = Math.max(1, Math.floor(CANVAS_SIZE_PX / gridSize))
