@@ -1,3 +1,4 @@
+import { Message } from './message'
 import { Update } from 'foldkit'
 import { modifyFields } from 'foldkit/struct'
 

@@ -1,3 +1,4 @@
+import { Message } from './message'
 // ✅ Good: update returns FetchSuggestions after interruption.
 
 import { Number as Num } from 'effect'

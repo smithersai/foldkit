@@ -1,3 +1,4 @@
+import { Message } from './message'
 // ✅ Good: update returns a Command and the Runtime performs the effect.
 
 import { Command, Dom, type Update } from 'foldkit'

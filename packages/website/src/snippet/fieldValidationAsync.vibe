@@ -1,3 +1,4 @@
+import { Message } from './message'
 import { Number as Num } from 'effect'
 import { Command, Update } from 'foldkit'
 import { Invalid, Valid, Validating, validate } from 'foldkit/fieldValidation'

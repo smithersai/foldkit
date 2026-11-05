@@ -1,3 +1,4 @@
+import { Message } from './message'
 import { Command } from 'foldkit'
 
 import { BrowserCrypto } from '@effect/platform-browser'

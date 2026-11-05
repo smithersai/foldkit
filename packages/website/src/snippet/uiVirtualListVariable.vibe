@@ -1,3 +1,4 @@
+import { Message } from './message'
 // Pseudocode walkthrough for variable-height rows. Builds on the basic
 // example: same Model, init, Message, and update wiring. The difference is in
 // the view. Fit the excerpts into your own definitions.

@@ -1,3 +1,4 @@
+import { Message } from './message'
 // ❌ Bad: interruption and replacement start independently.
 
 import { Number as Num } from 'effect'

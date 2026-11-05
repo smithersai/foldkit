@@ -18,6 +18,8 @@ Messages use verb-first, past-tense names such as `ClickedIncrement`, not `Incre
 
 ### Message Union
 
+Import the application's `Message` from its message module when an excerpt uses its constructors or match functions. The explicit import selects the application's value.
+
 The `defineMessageUnion()` helper declares the whole union in one place. Each key becomes a callable constructor on the union, so `Message.ClickedIncrement()` creates the value and `Message.match(message, handlers)` handles every variant exhaustively. Do not destructure the constructors. Keeping `Message` or `OutMessage` at the call site makes the owning domain explicit.
 
 :::Info{label="Name the cause"}
