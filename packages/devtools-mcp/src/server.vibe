@@ -108,7 +108,7 @@ const main = effect {
       const detach = listen(() => resume(undefined))
       return detach === undefined ? undefined : Effect.sync(detach)
     },
-    observeStdinClose,
+    onClose => observeStdinClose(onClose),
   )
 }
 const subcommand = runSync(effect {
