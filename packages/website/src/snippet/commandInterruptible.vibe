@@ -1,5 +1,5 @@
 import { Array as Arr, Effect, Schema } from 'effect'
-import { Command, type Update } from 'foldkit'
+import { Command, File, type Update } from 'foldkit'
 import { defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
 
@@ -16,7 +16,7 @@ const Message = defineMessageUnion({
 schema UploadKey { readonly uploadId: number }
 
 const UploadFile = Command.define('UploadFile', {
-  args: { ...UploadKey.fields, file: Schema.instanceOf(File) },
+  args: { ...UploadKey.fields, file: File.File },
   messages: [Message.SucceededUploadFile, Message.FailedUploadFile],
   // The key function maps args to what distinguishes invocations. Foldkit
   // prefixes the Command name automatically, so the full key for upload 7

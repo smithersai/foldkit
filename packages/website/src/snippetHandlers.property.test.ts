@@ -5,13 +5,15 @@ import { join } from 'node:path'
 import { expect, test } from 'vitest'
 
 import corpus from './fixtures/foldkit-effect-catch-handlers.json'
+import fileCorpus from './fixtures/foldkit-upload-file-schema.json'
 import uploadSource from './snippet/commandInterruptKey.vibe?raw'
+import interruptibleSource from './snippet/commandInterruptible.vibe?raw'
 import focusSource from './snippet/domFocus.vibe?raw'
 import flagsSource from './snippet/resourcesFlags.vibe?raw'
 
 const context = `
 import { Effect, Option } from "effect"
-import { fileConstructor as File } from "./file.platform.ts"
+import { File } from "foldkit"
 type Definition = {
   args?: Record<string, unknown>
   messages: ReadonlyArray<unknown>
@@ -44,9 +46,9 @@ data Message {
 
 const runner = `
 import assert from "node:assert/strict"
-import { Effect, Exit, Option } from "effect"
+import { Effect, Exit, Option, Schema } from "effect"
 import fc from "fast-check"
-import { focusExecution, uploadExecution, sessionFlags, ApiClientService, setPrograms } from "./dist/handlers.js"
+import { focusExecution, uploadExecution, interruptibleExecution, fileSchemas, sessionFlags, ApiClientService, setPrograms } from "./dist/handlers.js"
 const outcomes = ${JSON.stringify(corpus.outcomes)}
 let caseNumber = 0
 await fc.assert(fc.asyncProperty(
@@ -64,6 +66,7 @@ await fc.assert(fc.asyncProperty(
       for (const [kind, operation] of [
         ["focus", focusExecution],
         ["upload", uploadExecution({ uploadId, file: new File([], "upload") })],
+        ["uploadInterruptible", interruptibleExecution({ uploadId, file: new File([], "upload") })],
         ["flags", Effect.provideService(sessionFlags, ApiClientService, { restoreSession: Effect.as(program, "session") })],
       ]) {
         console.log("HANDLER_STAGE", currentCase, outcome, kind, "start")
@@ -77,7 +80,7 @@ await fc.assert(fc.asyncProperty(
           } else {
             assert.equal(exit.value._tag, kind === "focus" ? "Focused"
               : outcome === "success" ? "SucceededUploadFile" : "FailedUploadFile")
-            if (kind === "upload") assert.equal(exit.value.uploadId, uploadId)
+            if (kind.startsWith("upload")) assert.equal(exit.value.uploadId, uploadId)
           }
         } else {
           assert.equal(Exit.isFailure(exit), true)
@@ -96,7 +99,16 @@ assert.equal(calls, 0)
 await Effect.runPromise(cold)
 await Effect.runPromise(cold)
 assert.equal(calls, 2)
-console.log("SNIPPET_HANDLER_PROPERTY 100 cases, 1200 exits, cold replay")
+await fc.assert(fc.property(fc.uint8Array({ maxLength: 32 }), fc.string(), fc.jsonValue(), (bytes, name, invalid) => {
+  const file = new File([bytes], name)
+  for (const schema of fileSchemas) {
+    assert.equal(Schema.is(schema)(file), true)
+    assert.equal(Schema.decodeUnknownSync(schema)(file), file)
+    assert.equal(Schema.is(schema)(invalid), false)
+    assert.equal(Schema.is(schema)({ name: file.name, size: file.size, type: file.type }), false)
+  }
+}), { seed: ${fileCorpus.seed}, numRuns: ${fileCorpus.runs} })
+console.log("SNIPPET_HANDLER_PROPERTY 100 cases, 1600 exits, cold replay; 200 file schema cases")
 `
 
 test('snippet handlers preserve successes, failures, defects and interruption', () => {
@@ -115,6 +127,10 @@ test('snippet handlers preserve successes, failures, defects and interruption', 
       join(directory, 'file.platform.ts'),
       'export const fileConstructor = globalThis.File\n',
     )
+    const interruptible = interruptibleSource
+      .match(/schema UploadKey[\s\S]*?(?=\n\nconst setStatusForId)/)?.[0]
+      ?.replace('const UploadFile', 'const InterruptibleUploadFile')
+    expect(interruptible).toBeDefined()
     const flags = flagsSource.match(
       /const flags:[\s\S]*?(?=\n\nconst application)/,
     )?.[0]
@@ -124,9 +140,13 @@ test('snippet handlers preserve successes, failures, defects and interruption', 
       context +
         focus +
         upload +
+        interruptible +
+        '\n\n' +
         flags +
         '\nexport const focusExecution = FocusEmailInput.execute\n' +
         'export const uploadExecution = UploadFile.execute\n' +
+        'export const interruptibleExecution = InterruptibleUploadFile.execute\n' +
+        'export const fileSchemas = [UploadFile.args.file, InterruptibleUploadFile.args.file]\n' +
         'export const sessionFlags = flags\n',
     )
     writeFileSync(

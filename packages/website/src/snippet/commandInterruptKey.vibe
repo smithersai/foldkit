@@ -1,4 +1,4 @@
-import { Command } from 'foldkit'
+import { Command, File } from 'foldkit'
 import { defineMessageUnion } from 'foldkit/message'
 
 const Message = defineMessageUnion({
@@ -9,7 +9,7 @@ const Message = defineMessageUnion({
 const UploadFile = Command.define('UploadFile', {
   args: {
     uploadId: Schema.Number,
-    file: Schema.instanceOf(File),
+    file: File.File,
   },
   messages: [Message.SucceededUploadFile, Message.FailedUploadFile],
   interrupt: {
