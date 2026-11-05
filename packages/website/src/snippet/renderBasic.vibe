@@ -1,17 +1,21 @@
+import { ExperimentalBrowserDocument } from 'vibelang-runtime/experimental/platform-browser'
 import { Command, Render } from 'foldkit'
 
 const MeasurePanel = Command.define('MeasurePanel', {
   messages: [MeasuredPanel],
   execute: effect {
-    try Render.afterCommit
-    // sync's argument is plain TypeScript: the layout read is a DOM call.
-    const width = try sync(() => {
-      const element = document.getElementById('panel')
-      return element instanceof HTMLElement
-        ? element.getBoundingClientRect().width
-        : 0
-    })
-    return MeasuredPanel({ width })
+    provide ExperimentalBrowserDocument.layer {
+      try Render.afterCommit
+      const documentService = try Experimental.Document.Document
+      const page = try documentService.current
+      const width = try Effect.sync(() => {
+        const element = page.getElementById('panel')
+        return documentService.isHTMLElement(element)
+          ? element.getBoundingClientRect().width
+          : 0
+      })
+      return MeasuredPanel({ width })
+    }
   },
 })
 

@@ -1,3 +1,4 @@
+import { ExperimentalBrowserDocument } from 'vibelang-runtime/experimental/platform-browser'
 import { Mount } from 'foldkit'
 import type { Html, HtmlBuilder } from 'foldkit/html'
 import { defineMessageUnion } from 'foldkit/message'
@@ -15,11 +16,14 @@ const Message = defineMessageUnion({
 const PortalToBody = Mount.define('PortalToBody', {
   messages: [Message.CompletedPortalToBody],
   execute: effect ({ element }) => {
-    try Effect.acquireRelease(
-      sync(element => document.body.appendChild(element), element),
-      () => sync(element => element.remove(), element),
-    )
-    return Message.CompletedPortalToBody()
+    provide ExperimentalBrowserDocument.layer {
+      const page = try (try Experimental.Document.Document).current
+      try Effect.acquireRelease(
+        Effect.sync(() => page.body.appendChild(element)),
+        () => sync(element => element.remove(), element),
+      )
+      return Message.CompletedPortalToBody()
+    }
   },
 })
 
