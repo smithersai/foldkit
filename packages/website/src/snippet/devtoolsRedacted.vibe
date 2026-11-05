@@ -1,3 +1,4 @@
+import { FetchHttpClient } from 'effect/http'
 import { Command } from 'foldkit'
 import { defineMessageUnion } from 'foldkit/message'
 
@@ -36,14 +37,17 @@ const FetchProfile = Command.define('FetchProfile', {
   args: { accessToken: AccessToken },
   messages: [Message.CompletedFetchProfile, Message.FailedFetchProfile],
   execute: ({ accessToken }) =>
-    Effect.tryPromise(() =>
-      fetch('/api/profile', {
-        headers: {
-          // 4. Recover the raw token only at the request boundary that needs it.
-          Authorization: `Bearer ${Redacted.value(accessToken)}`,
-        },
-      })
-    )
+    effect {
+      const performRequest = try FetchHttpClient.Fetch
+      return try Effect.tryPromise(() =>
+        performRequest('/api/profile', {
+          headers: {
+            // 4. Recover the raw token only at the request boundary that needs it.
+            Authorization: `Bearer ${Redacted.value(accessToken)}`,
+          },
+        })
+      )
+    }
     |> Effect.as(%, Message.CompletedFetchProfile())
     |> Effect.catch(%, () => Effect.succeed(Message.FailedFetchProfile())),
 })

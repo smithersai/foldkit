@@ -1,3 +1,4 @@
+import { FetchHttpClient } from 'effect/http'
 import { Command, type Update } from 'foldkit'
 import { defineMessageUnion } from 'foldkit/message'
 import { defineTaggedUnion } from 'foldkit/schema'
@@ -34,8 +35,9 @@ const FetchUser = Command.define('FetchUser', {
   messages: [Message.SucceededFetchUser, Message.FailedFetchUser],
   execute: ({ userId }) =>
     effect {
+      const performRequest = try FetchHttpClient.Fetch
       const response = try Effect.tryPromise(() =>
-        fetch(`/api/users/${userId}`).then(response => response.json())
+        performRequest(`/api/users/${userId}`).then(response => response.json())
       )
       const data = try Schema.decodeUnknownEffect(UserSchema)(response)
       return Message.SucceededFetchUser({ data })
