@@ -42,9 +42,15 @@ export const CopySnippet = Command.define('CopySnippet', {
     return effect {
       provide Clipboard.layer {
         return (effect {
-          try Clipboard.writeString(text)
+          const clipboard = try Clipboard.Clipboard
+          try clipboard.writeString(text)
           return copied
-        }) catch () => Message.FailedCopySnippet()
+        }) catch effect () => {
+          return (try Effect.orDie(Effect.try({
+            try: () => Message.FailedCopySnippet(),
+            catch: error => error,
+          })))
+        }
       }
     }
   },

@@ -932,7 +932,8 @@ const CopyLink = Command.define('CopyLink', {
     return effect {
       provide Clipboard.layer {
         return (effect {
-          try Clipboard.writeString(url)
+          const clipboard = try Clipboard.Clipboard
+          try clipboard.writeString(url)
           return copied
         }) catch effect () => {
           return (try Effect.orDie(
