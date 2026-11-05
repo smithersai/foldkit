@@ -54,13 +54,13 @@ export const renderDocument = (
   options: DocumentOptions = {},
 ): string => {
   const stylesheets = assets.stylesheets.map(
-    (href): infer _ =>
+    (href) =>
       `<link rel="stylesheet" crossorigin href="${
         escapeAttributeValue(href)
       }">`,
   )
   const modulePreloads = assets.modulePreloads.map(
-    (href): infer _ =>
+    (href) =>
       `<link rel="modulepreload" crossorigin href="${
         escapeAttributeValue(href)
       }">`,

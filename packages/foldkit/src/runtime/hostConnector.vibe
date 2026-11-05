@@ -115,13 +115,13 @@ export const makeHostConnector = (): HostConnector => {
     }
     const decodeExit = Schema.decodeUnknownExit(port.schema)(value)
     Exit.match(decodeExit, {
-      onFailure: (cause): infer _ => {
+      onFailure: (cause) => {
         reportPortError(
           `[foldkit] Inbound port "${portName}" rejected a value:`,
           Cause.squash(cause),
         )
       },
-      onSuccess: (decodedValue): infer _ => {
+      onSuccess: (decodedValue) => {
         {
           const $optionSubject = maybeDeliverInbound
           const $optionHandlers: {
@@ -130,11 +130,10 @@ export const makeHostConnector = (): HostConnector => {
               deliverInbound: (port: Inbound<any, any>, value: unknown) => void,
             ) => void
           } = {
-            onNone: (): infer _ => {
+            onNone: () => {
               pendingInboundSends.push({ port, value: decodedValue })
             },
-            onSome: (deliverInbound): infer _ =>
-              deliverInbound(port, decodedValue),
+            onSome: (deliverInbound) => deliverInbound(port, decodedValue),
           }
           const { onNone: $optionNone, onSome: $optionSome } = $optionHandlers
           match ($optionSubject) {
@@ -157,7 +156,7 @@ export const makeHostConnector = (): HostConnector => {
     const listeners = listenersByPort.get(port) ?? new Set()
     listenersByPort.set(port, listeners)
     listeners.add(listener)
-    return (): infer _ => {
+    return () => {
       listeners.delete(listener)
     }
   }
@@ -232,11 +231,11 @@ export const makePortChannels = (
 
   const channels: __PortChannels = {
     isConfigured: true,
-    lookupInbound: (port): infer _ =>
+    lookupInbound: (port) =>
       Option.fromNullishOr(inboundChannelsByPort.get(port)),
-    lookupOutbound: (port): infer _ =>
+    lookupOutbound: (port) =>
       outboundPorts.has(port)
-        ? Option.some((encodedValue): infer _ => match (maybeConnector) {
+        ? Option.some((encodedValue) => match (maybeConnector) {
           when Option.Some(let connector): connector.deliverOutbound(
             port,
             encodedValue,
@@ -294,13 +293,12 @@ export const buildPortHandles = <P extends Ports | undefined>(
   if (Predicate.isNotUndefined(ports)) {
     Object.entries(ports.inbound ?? {}).forEach(([portName, port]) => {
       handles[portName] = {
-        send: (value: unknown): infer _ =>
-          connector.sendInbound(portName, port, value),
+        send: (value: unknown) => connector.sendInbound(portName, port, value),
       }
     })
     Object.entries(ports.outbound ?? {}).forEach(([portName, port]) => {
       handles[portName] = {
-        subscribe: (listener: (encodedValue: unknown) => void): infer _ =>
+        subscribe: (listener: (encodedValue: unknown) => void) =>
           connector.addListener(port, listener),
       }
     })

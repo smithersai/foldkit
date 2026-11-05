@@ -167,7 +167,7 @@ export type EntryBuilder<Model, Message, Services> = <
  * }))
  * ```
  */
-export const make = <Model, Message, Services = never>(): infer _ =>
+export const make = <Model, Message, Services = never>() =>
 <
   Entries extends Readonly<
     Record<string, Entry<Model, Message, any, Services>>
@@ -181,7 +181,7 @@ export const make = <Model, Message, Services = never>(): infer _ =>
   const entryBuilder = ((
     fields: Schema.Struct.Fields,
     callbacks: Record<string, unknown>,
-  ): infer _ => ({
+  ) => ({
     dependenciesSchema: Schema.Struct(fields),
     ...callbacks,
   })) as unknown as EntryBuilder<Model, Message, Services>
@@ -332,12 +332,10 @@ export const aggregate: {
     ...records: CompatibleSubscriptions<Records>
   ): MergeSubscriptions<Records>
   /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
-} = ((...records: ReadonlyArray<AnySubscriptions>): infer _ => {
+} = ((...records: ReadonlyArray<AnySubscriptions>) => {
   return EffectArray.match(records, {
-    onEmpty:
-      (): infer _ =>
-      (...curriedRecords: ReadonlyArray<AnySubscriptions>): infer _ =>
-        mergeSubscriptions(curriedRecords),
+    onEmpty: () => (...curriedRecords: ReadonlyArray<AnySubscriptions>) =>
+      mergeSubscriptions(curriedRecords),
     onNonEmpty: mergeSubscriptions,
   })
 }) as any
@@ -361,8 +359,8 @@ export const persistentEntry = <Message, Services = never>(
   Services
 > => ({
   dependenciesSchema: Schema.Struct({}),
-  modelToDependencies: (): infer _ => ({}),
-  dependenciesToStream: (): infer _ => stream,
+  modelToDependencies: () => ({}),
+  dependenciesToStream: () => stream,
 })
 
 type ChildModelOf<ChildSubscriptions> =
@@ -443,7 +441,7 @@ const toEntryWhen = (
   } else {
     return Record.get(when, key)
       .flatMap(Option.fromNullishOr)
-      .getOrElse((): infer _ => EffectFunction.constTrue)
+      .getOrElse(() => EffectFunction.constTrue)
   }
 }
 
@@ -456,12 +454,12 @@ const toLiftedEntry = (
   subscription: Subscription<any, any, any, any>,
   config: AnyLiftConfig,
   when: (parentModel: any) => boolean,
-): infer _ => {
+) => {
   const dependenciesSchema = Schema.Struct({
     maybeDependencies: Schema.Option(subscription.dependenciesSchema),
   })
 
-  const modelToDependencies = (parentModel: any): infer _ => ({
+  const modelToDependencies = (parentModel: any) => ({
     maybeDependencies: Option.liftPredicate(parentModel, when)
       .flatMap(config.read)
       .map(subscription.modelToDependencies),
@@ -478,7 +476,7 @@ const toLiftedEntry = (
       keepAliveEquivalence: (
         left: GatedDependencies<any>,
         right: GatedDependencies<any>,
-      ): infer _ =>
+      ) =>
         maybeKeepAliveEquivalence(
           left.maybeDependencies,
           right.maybeDependencies,
@@ -486,7 +484,7 @@ const toLiftedEntry = (
       dependenciesToStream: (
         gatedDependencies: GatedDependencies<any>,
         readGatedDependencies: () => GatedDependencies<any>,
-      ): infer _ =>
+      ) =>
         do {
           const $optionSubject = gatedDependencies.maybeDependencies
           const $optionHandlers: {
@@ -494,13 +492,13 @@ const toLiftedEntry = (
             onSome: (dependencies: any) => Stream<any, never, any>
           } = {
             onNone: () => Stream.empty,
-            onSome: (dependencies): infer _ =>
+            onSome: (dependencies) =>
               toParentStream(
                 config,
-                subscription.dependenciesToStream(dependencies, (): infer _ =>
+                subscription.dependenciesToStream(dependencies, () =>
                   Option.getOrElse(
                     readGatedDependencies().maybeDependencies,
-                    (): infer _ => dependencies,
+                    () => dependencies,
                   )),
               ),
           }
@@ -518,7 +516,7 @@ const toLiftedEntry = (
     modelToDependencies,
     dependenciesToStream: (
       gatedDependencies: GatedDependencies<any>,
-    ): infer _ =>
+    ) =>
       do {
         const $optionSubject = gatedDependencies.maybeDependencies
         const $optionHandlers: {
@@ -526,7 +524,7 @@ const toLiftedEntry = (
           onSome: (dependencies: any) => Stream<any, never, any>
         } = {
           onNone: () => Stream.empty,
-          onSome: (dependencies): infer _ =>
+          onSome: (dependencies) =>
             toParentStream(
               config,
               subscription.dependenciesToStream(dependencies),
@@ -587,13 +585,13 @@ export const lift = <
   >,
 >(
   subscriptions: Subscriptions,
-): infer _ =>
+) =>
 <ParentModel, ParentMessage>(
   config: LiftConfig<ParentModel, ParentMessage, Subscriptions>,
 ): LiftedSubscriptions<ParentModel, ParentMessage, Subscriptions> =>
   /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
   Record.map(
     subscriptions,
-    (subscription, key): infer _ =>
+    (subscription, key) =>
       toLiftedEntry(subscription, config, toEntryWhen(config.when, key)),
   ) as any

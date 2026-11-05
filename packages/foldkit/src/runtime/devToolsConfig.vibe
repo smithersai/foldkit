@@ -127,13 +127,13 @@ export const resolveDevToolsConfig = (
     devTools ?? {},
     (config): config is Exclude<DevToolsConfig, false> => config !== false,
   )
-    .filter((config): infer _ =>
+    .filter((config) =>
       isVisible(
         config.show ?? DEFAULT_DEV_TOOLS_SHOW,
         !!readHotContext() && !isInIframe,
       )
     )
-    .map((config): infer _ => ({
+    .map((config) => ({
       position: config.position ?? DEFAULT_DEV_TOOLS_POSITION,
       mode: resolveDevToolsMode(config.mode ?? DEFAULT_DEV_TOOLS_MODE),
       maybeBanner: Option.fromNullishOr(config.banner),
@@ -148,7 +148,7 @@ export const resolveExcludeFromHistoryTags = (
     devTools ?? {},
     (config): config is Exclude<DevToolsConfig, false> => config !== false,
   )
-    .flatMapNullishOr((config): infer _ => config.excludeFromHistory)) {
+    .flatMapNullishOr((config) => config.excludeFromHistory)) {
   when Option.Some(let tags): new Set(tags);
   default: new Set<string>();
 }
@@ -160,7 +160,7 @@ export const resolveDevToolsMaxEntries = (
     devTools ?? {},
     (config): config is Exclude<DevToolsConfig, false> => config !== false,
   )
-    .flatMapNullishOr((config): infer _ => config.maxEntries)) {
+    .flatMapNullishOr((config) => config.maxEntries)) {
   when Option.Some(let value): Math.max(
     DEV_TOOLS_MAX_ENTRIES_MIN,
     Math.min(DEV_TOOLS_MAX_ENTRIES_MAX, value),
@@ -175,7 +175,7 @@ export const resolveDevToolsKeyframeInterval = (
     devTools ?? {},
     (config): config is Exclude<DevToolsConfig, false> => config !== false,
   )
-    .flatMapNullishOr((config): infer _ => config.keyframeInterval)) {
+    .flatMapNullishOr((config) => config.keyframeInterval)) {
   when Option.Some(let value): Math.max(
     DEV_TOOLS_KEYFRAME_INTERVAL_MIN,
     Math.floor(value),

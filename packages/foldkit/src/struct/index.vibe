@@ -32,7 +32,7 @@ export const modifyFields: {
 
 /** Creates a field modifier for a base shape. Use in generic helpers whose Model extends that shape. Transformers are checked against the base shape, and the returned function preserves the Model's subtype and all fields not in the transform. */
 export const makeModifyFieldsFor =
-  <Base extends Record<string, unknown>>(): infer _ =>
+  <Base extends Record<string, unknown>>() =>
   <Model extends Base>(
     model: Model,
     transforms: EvolveTransform<Base>,

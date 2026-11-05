@@ -128,7 +128,7 @@ const resolveSlowPhase = <Context>(
       thresholdMs,
       onSlow,
     },
-    (): infer _ => isMeasured,
+    () => isMeasured,
   )
 
 export const __resolveSlowConfig = <Model, Message>(
@@ -143,10 +143,8 @@ export const __resolveSlowConfig = <Model, Message>(
       : Option.some(slow)
 
   return maybeSlowConfig
-    .filter((config): infer _ =>
-      isSlowVisible(config.show ?? DEFAULT_SLOW_SHOW)
-    )
-    .map((config): infer _ => {
+    .filter((config) => isSlowVisible(config.show ?? DEFAULT_SLOW_SHOW))
+    .map((config) => {
       const onSlow = config.onSlow ?? defaultSlowCallback
       const measuredPhases = config.measuredPhases ?? ALL_SLOW_PHASES
       const isPhaseMeasured = (phase: SlowPhase): boolean =>
@@ -201,7 +199,7 @@ export const reportSlowPhase = <Context>(
     const { thresholdMs, onSlow } = maybeConfig.value
     const maybeExceededDuration = Option.filter(
       maybeDurationMs,
-      (durationMs): infer _ => durationMs > thresholdMs,
+      (durationMs) => durationMs > thresholdMs,
     )
 
     if (Option.isSome(maybeExceededDuration)) {
@@ -229,7 +227,7 @@ const optionMessageTrigger = (maybeMessage: Option<unknown>): string =>
       onNone: () => string
       onSome: (rawMessage: unknown) => string
     } = {
-      onNone: (): infer _ => 'init',
+      onNone: () => 'init',
       onSome: messageTag,
     }
     const { onNone: $optionNone, onSome: $optionSome } = $optionHandlers

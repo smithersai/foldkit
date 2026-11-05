@@ -525,5 +525,5 @@ export const mapMessages: {
     commands: ReadonlyArray<Command<FromMessage, E, R>> | undefined,
     f: (message: FromMessage) => ToMessage,
   ): ReadonlyArray<Command<ToMessage, E, R>> =>
-    Array.map(commands ?? [], (command): infer _ => mapMessage(command, f)),
+    Array.map(commands ?? [], (command) => mapMessage(command, f)),
 )

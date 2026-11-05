@@ -647,7 +647,7 @@ export const foldChild: {
       R
     >,
   ): Fold<ParentModel, ParentMessage, Input, R>
-} = (childFold: AnyChildFold): infer _ => {
+} = (childFold: AnyChildFold) => {
   const context = makeFoldContext(childFold.toParentMessage)
 
   return EffectFunction.dual(
@@ -1028,7 +1028,7 @@ export const foldChildAt: {
   ): FoldAt<ParentModel, ParentMessage, Key, Input, R>
 } = (keyedFold: AnyKeyedChildFold): any =>
   EffectFunction.dual(3, (model: any, key: any, input: any) => {
-    const toParentMessage = (message: any): infer _ =>
+    const toParentMessage = (message: any) =>
       keyedFold.toParentMessage(key, message)
     const toParentOutMessage = keyedFold.toParentOutMessage
     const foldOutMessage = keyedFold.foldOutMessage
@@ -1420,11 +1420,10 @@ export const foldChildStep: {
       R
     >,
   ): Step<ParentModel, ParentMessage, R>
-} = (childFold: AnyChildStepFold): infer _ => {
+} = (childFold: AnyChildStepFold) => {
   const context = makeFoldContext(childFold.toParentMessage)
 
-  return (model: any): infer _ =>
-    runChildFold(childFold, context, model, undefined)
+  return (model: any) => runChildFold(childFold, context, model, undefined)
 }
 
 const appendOutMessageStep = (

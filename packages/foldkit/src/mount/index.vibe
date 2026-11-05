@@ -156,7 +156,7 @@ const wrapEffectAsStream = <Message>(
     element: Element,
     viewStateChanges: Stream<ViewState>,
   ) => Message!!Scope,
-): infer _ =>
+) =>
 (
   element: Element,
   viewStateChanges: Stream<ViewState>,
@@ -341,7 +341,7 @@ export function define(name: string, config: DefineConfig): unknown {
   const isArgsDeclared = Predicate.isNotUndefined(config.args)
 
   if (isArgsDeclared) {
-    const definition = (args: any): infer _ => ({
+    const definition = (args: any) => ({
       name,
       args,
       f: wrapEffectAsStream((element, viewStateChanges) =>
@@ -351,7 +351,7 @@ export function define(name: string, config: DefineConfig): unknown {
     brandAsDefinition(definition, name)
     return definition
   } else {
-    const definition = (): infer _ => ({
+    const definition = () => ({
       name,
       f: wrapEffectAsStream((element, viewStateChanges) =>
         executable.execute({ element, viewStateChanges })
@@ -517,7 +517,7 @@ export function defineStream(name: string, config: DefineConfig): unknown {
   const isArgsDeclared = Predicate.isNotUndefined(config.args)
 
   if (isArgsDeclared) {
-    const definition = (args: any): infer _ => ({
+    const definition = (args: any) => ({
       name,
       args,
       f: (
@@ -533,7 +533,7 @@ export function defineStream(name: string, config: DefineConfig): unknown {
     brandAsDefinition(definition, name)
     return definition
   } else {
-    const definition = (): infer _ => ({
+    const definition = () => ({
       name,
       f: (
         element: Element,

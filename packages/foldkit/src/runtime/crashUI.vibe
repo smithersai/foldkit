@@ -284,8 +284,8 @@ export const renderCrashView = <Model, Message>(
 
   const crashContext = Context.make(Dispatch, noOpDispatch).pipe(
     Context.add(MountTracker, {
-      started: (): infer _ => {},
-      ended: (): infer _ => {},
+      started: () => {},
+      ended: () => {},
     }),
   )
 

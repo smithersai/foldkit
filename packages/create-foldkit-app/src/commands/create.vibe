@@ -37,7 +37,7 @@ const promptForName = Prompt.String({
 
 const promptForRendering = Prompt.Select<Rendering>({
   message: 'Pick a rendering mode',
-  choices: renderings.map(({ value, title, description }): infer _ => ({
+  choices: renderings.map(({ value, title, description }) => ({
     value,
     title,
     description,
@@ -46,7 +46,7 @@ const promptForRendering = Prompt.Select<Rendering>({
 
 const promptForExample = Prompt.AutoComplete({
   message: 'Pick a starting example',
-  choices: examples.map(({ value, title, description }): infer _ => ({
+  choices: examples.map(({ value, title, description }) => ({
     value,
     title,
     description,

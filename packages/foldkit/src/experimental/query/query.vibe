@@ -28,7 +28,7 @@ export type QueryConfig<Name extends string, A, AI, E, EI, R> = Readonly<{
 const makeQueryMessage = <A, AI, E, EI>(
   data: Schema.Codec<A, AI>,
   error: Schema.Codec<E, EI>,
-): infer _ =>
+) =>
   defineMessageUnion({
     CompletedFetch: {
       generation: Schema.Number,
@@ -49,7 +49,7 @@ export type QueryMessage<A, AI, E, EI> = ReturnType<
 export const makeQueryModel = <A, AI, E, EI>(
   data: Schema.Codec<A, AI>,
   error: Schema.Codec<E, EI>,
-): infer _ =>
+) =>
   Schema.Struct({
     data: AsyncData.Schema(data, error).schema,
     generation: Schema.Number,
@@ -214,7 +214,7 @@ export function defineQuery<Name extends string, A, AI, E, EI, R>(
 
   const liftFromLens = <ParentModel, ParentMessage>(
     lens: FoldLens<ParentModel, ParentMessage, Model, Message>,
-  ): infer _ => ({
+  ) => ({
     fold: Update.foldChild({ update, ...lens }),
     reset: Update.foldChildStep({
       update: reset,
@@ -242,7 +242,7 @@ export function defineQuery<Name extends string, A, AI, E, EI, R>(
   ): ReturnType<LiftQuery<Model, Message, R>>
   function lift<ParentModel, ParentMessage>(
     config: LiftConfig<ParentModel, ParentMessage, Model, Message>,
-  ): infer _ {
+  ) {
     if (isParentFieldConfig(config)) {
       return liftFromLens(parentFieldToLens(config))
     }

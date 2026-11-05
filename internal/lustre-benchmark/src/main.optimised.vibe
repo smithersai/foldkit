@@ -78,9 +78,9 @@ const editingTodoView = (
         h.Name('title'),
         h.Id(`todo-${todo.id}`),
         h.Autofocus(true),
-        h.OnInput((text): infer _ => Message.UpdatedEditingTodo({ text })),
+        h.OnInput((text) => Message.UpdatedEditingTodo({ text })),
         h.OnBlur(Message.SavedEdit()),
-        h.OnKeyDownPreventDefault((key): infer _ => {
+        h.OnKeyDownPreventDefault((key) => {
           if (key === 'Enter') {
             return Option.some(Message.SavedEdit())
           }
@@ -127,11 +127,11 @@ const headerView = (newTodoText: string, h: HtmlBuilder<Message>): Html => {
         h.Autofocus(true),
         h.Value(newTodoText),
         h.Name('newTodo'),
-        h.OnInput((text): infer _ => Message.UpdatedNewTodo({ text })),
-        h.OnKeyDownPreventDefault((key): infer _ =>
+        h.OnInput((text) => Message.UpdatedNewTodo({ text })),
+        h.OnKeyDownPreventDefault((key) =>
           Option.liftPredicate(
             Message.AddedTodo(),
-            (): infer _ => key === 'Enter',
+            () => key === 'Enter',
           )
         ),
       ]),
@@ -234,8 +234,8 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
   const renderedHeader = lazyHeader(headerView, [model.newTodoText, h])
 
   const renderedMain = EffectArray.match(model.todos, {
-    onEmpty: (): infer _ => h.empty,
-    onNonEmpty: (): infer _ =>
+    onEmpty: () => h.empty,
+    onNonEmpty: () =>
       h.section(
         [h.Class('main')],
         [
@@ -243,7 +243,7 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
           lazyToggleAllLabel(toggleAllLabelView, [h]),
           h.ul(
             [h.Class('todo-list')],
-            EffectArray.map(filteredTodos, (todo): infer _ =>
+            EffectArray.map(filteredTodos, (todo) =>
               lazyTodo(todo.id, todoItemView, [
                 todo,
                 maybeEditingTextFor(model.editing, todo.id),
@@ -255,8 +255,8 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
   })
 
   const renderedFooter = EffectArray.match(model.todos, {
-    onEmpty: (): infer _ => h.empty,
-    onNonEmpty: (): infer _ =>
+    onEmpty: () => h.empty,
+    onNonEmpty: () =>
       lazyFooter(footerView, [activeCount, completedCount, model.filter, h]),
   })
 

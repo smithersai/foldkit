@@ -630,7 +630,7 @@ const emitBindingMessage = <Message>(
 }
 
 const isMatchingOnePressBinding =
-  (event: KeyboardEvent, modKey: ModKey, isEditable: boolean): infer _ =>
+  (event: KeyboardEvent, modKey: ModKey, isEditable: boolean) =>
   <Message>(binding: CompiledBinding<Message>): boolean =>
     !isSequence(binding)
     && isAllowedWhileTyping(binding, isEditable)

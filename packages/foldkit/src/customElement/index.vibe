@@ -259,7 +259,7 @@ export const define = <
       ): Attribute<unknown> =>
         OnCustomEvent({
           name: eventName,
-          f: (event: CustomEvent<unknown>): infer _ =>
+          f: (event: CustomEvent<unknown>) =>
             Exit.match(decodeEventDetail(event.detail), {
               onFailure: cause => {
                 reportEventDetailError(

@@ -59,7 +59,7 @@ export const enteredAny = <Route extends Readonly<{ _tag: string }>>({
   }
 
 const hasTag =
-  <Tag extends string>(routeTag: Tag): infer _ =>
+  <Tag extends string>(routeTag: Tag) =>
   <Route extends Readonly<{ _tag: string }>>(
     route: Route,
   ): route is Extract<Route, { _tag: Tag }> => route._tag === routeTag

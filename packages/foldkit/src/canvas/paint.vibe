@@ -45,23 +45,22 @@ const textBaselineForCanvas: Readonly<
   Ideographic: 'ideographic',
 }
 
-const paintRect =
-  (ctx: CanvasRenderingContext2D): infer _ => (rect: Rect): void => {
-    if (rect.fill !== undefined) {
-      ctx.fillStyle = rect.fill
-      ctx.fillRect(rect.x, rect.y, rect.width, rect.height)
-    }
-    if (rect.stroke !== undefined) {
-      ctx.strokeStyle = rect.stroke
-      if (rect.lineWidth !== undefined) {
-        ctx.lineWidth = rect.lineWidth
-      }
-      ctx.strokeRect(rect.x, rect.y, rect.width, rect.height)
-    }
+const paintRect = (ctx: CanvasRenderingContext2D) => (rect: Rect): void => {
+  if (rect.fill !== undefined) {
+    ctx.fillStyle = rect.fill
+    ctx.fillRect(rect.x, rect.y, rect.width, rect.height)
   }
+  if (rect.stroke !== undefined) {
+    ctx.strokeStyle = rect.stroke
+    if (rect.lineWidth !== undefined) {
+      ctx.lineWidth = rect.lineWidth
+    }
+    ctx.strokeRect(rect.x, rect.y, rect.width, rect.height)
+  }
+}
 
 const paintCircle =
-  (ctx: CanvasRenderingContext2D): infer _ => (circle: Circle): void => {
+  (ctx: CanvasRenderingContext2D) => (circle: Circle): void => {
     ctx.beginPath()
     ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2)
     if (circle.fill !== undefined) {
@@ -89,69 +88,66 @@ const applyPathInstruction =
     when { _tag: "Close" }: ctx.closePath();
   }
 
-const paintPath =
-  (ctx: CanvasRenderingContext2D): infer _ => (path: Path): void => {
-    ctx.beginPath()
-    EffectArray.forEach(path.instructions, applyPathInstruction(ctx))
-    if (path.fill !== undefined) {
-      ctx.fillStyle = path.fill
-      ctx.fill()
-    }
-    if (path.stroke !== undefined) {
-      ctx.strokeStyle = path.stroke
-      if (path.lineWidth !== undefined) {
-        ctx.lineWidth = path.lineWidth
-      }
-      if (path.lineCap !== undefined) {
-        ctx.lineCap = lineCapForCanvas[path.lineCap]
-      }
-      if (path.lineJoin !== undefined) {
-        ctx.lineJoin = lineJoinForCanvas[path.lineJoin]
-      }
-      ctx.stroke()
-    }
+const paintPath = (ctx: CanvasRenderingContext2D) => (path: Path): void => {
+  ctx.beginPath()
+  EffectArray.forEach(path.instructions, applyPathInstruction(ctx))
+  if (path.fill !== undefined) {
+    ctx.fillStyle = path.fill
+    ctx.fill()
   }
+  if (path.stroke !== undefined) {
+    ctx.strokeStyle = path.stroke
+    if (path.lineWidth !== undefined) {
+      ctx.lineWidth = path.lineWidth
+    }
+    if (path.lineCap !== undefined) {
+      ctx.lineCap = lineCapForCanvas[path.lineCap]
+    }
+    if (path.lineJoin !== undefined) {
+      ctx.lineJoin = lineJoinForCanvas[path.lineJoin]
+    }
+    ctx.stroke()
+  }
+}
 
-const paintText =
-  (ctx: CanvasRenderingContext2D): infer _ => (text: Text): void => {
-    if (text.font !== undefined) {
-      ctx.font = text.font
-    }
-    if (text.align !== undefined) {
-      ctx.textAlign = textAlignForCanvas[text.align]
-    }
-    if (text.baseline !== undefined) {
-      ctx.textBaseline = textBaselineForCanvas[text.baseline]
-    }
-    if (text.fill !== undefined) {
-      ctx.fillStyle = text.fill
-      ctx.fillText(text.content, text.x, text.y)
-    }
-    if (text.stroke !== undefined) {
-      ctx.strokeStyle = text.stroke
-      if (text.lineWidth !== undefined) {
-        ctx.lineWidth = text.lineWidth
-      }
-      ctx.strokeText(text.content, text.x, text.y)
-    }
+const paintText = (ctx: CanvasRenderingContext2D) => (text: Text): void => {
+  if (text.font !== undefined) {
+    ctx.font = text.font
   }
+  if (text.align !== undefined) {
+    ctx.textAlign = textAlignForCanvas[text.align]
+  }
+  if (text.baseline !== undefined) {
+    ctx.textBaseline = textBaselineForCanvas[text.baseline]
+  }
+  if (text.fill !== undefined) {
+    ctx.fillStyle = text.fill
+    ctx.fillText(text.content, text.x, text.y)
+  }
+  if (text.stroke !== undefined) {
+    ctx.strokeStyle = text.stroke
+    if (text.lineWidth !== undefined) {
+      ctx.lineWidth = text.lineWidth
+    }
+    ctx.strokeText(text.content, text.x, text.y)
+  }
+}
 
-const paintGroup =
-  (ctx: CanvasRenderingContext2D): infer _ => (group: Group): void => {
-    if (group.opacity !== undefined) {
-      ctx.globalAlpha *= group.opacity
-    }
-    if (group.translate !== undefined) {
-      ctx.translate(group.translate.x, group.translate.y)
-    }
-    if (group.rotate !== undefined) {
-      ctx.rotate(group.rotate)
-    }
-    if (group.scale !== undefined) {
-      ctx.scale(group.scale.x, group.scale.y)
-    }
-    EffectArray.forEach(group.shapes, paintShape(ctx))
+const paintGroup = (ctx: CanvasRenderingContext2D) => (group: Group): void => {
+  if (group.opacity !== undefined) {
+    ctx.globalAlpha *= group.opacity
   }
+  if (group.translate !== undefined) {
+    ctx.translate(group.translate.x, group.translate.y)
+  }
+  if (group.rotate !== undefined) {
+    ctx.rotate(group.rotate)
+  }
+  if (group.scale !== undefined) {
+    ctx.scale(group.scale.x, group.scale.y)
+  }
+  EffectArray.forEach(group.shapes, paintShape(ctx))
+}
 
 /**
  * Paint a single `Shape` to the 2D context. Each call is bracketed by
@@ -160,7 +156,7 @@ const paintGroup =
  * sibling shapes. Recurses into `Group` children inside the saved scope.
  */
 export const paintShape =
-  (ctx: CanvasRenderingContext2D): infer _ => (shape: Shape): void => {
+  (ctx: CanvasRenderingContext2D) => (shape: Shape): void => {
     ctx.save()
     match (shape) {
       when { _tag: "Rect" }: paintRect(ctx)(shape);

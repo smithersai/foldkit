@@ -38,7 +38,7 @@ const HEAVY_ITEM_COUNT = 10_000
 const HISTORY_FILL_COUNT = 500
 
 const makeHeavyArray = (count: number): ReadonlyArray<HeavyItem> =>
-  EffectArray.makeBy(count, (index): infer _ => ({
+  EffectArray.makeBy(count, (index) => ({
     id: index,
     label: `Item ${index}`,
     category: index % 2 === 0 ? 'Even' : 'Odd',
@@ -53,7 +53,7 @@ const FillHistoryStep = Command.define('FillHistoryStep', {
   args: { remaining: Schema.Number },
   messages: [Message.CompletedFillHistoryStep],
   execute: effect ({ remaining }) => {
-    return try Effect.sync((): infer _ =>
+    return try Effect.sync(() =>
       Message.CompletedFillHistoryStep({ remaining })
     )
   },
@@ -61,31 +61,31 @@ const FillHistoryStep = Command.define('FillHistoryStep', {
 
 // UPDATE
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<Update.Return<Model, Message>>(message, {
-    ClickedTick: (): infer _ => ({
+    ClickedTick: () => ({
       model: modifyFields(model, {
-        tickCount: (tickCount): infer _ => tickCount + 1,
+        tickCount: (tickCount) => tickCount + 1,
       }),
     }),
-    ClickedDispatchLargeMessage: ({ payload }): infer _ => ({
+    ClickedDispatchLargeMessage: ({ payload }) => ({
       model: modifyFields(model, {
-        lastReceivedPayloadSize: (): infer _ => payload.length,
+        lastReceivedPayloadSize: () => payload.length,
       }),
     }),
-    ClickedFillLargeModel: ({ items }): infer _ => ({
-      model: modifyFields(model, { largeArray: (): infer _ => items }),
+    ClickedFillLargeModel: ({ items }) => ({
+      model: modifyFields(model, { largeArray: () => items }),
     }),
-    ClickedClearLargeModel: (): infer _ => ({
-      model: modifyFields(model, { largeArray: (): infer _ => [] }),
+    ClickedClearLargeModel: () => ({
+      model: modifyFields(model, { largeArray: () => [] }),
     }),
-    ClickedFillHistory: (): infer _ => ({
+    ClickedFillHistory: () => ({
       model,
       commands: [FillHistoryStep({ remaining: HISTORY_FILL_COUNT })],
     }),
-    CompletedFillHistoryStep: ({ remaining }): infer _ => ({
+    CompletedFillHistoryStep: ({ remaining }) => ({
       model: modifyFields(model, {
-        tickCount: (tickCount): infer _ => EffectNumber.increment(tickCount),
+        tickCount: (tickCount) => EffectNumber.increment(tickCount),
       }),
       commands: remaining > 1
         ? [FillHistoryStep({ remaining: EffectNumber.decrement(remaining) })]
@@ -95,7 +95,7 @@ export const update = (model: Model, message: Message): infer _ =>
 
 // INIT
 
-export const init: Runtime.ApplicationInit<Model, Message> = (): infer _ => ({
+export const init: Runtime.ApplicationInit<Model, Message> = () => ({
   model: {
     tickCount: 0,
     lastReceivedPayloadSize: 0,

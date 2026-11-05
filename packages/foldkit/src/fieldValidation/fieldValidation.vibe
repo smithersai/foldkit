@@ -66,7 +66,7 @@ export const Invalid = <A>(
  *  `Schema.Boolean` in the Model; wrap it in `Field` only when it needs the
  *  validation lifecycle. Validation rules stay separate, in a `makeRules`
  *  bundle. */
-export const Field = <A, I>(valueSchema: Schema.Codec<A, I>): infer _ =>
+export const Field = <A, I>(valueSchema: Schema.Codec<A, I>) =>
   Schema.Union([
     Schema.TaggedStruct('NotValidated', { value: valueSchema }),
     Schema.TaggedStruct('Validating', { value: valueSchema }),
@@ -211,37 +211,35 @@ const requiredOrNotValidated = <A>(rules: Rules<A>, value: A): Field<A> => match
  *  required message. For optional fields, an empty value produces
  *  `NotValidated`. Non-empty values run through the field's rules;
  *  the first failure becomes `Invalid`, otherwise the result is `Valid`. */
-export const validate =
-  <A>(rules: Rules<A>): infer _ => (value: A): Field<A> => {
-    if (rules.isEmpty(value)) {
-      return requiredOrNotValidated(rules, value)
-    }
-    return match (Array.findFirst(rules.rules, ([predicate]) => !predicate(value))) {
-      when Option.None: Valid({ value });
-      when Option.Some(let failed): Invalid({
-        value,
-        errors: [resolveMessage(failed[1], value)],
-      });
-    }
+export const validate = <A>(rules: Rules<A>) => (value: A): Field<A> => {
+  if (rules.isEmpty(value)) {
+    return requiredOrNotValidated(rules, value)
   }
+  return match (Array.findFirst(rules.rules, ([predicate]) => !predicate(value))) {
+    when Option.None: Valid({ value });
+    when Option.Some(let failed): Invalid({
+      value,
+      errors: [resolveMessage(failed[1], value)],
+    });
+  }
+}
 
 /** Like `validate` but collects every failing rule into the
  *  `Invalid` state's errors array instead of stopping at the first. */
-export const validateAll =
-  <A>(rules: Rules<A>): infer _ => (value: A): Field<A> => {
-    if (rules.isEmpty(value)) {
-      return requiredOrNotValidated(rules, value)
-    }
-    return rules.rules
-      |> Array.filterMap(%, ([predicate, message]) =>
-        !predicate(value)
-          ? Result.succeed(resolveMessage(message, value))
-          : Result.failVoid)
-      |> Array.match(%, {
-        onEmpty: () => Valid({ value }),
-        onNonEmpty: errors => Invalid({ value, errors }),
-      })
+export const validateAll = <A>(rules: Rules<A>) => (value: A): Field<A> => {
+  if (rules.isEmpty(value)) {
+    return requiredOrNotValidated(rules, value)
   }
+  return rules.rules
+    |> Array.filterMap(%, ([predicate, message]) =>
+      !predicate(value)
+        ? Result.succeed(resolveMessage(message, value))
+        : Result.failVoid)
+    |> Array.match(%, {
+      onEmpty: () => Valid({ value }),
+      onNonEmpty: errors => Invalid({ value, errors }),
+    })
+}
 
 /** Returns true when the field's current state is acceptable given its
  *  rules. For required fields, only `Valid` returns `true`. For optional
@@ -252,16 +250,15 @@ export const validateAll =
  *  answers "is this state an acceptable result?", which for an optional
  *  field is broader than `_tag === 'Valid'`. For pattern-matching on the
  *  state itself, check the `_tag` directly. */
-export const isValid =
-  <A>(rules: Rules<A>): infer _ => (state: Field<A>): boolean => {
-    if (state._tag === 'Invalid' || state._tag === 'Validating') {
-      return false
-    }
-    if (Option.isSome(rules.requiredMessage)) {
-      return state._tag === 'Valid'
-    }
-    return true
+export const isValid = <A>(rules: Rules<A>) => (state: Field<A>): boolean => {
+  if (state._tag === 'Invalid' || state._tag === 'Validating') {
+    return false
   }
+  if (Option.isSome(rules.requiredMessage)) {
+    return state._tag === 'Valid'
+  }
+  return true
+}
 
 /** Returns true when the rules mark the field as required. Useful for
  *  rendering affordances like a `*` next to required field labels. */

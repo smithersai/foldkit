@@ -52,7 +52,7 @@ const classesFromClassName = (className: string): Classes =>
     className,
     EffectString.split(/\s+/),
     EffectArray.filter(EffectString.isNonEmpty),
-    Record.fromIterableWith((name): infer _ => [name, true] as const),
+    Record.fromIterableWith((name) => [name, true] as const),
   )
 
 /**
@@ -98,8 +98,7 @@ export const view = <Message>(
   } = config
 
   const pointerListener =
-    (toMessage: (point: Point) => Message): infer _ =>
-    (event: PointerEvent): void => {
+    (toMessage: (point: Point) => Message) => (event: PointerEvent): void => {
       const target = event.currentTarget
       if (isCanvasElement(target)) {
         dispatchSync(toMessage(toCanvasPoint(target, event)))
@@ -125,7 +124,7 @@ export const view = <Message>(
       class: classesFromClassName(className),
     }),
     hook: {
-      insert: (vnode): infer _ => {
+      insert: (vnode) => {
         if (!(isCanvasElement(vnode.elm))) {
           return
         }
@@ -137,7 +136,7 @@ export const view = <Message>(
         contextStore.set(canvas, context)
         paintScene(context, width, height, shapes)
       },
-      postpatch: (_oldVnode, vnode): infer _ => {
+      postpatch: (_oldVnode, vnode) => {
         if (!(isCanvasElement(vnode.elm))) {
           return
         }
@@ -147,7 +146,7 @@ export const view = <Message>(
         }
         paintScene(context, width, height, shapes)
       },
-      destroy: (vnode): infer _ => {
+      destroy: (vnode) => {
         if (isCanvasElement(vnode.elm)) {
           contextStore.delete(vnode.elm)
         }

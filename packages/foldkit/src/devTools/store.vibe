@@ -53,7 +53,7 @@ export const computeDiff = (
     pipe(
       curr,
       Record.keys,
-      EffectArray.forEach((key): infer _ => {
+      EffectArray.forEach((key) => {
         const childPath = `${path}.${key}`
         if (Record.has(prev, key)) {
           walk(prev[key], curr[key], childPath)
@@ -65,7 +65,7 @@ export const computeDiff = (
     pipe(
       prev,
       Record.keys,
-      EffectArray.forEach((key): infer _ => {
+      EffectArray.forEach((key) => {
         if (!Record.has(curr, key)) {
           changed.add(`${path}.${key}`)
         }
@@ -78,7 +78,7 @@ export const computeDiff = (
     curr: ReadonlyArray<unknown>,
     path: string,
   ): void => {
-    curr.forEach((item, index): infer _ => {
+    curr.forEach((item, index) => {
       const childPath = `${path}.${index}`
       if (index < prev.length) {
         walk(prev[index], item, childPath)
@@ -89,9 +89,7 @@ export const computeDiff = (
     if (prev.length > curr.length) {
       pipe(
         EffectArray.range(curr.length, prev.length - 1),
-        EffectArray.forEach((index): infer _ =>
-          changed.add(`${path}.${index}`)
-        ),
+        EffectArray.forEach((index) => changed.add(`${path}.${index}`)),
       )
     }
   }
@@ -103,9 +101,9 @@ export const computeDiff = (
     pipe(
       path,
       EffectString.lastIndexOf('.'),
-      Option.map((lastDot): infer _ => path.substring(0, lastDot)),
-      Option.filter((parent): infer _ => !affected.has(parent)),
-      Option.map((parent): infer _ => {
+      Option.map((lastDot) => path.substring(0, lastDot)),
+      Option.filter((parent) => !affected.has(parent)),
+      Option.map((parent) => {
         affected.add(parent)
         addAncestors(parent)
       }),
@@ -180,8 +178,8 @@ const emptyState: StoreState = {
  */
 export const latestEntryIndex = (state: StoreState): number =>
   EffectArray.match(state.entries, {
-    onEmpty: (): infer _ => INIT_INDEX,
-    onNonEmpty: (entries): infer _ => state.startIndex + entries.length - 1,
+    onEmpty: () => INIT_INDEX,
+    onNonEmpty: (entries) => state.startIndex + entries.length - 1,
   })
 
 /**
@@ -252,7 +250,7 @@ export const createDevToolsStore = (
     }
 
     const addKeyframeIfNeeded =
-      (nextAbsoluteIndex: number, modelAfterUpdate: unknown): infer _ =>
+      (nextAbsoluteIndex: number, modelAfterUpdate: unknown) =>
       (
         keyframes: HashMap<number, unknown>,
       ): HashMap<number, unknown> =>
@@ -268,8 +266,8 @@ export const createDevToolsStore = (
       return modifyFields(state, {
         entries: EffectArray.drop(keyframeInterval),
         keyframes: HashMap.remove(state.startIndex),
-        startIndex: (): infer _ => nextStartIndex,
-        isPaused: (isPaused): infer _ => isPaused && isPausedAtRetainedIndex,
+        startIndex: () => nextStartIndex,
+        isPaused: (isPaused) => isPaused && isPausedAtRetainedIndex,
       })
     }
 
@@ -278,13 +276,13 @@ export const createDevToolsStore = (
       commands: ReadonlyArray<CommandRecord>,
       mountStarts: ReadonlyArray<MountRecord> = [],
     ) =>
-      SubscriptionRef.update(stateRef, (state): infer _ =>
+      SubscriptionRef.update(stateRef, (state) =>
         modifyFields(state, {
-          maybeInitModel: (): infer _ => Option.some(model),
-          initCommands: (): infer _ => commands,
-          initMountStarts: (): infer _ => mountStarts,
+          maybeInitModel: () => Option.some(model),
+          initCommands: () => commands,
+          initMountStarts: () => mountStarts,
           keyframes: HashMap.set(0, model),
-          maybeLatestModel: (): infer _ => Option.some(model),
+          maybeLatestModel: () => Option.some(model),
         }))
 
     const recordMessage = effect (
@@ -297,7 +295,7 @@ export const createDevToolsStore = (
       const clock = try Clock.Clock
       const didAutoResume = try SubscriptionRef.modify(
         stateRef,
-        (state): infer _ => {
+        (state) => {
           const absoluteIndex = nextEntryIndex(state)
 
           const diff = isModelChanged
@@ -318,7 +316,7 @@ export const createDevToolsStore = (
               diff,
             }),
             keyframes: addKeyframeIfNeeded(absoluteIndex + 1, modelAfterUpdate),
-            maybeLatestModel: (): infer _ => Option.some(modelAfterUpdate),
+            maybeLatestModel: () => Option.some(modelAfterUpdate),
           })
 
           const recordedState = nextState.entries.length > maxEntries
@@ -338,17 +336,17 @@ export const createDevToolsStore = (
       id: number,
       submodelPath: ReadonlyArray<string>,
     ) =>
-      SubscriptionRef.update(stateRef, (state): infer _ => {
+      SubscriptionRef.update(stateRef, (state) => {
         const updateCommands = (
           commands: ReadonlyArray<CommandRecord>,
         ): Option<ReadonlyArray<CommandRecord>> =>
           pipe(
             commands,
-            EffectArray.findFirstIndex((command): infer _ => command.id === id),
-            Option.flatMap((index): infer _ =>
-              EffectArray.modify(commands, index, (command): infer _ =>
+            EffectArray.findFirstIndex((command) => command.id === id),
+            Option.flatMap((index) =>
+              EffectArray.modify(commands, index, (command) =>
                 modifyFields(command, {
-                  maybeSubmodelPath: (): infer _ => Option.some(submodelPath),
+                  maybeSubmodelPath: () => Option.some(submodelPath),
                 }))
             ),
           )
@@ -356,16 +354,16 @@ export const createDevToolsStore = (
         const maybeInitCommands = updateCommands(state.initCommands)
         if (Option.isSome(maybeInitCommands)) {
           return modifyFields(state, {
-            initCommands: (): infer _ => maybeInitCommands.value,
+            initCommands: () => maybeInitCommands.value,
           })
         }
 
         const maybeEntryIndex = EffectArray.findFirstIndex(
           state.entries,
-          (entry): infer _ =>
+          (entry) =>
             EffectArray.some(
               entry.commands,
-              (command): infer _ => command.id === id,
+              (command) => command.id === id,
             ),
         )
         if (Option.isNone(maybeEntryIndex)) {
@@ -375,10 +373,10 @@ export const createDevToolsStore = (
         const maybeEntries = EffectArray.modify(
           state.entries,
           maybeEntryIndex.value,
-          (entry): infer _ => match (updateCommands(entry.commands)) {
+          (entry) => match (updateCommands(entry.commands)) {
             when Option.None: entry;
             when Option.Some(let nextCommands): modifyFields(entry, {
-              commands: (): infer _ => nextCommands,
+              commands: () => nextCommands,
             });
           },
         )
@@ -386,7 +384,7 @@ export const createDevToolsStore = (
         return match (maybeEntries) {
           when Option.None: state;
           when Option.Some(let nextEntries): modifyFields(state, {
-            entries: (): infer _ => nextEntries,
+            entries: () => nextEntries,
           });
         }
       })
@@ -405,7 +403,7 @@ export const createDevToolsStore = (
       mountStarts: ReadonlyArray<MountRecord>,
       mountEnds: ReadonlyArray<MountRecord>,
     ) =>
-      SubscriptionRef.update(stateRef, (state): infer _ => {
+      SubscriptionRef.update(stateRef, (state) => {
         if (
           EffectArray.isReadonlyArrayEmpty(mountStarts)
           && EffectArray.isReadonlyArrayEmpty(mountEnds)
@@ -414,14 +412,14 @@ export const createDevToolsStore = (
         }
 
         return EffectArray.match(state.entries, {
-          onEmpty: (): infer _ =>
+          onEmpty: () =>
             modifyFields(state, {
               initMountStarts: EffectArray.appendAll(mountStarts),
             }),
-          onNonEmpty: (entries): infer _ =>
+          onNonEmpty: (entries) =>
             modifyFields(state, {
-              entries: (): infer _ =>
-                EffectArray.modifyLastNonEmpty(entries, (last): infer _ =>
+              entries: () =>
+                EffectArray.modifyLastNonEmpty(entries, (last) =>
                   modifyFields(last, {
                     mountStarts: EffectArray.appendAll(mountStarts),
                     mountEnds: EffectArray.appendAll(mountEnds),
@@ -470,7 +468,7 @@ export const createDevToolsStore = (
       try bridge.render(model)
       const wasTargetEvicted = try SubscriptionRef.modify(
         stateRef,
-        (currentState): infer _ => {
+        (currentState) => {
           const isTargetRetained = index === INIT_INDEX
             || (index >= currentState.startIndex
               && index <= latestEntryIndex(currentState))
@@ -479,14 +477,14 @@ export const createDevToolsStore = (
             ? [
               false,
               modifyFields(currentState, {
-                isPaused: (): infer _ => true,
-                pausedAtIndex: (): infer _ => index,
+                isPaused: () => true,
+                pausedAtIndex: () => index,
               }),
             ]
             : [
               true,
               modifyFields(currentState, {
-                isPaused: (): infer _ => false,
+                isPaused: () => false,
               }),
             ]
         },
@@ -498,10 +496,9 @@ export const createDevToolsStore = (
     }
 
     const resume = effect {
-      try SubscriptionRef.update(stateRef, (state): infer _ =>
+      try SubscriptionRef.update(stateRef, (state) =>
         modifyFields(state, {
-          isPaused: (): infer _ =>
-            false,
+          isPaused: () => false,
         }))
       try bridge.markRenderPending
     }
@@ -510,20 +507,19 @@ export const createDevToolsStore = (
     // entries while paused strands the runtime on a historical state with no
     // path back to live. Refuse the write until resume.
     const clear: void!! = effect {
-      try SubscriptionRef.update(stateRef, (state): infer _ => {
+      try SubscriptionRef.update(stateRef, (state) => {
         if (state.isPaused) {
           return state
         } else {
           return modifyFields(state, {
-            entries: (): infer _ => [],
-            startIndex: (): infer _ =>
-              0,
-            pausedAtIndex: (): infer _ => 0,
-            keyframes: (): infer _ => match (state.maybeInitModel) {
+            entries: () => [],
+            startIndex: () => 0,
+            pausedAtIndex: () => 0,
+            keyframes: () => match (state.maybeInitModel) {
               when Option.None: HashMap.empty();
               when Option.Some(let model): HashMap.make([0, model]);
             },
-            maybeLatestModel: (): infer _ => state.maybeInitModel,
+            maybeLatestModel: () => state.maybeInitModel,
           })
         }
       })
@@ -540,8 +536,8 @@ export const createDevToolsStore = (
         state.entries,
         EffectArray.get(index - state.startIndex),
         Option.match({
-          onNone: (): infer _ => emptyDiff,
-          onSome: ({ diff }): infer _ => diff,
+          onNone: () => emptyDiff,
+          onSome: ({ diff }) => diff,
         }),
       )
     }
@@ -549,7 +545,7 @@ export const createDevToolsStore = (
     const updateLatestModel = (model: unknown) =>
       SubscriptionRef.update(
         stateRef,
-        modifyFields({ maybeLatestModel: (): infer _ => Option.some(model) }),
+        modifyFields({ maybeLatestModel: () => Option.some(model) }),
       )
 
     const store: DevToolsStore = {

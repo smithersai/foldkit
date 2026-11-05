@@ -98,8 +98,7 @@ const UrlFromString = LocationAndHrefFromString.pipe(
 )
 
 /** Parses a URL string into a `Url`, returning `Option.None` if invalid. */
-export const fromString = (str: string): infer _ =>
+export const fromString = (str: string) =>
   Schema.decodeOption(UrlFromString)(str)
 /** Serializes a `Url` back to a string. */
-export const toString = (url: Url): infer _ =>
-  Schema.encodeSync(UrlFromString)(url)
+export const toString = (url: Url) => Schema.encodeSync(UrlFromString)(url)

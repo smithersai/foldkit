@@ -238,7 +238,7 @@ const decodeInput = effect <Input>(
 
 const listedRuntimeOutput = (
   { runtime, maybeProjectRoot }: ListedRuntime,
-): infer _ =>
+) =>
   do {
     const $optionSubject = maybeProjectRoot
     const $optionHandlers: {

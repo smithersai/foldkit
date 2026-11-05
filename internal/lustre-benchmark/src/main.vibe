@@ -54,7 +54,7 @@ export type Message = typeof Message.Type
 
 // INIT
 
-export const init: Runtime.ApplicationInit<Model, Message> = (): infer _ => ({
+export const init: Runtime.ApplicationInit<Model, Message> = () => ({
   model: {
     todos: [],
     newTodoText: '',
@@ -84,25 +84,25 @@ type UpdateHandlers = {
 }
 
 const updateHandlers: UpdateHandlers = {
-  UpdatedNewTodo: (model, { text }): infer _ => ({
+  UpdatedNewTodo: (model, { text }) => ({
     model: modifyFields(model, {
-      newTodoText: (): infer _ => text,
+      newTodoText: () => text,
     }),
   }),
 
-  UpdatedEditingTodo: (model, { text }): infer _ => {
+  UpdatedEditingTodo: (model, { text }) => {
     if (model.editing._tag === 'NotEditing') {
       return { model }
     }
     const editingId = model.editing.id
     return {
       model: modifyFields(model, {
-        editing: (): infer _ => EditingState.Editing({ id: editingId, text }),
+        editing: () => EditingState.Editing({ id: editingId, text }),
       }),
     }
   },
 
-  AddedTodo: (model): infer _ => {
+  AddedTodo: (model) => {
     const text = EffectString.trim(model.newTodoText)
     if (EffectString.isEmpty(text)) {
       return { model }
@@ -116,40 +116,39 @@ const updateHandlers: UpdateHandlers = {
 
     return {
       model: modifyFields(model, {
-        todos: (): infer _ => [...model.todos, newTodo],
-        newTodoText: (): infer _ => '',
-        nextTodoId: (nextTodoId): infer _ => nextTodoId + 1,
+        todos: () => [...model.todos, newTodo],
+        newTodoText: () => '',
+        nextTodoId: (nextTodoId) => nextTodoId + 1,
       }),
     }
   },
 
-  DeletedTodo: (model, { id }): infer _ => ({
+  DeletedTodo: (model, { id }) => ({
     model: modifyFields(model, {
-      todos: (): infer _ =>
-        EffectArray.filter(model.todos, (todo): infer _ => todo.id !== id),
+      todos: () => EffectArray.filter(model.todos, (todo) => todo.id !== id),
     }),
   }),
 
-  ToggledTodo: (model, { id }): infer _ => ({
+  ToggledTodo: (model, { id }) => ({
     model: modifyFields(model, {
-      todos: (): infer _ =>
-        EffectArray.map(model.todos, (todo): infer _ =>
+      todos: () =>
+        EffectArray.map(model.todos, (todo) =>
           todo.id === id
             ? modifyFields(todo, {
-              completed: (completed): infer _ => !completed,
+              completed: (completed) => !completed,
             })
             : todo),
     }),
   }),
 
-  StartedEditing: (model, { id }): infer _ => {
+  StartedEditing: (model, { id }) => {
     const maybeTodo = EffectArray.findFirst(
       model.todos,
-      (todo): infer _ => todo.id === id,
+      (todo) => todo.id === id,
     )
     return {
       model: modifyFields(model, {
-        editing: (): infer _ =>
+        editing: () =>
           EditingState.Editing({
             id,
             text: match (maybeTodo) {
@@ -161,7 +160,7 @@ const updateHandlers: UpdateHandlers = {
     }
   },
 
-  SavedEdit: (model): infer _ => {
+  SavedEdit: (model) => {
     if (model.editing._tag === 'NotEditing') {
       return { model }
     }
@@ -171,55 +170,54 @@ const updateHandlers: UpdateHandlers = {
     if (EffectString.isEmpty(text)) {
       return {
         model: modifyFields(model, {
-          editing: (): infer _ => EditingState.NotEditing(),
+          editing: () => EditingState.NotEditing(),
         }),
       }
     }
 
     return {
       model: modifyFields(model, {
-        todos: (): infer _ =>
-          EffectArray.map(model.todos, (todo): infer _ =>
+        todos: () =>
+          EffectArray.map(model.todos, (todo) =>
             todo.id === editingId
-              ? modifyFields(todo, { text: (): infer _ => text })
+              ? modifyFields(todo, { text: () => text })
               : todo),
-        editing: (): infer _ => EditingState.NotEditing(),
+        editing: () => EditingState.NotEditing(),
       }),
     }
   },
 
-  CancelledEdit: (model): infer _ => ({
+  CancelledEdit: (model) => ({
     model: modifyFields(model, {
-      editing: (): infer _ => EditingState.NotEditing(),
+      editing: () => EditingState.NotEditing(),
     }),
   }),
 
-  ToggledAll: (model): infer _ => {
+  ToggledAll: (model) => {
     const allCompleted = EffectArray.every(
       model.todos,
-      (todo): infer _ => todo.completed,
+      (todo) => todo.completed,
     )
     return {
       model: modifyFields(model, {
-        todos: (): infer _ =>
-          EffectArray.map(model.todos, (todo): infer _ =>
+        todos: () =>
+          EffectArray.map(model.todos, (todo) =>
             modifyFields(todo, {
-              completed: (): infer _ => !allCompleted,
+              completed: () => !allCompleted,
             })),
       }),
     }
   },
 
-  ClearedCompleted: (model): infer _ => ({
+  ClearedCompleted: (model) => ({
     model: modifyFields(model, {
-      todos: (): infer _ =>
-        EffectArray.filter(model.todos, (todo): infer _ => !todo.completed),
+      todos: () => EffectArray.filter(model.todos, (todo) => !todo.completed),
     }),
   }),
 
-  SelectedFilter: (model, { filter }): infer _ => ({
+  SelectedFilter: (model, { filter }) => ({
     model: modifyFields(model, {
-      filter: (): infer _ => filter,
+      filter: () => filter,
     }),
   }),
 }
@@ -285,9 +283,9 @@ const editingTodoView = (
         h.Name('title'),
         h.Id(`todo-${todo.id}`),
         h.Autofocus(true),
-        h.OnInput((text): infer _ => Message.UpdatedEditingTodo({ text })),
+        h.OnInput((text) => Message.UpdatedEditingTodo({ text })),
         h.OnBlur(Message.SavedEdit()),
-        h.OnKeyDownPreventDefault((key): infer _ => match (key) {
+        h.OnKeyDownPreventDefault((key) => match (key) {
           when 'Enter': Option.some(Message.SavedEdit());
           when 'Escape': Option.some(Message.CancelledEdit());
           default: Option.none();
@@ -301,8 +299,7 @@ const editingTodoView = (
 // constructs a fresh matcher on every call; done per todo per frame it
 // dominates view time, so these run on the tag directly.
 const todoItemView =
-  (editing: EditingState, h: HtmlBuilder<Message>): infer _ =>
-  (todo: Todo): Html => {
+  (editing: EditingState, h: HtmlBuilder<Message>) => (todo: Todo): Html => {
     if (editing._tag === 'Editing' && editing.id === todo.id) {
       return editingTodoView(todo, editing.text, h)
     }
@@ -314,9 +311,9 @@ export const filterTodos = (todos: Todos, filter: Filter): Todos => {
     return todos
   }
   if (filter === 'Active') {
-    return EffectArray.filter(todos, (todo): infer _ => !todo.completed)
+    return EffectArray.filter(todos, (todo) => !todo.completed)
   }
-  return EffectArray.filter(todos, (todo): infer _ => todo.completed)
+  return EffectArray.filter(todos, (todo) => todo.completed)
 }
 
 export const countActiveTodos = (todos: Todos): number => {
@@ -330,7 +327,7 @@ export const countActiveTodos = (todos: Todos): number => {
 }
 
 const filterItemView =
-  (active: Filter, h: HtmlBuilder<Message>): infer _ =>
+  (active: Filter, h: HtmlBuilder<Message>) =>
   (filter: Filter, label: string, href: string): Html => {
     return h.li(
       [h.OnClick(Message.SelectedFilter({ filter }))],
@@ -362,8 +359,8 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
         h.Autofocus(true),
         h.Value(model.newTodoText),
         h.Name('newTodo'),
-        h.OnInput((text): infer _ => Message.UpdatedNewTodo({ text })),
-        h.OnKeyDownPreventDefault((key): infer _ =>
+        h.OnInput((text) => Message.UpdatedNewTodo({ text })),
+        h.OnKeyDownPreventDefault((key) =>
           key === 'Enter' ? Option.some(Message.AddedTodo()) : Option.none()
         ),
       ]),
@@ -371,8 +368,8 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
   )
 
   const mainView = EffectArray.match(model.todos, {
-    onEmpty: (): infer _ => h.empty,
-    onNonEmpty: (): infer _ =>
+    onEmpty: () => h.empty,
+    onNonEmpty: () =>
       h.section(
         [h.Class('main')],
         [
@@ -394,8 +391,8 @@ export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
   })
 
   const footerView = EffectArray.match(model.todos, {
-    onEmpty: (): infer _ => h.empty,
-    onNonEmpty: (): infer _ =>
+    onEmpty: () => h.empty,
+    onNonEmpty: () =>
       h.footer(
         [h.Class('footer')],
         [

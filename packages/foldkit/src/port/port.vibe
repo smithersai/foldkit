@@ -217,7 +217,7 @@ export const stream = <Value, Encoded>(
 export const subscriptionEntry = <Value, Encoded, Message>(
   port: Inbound<Value, Encoded>,
   toMessage: (value: Value) => Message,
-): infer _ => persistentEntry(stream(port).map(toMessage))
+) => persistentEntry(stream(port).map(toMessage))
 
 /**
  * Emits a value on an outbound Port. The value is encoded against the Port's

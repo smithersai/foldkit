@@ -58,14 +58,14 @@ const makeAnimationFrameStream = <Message>(
  */
 export const animationFrameEntry = <Model, Message>(
   config: AnimationFrameConfig<Model, Message>,
-): infer _ => ({
+) => ({
   dependenciesSchema: Schema.Struct({ isActive: Schema.Boolean }),
-  modelToDependencies: (model: Model): infer _ => ({
+  modelToDependencies: (model: Model) => ({
     isActive: config.isActive(model),
   }),
   dependenciesToStream: (
     { isActive }: { readonly isActive: boolean },
-  ): infer _ =>
+  ) =>
     Stream.when(
       makeAnimationFrameStream(config.toMessage),
       Effect.succeed(isActive),
