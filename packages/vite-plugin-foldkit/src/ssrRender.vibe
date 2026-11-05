@@ -89,7 +89,17 @@ const renderRequest = effect (
       stylesheets: [],
       modulePreloads: [],
     })
-    const document = loadedModule.renderDocument(result.application, assets)
+    const renderDocument = loadedModule.renderDocument
+    const document = try Effect.orDie(
+      Effect.try({
+        try: () =>
+          Reflect.apply(renderDocument, loadedModule, [
+            result.application,
+            assets,
+          ]),
+        catch: cause => cause,
+      }),
+    )
     const transformed = try sync(
       async (
         server: ViteDevServer,

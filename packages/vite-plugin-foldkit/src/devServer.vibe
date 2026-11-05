@@ -21,6 +21,7 @@ import { type WebSocket, WebSocketServer } from 'ws'
 import {
   computeRelayProof,
   createRelayHttpServer,
+  requireRelayTcpAddress,
   reportRelayError,
   requestChallenge,
   requestPresentsProof,
@@ -286,7 +287,9 @@ const broadcastResponseToMcpClients = effect (
   const payload = encodeResponseFrameJson(frame)
   for (const client of state.mcpClients) {
     if (client.readyState === client.OPEN) {
-      client.send(payload)
+      try Effect.orDie(
+        Effect.try({ try: () => client.send(payload), catch: cause => cause }),
+      )
     }
   }
 }
@@ -326,7 +329,12 @@ const sendToRequester = effect (
   responseFrame: typeof ResponseFrame.Type,
 ) => {
   if (client.readyState === client.OPEN) {
-    client.send(encodeResponseFrameJson(responseFrame))
+    try Effect.orDie(
+      Effect.try({
+        try: () => client.send(encodeResponseFrameJson(responseFrame)),
+        catch: cause => cause,
+      }),
+    )
   }
 }
 
@@ -345,7 +353,12 @@ const replyListRuntimes = effect (
   )
   try sendToRequester(client, {
     id: requestId,
-    response: Response.ResponseRuntimes({ runtimes }),
+    response: try Effect.orDie(
+      Effect.try({
+        try: () => Response.ResponseRuntimes({ runtimes }),
+        catch: cause => cause,
+      }),
+    ),
   })
 }
 
@@ -378,10 +391,16 @@ const routeRequestToRuntime = effect (
   if (maybeUnknownConnectionId is Option.Some(let unknownConnectionId)) {
     try sendToRequester(client, {
       id: frame.id,
-      response: Response.ResponseError({
-        reason:
-          `No connected Foldkit Runtime has the id ${unknownConnectionId}. Call foldkit_list_runtimes for the current ids.`,
-      }),
+      response: try Effect.orDie(
+        Effect.try({
+          try: () =>
+            Response.ResponseError({
+              reason:
+                `No connected Foldkit Runtime has the id ${unknownConnectionId}. Call foldkit_list_runtimes for the current ids.`,
+            }),
+          catch: cause => cause,
+        }),
+      ),
     })
   } else {
     try forwardRequestToBrowsers(server, frame)
@@ -467,25 +486,42 @@ const registerViteWsHandlers = effect (
   state: State,
   enqueue: (event: Event) => void,
 ) => {
-  server.ws.on(
-    'foldkit:preserve-model',
-    payload => enqueue(Event.PreserveModelReceived({ payload })),
-  )
-  server.ws.on(
-    'foldkit:request-model',
-    payload => enqueue(Event.RequestModelReceived({ payload })),
-  )
-  server.ws.on(
-    'foldkit:devTools:event',
-    (data: unknown, client: WebSocketClient) => {
-      trackClientClose(state, client, enqueue)
-      enqueue(Event.BrowserEventFrameReceived({ data, client }))
-    },
-  )
-  server.ws.on(
-    'foldkit:devTools:response',
-    (data: unknown) => enqueue(Event.BrowserResponseFrameReceived({ data })),
-  )
+  try Effect.orDie(Effect.try({
+    try: () =>
+      server.ws.on(
+        'foldkit:preserve-model',
+        payload => enqueue(Event.PreserveModelReceived({ payload })),
+      ),
+    catch: cause => cause,
+  }))
+  try Effect.orDie(Effect.try({
+    try: () =>
+      server.ws.on(
+        'foldkit:request-model',
+        payload => enqueue(Event.RequestModelReceived({ payload })),
+      ),
+    catch: cause => cause,
+  }))
+  try Effect.orDie(Effect.try({
+    try: () =>
+      server.ws.on(
+        'foldkit:devTools:event',
+        (data: unknown, client: WebSocketClient) => {
+          trackClientClose(state, client, enqueue)
+          enqueue(Event.BrowserEventFrameReceived({ data, client }))
+        },
+      ),
+    catch: cause => cause,
+  }))
+  try Effect.orDie(Effect.try({
+    try: () =>
+      server.ws.on(
+        'foldkit:devTools:response',
+        (data: unknown) =>
+          enqueue(Event.BrowserResponseFrameReceived({ data })),
+      ),
+    catch: cause => cause,
+  }))
 }
 
 // MCP RELAY
@@ -615,17 +651,23 @@ const acceptRelayUpgrades = effect (
 ): Relay!! => {
   const wss = new WebSocketServer({ noServer: true })
   attachRelayHandlers(wss, enqueue)
-  wss.on('headers', (headers, request) => {
-    const challenge = requestChallenge(request)
+  try Effect.orDie(
+    Effect.try({
+      try: () =>
+        wss.on('headers', (headers, request) => {
+          const challenge = requestChallenge(request)
 
-    if (challenge !== undefined) {
-      headers.push(
-        `${RELAY_SERVER_PROOF_HEADER}: ${
-          computeRelayProof(token, 'server', challenge)
-        }`,
-      )
-    }
-  })
+          if (challenge !== undefined) {
+            headers.push(
+              `${RELAY_SERVER_PROOF_HEADER}: ${
+                computeRelayProof(token, 'server', challenge)
+              }`,
+            )
+          }
+        }),
+      catch: cause => cause,
+    }),
+  )
 
   httpServer.on('upgrade', (request, socket, head) => {
     const maybeUrl = parseRequestUrl(request)
@@ -665,7 +707,6 @@ const acceptRelayUpgrades = effect (
 }
 
 const bindLoopbackHttpServer = effect (): Server!RelayBindFailed => {
-  // callback's first argument is plain TypeScript, not VibeLang.
   return try callback<Server, RelayBindFailed, [string]>((host, resume) => {
     const httpServer = createRelayHttpServer()
     const onBindFailed = (cause: Error) => {
@@ -705,7 +746,6 @@ const bindStandaloneRelay = effect (
   id: string,
   enqueue: (event: Event) => void,
 ): Relay!RelayBindFailed => {
-  // callback's first argument is plain TypeScript, not VibeLang.
   return try callback<
     Relay,
     RelayBindFailed,
@@ -720,10 +760,7 @@ const bindStandaloneRelay = effect (
         wss.on('error', error => {
           reportRelayError('[foldkit:devTools] MCP relay error', error)
         })
-        const address = wss.address()
-        if (address === null || typeof address === 'string') {
-          throw new Error(noBoundPort)
-        }
+        const address = requireRelayTcpAddress(wss.address(), noBoundPort)
         resume({
           id,
           wss,
@@ -830,9 +867,13 @@ const releaseRelay = effect (
 
   relay.closeListener()
   for (const client of relay.wss.clients) {
-    client.terminate()
+    try Effect.orDie(
+      Effect.try({ try: () => client.terminate(), catch: cause => cause }),
+    )
   }
-  relay.wss.close()
+  try Effect.orDie(
+    Effect.try({ try: () => relay.wss.close(), catch: cause => cause }),
+  )
   try Console.log('[foldkit:devTools] MCP relay stopped')
 }
 

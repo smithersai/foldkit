@@ -2,6 +2,7 @@ import * as Server from 'foldkit/experimental/server'
 import type { ServerResponse } from 'node:http'
 import type { Connect, ProxyOptions, ViteDevServer } from 'vite'
 
+import { trackHeaderWrites as trackNodeHeaderWrites } from './ssr.platform.ts'
 import { renderPage } from './ssrRender.vibe'
 
 export { foldkitSsr } from './ssrPlugin.ts'
@@ -60,7 +61,7 @@ export type FoldkitSsrOptions = Readonly<{
 // The dev host's request handling: target normalization, the CORS ownership
 // boundary, content negotiation and the render middleware. The `foldkitSsr`
 // plugin and the hooks that throw on a misconfiguration stay in ssrPlugin.ts
-// (plain functions never throw, Will 2026-10-31); they call in here.
+// (plain VibeLang functions never throw); they call in here.
 
 // The origin the dev server serves, taken from the plugin option when the
 // deployment sets one and otherwise from the server's own resolved
@@ -351,34 +352,7 @@ type HeaderWriteTracking = Readonly<{
 
 const trackHeaderWrites = (
   nodeResponse: ServerResponse,
-): HeaderWriteTracking => {
-  const names = new Set<string>()
-  const setHeader = nodeResponse.setHeader
-  const appendHeader = nodeResponse.appendHeader
-  const removeHeader = nodeResponse.removeHeader
-
-  nodeResponse.setHeader = function(name, value) {
-    names.add(String(name).toLowerCase())
-    return Reflect.apply(setHeader, this, [name, value])
-  }
-  nodeResponse.appendHeader = function(name, value) {
-    names.add(String(name).toLowerCase())
-    return Reflect.apply(appendHeader, this, [name, value])
-  }
-  nodeResponse.removeHeader = function(name) {
-    names.add(String(name).toLowerCase())
-    return Reflect.apply(removeHeader, this, [name])
-  }
-
-  return {
-    names,
-    stop: () => {
-      nodeResponse.setHeader = setHeader
-      nodeResponse.appendHeader = appendHeader
-      nodeResponse.removeHeader = removeHeader
-    },
-  }
-}
+): HeaderWriteTracking => trackNodeHeaderWrites(nodeResponse)
 
 export type CorsResponseState = Readonly<{
   mutations: ReadonlyArray<HeaderMutation>

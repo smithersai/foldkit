@@ -10,6 +10,7 @@ import {
   type ServerResponse,
   createServer as createHttpServer,
 } from 'node:http'
+import type { AddressInfo } from 'node:net'
 import { trusted } from 'vibelang-runtime'
 
 const RELAY_TOKEN_PARAMETER = 'token'
@@ -99,4 +100,14 @@ export const createRelayHttpServer = (): Server =>
 /** Reports a socket error that fires outside any fiber. */
 export const reportRelayError = (message: string, error: unknown): void => {
   console.error(message, error)
+}
+
+export const requireRelayTcpAddress = (
+  address: AddressInfo | string | null,
+  noBoundPort: string,
+): AddressInfo => {
+  if (address === null || typeof address === 'string') {
+    throw new Error(noBoundPort)
+  }
+  return address
 }
