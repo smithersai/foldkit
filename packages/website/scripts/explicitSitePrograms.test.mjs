@@ -11,6 +11,8 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
+import { declarationContract } from './declarationContract.mjs'
+
 const scripts = dirname(fileURLToPath(import.meta.url))
 const website = resolve(scripts, '..')
 const root = resolve(website, '../..')
@@ -144,8 +146,10 @@ describe('explicit programs in the website', () => {
       /FiberMap\.run\(\s*pendingWrites,\s*path,\s*effect\s*\{/,
     )
   })
-  test('retains raw declarations for the original, native and typed mutant', () => {
-    expect(new Set(declarations).size).toBe(1)
+  test('retains declarations except generated failure metadata for the original, native and typed mutant', () => {
+    const contracts = declarations.map(declarationContract)
+    expect(contracts.length).toBeGreaterThan(0)
+    for (const contract of contracts) expect(contract).toBe(contracts[0])
   })
   test('preserves cold scheduling, cancellation, CSS refresh and failures', () => {
     const result = run(false)

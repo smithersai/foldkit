@@ -1,0 +1,9 @@
+{
+  "pattern": "Imported Option module types keep their explicit namespace",
+  "optionType": "Option.Option<number>",
+  "witnesses": [
+    "Option.Option<BlogPostEntry>",
+    "Option.Option<PostCover>",
+    "Option.Option<string>"
+  ]
+}

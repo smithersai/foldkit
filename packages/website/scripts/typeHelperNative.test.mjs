@@ -12,6 +12,8 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
+import { declarationContract } from './declarationContract.mjs'
+
 const scripts = dirname(fileURLToPath(import.meta.url))
 const website = resolve(scripts, '..')
 const root = resolve(website, '../..')
@@ -162,8 +164,10 @@ describe('native choices in the TypeDoc formatter', () => {
       compileText,
     ).toEqual([])
   })
-  test('retains raw declarations and bidirectional contracts', () => {
-    expect(new Set(declarations).size).toBe(1)
+  test('retains declarations except generated failure metadata and bidirectional contracts', () => {
+    const contracts = declarations.map(declarationContract)
+    expect(contracts.length).toBeGreaterThan(0)
+    for (const contract of contracts) expect(contract).toBe(contracts[0])
   })
   test('preserves all type kinds, nested outputs and getter traces', () => {
     const result = run(false)

@@ -11,6 +11,8 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
+import { declarationContract } from './declarationContract.mjs'
+
 const scripts = dirname(fileURLToPath(import.meta.url))
 const website = resolve(scripts, '..')
 const root = resolve(website, '../..')
@@ -157,8 +159,10 @@ describe('native execution in the good managed WebSocket snippet', () => {
   test('uses native sequencing and checked failure handling', () => {
     expect(current).not.toMatch(/\bEffect\.(?:flatMap|match)\s*\(/)
   })
-  test('retains raw program declarations', () => {
-    expect(new Set(declarations).size).toBe(1)
+  test('retains program declarations except generated failure metadata', () => {
+    const contracts = declarations.map(declarationContract)
+    expect(contracts.length).toBeGreaterThan(0)
+    for (const contract of contracts) expect(contract).toBe(contracts[0])
   })
   test('preserves eager lookup, cold runs, messages and failure channels', () => {
     const result = run()

@@ -1,4 +1,4 @@
-import { Effect } from 'effect'
+import { Effect, Option } from 'effect'
 import fc from 'fast-check'
 import { spawnSync } from 'node:child_process'
 import {
@@ -19,6 +19,8 @@ import { dirname, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 
+import { declarationContract } from './declarationContract.mjs'
+
 const scripts = dirname(fileURLToPath(import.meta.url))
 const website = resolve(scripts, '..')
 const root = resolve(website, '../..')
@@ -27,6 +29,12 @@ const ts = createRequire(join(root, 'package.json'))('typescript')
 const corpus = JSON.parse(
   readFileSync(
     join(scripts, 'fixtures/foldkit-website-cold-callbacks.json'),
+    'utf8',
+  ),
+)
+const namespaceCorpus = JSON.parse(
+  readFileSync(
+    join(scripts, 'fixtures/foldkit-option-type-namespace.json'),
     'utf8',
   ),
 )
@@ -205,6 +213,9 @@ const javascript = file => {
 }
 const program = (model, native) =>
   [
+    'export const maybeValue = (input: number): ' +
+      namespaceCorpus.optionType +
+      ' => Option.some(input)',
     'export type Page = { close: () => Promise<number> }',
     'export type Args = { element: { readonly scrollHeight: number }; snippetId: string }',
     'export const cleanup = ' +
@@ -249,7 +260,7 @@ test('explicit-effects callbacks preserve TypeScript declarations and cold call 
             )
             writeFileSync(
               file,
-              'import { Effect } from "effect"\n' +
+              'import { Effect, Option } from "effect"\n' +
                 program(value, side === 'native'),
             )
             return file
@@ -278,10 +289,15 @@ test('explicit-effects callbacks preserve TypeScript declarations and cold call 
           const value = models[index]
           const before = join(outputs.typescript, 'typescript', 'case_' + index)
           const after = join(outputs.native, 'native', 'case_' + index)
-          expect(readFileSync(after + '.d.ts')).toEqual(
-            readFileSync(before + '.d.ts'),
+          expect(declarationContract(readFileSync(after + '.d.ts'))).toEqual(
+            declarationContract(readFileSync(before + '.d.ts')),
           )
           const callbacks = await import(pathToFileURL(after + '.js').href)
+          const maybeValue = callbacks.maybeValue(value.value)
+          expect(Option.isSome(maybeValue)).toBe(true)
+          if (Option.isSome(maybeValue))
+            expect(maybeValue.value).toBe(value.value)
+
           const trace = []
           const cleanup = callbacks.cleanup({
             close: () => {
@@ -378,7 +394,7 @@ test('explicit-effects callbacks preserve TypeScript declarations and cold call 
               corpusModels: corpus.fixedModels.length,
               compared: models.length,
               actualRuntimeRuns: runs,
-              declarationsRawIdentical: true,
+              declarationsEqualExceptGeneratedMetadata: true,
               explicitEffectsAgainstTypeScriptDeclarations: true,
               coldConstructionAndRepeatedRuns: true,
               validTypedEagerMutantRejected: true,

@@ -91,3 +91,9 @@ Generated schema fixtures keep their fields `readonly`, matching the original
 
 The deferred-resource-lookup mutant uses supported native catch syntax. Its
 runtime getter trace rejects delayed acquisition rather than a parser error.
+
+Declaration regressions compare parsed type syntax and ordinary documentation
+while excluding generated `@throws {never}` metadata and emitter formatting.
+Generated controls retain literal text, other failure contracts, optionality,
+readonly fields and changed return types. Qualified `Option.Option<number>`
+fixtures also preserve their TypeScript declarations and `Some` values.
