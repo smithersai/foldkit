@@ -34,7 +34,7 @@ const toBlogPost = (path: string, document: unknown): BlogPost => ({
   frontmatter: decodePostFrontmatter(
     Option.getOrThrowWith(
       maybePostFrontmatter(path),
-      (): infer _ => new Error(`Blog post ${path} has no frontmatter block.`),
+      () => new Error(`Blog post ${path} has no frontmatter block.`),
     ),
   ),
   document,
@@ -43,13 +43,13 @@ const toBlogPost = (path: string, document: unknown): BlogPost => ({
 /** Every blog post, newest first. */
 export const posts: ReadonlyArray<BlogPost> = pipe(
   Object.entries(documentByPath),
-  Arr.map(([path, document]): infer _ => toBlogPost(path, document)),
+  Arr.map(([path, document]) => toBlogPost(path, document)),
   Arr.sort(byDateThenSlugDescending),
 )
 
 /** Looks up a post by the slug in its URL. */
 export const findPostBySlug = (slug: string): Option<BlogPost> =>
-  Arr.findFirst(posts, (post): infer _ => post.slug === slug)
+  Arr.findFirst(posts, (post) => post.slug === slug)
 
 /** Formats a post's `YYYY-MM-DD` date for display, e.g. `August 1, 2026`. */
 export const formatPostDate = (date: string): string => match (DateTime.make(date)) {

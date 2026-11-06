@@ -31,18 +31,18 @@ const postView = (
 ): Html => {
   const renderCopyButton = SnippetCopy.renderer(
     snippetCopy,
-    (message): infer _ => Message.GotSnippetCopyMessage({ message }),
+    (message) => Message.GotSnippetCopyMessage({ message }),
     h,
   )
 
   const renderSnippet = SnippetDisclosure.renderer(
     snippetDisclosure,
-    (message): infer _ => Message.GotSnippetDisclosureMessage({ message }),
+    (message) => Message.GotSnippetDisclosureMessage({ message }),
     renderCopyButton,
     h,
   )
   const renderHeadingLink = Prose.renderHeadingLink(
-    (hash): infer _ => Message.ClickedCopyLink({ hash }),
+    (hash) => Message.ClickedCopyLink({ hash }),
     h,
   )
 
@@ -52,8 +52,7 @@ const postView = (
       model: uiPages,
       view: Release0167.view,
       viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
-      toParentMessage: (message): infer _ =>
-        Message.GotUiPageMessage({ message }),
+      toParentMessage: (message) => Message.GotUiPageMessage({ message }),
     })
     : docPage(post.document, post.slug).view(
       renderCopyButton,

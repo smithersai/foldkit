@@ -234,7 +234,7 @@ const urlPathToSlug = (urlPath: string): string => {
 const maybeRoutePostEntry = (route: AppRoute): Option<BlogPostEntry> => match (route) {
   when { _tag: 'BlogPost', let postSlug }: Arr.findFirst(
     blogPosts,
-    ({ slug }): infer _ => slug === postSlug,
+    ({ slug }) => slug === postSlug,
   );
   default: Option.none();
 }
@@ -242,7 +242,7 @@ const maybeRoutePostEntry = (route: AppRoute): Option<BlogPostEntry> => match (r
 const maybeRouteCover = (route: AppRoute): Option<PostCover> =>
   Option.flatMap(
     maybeRoutePostEntry(route),
-    ({ frontmatter }): infer _ => maybePostCover(frontmatter),
+    ({ frontmatter }) => maybePostCover(frontmatter),
   )
 
 effect function coverMimeType(src: string): string!OgImageError! {
@@ -321,7 +321,7 @@ const renderOgImage = (
   routeToUrlPath: (route: AppRoute) => string,
   resolveApiModuleName: ApiModuleNameResolver,
   browser: Browser,
-): infer _ =>
+) =>
 effect (route: AppRoute) => {
   const slug = urlPathToSlug(routeToUrlPath(route))
   return (effect {
@@ -517,9 +517,9 @@ export const injectMetaTags = (
     : `${metadata.title} | ${SITE_NAME}`
 
   const ogImageAlt = maybeRouteCover(route)
-    .map((cover): infer _ => cover.alt)
+    .map((cover) => cover.alt)
     .filter(Str.isNonEmpty)
-    .getOrElse((): infer _ => generatedOgImageAlt(metadata))
+    .getOrElse(() => generatedOgImageAlt(metadata))
 
   const escapedTitle = escapeHtml(fullTitle)
   const escapedDescription = escapeHtml(metadata.description)
@@ -605,7 +605,7 @@ export const injectMetaTags = (
   const withMetaTags = Arr.reduce(
     metaTagReplacements,
     html,
-    (currentHtml, [pattern, replacement]): infer _ =>
+    (currentHtml, [pattern, replacement]) =>
       replaceOrThrow(currentHtml, pattern, replacement, urlPath),
   )
 

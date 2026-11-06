@@ -200,7 +200,7 @@ type TypeDocTypeEncoded =
   | TypeDocUnknownType
 
 /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
-export const TypeDocTypeSchema = Schema.suspend((): infer _ =>
+export const TypeDocTypeSchema = Schema.suspend(() =>
   Schema.Union([
     Schema.Struct({ type: Schema.Literal('intrinsic'), name: Schema.String }),
     Schema.Struct({ type: Schema.Literal('literal'), value: Schema.Unknown }),
@@ -359,7 +359,7 @@ export const TypeDocItem: Schema.Codec<TypeDocItem, TypeDocItemEncoded> =
     children: Schema.OptionFromOptional(
       Schema.Array(
         Schema.suspend(
-          (): infer _ =>
+          () =>
             /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
             TypeDocItem as unknown as Schema.Codec<
               TypeDocItem,

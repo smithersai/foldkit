@@ -88,15 +88,15 @@ const isExampleUrlMessageFromIframe = (
   && event.data.type === BRIDGE_MESSAGE_TYPE
   && typeof event.data.url === 'string'
 
-const observeExampleUrlMessages = (element: Element): infer _ => {
+const observeExampleUrlMessages = (element: Element) => {
   if (!isHtmlIframeElement(element)) {
     return Stream.empty
   }
 
   return Dom.streamFromEventFilterMap({
-    target: (): infer _ => browserWindow(),
+    target: () => browserWindow(),
     type: 'message',
-    filterMapEvent: (event): infer _ => {
+    filterMapEvent: (event) => {
       if (!isExampleUrlMessageFromIframe(event, element)) {
         return Option.none()
       }
@@ -109,7 +109,7 @@ const ObserveExampleUrlMessages = Mount.defineStream(
   'ObserveExampleUrlMessages',
   {
     messages: [Message.ChangedExampleUrl],
-    execute: ({ element }): infer _ => observeExampleUrlMessages(element),
+    execute: ({ element }) => observeExampleUrlMessages(element),
   },
 )
 
@@ -153,55 +153,54 @@ export const boot = (
 
 // UPDATE
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
-    GotSourceFileTabsMessage: ({ message }): infer _ =>
+    GotSourceFileTabsMessage: ({ message }) =>
       foldSourceFileTabs(model, message),
-    ChangedExampleUrl: ({ url }): infer _ => ({
+    ChangedExampleUrl: ({ url }) => ({
       model: modifyFields(model, {
-        maybeExampleUrl: (): infer _ => Option.some(url),
+        maybeExampleUrl: () => Option.some(url),
       }),
     }),
-    ToggledLivePreview: ({ isOpen }): infer _ => ({
-      model: modifyFields(model, { isLivePreviewOpen: (): infer _ => isOpen }),
+    ToggledLivePreview: ({ isOpen }) => ({
+      model: modifyFields(model, { isLivePreviewOpen: () => isOpen }),
     }),
 
-    RequestedExampleSources: ({ slug }): infer _ => ({
+    RequestedExampleSources: ({ slug }) => ({
       model: modifyFields(model, {
-        sourceFileTabs: (): infer _ => Tabs.init({ id: 'source-file-tabs' }),
-        maybeActiveSourceFilePath: (): infer _ => Option.none(),
-        maybeExampleUrl: (): infer _ => Option.none(),
-        currentSources: (): infer _ => CurrentSourcesAsyncData.Loading(),
+        sourceFileTabs: () => Tabs.init({ id: 'source-file-tabs' }),
+        maybeActiveSourceFilePath: () => Option.none(),
+        maybeExampleUrl: () => Option.none(),
+        currentSources: () => CurrentSourcesAsyncData.Loading(),
       }),
       commands: [LoadExampleSources({ slug })],
     }),
 
-    SucceededLoadExampleSources: ({ sources }): infer _ => ({
+    SucceededLoadExampleSources: ({ sources }) => ({
       model: modifyFields(model, {
-        maybeActiveSourceFilePath: (): infer _ =>
-          Arr.head(sources.files).map((file): infer _ => file.path),
-        currentSources: (): infer _ =>
+        maybeActiveSourceFilePath: () =>
+          Arr.head(sources.files).map((file) => file.path),
+        currentSources: () =>
           CurrentSourcesAsyncData.Success({ data: sources }),
       }),
     }),
 
-    FailedLoadExampleSources: ({ error }): infer _ => ({
+    FailedLoadExampleSources: ({ error }) => ({
       model: modifyFields(model, {
-        currentSources: (): infer _ =>
-          CurrentSourcesAsyncData.Failure({ error }),
+        currentSources: () => CurrentSourcesAsyncData.Failure({ error }),
       }),
     }),
   })
 
-export const informRouteChanged = (model: Model, slug: string): infer _ =>
+export const informRouteChanged = (model: Model, slug: string) =>
   isSourceAvailable(slug)
     ? update(model, Message.RequestedExampleSources({ slug }))
     : {
       model: modifyFields(model, {
-        sourceFileTabs: (): infer _ => Tabs.init({ id: 'source-file-tabs' }),
-        maybeActiveSourceFilePath: (): infer _ => Option.none(),
-        maybeExampleUrl: (): infer _ => Option.none(),
-        currentSources: (): infer _ => CurrentSourcesAsyncData.Idle(),
+        sourceFileTabs: () => Tabs.init({ id: 'source-file-tabs' }),
+        maybeActiveSourceFilePath: () => Option.none(),
+        maybeExampleUrl: () => Option.none(),
+        currentSources: () => CurrentSourcesAsyncData.Idle(),
       }),
     }
 
@@ -261,7 +260,7 @@ const headerView = (meta: ExampleMeta): Html =>
         : [
           ih.div(
             [ih.Class('flex flex-wrap items-center gap-2 mt-3')],
-            Arr.map(meta.tags, (text): infer _ => featureTag(text)),
+            Arr.map(meta.tags, (text) => featureTag(text)),
           ),
         ]),
       ...(meta.livePreview === 'Unavailable' ? [] : [exampleActions(meta)]),
@@ -306,8 +305,7 @@ const pausedExampleNotice = (meta: ExampleMeta): Html =>
 const urlBarContent = (
   meta: ExampleMeta,
   maybeExampleUrl: Option<string>,
-): string =>
-  meta.hasRouting ? maybeExampleUrl.getOrElse((): infer _ => '/') : '/'
+): string => meta.hasRouting ? maybeExampleUrl.getOrElse(() => '/') : '/'
 
 const trafficLightDots = (): Html =>
   ih.div(
@@ -366,8 +364,8 @@ const livePreviewDisclosureView = (
     {
       id: 'live-preview',
       isOpen: isLivePreviewOpen,
-      onToggle: (isOpen): infer _ => Message.ToggledLivePreview({ isOpen }),
-      toView: (attributes): infer _ =>
+      onToggle: (isOpen) => Message.ToggledLivePreview({ isOpen }),
+      toView: (attributes) =>
         h.div(
           [],
           [
@@ -433,20 +431,19 @@ const SourceFileTabs = Tabs.create()
 const foldSourceFileTabsOutMessage = Tabs.OutMessage.match<
   Update.Step<Model, Message>
 >({
-  Selected: ({ value }): infer _ => (model): infer _ => ({
+  Selected: ({ value }) => (model) => ({
     model: modifyFields(model, {
-      maybeActiveSourceFilePath: (): infer _ => Option.some(value),
+      maybeActiveSourceFilePath: () => Option.some(value),
     }),
   }),
 })
 
 const foldSourceFileTabs = Update.foldChild({
   update: SourceFileTabs.update,
-  read: (model: Model): infer _ => Option.some(model.sourceFileTabs),
-  write: (model, nextSourceFileTabs): infer _ =>
-    modifyFields(model, { sourceFileTabs: (): infer _ => nextSourceFileTabs }),
-  toParentMessage: (message): infer _ =>
-    Message.GotSourceFileTabsMessage({ message }),
+  read: (model: Model) => Option.some(model.sourceFileTabs),
+  write: (model, nextSourceFileTabs) =>
+    modifyFields(model, { sourceFileTabs: () => nextSourceFileTabs }),
+  toParentMessage: (message) => Message.GotSourceFileTabsMessage({ message }),
   foldOutMessage: foldSourceFileTabsOutMessage,
 })
 
@@ -468,7 +465,7 @@ const sourceCodeView = (
   renderSnippet: CodeBlock.RenderSnippet,
   h: HtmlBuilder<Message>,
 ): Html => {
-  const filePaths = Arr.map(files, (file): infer _ => file.path)
+  const filePaths = Arr.map(files, (file) => file.path)
 
   return h.submodel({
     slotId: tabsModel.id,
@@ -479,7 +476,7 @@ const sourceCodeView = (
       selectedValue: activeSourceFilePath,
       ariaLabel: 'Source files',
       orientation: isNarrowViewport ? 'Horizontal' : 'Vertical',
-      toView: ({ tablist, tabs, activeIndex }): infer _ =>
+      toView: ({ tablist, tabs, activeIndex }) =>
         h.div(
           [
             h.Class(
@@ -494,7 +491,7 @@ const sourceCodeView = (
                   'flex flex-shrink-0 overflow-x-auto lg:overflow-x-visible lg:overflow-y-auto lg:w-44 lg:flex-col border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700/50 bg-gray-200 dark:bg-gray-800/50 divide-x lg:divide-x-0 lg:divide-y divide-gray-200 dark:divide-gray-700/50',
                 ),
               ],
-              tabs.map((tab): infer _ =>
+              tabs.map((tab) =>
                 h.button(
                   [
                     ...tab.tab,
@@ -507,11 +504,11 @@ const sourceCodeView = (
               ),
             ),
             ...tabs
-              .filter((tab): infer _ => tab.index === activeIndex)
-              .map((tab): infer _ => {
+              .filter((tab) => tab.index === activeIndex)
+              .map((tab) => {
                 const maybeFile = Arr.findFirst(
                   files,
-                  (file): infer _ => file.path === tab.value,
+                  (file) => file.path === tab.value,
                 )
                 return h.div(
                   [...tab.panel, h.Class('code-embed-panel')],
@@ -541,8 +538,7 @@ const sourceCodeView = (
           ],
         ),
     },
-    toParentMessage: (message): infer _ =>
-      Message.GotSourceFileTabsMessage({ message }),
+    toParentMessage: (message) => Message.GotSourceFileTabsMessage({ message }),
   })
 }
 
@@ -567,7 +563,7 @@ const sourcesSkeletonView = (): Html =>
             'flex flex-shrink-0 overflow-hidden lg:w-44 lg:flex-col bg-gray-200 dark:bg-gray-800/50 p-3 gap-2',
           ),
         ],
-        Arr.map(skeletonFileRowClasses, (widthClass): infer _ =>
+        Arr.map(skeletonFileRowClasses, (widthClass) =>
           ih.div([
             ih.Class(`h-5 ${widthClass} rounded bg-gray-300 dark:bg-gray-700`),
           ])),
@@ -635,20 +631,20 @@ const availableExampleContentView = (
     [h.Class('mt-6')],
     [
       AsyncData.matchData(model.currentSources, {
-        onEmpty: (): infer _ => sourcesSkeletonView(),
-        onFailure: (error): infer _ => sourcesFailureView(error),
-        onData: (sources): infer _ =>
+        onEmpty: () => sourcesSkeletonView(),
+        onFailure: (error) => sourcesFailureView(error),
+        onData: (sources) =>
           h.div(
             [],
             Arr.match(sources.files, {
-              onEmpty: (): infer _ => [],
-              onNonEmpty: (files): infer _ => [
+              onEmpty: () => [],
+              onNonEmpty: (files) => [
                 sourceCodeView(
                   slug,
                   files,
                   model.sourceFileTabs,
                   model.maybeActiveSourceFilePath.getOrElse(
-                    (): infer _ => Arr.headNonEmpty(files).path,
+                    () => Arr.headNonEmpty(files).path,
                   ),
                   isNarrowViewport,
                   renderSnippet,

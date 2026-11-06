@@ -6,21 +6,21 @@ import { type Model } from '../model.vibe'
 
 export const subscriptions = Subscription.make<Model, Message>()((
   entry,
-): infer _ => ({
+) => ({
   systemTheme: entry(
     { isSystemPreference: Schema.Boolean },
     {
-      modelToDependencies: (model): infer _ => ({
+      modelToDependencies: (model) => ({
         isSystemPreference: Option.exists(
           model.maybeThemePreference,
           (preference): preference is 'System' => preference === 'System',
         ),
       }),
-      dependenciesToStream: ({ isSystemPreference }): infer _ =>
+      dependenciesToStream: ({ isSystemPreference }) =>
         Stream.when(
           Dom.streamFromMediaQuery({
             query: DARK_COLOR_SCHEME_QUERY,
-            mapMatches: (isDark): infer _ =>
+            mapMatches: (isDark) =>
               Message.ChangedSystemTheme({ theme: isDark ? 'Dark' : 'Light' }),
           }),
           Effect.sync(() => isSystemPreference),

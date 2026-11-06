@@ -85,13 +85,13 @@ export const signaturesLength = (apiFunction: ApiFunction): number =>
   Arr.reduce(
     apiFunction.signatures,
     0,
-    (total, signature): infer _ =>
+    (total, signature) =>
       total
       + pipe(signature.typeParameters, Arr.join(', '), Str.length)
       + Arr.reduce(
         signature.parameters,
         0,
-        (innerTotal, parameter): infer _ =>
+        (innerTotal, parameter) =>
           innerTotal
           + Str.length(parameter.name)
           + Str.length(parameter.type),
@@ -116,7 +116,7 @@ export const scopedIdBelongsToModule = (
 ): boolean =>
   Option.exists(
     Str.indexOf('-')(id),
-    (kindSeparatorIndex): infer _ =>
+    (kindSeparatorIndex) =>
       id.startsWith(`${moduleName}/`, kindSeparatorIndex + 1),
   )
 
@@ -149,10 +149,10 @@ const findStructReflection = (
       arguments_,
       Arr.head,
       Option.filter(isReflectionType),
-      Option.flatMap(({ declaration }): infer _ => declaration),
+      Option.flatMap(({ declaration }) => declaration),
     )
     : Option.none()
-  return Option.orElse(direct, (): infer _ =>
+  return Option.orElse(direct, () =>
     pipe(
       arguments_,
       Arr.flatMap(flow(findStructReflection, Arr.fromOption)),
@@ -168,8 +168,8 @@ const variableQualifiedName = (
     modulePath,
     Str.split('/'),
     Arr.last,
-    Option.getOrElse((): infer _ => modulePath),
-    (namespace): infer _ => `${namespace}.${variableName}`,
+    Option.getOrElse(() => modulePath),
+    (namespace) => `${namespace}.${variableName}`,
   )
 
 type FingerprintEntry = readonly [string, string]
@@ -180,20 +180,20 @@ const itemFingerprintEntries = (
 ): ReadonlyArray<FingerprintEntry> =>
   item.type
     .flatMap(findStructReflection)
-    .flatMap(({ children }): infer _ => children)
+    .flatMap(({ children }) => children)
     .filter(Arr.isReadonlyArrayNonEmpty)
     .match({
-      onNone: (): infer _ => [],
+      onNone: () => [],
       onSome: (
         children,
-      ): infer _ => [[reflectionFingerprint(children), qualifiedName]],
+      ) => [[reflectionFingerprint(children), qualifiedName]],
     })
 
 const collectFromItems = (
   modulePath: string,
   items: ReadonlyArray<TypeDocItem>,
 ): ReadonlyArray<FingerprintEntry> =>
-  Arr.flatMap(items, (item): infer _ =>
+  Arr.flatMap(items, (item) =>
     do {
       const matchSubject = item.kind
       const patternVariable = Kind.Variable
@@ -207,8 +207,8 @@ const collectFromItems = (
         when let selected and if (selected === patternNamespace): Option.match(
           item.children,
           {
-            onNone: (): infer _ => [],
-            onSome: (children): infer _ =>
+            onNone: () => [],
+            onSome: (children) =>
               collectFromItems(`${modulePath}/${item.name}`, children),
           },
         );
@@ -219,18 +219,18 @@ const collectFromItems = (
 export const collectNamedSchemas = (json: TypeDocJson): NamedSchemas => {
   const entries = Arr.flatMap(
     json.children,
-    (module): infer _ => collectFromItems(module.name, module.children),
+    (module) => collectFromItems(module.name, module.children),
   )
   const counts = Arr.reduce(
     entries,
     new Map<string, number>(),
-    (acc, [fingerprint]): infer _ =>
+    (acc, [fingerprint]) =>
       acc.set(fingerprint, (acc.get(fingerprint) ?? 0) + 1),
   )
   return new Map(
     Arr.filter(
       entries,
-      ([fingerprint]): infer _ => counts.get(fingerprint) === 1,
+      ([fingerprint]) => counts.get(fingerprint) === 1,
     ),
   )
 }
@@ -241,7 +241,7 @@ const partsToSummaryText = (
   parts: ReadonlyArray<TypeDocCommentPart>,
 ): Option<string> =>
   pipe(
-    Arr.map(parts, ({ text }): infer _ => text),
+    Arr.map(parts, ({ text }) => text),
     Arr.join(''),
     Str.trim,
     Option.liftPredicate(Str.isNonEmpty),
@@ -249,31 +249,30 @@ const partsToSummaryText = (
 
 const itemToDescription = (item: TypeDocItem): Option<string> =>
   item.comment
-    .flatMap((comment): infer _ => comment.summary)
+    .flatMap((comment) => comment.summary)
     .flatMap(partsToSummaryText)
 
 const itemToSourceUrl = (item: TypeDocItem): Option<string> =>
   item.sources
     .flatMap(Arr.head)
-    .flatMap(({ url }): infer _ => url)
+    .flatMap(({ url }) => url)
 
 const signatureToDescription = (item: TypeDocItem): Option<string> =>
   item.signatures
     .flatMap(Arr.head)
-    .flatMap(({ comment }): infer _ => comment)
-    .flatMap((comment): infer _ => comment.summary)
+    .flatMap(({ comment }) => comment)
+    .flatMap((comment) => comment.summary)
     .flatMap(partsToSummaryText)
 
 const parseParameter =
-  (namedSchemas: NamedSchemas): infer _ =>
-  (parameter: TypeDocParam): ApiParameter => ({
+  (namedSchemas: NamedSchemas) => (parameter: TypeDocParam): ApiParameter => ({
     name: parameter.name,
     type: typeToString(parameter.type, 0, namedSchemas),
     isOptional: parameter.flags.isOptional,
     isRest: parameter.flags.isRest,
     defaultValue: parameter.defaultValue,
     description: parameter.comment
-      .flatMap((comment): infer _ => comment.summary)
+      .flatMap((comment) => comment.summary)
       .flatMap(partsToSummaryText),
   })
 
@@ -282,21 +281,21 @@ const parseSignatures = (
   item: TypeDocItem,
 ): ReadonlyArray<ApiFunctionSignature> =>
   Option.match(item.signatures, {
-    onNone: (): infer _ => [],
-    onSome: Arr.map((signature): infer _ => ({
+    onNone: () => [],
+    onSome: Arr.map((signature) => ({
       parameters: Option.match(signature.parameters, {
-        onNone: (): infer _ => [],
+        onNone: () => [],
         onSome: Arr.map(parseParameter(namedSchemas)),
       }),
       returnType: typeToString(signature.type, 0, namedSchemas),
       typeParameters: Option.match(signature.typeParameters, {
-        onNone: (): infer _ => [],
-        onSome: Arr.map(({ name }): infer _ => name),
+        onNone: () => [],
+        onSome: Arr.map(({ name }) => name),
       }),
     })),
   })
 
-const parseFunction = (namedSchemas: NamedSchemas): infer _ =>
+const parseFunction = (namedSchemas: NamedSchemas) =>
 (
   item: TypeDocItem,
 ): ApiFunction => ({
@@ -307,17 +306,17 @@ const parseFunction = (namedSchemas: NamedSchemas): infer _ =>
 })
 
 const parseType =
-  (namedSchemas: NamedSchemas): infer _ => (item: TypeDocItem): ApiType => ({
+  (namedSchemas: NamedSchemas) => (item: TypeDocItem): ApiType => ({
     name: item.name,
     description: itemToDescription(item),
     typeDefinition: Option.match(item.type, {
-      onNone: (): infer _ => typeDefFromChildren(item.children, namedSchemas),
-      onSome: (): infer _ => typeToString(item.type, 0, namedSchemas),
+      onNone: () => typeDefFromChildren(item.children, namedSchemas),
+      onSome: () => typeToString(item.type, 0, namedSchemas),
     }),
     sourceUrl: itemToSourceUrl(item),
   })
 
-const parseInterface = (namedSchemas: NamedSchemas): infer _ =>
+const parseInterface = (namedSchemas: NamedSchemas) =>
 (
   item: TypeDocItem,
 ): ApiInterface => ({
@@ -327,7 +326,7 @@ const parseInterface = (namedSchemas: NamedSchemas): infer _ =>
   sourceUrl: itemToSourceUrl(item),
 })
 
-const parseVariable = (namedSchemas: NamedSchemas): infer _ =>
+const parseVariable = (namedSchemas: NamedSchemas) =>
 (
   item: TypeDocItem,
 ): ApiVariable => ({
@@ -345,29 +344,29 @@ const parseItemsAsModule = (
   name,
   functions: pipe(
     children,
-    Arr.filter((item): infer _ => item.kind === Kind.Function),
+    Arr.filter((item) => item.kind === Kind.Function),
     Arr.map(parseFunction(namedSchemas)),
     Arr.sort(byName()),
   ),
   types: pipe(
     children,
     Arr.filter(
-      ({ kind, type }): infer _ =>
+      ({ kind, type }) =>
         kind === Kind.TypeAlias
-        && !Option.exists(type, ({ type }): infer _ => type === 'query'),
+        && !Option.exists(type, ({ type }) => type === 'query'),
     ),
     Arr.map(parseType(namedSchemas)),
     Arr.sort(byName()),
   ),
   interfaces: pipe(
     children,
-    Arr.filter((item): infer _ => item.kind === Kind.Interface),
+    Arr.filter((item) => item.kind === Kind.Interface),
     Arr.map(parseInterface(namedSchemas)),
     Arr.sort(byName()),
   ),
   variables: pipe(
     children,
-    Arr.filter((item): infer _ => item.kind === Kind.Variable),
+    Arr.filter((item) => item.kind === Kind.Variable),
     Arr.map(parseVariable(namedSchemas)),
     Arr.sort(byName()),
   ),
@@ -380,19 +379,19 @@ const collectModules = (
 ): ReadonlyArray<ApiModule> => {
   const namespaces = Arr.filter(
     children,
-    ({ kind }): infer _ => kind === Kind.Namespace,
+    ({ kind }) => kind === Kind.Namespace,
   )
   const directChildren = Arr.filter(
     children,
-    ({ kind }): infer _ => kind !== Kind.Namespace,
+    ({ kind }) => kind !== Kind.Namespace,
   )
 
   const nestedModules = Arr.flatMap(
     namespaces,
-    (namespace): infer _ =>
+    (namespace) =>
       Option.match(namespace.children, {
-        onNone: (): infer _ => [],
-        onSome: (namespaceChildren): infer _ =>
+        onNone: () => [],
+        onSome: (namespaceChildren) =>
           collectModules(
             namedSchemas,
             `${qualifiedName}/${namespace.name}`,
@@ -402,8 +401,8 @@ const collectModules = (
   )
 
   return Arr.match(directChildren, {
-    onEmpty: (): infer _ => nestedModules,
-    onNonEmpty: (): infer _ => [
+    onEmpty: () => nestedModules,
+    onNonEmpty: () => [
       parseItemsAsModule(namedSchemas, qualifiedName, directChildren),
       ...nestedModules,
     ],
@@ -421,7 +420,7 @@ export const parseTypedocJson = (json: TypeDocJson): ParsedApiReference => {
   return {
     modules: Arr.flatMap(
       json.children,
-      (module): infer _ => parseModule(namedSchemas, module),
+      (module) => parseModule(namedSchemas, module),
     ),
   }
 }
@@ -433,7 +432,7 @@ export type TableOfContentsEntry = {
 }
 
 const byName = <T extends { readonly name: string }>(): Order<T> =>
-  Order.mapInput(Order.String, ({ name }: T): infer _ => name)
+  Order.mapInput(Order.String, ({ name }: T) => name)
 
 const sortByName = Arr.sort(byName())
 
@@ -444,8 +443,8 @@ const sectionEntries = <T extends { readonly name: string }>(
   idPrefix: string,
 ): ReadonlyArray<TableOfContentsEntry> =>
   Arr.match(items, {
-    onEmpty: (): infer _ => [],
-    onNonEmpty: (): infer _ => [
+    onEmpty: () => [],
+    onNonEmpty: () => [
       {
         id: sectionId(moduleName, label),
         text: label,
@@ -454,7 +453,7 @@ const sectionEntries = <T extends { readonly name: string }>(
       ...pipe(
         items,
         sortByName,
-        Arr.map((item): infer _ => ({
+        Arr.map((item) => ({
           id: `${idPrefix}-${moduleName}/${item.name}`,
           text: item.name,
           level: 'h3' as const,
@@ -486,7 +485,7 @@ const modulesBySlug = (
 ): Record<string, ApiModule> =>
   Record.fromIterableBy(
     modules,
-    (module): infer _ => moduleNameToSlug(module.name),
+    (module) => moduleNameToSlug(module.name),
   )
 
 export const resolveModule = (

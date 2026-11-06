@@ -11,53 +11,43 @@ export schema ExampleSources {
 type SourceLoader = () => Promise<Readonly<{ default: ExampleSources }>>
 
 const loadersBySlug: Readonly<Record<string, SourceLoader | undefined>> = {
-  counter: (): infer _ => import('virtual:example-sources/counter'),
-  counters: (): infer _ => import('virtual:example-sources/counters'),
-  todo: (): infer _ => import('virtual:example-sources/todo'),
-  stopwatch: (): infer _ => import('virtual:example-sources/stopwatch'),
-  form: (): infer _ => import('virtual:example-sources/form'),
-  'job-application': (): infer _ =>
-    import('virtual:example-sources/job-application'),
-  kanban: (): infer _ => import('virtual:example-sources/kanban'),
-  weather: (): infer _ => import('virtual:example-sources/weather'),
-  'api-cache': (): infer _ => import('virtual:example-sources/api-cache'),
-  'api-cache-query': (): infer _ =>
-    import('virtual:example-sources/api-cache-query'),
-  charting: (): infer _ => import('virtual:example-sources/charting'),
-  routing: (): infer _ => import('virtual:example-sources/routing'),
-  'route-transitions': (): infer _ =>
+  counter: () => import('virtual:example-sources/counter'),
+  counters: () => import('virtual:example-sources/counters'),
+  todo: () => import('virtual:example-sources/todo'),
+  stopwatch: () => import('virtual:example-sources/stopwatch'),
+  form: () => import('virtual:example-sources/form'),
+  'job-application': () => import('virtual:example-sources/job-application'),
+  kanban: () => import('virtual:example-sources/kanban'),
+  weather: () => import('virtual:example-sources/weather'),
+  'api-cache': () => import('virtual:example-sources/api-cache'),
+  'api-cache-query': () => import('virtual:example-sources/api-cache-query'),
+  charting: () => import('virtual:example-sources/charting'),
+  routing: () => import('virtual:example-sources/routing'),
+  'route-transitions': () =>
     import('virtual:example-sources/route-transitions'),
-  'interrupting-commands': (): infer _ =>
+  'interrupting-commands': () =>
     import('virtual:example-sources/interrupting-commands'),
-  'view-transitions': (): infer _ =>
-    import('virtual:example-sources/view-transitions'),
-  'query-sync': (): infer _ => import('virtual:example-sources/query-sync'),
-  'shopping-cart': (): infer _ =>
-    import('virtual:example-sources/shopping-cart'),
-  'state-machine': (): infer _ =>
-    import('virtual:example-sources/state-machine'),
-  auth: (): infer _ => import('virtual:example-sources/auth'),
-  'pixel-art': (): infer _ => import('virtual:example-sources/pixel-art'),
-  snake: (): infer _ => import('virtual:example-sources/snake'),
-  'crash-view': (): infer _ => import('virtual:example-sources/crash-view'),
-  'slow-warnings': (): infer _ =>
-    import('virtual:example-sources/slow-warnings'),
-  'websocket-chat': (): infer _ =>
-    import('virtual:example-sources/websocket-chat'),
-  'managed-resource-layer': (): infer _ =>
+  'view-transitions': () => import('virtual:example-sources/view-transitions'),
+  'query-sync': () => import('virtual:example-sources/query-sync'),
+  'shopping-cart': () => import('virtual:example-sources/shopping-cart'),
+  'state-machine': () => import('virtual:example-sources/state-machine'),
+  auth: () => import('virtual:example-sources/auth'),
+  'pixel-art': () => import('virtual:example-sources/pixel-art'),
+  snake: () => import('virtual:example-sources/snake'),
+  'crash-view': () => import('virtual:example-sources/crash-view'),
+  'slow-warnings': () => import('virtual:example-sources/slow-warnings'),
+  'websocket-chat': () => import('virtual:example-sources/websocket-chat'),
+  'managed-resource-layer': () =>
     import('virtual:example-sources/managed-resource-layer'),
-  map: (): infer _ => import('virtual:example-sources/map'),
-  'canvas-art': (): infer _ => import('virtual:example-sources/canvas-art'),
-  'generative-art': (): infer _ =>
-    import('virtual:example-sources/generative-art'),
-  'web-components': (): infer _ =>
-    import('virtual:example-sources/web-components'),
-  embedding: (): infer _ => import('virtual:example-sources/embedding'),
-  ssg: (): infer _ => import('virtual:example-sources/ssg'),
-  ssr: (): infer _ => import('virtual:example-sources/ssr'),
-  'ui-showcase': (): infer _ => import('virtual:example-sources/ui-showcase'),
-  'personal-blog': (): infer _ =>
-    import('virtual:example-sources/personal-blog'),
+  map: () => import('virtual:example-sources/map'),
+  'canvas-art': () => import('virtual:example-sources/canvas-art'),
+  'generative-art': () => import('virtual:example-sources/generative-art'),
+  'web-components': () => import('virtual:example-sources/web-components'),
+  embedding: () => import('virtual:example-sources/embedding'),
+  ssg: () => import('virtual:example-sources/ssg'),
+  ssr: () => import('virtual:example-sources/ssr'),
+  'ui-showcase': () => import('virtual:example-sources/ui-showcase'),
+  'personal-blog': () => import('virtual:example-sources/personal-blog'),
 }
 
 export const loadSourcesForSlug = async (

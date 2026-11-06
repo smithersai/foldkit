@@ -52,7 +52,7 @@ const filterCities = (inputValue: string): ReadonlyArray<City> =>
     ? CITIES
     : Arr.filter(
       CITIES,
-      (city): infer _ => city.toLowerCase().includes(inputValue.toLowerCase()),
+      (city) => city.toLowerCase().includes(inputValue.toLowerCase()),
     )
 
 export const comboboxViewInputs = ({
@@ -71,7 +71,7 @@ export const comboboxViewInputs = ({
   return {
     items: filteredCities,
     restingInputValue,
-    itemToConfig: (city, context): infer _ => ({
+    itemToConfig: (city, context) => ({
       className: itemClassName,
       content: ih.div(
         [ih.Class('flex items-center gap-2')],
@@ -86,8 +86,8 @@ export const comboboxViewInputs = ({
         ],
       ),
     }),
-    itemToValue: (city): infer _ => city,
-    itemToDisplayText: (city): infer _ => city,
+    itemToValue: (city) => city,
+    itemToDisplayText: (city) => city,
     inputAttributes: childAttributes([
       ih.Class(inputClassName),
       ih.Placeholder('Search cities...'),
@@ -111,7 +111,7 @@ export const view = (
   comboboxModel: Combobox.Model,
   maybeSelectedCity: Option<City>,
   h: HtmlBuilder<Message>,
-): infer _ => {
+) => {
   return [
     h.div(
       [h.Class('demo-field')],
@@ -132,12 +132,12 @@ export const view = (
                   inputValue: comboboxModel.inputValue,
                   restingInputValue: Option.getOrElse(
                     maybeSelectedCity,
-                    (): infer _ => '',
+                    () => '',
                   ),
                 }),
                 maybeSelectedValue: maybeSelectedCity,
               },
-              toParentMessage: (message): infer _ =>
+              toParentMessage: (message) =>
                 Message.GotComboboxDemoMessage({ message }),
             }),
           ],
@@ -151,7 +151,7 @@ export const nullableDemo = (
   comboboxNullableModel: Combobox.Model,
   maybeSelectedCity: Option<City>,
   h: HtmlBuilder<Message>,
-): infer _ => {
+) => {
   return [
     h.div(
       [h.Class('demo-field')],
@@ -175,12 +175,12 @@ export const nullableDemo = (
                   inputValue: comboboxNullableModel.inputValue,
                   restingInputValue: Option.getOrElse(
                     maybeSelectedCity,
-                    (): infer _ => '',
+                    () => '',
                   ),
                 }),
                 maybeSelectedValue: maybeSelectedCity,
               },
-              toParentMessage: (message): infer _ =>
+              toParentMessage: (message) =>
                 Message.GotComboboxNullableDemoMessage({ message }),
             }),
           ],
@@ -194,7 +194,7 @@ export const selectOnFocusDemo = (
   comboboxSelectOnFocusModel: Combobox.Model,
   maybeSelectedCity: Option<City>,
   h: HtmlBuilder<Message>,
-): infer _ => {
+) => {
   return [
     h.div(
       [h.Class('demo-field')],
@@ -218,12 +218,12 @@ export const selectOnFocusDemo = (
                   inputValue: comboboxSelectOnFocusModel.inputValue,
                   restingInputValue: Option.getOrElse(
                     maybeSelectedCity,
-                    (): infer _ => '',
+                    () => '',
                   ),
                 }),
                 maybeSelectedValue: maybeSelectedCity,
               },
-              toParentMessage: (message): infer _ =>
+              toParentMessage: (message) =>
                 Message.GotComboboxSelectOnFocusDemoMessage({ message }),
             }),
           ],
@@ -237,7 +237,7 @@ export const placementLockDemo = (
   comboboxPlacementLockModel: Combobox.Model,
   maybeSelectedCity: Option<City>,
   h: HtmlBuilder<Message>,
-): infer _ => [
+) => [
   h.div(
     [
       h.Class(
@@ -267,7 +267,7 @@ export const placementLockDemo = (
                     inputValue: comboboxPlacementLockModel.inputValue,
                     restingInputValue: Option.getOrElse(
                       maybeSelectedCity,
-                      (): infer _ => '',
+                      () => '',
                     ),
                     anchor: {
                       ...COMBOBOX_ANCHOR,
@@ -278,7 +278,7 @@ export const placementLockDemo = (
                   maybeSelectedValue: maybeSelectedCity,
                   openOnFocus: true,
                 },
-                toParentMessage: (message): infer _ =>
+                toParentMessage: (message) =>
                   Message.GotComboboxPlacementLockDemoMessage({ message }),
               }),
             ],
@@ -298,7 +298,7 @@ export const multiDemo = (
   comboboxMultiModel: Combobox.Multi.Model,
   selectedCities: ReadonlyArray<City>,
   h: HtmlBuilder<Message>,
-): infer _ => {
+) => {
   return [
     h.div(
       [h.Class('demo-field')],
@@ -316,11 +316,11 @@ export const multiDemo = (
             h.div(
               [h.Class('flex flex-wrap gap-1.5 mb-2')],
               Arr.match(selectedCities, {
-                onEmpty: (): infer _ => [
+                onEmpty: () => [
                   h.span([h.Class(emptyTagClassName)], ['No selection']),
                 ],
-                onNonEmpty: (nonEmptySelectedCities): infer _ =>
-                  nonEmptySelectedCities.map((city): infer _ =>
+                onNonEmpty: (nonEmptySelectedCities) =>
+                  nonEmptySelectedCities.map((city) =>
                     h.span([h.Class(tagClassName)], [city])
                   ),
               }),
@@ -336,7 +336,7 @@ export const multiDemo = (
                 }),
                 selectedValues: selectedCities,
               },
-              toParentMessage: (message): infer _ =>
+              toParentMessage: (message) =>
                 Message.GotComboboxMultiDemoMessage({ message }),
             }),
           ],

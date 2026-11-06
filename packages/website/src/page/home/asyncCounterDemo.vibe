@@ -92,16 +92,16 @@ export const DelayAdvancePhase = Command.define('DelayAdvancePhase', {
 })
 
 const prependToLog =
-  (entry: string): infer _ =>
+  (entry: string) =>
   (messageLog: ReadonlyArray<string>): ReadonlyArray<string> =>
     pipe([entry, ...messageLog], Arr.take(MAX_LOG_ENTRIES))
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
-    ClickedDemoIncrement: (): infer _ => {
+    ClickedDemoIncrement: () => {
       const nextModel = modifyFields(model, {
         count: Num.increment,
-        phase: (): infer _ => 'IncrementMessage',
+        phase: () => 'IncrementMessage',
         generation: Num.increment,
         messageLog: prependToLog('ClickedIncrement'),
       })
@@ -116,10 +116,10 @@ export const update = (model: Model, message: Message): infer _ =>
       }
     },
 
-    ChangedDemoResetDuration: ({ seconds }): infer _ => {
+    ChangedDemoResetDuration: ({ seconds }) => {
       const nextModel = modifyFields(model, {
-        resetDuration: (): infer _ => clampResetSeconds(seconds),
-        phase: (): infer _ => 'DurationMessage',
+        resetDuration: () => clampResetSeconds(seconds),
+        phase: () => 'DurationMessage',
         generation: Num.increment,
         messageLog: prependToLog(
           `ChangedResetDuration({ seconds: ${seconds} })`,
@@ -136,10 +136,10 @@ export const update = (model: Model, message: Message): infer _ =>
       }
     },
 
-    ClickedDemoReset: (): infer _ => {
+    ClickedDemoReset: () => {
       const nextModel = modifyFields(model, {
-        isResetting: (): infer _ => true,
-        phase: (): infer _ => 'ResetMessage',
+        isResetting: () => true,
+        phase: () => 'ResetMessage',
         generation: Num.increment,
         messageLog: prependToLog('ClickedResetAfterDelay'),
       })
@@ -154,14 +154,14 @@ export const update = (model: Model, message: Message): infer _ =>
       }
     },
 
-    CompletedDelayAdvancePhase: ({ generation }): infer _ => {
+    CompletedDelayAdvancePhase: ({ generation }) => {
       if (generation !== model.generation) {
         return { model }
       } else {
         return match (model.phase) {
           when 'IncrementMessage': ({
             model: modifyFields(model, {
-              phase: (): infer _ => 'IncrementUpdate',
+              phase: () => 'IncrementUpdate',
             }),
             commands: [
               DelayAdvancePhase({
@@ -172,7 +172,7 @@ export const update = (model: Model, message: Message): infer _ =>
           });
           when 'IncrementUpdate': ({
             model: modifyFields(model, {
-              phase: (): infer _ => 'IncrementModel',
+              phase: () => 'IncrementModel',
             }),
             commands: [
               DelayAdvancePhase({
@@ -182,11 +182,11 @@ export const update = (model: Model, message: Message): infer _ =>
             ],
           });
           when 'IncrementModel': ({
-            model: modifyFields(model, { phase: (): infer _ => 'Idle' }),
+            model: modifyFields(model, { phase: () => 'Idle' }),
           });
           when 'DurationMessage': ({
             model: modifyFields(model, {
-              phase: (): infer _ => 'DurationUpdate',
+              phase: () => 'DurationUpdate',
             }),
             commands: [
               DelayAdvancePhase({
@@ -197,7 +197,7 @@ export const update = (model: Model, message: Message): infer _ =>
           });
           when 'DurationUpdate': ({
             model: modifyFields(model, {
-              phase: (): infer _ => 'DurationModel',
+              phase: () => 'DurationModel',
             }),
             commands: [
               DelayAdvancePhase({
@@ -207,10 +207,10 @@ export const update = (model: Model, message: Message): infer _ =>
             ],
           });
           when 'DurationModel': ({
-            model: modifyFields(model, { phase: (): infer _ => 'Idle' }),
+            model: modifyFields(model, { phase: () => 'Idle' }),
           });
           when 'ResetMessage': ({
-            model: modifyFields(model, { phase: (): infer _ => 'ResetUpdate' }),
+            model: modifyFields(model, { phase: () => 'ResetUpdate' }),
             commands: [
               DelayAdvancePhase({
                 generation,
@@ -220,7 +220,7 @@ export const update = (model: Model, message: Message): infer _ =>
           });
           when 'ResetUpdate': ({
             model: modifyFields(model, {
-              phase: (): infer _ => 'ResetCommand',
+              phase: () => 'ResetCommand',
             }),
             commands: [
               DelayAdvancePhase({
@@ -233,7 +233,7 @@ export const update = (model: Model, message: Message): infer _ =>
           });
           when 'ResetCommand': ({
             model: modifyFields(model, {
-              phase: (): infer _ => 'ResetCommandMessage',
+              phase: () => 'ResetCommandMessage',
             }),
             commands: [
               DelayAdvancePhase({
@@ -244,7 +244,7 @@ export const update = (model: Model, message: Message): infer _ =>
           });
           when 'ResetCommandMessage': ({
             model: modifyFields(model, {
-              phase: (): infer _ => 'ResetCommandUpdate',
+              phase: () => 'ResetCommandUpdate',
               messageLog: prependToLog('CompletedDelayReset'),
             }),
             commands: [
@@ -256,9 +256,9 @@ export const update = (model: Model, message: Message): infer _ =>
           });
           when 'ResetCommandUpdate': ({
             model: modifyFields(model, {
-              count: (): infer _ => 0,
-              isResetting: (): infer _ => false,
-              phase: (): infer _ => 'ResetModel',
+              count: () => 0,
+              isResetting: () => false,
+              phase: () => 'ResetModel',
             }),
             commands: [
               DelayAdvancePhase({
@@ -268,7 +268,7 @@ export const update = (model: Model, message: Message): infer _ =>
             ],
           });
           when 'ResetModel': ({
-            model: modifyFields(model, { phase: (): infer _ => 'Idle' }),
+            model: modifyFields(model, { phase: () => 'Idle' }),
           });
           when 'Idle': ({ model });
         }
@@ -373,7 +373,7 @@ const stepperButton = (
     {
       onClick: Message.ChangedDemoResetDuration({ seconds: nextSeconds }),
       isDisabled,
-      toView: (attributes): infer _ =>
+      toView: (attributes) =>
         h.button(
           [
             ...attributes.button,
@@ -417,7 +417,7 @@ const viewAndControlsView = (model: Model, h: HtmlBuilder<Message>): Html =>
         {
           onClick: Message.ClickedDemoIncrement(),
           isDisabled: model.isResetting,
-          toView: (attributes): infer _ =>
+          toView: (attributes) =>
             h.button(
               [
                 ...attributes.button,
@@ -470,7 +470,7 @@ const viewAndControlsView = (model: Model, h: HtmlBuilder<Message>): Html =>
         {
           onClick: Message.ClickedDemoReset(),
           isDisabled: model.isResetting,
-          toView: (attributes): infer _ =>
+          toView: (attributes) =>
             h.button(
               [
                 ...attributes.button,

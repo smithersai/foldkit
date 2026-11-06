@@ -21,8 +21,8 @@ export const deploymentFromCanaryCommit = (
 
 export const isTelemetryEnabled = (deployment: Deployment): boolean =>
   Deployment.match(deployment, {
-    Production: (): infer _ => true,
-    Canary: (): infer _ => false,
+    Production: () => true,
+    Canary: () => false,
   })
 
 export const deployment = deploymentFromCanaryCommit(

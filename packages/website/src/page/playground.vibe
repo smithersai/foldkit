@@ -79,7 +79,7 @@ const maybeFilesForSlug = (
   pipe(
     filesBySlug,
     Record.get(slug),
-    Option.map((entry): infer _ => entry.files),
+    Option.map((entry) => entry.files),
   )
 
 const isUnavailableExample = (maybeMeta: Option<ExampleMeta>): boolean => match (maybeMeta) {
@@ -94,15 +94,15 @@ const sortedPaths = (
 const initialActiveFile = (files: Readonly<Record<string, string>>): string =>
   pipe(
     PREFERRED_INITIAL_FILES,
-    Arr.findFirst((preferred): infer _ => Record.has(files, preferred)),
-    Option.orElse((): infer _ => Arr.head(sortedPaths(files))),
-    Option.getOrElse((): infer _ => ''),
+    Arr.findFirst((preferred) => Record.has(files, preferred)),
+    Option.orElse(() => Arr.head(sortedPaths(files))),
+    Option.getOrElse(() => ''),
   )
 
 const FILE_TABS_ID = 'playground-files'
 
 export const init = (slug: string): Model => {
-  const files = Option.getOrElse(maybeFilesForSlug(slug), (): infer _ => ({}))
+  const files = Option.getOrElse(maybeFilesForSlug(slug), () => ({}))
   return {
     slug,
     state: PlaygroundState.Booting(),
@@ -127,17 +127,17 @@ export type WebContainerPlaygroundService = ManagedResource.ServiceOf<
 schema PlaygroundParams { readonly slug: string }
 
 export const managedResources = ManagedResource.make<Model, Message>()(
-  (entry): infer _ => ({
+  (entry) => ({
     webContainerPlayground: entry(Schema.Option(PlaygroundParams), {
       resource: WebContainerPlayground,
-      modelToMaybeRequirements: ({ slug, state }): infer _ =>
+      modelToMaybeRequirements: ({ slug, state }) =>
         state._tag === 'Failed' || state._tag === 'Idle'
           ? Option.none()
           : Option.liftPredicate(
             slug,
-            (): infer _ => Record.has(filesBySlug, slug),
+            () => Record.has(filesBySlug, slug),
           )
-            .map((): infer _ => ({ slug })),
+            .map(() => ({ slug })),
       acquire: ({ slug }): PlaygroundWebContainer!unknown!Scope =>
         effect {
           const fileEntry = try Effect.fromOption(
@@ -146,10 +146,9 @@ export const managedResources = ManagedResource.make<Model, Message>()(
           return try acquirePlaygroundWebContainer(fileEntry.files)
         },
       release: (): void!never!never => effect {},
-      onAcquired: ({ previewUrl }): infer _ =>
-        Message.BootedPlayground({ previewUrl }),
-      onReleased: (): infer _ => Message.ReleasedPlayground(),
-      onAcquireError: (error): infer _ =>
+      onAcquired: ({ previewUrl }) => Message.BootedPlayground({ previewUrl }),
+      onReleased: () => Message.ReleasedPlayground(),
+      onAcquireError: (error) =>
         Message.FailedBootPlayground({ reason: reasonFromError(error) }),
     }),
   }),
@@ -433,7 +432,7 @@ export const PlaygroundEditor = Mount.defineStream('PlaygroundEditor', {
   ],
   execute: (
     { element, path, initialContent, files, viewStateChanges },
-  ): infer _ =>
+  ) =>
     streamPlaygroundEditorMessages(
       element,
       path,
@@ -551,9 +550,9 @@ const flushDirtyPaths = (
 ): ReadonlyArray<
   Command.Command<Message, never, WebContainerPlaygroundService>
 > =>
-  model.dirtyPaths.flatMap((path): infer _ =>
+  model.dirtyPaths.flatMap((path) =>
     Record.get(model.files, path)
-      .map((content): infer _ => WritePlaygroundFile({ path, content }))
+      .map((content) => WritePlaygroundFile({ path, content }))
       .toArray()
   )
 
@@ -572,71 +571,71 @@ const markPreviewLoaded = (
     default: state;
   }
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<Update.Return<Model, Message, WebContainerPlaygroundService>>(
     message,
     {
-      BootedPlayground: ({ previewUrl }): infer _ => ({
+      BootedPlayground: ({ previewUrl }) => ({
         model: modifyFields(model, {
-          state: (): infer _ =>
+          state: () =>
             PlaygroundState.Booted({
               preview: PlaygroundPreview.start(previewUrl),
             }),
-          dirtyPaths: (): infer _ => [],
-          lastWriteError: (): infer _ => Option.none(),
+          dirtyPaths: () => [],
+          lastWriteError: () => Option.none(),
         }),
         commands: [WaitForPlaygroundServerFailure(), ...flushDirtyPaths(model)],
       }),
-      FailedBootPlayground: ({ reason }): infer _ => ({
+      FailedBootPlayground: ({ reason }) => ({
         model: modifyFields(model, {
-          state: (): infer _ => PlaygroundState.Failed({ reason }),
+          state: () => PlaygroundState.Failed({ reason }),
         }),
       }),
-      ReleasedPlayground: (): infer _ => ({
+      ReleasedPlayground: () => ({
         model: modifyFields(model, {
-          state: (state): infer _ =>
+          state: (state) =>
             state._tag === 'Failed' ? state : PlaygroundState.Idle(),
         }),
       }),
-      LoadedPlaygroundPreview: ({ previewUrl }): infer _ => ({
+      LoadedPlaygroundPreview: ({ previewUrl }) => ({
         model: modifyFields(model, {
-          state: (state): infer _ => markPreviewLoaded(state, previewUrl),
+          state: (state) => markPreviewLoaded(state, previewUrl),
         }),
       }),
-      GotFileTabsMessage: ({ message: tabsMessage }): infer _ =>
+      GotFileTabsMessage: ({ message: tabsMessage }) =>
         foldPlaygroundFileTabs(model, tabsMessage),
-      EditedPlaygroundFile: ({ path, content }): infer _ => {
+      EditedPlaygroundFile: ({ path, content }) => {
         const isBooted = model.state._tag === 'Booted'
         return {
           model: modifyFields(model, {
             files: Record.set(path, content),
-            dirtyPaths: (existing): infer _ =>
+            dirtyPaths: (existing) =>
               isBooted ? existing : appendDeduped(existing, path),
           }),
           commands: isBooted ? [WritePlaygroundFile({ path, content })] : [],
         }
       },
-      FailedMountPlaygroundEditor: ({ reason }): infer _ => ({
+      FailedMountPlaygroundEditor: ({ reason }) => ({
         model: modifyFields(model, {
-          state: (): infer _ => PlaygroundState.Failed({ reason }),
+          state: () => PlaygroundState.Failed({ reason }),
         }),
       }),
-      ScheduledWritePlaygroundFile: (): infer _ => ({
+      ScheduledWritePlaygroundFile: () => ({
         model: modifyFields(model, {
-          lastWriteError: (): infer _ => Option.none(),
+          lastWriteError: () => Option.none(),
         }),
       }),
-      FailedWritePlaygroundFile: ({ reason }): infer _ => ({
+      FailedWritePlaygroundFile: ({ reason }) => ({
         model: modifyFields(model, {
-          lastWriteError: (): infer _ => Option.some(reason),
+          lastWriteError: () => Option.some(reason),
         }),
       }),
-      CompletedWaitForPlaygroundServerFailure: ({ reason }): infer _ => ({
+      CompletedWaitForPlaygroundServerFailure: ({ reason }) => ({
         model: modifyFields(model, {
-          state: (): infer _ => PlaygroundState.Failed({ reason }),
+          state: () => PlaygroundState.Failed({ reason }),
         }),
       }),
-      SucceededMountPlaygroundEditor: (): infer _ => ({ model }),
+      SucceededMountPlaygroundEditor: () => ({ model }),
     },
   )
 
@@ -788,17 +787,17 @@ const previewPaneView = (
         [h.Class('flex-1 min-w-0 min-h-0 flex flex-col')],
         [
           PlaygroundState.match(state, {
-            Idle: (): infer _ =>
+            Idle: () =>
               bootingPanelView(
                 'Starting playground…',
                 'The preview will appear when the development environment is ready.',
               ),
-            Booting: (): infer _ =>
+            Booting: () =>
               bootingPanelView(
                 'Starting playground…',
                 'The first load can take about 30 seconds. The preview will appear when the development environment is ready.',
               ),
-            Booted: ({ preview }): infer _ =>
+            Booted: ({ preview }) =>
               PlaygroundPreview.view(
                 preview,
                 Message.LoadedPlaygroundPreview({
@@ -810,7 +809,7 @@ const previewPaneView = (
                 ),
                 h,
               ),
-            Failed: ({ reason }): infer _ => failurePanelView(reason),
+            Failed: ({ reason }) => failurePanelView(reason),
           }),
         ],
       ),
@@ -875,18 +874,17 @@ const PlaygroundFileTabs = Tabs.create<string>()
 const foldPlaygroundFileTabsOutMessage = Tabs.OutMessage.match<
   Update.Step<Model, Message>
 >({
-  Selected: ({ value }): infer _ => (model): infer _ => ({
-    model: modifyFields(model, { activeFilePath: (): infer _ => value }),
+  Selected: ({ value }) => (model) => ({
+    model: modifyFields(model, { activeFilePath: () => value }),
   }),
 })
 
 const foldPlaygroundFileTabs = Update.foldChild({
   update: PlaygroundFileTabs.update,
-  read: (model: Model): infer _ => Option.some(model.fileTabs),
-  write: (model, nextFileTabs): infer _ =>
-    modifyFields(model, { fileTabs: (): infer _ => nextFileTabs }),
-  toParentMessage: (message): infer _ =>
-    Message.GotFileTabsMessage({ message }),
+  read: (model: Model) => Option.some(model.fileTabs),
+  write: (model, nextFileTabs) =>
+    modifyFields(model, { fileTabs: () => nextFileTabs }),
+  toParentMessage: (message) => Message.GotFileTabsMessage({ message }),
   foldOutMessage: foldPlaygroundFileTabsOutMessage,
 })
 
@@ -908,7 +906,7 @@ const editorLayoutView = (model: Model, h: HtmlBuilder<Message>): Html => {
               selectedValue: model.activeFilePath,
               ariaLabel: 'Playground files',
               orientation: 'Vertical',
-              toView: ({ tablist, tabs, activeIndex }): infer _ =>
+              toView: ({ tablist, tabs, activeIndex }) =>
                 h.div(
                   [
                     h.Class(
@@ -923,7 +921,7 @@ const editorLayoutView = (model: Model, h: HtmlBuilder<Message>): Html => {
                           'w-56 shrink-0 overflow-y-auto border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 py-3 text-sm flex flex-col',
                         ),
                       ],
-                      tabs.map((tab): infer _ =>
+                      tabs.map((tab) =>
                         h.button(
                           [...tab.tab, h.Class(fileTabButtonClassName)],
                           [h.span([], [tab.value])],
@@ -931,8 +929,8 @@ const editorLayoutView = (model: Model, h: HtmlBuilder<Message>): Html => {
                       ),
                     ),
                     ...tabs
-                      .filter((tab): infer _ => tab.index === activeIndex)
-                      .map((tab): infer _ =>
+                      .filter((tab) => tab.index === activeIndex)
+                      .map((tab) =>
                         h.div(
                           [
                             ...tab.panel,
@@ -942,7 +940,7 @@ const editorLayoutView = (model: Model, h: HtmlBuilder<Message>): Html => {
                             editorPanelContent(
                               tab.value,
                               Record.get(model.files, tab.value)
-                                .getOrElse((): infer _ => ''),
+                                .getOrElse(() => ''),
                               model.files,
                               h,
                             ),
@@ -952,7 +950,7 @@ const editorLayoutView = (model: Model, h: HtmlBuilder<Message>): Html => {
                   ],
                 ),
             },
-            toParentMessage: (message): infer _ =>
+            toParentMessage: (message) =>
               Message.GotFileTabsMessage({ message }),
           }),
           previewPaneView(model.state, h),

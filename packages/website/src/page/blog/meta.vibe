@@ -43,8 +43,8 @@ export const byDateThenSlugDescending: Order<DatedPost> = Order.flip(
   Order.combine(
     Order.mapInput(
       Order.String,
-      (post: DatedPost): infer _ => post.frontmatter.date,
+      (post: DatedPost) => post.frontmatter.date,
     ),
-    Order.mapInput(Order.String, (post: DatedPost): infer _ => post.slug),
+    Order.mapInput(Order.String, (post: DatedPost) => post.slug),
   ),
 )

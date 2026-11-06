@@ -416,14 +416,14 @@ export const examples: ReadonlyArray<ExampleMeta> = [
 
 export const exampleSlugs: ReadonlyArray<ExampleSlug> = Arr.map(
   examples,
-  ({ slug }): infer _ => slug,
+  ({ slug }) => slug,
 )
 
 export const runnableExampleSlugs: ReadonlyArray<ExampleSlug> = pipe(
   examples,
-  Arr.filter((example): infer _ => example.livePreview !== 'Unavailable'),
-  Arr.map(({ slug }): infer _ => slug),
+  Arr.filter((example) => example.livePreview !== 'Unavailable'),
+  Arr.map(({ slug }) => slug),
 )
 
 export const findBySlug = (slug: string): Option<ExampleMeta> =>
-  Arr.findFirst(examples, (example): infer _ => example.slug === slug)
+  Arr.findFirst(examples, (example) => example.slug === slug)

@@ -14,10 +14,10 @@ export type ViewInputs = Readonly<{
 }>
 
 export const view = Submodel.defineView<Model, Message, ViewInputs>(
-  (model, viewInputs, h): infer _ => {
+  (model, viewInputs, h) => {
     const isCopied = HashSet.has(model.copiedSnippetIds, viewInputs.snippetId)
 
-    const renderCopiedIndicator = (): infer _ => {
+    const renderCopiedIndicator = () => {
       if (!isCopied) {
         return h.empty
       }

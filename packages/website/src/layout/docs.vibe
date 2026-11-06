@@ -67,7 +67,7 @@ const LlmIgnore = ih.DataAttribute('llm-ignore', '')
 
 // DOCS HEADER
 
-export const headerView = (model: Model, h: HtmlBuilder<Message>): infer _ =>
+export const headerView = (model: Model, h: HtmlBuilder<Message>) =>
   h.header(
     [
       h.Class(
@@ -173,7 +173,7 @@ export const footerView = (model: Model, h: HtmlBuilder<Message>): Html =>
       ),
       Shared.emailForm(
         model.newsletterEmail,
-        (value): infer _ => Message.UpdatedNewsletterEmail({ value }),
+        (value) => Message.UpdatedNewsletterEmail({ value }),
         h,
       ),
       h.hr([
@@ -215,7 +215,7 @@ const neighborLink = (
     direction: 'Previous' | 'Next'
   }>,
   h: HtmlBuilder<Message>,
-): infer _ =>
+) =>
   h.a(
     [
       h.Href(config.page.href),
@@ -254,7 +254,7 @@ const neighborLink = (
     ],
   )
 
-const pageNavigationView = (tag: string, h: HtmlBuilder<Message>): infer _ => {
+const pageNavigationView = (tag: string, h: HtmlBuilder<Message>) => {
   const { maybePrevious, maybeNext } = pageNeighbors(tag)
 
   if (Option.isNone(maybePrevious) && Option.isNone(maybeNext)) {
@@ -347,7 +347,7 @@ const renderApiReference = (
       module,
       highlights,
       renderHeadingLink: Prose.renderHeadingLink(
-        (hash): infer _ => Message.ClickedCopyLink({ hash }),
+        (hash) => Message.ClickedCopyLink({ hash }),
         h,
       ),
     },
@@ -370,7 +370,7 @@ const renderDocContent = (
 ): Html => {
   const renderCopyButton = SnippetCopy.renderer(
     snippetCopy,
-    (message): infer _ => Message.GotSnippetCopyMessage({ message }),
+    (message) => Message.GotSnippetCopyMessage({ message }),
     h,
   )
 
@@ -378,12 +378,12 @@ const renderDocContent = (
     renderCopyButton,
     SnippetDisclosure.renderer(
       snippetDisclosure,
-      (message): infer _ => Message.GotSnippetDisclosureMessage({ message }),
+      (message) => Message.GotSnippetDisclosureMessage({ message }),
       renderCopyButton,
       h,
     ),
     Prose.renderHeadingLink(
-      (hash): infer _ => Message.ClickedCopyLink({ hash }),
+      (hash) => Message.ClickedCopyLink({ hash }),
       h,
     ),
   )
@@ -395,7 +395,7 @@ const renderProseContent = (
 ): Html =>
   pageView(
     Prose.renderHeadingLink(
-      (hash): infer _ => Message.ClickedCopyLink({ hash }),
+      (hash) => Message.ClickedCopyLink({ hash }),
       h,
     ),
   )
@@ -426,20 +426,20 @@ export const view = (
   model: Model,
   docsRoute: DocsRoute,
   h: HtmlBuilder<Message>,
-): infer _ => {
+) => {
   const renderCopyButton = SnippetCopy.renderer(
     model.snippetCopy,
-    (message): infer _ => Message.GotSnippetCopyMessage({ message }),
+    (message) => Message.GotSnippetCopyMessage({ message }),
     h,
   )
   const renderSnippet = SnippetDisclosure.renderer(
     model.snippetDisclosure,
-    (message): infer _ => Message.GotSnippetDisclosureMessage({ message }),
+    (message) => Message.GotSnippetDisclosureMessage({ message }),
     renderCopyButton,
     h,
   )
   const renderHeadingLink = Prose.renderHeadingLink(
-    (hash): infer _ => Message.ClickedCopyLink({ hash }),
+    (hash) => Message.ClickedCopyLink({ hash }),
     h,
   )
   const docContentArgs: DocContentArgs = [
@@ -470,7 +470,7 @@ export const view = (
         model: model.comingFromReact,
         view: ComingFromReact.view,
         viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
-        toParentMessage: (message): infer _ =>
+        toParentMessage: (message) =>
           Message.GotComingFromReactMessage({ message }),
       }),
       ComingFromReact.tableOfContents,
@@ -530,7 +530,7 @@ export const view = (
           isNarrowViewport: model.isNarrowViewport,
           renderSnippet,
         },
-        toParentMessage: (message): infer _ =>
+        toParentMessage: (message) =>
           Message.GotExampleDetailMessage({ message }),
       }),
     );
@@ -564,7 +564,7 @@ export const view = (
     when { _tag: "ApiModule", let moduleSlug }: AsyncData.matchData(
       model.apiReference.apiData,
       {
-        onData: (data): infer _ => match (ApiReference.resolveModule(data.parsedApi, moduleSlug)) {
+        onData: (data) => match (ApiReference.resolveModule(data.parsedApi, moduleSlug)) {
           when { _tag: "None" }: withoutTableOfContents(
             NotFound.view(moduleSlug, homeRouter()),
           );
@@ -580,9 +580,9 @@ export const view = (
             ),
           });
         },
-        onFailure: (error): infer _ =>
+        onFailure: (error) =>
           withoutTableOfContents(ApiReference.failureView(error)),
-        onEmpty: (): infer _ =>
+        onEmpty: () =>
           withoutTableOfContents(
             lazyApiReferenceSkeleton(ApiReference.skeletonView, []),
           ),
@@ -702,7 +702,7 @@ export const view = (
         model: model.coreSubmodelPage,
         view: Core.SubmodelPage.view,
         viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
-        toParentMessage: (message): infer _ =>
+        toParentMessage: (message) =>
           Message.GotCoreSubmodelPageMessage({ message }),
       }),
       Core.SubmodelPage.tableOfContents,

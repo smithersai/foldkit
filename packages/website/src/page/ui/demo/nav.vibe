@@ -27,17 +27,16 @@ const sectionToHref = (section: NavDemoSection): string =>
 
 const sectionFromUrl = (url: Url): NavDemoSection =>
   url.search
-    .flatMapNullishOr((search): infer _ =>
+    .flatMapNullishOr((search) =>
       new URLSearchParams(search).get(NAV_SECTION_QUERY_KEY)
     )
-    .flatMap((sectionParam): infer _ =>
+    .flatMap((sectionParam) =>
       Arr.findFirst(
         demoSections,
-        (section): infer _ =>
-          section.toLowerCase() === sectionParam.toLowerCase(),
+        (section) => section.toLowerCase() === sectionParam.toLowerCase(),
       )
     )
-    .getOrElse((): infer _ => defaultSection)
+    .getOrElse(() => defaultSection)
 
 const navClassName =
   'flex gap-1 p-1.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900'
@@ -72,7 +71,7 @@ const urlBar = (currentSection: NavDemoSection): Html =>
     ],
   )
 
-export const basicDemo = (url: Url, h: HtmlBuilder<Message>): infer _ => {
+export const basicDemo = (url: Url, h: HtmlBuilder<Message>) => {
   const currentSection = sectionFromUrl(url)
 
   return [
@@ -83,11 +82,11 @@ export const basicDemo = (url: Url, h: HtmlBuilder<Message>): infer _ => {
           items: demoSections,
           ariaLabel: 'App sections',
           toHref: sectionToHref,
-          isItemCurrent: (section): infer _ => section === currentSection,
-          toView: ({ nav, items }): infer _ =>
+          isItemCurrent: (section) => section === currentSection,
+          toView: ({ nav, items }) =>
             h.nav(
               [...nav, h.Class(navClassName)],
-              items.map((item): infer _ =>
+              items.map((item) =>
                 h.a(
                   [...item.link, h.Class(linkClassName)],
                   [h.span([], [item.value])],

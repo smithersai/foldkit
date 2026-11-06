@@ -65,8 +65,8 @@ const MENU_ANCHOR: AnchorConfig = {
   padding: 8,
 }
 
-const menuViewConfig = (itemsClassName: string): infer _ => {
-  const groupToHeading = (groupKey: string): infer _ => match (groupKey) {
+const menuViewConfig = (itemsClassName: string) => {
+  const groupToHeading = (groupKey: string) => match (groupKey) {
     when 'Danger': ({
       content: ih.span([], ['Danger Zone']),
       className: headingClassName,
@@ -77,7 +77,7 @@ const menuViewConfig = (itemsClassName: string): infer _ => {
   return {
     anchor: MENU_ANCHOR,
     items: MENU_ITEMS,
-    itemToConfig: (item: MenuItem): infer _ => ({
+    itemToConfig: (item: MenuItem) => ({
       className: itemClassName,
       content: ih.div(
         [ih.Class('flex items-center gap-2.5')],
@@ -101,7 +101,7 @@ const menuViewConfig = (itemsClassName: string): infer _ => {
 export const basicDemo = (
   menuModel: Menu.Model,
   h: HtmlBuilder<Message>,
-): infer _ => {
+) => {
   return [
     h.div(
       [h.Class('demo-field')],
@@ -120,7 +120,7 @@ export const basicDemo = (
               viewInputs: {
                 ...menuViewConfig(basicItemsClassName),
               },
-              toParentMessage: (message): infer _ =>
+              toParentMessage: (message) =>
                 Message.GotMenuBasicDemoMessage({ message }),
             }),
           ],
@@ -133,7 +133,7 @@ export const basicDemo = (
 export const animatedDemo = (
   menuModel: Menu.Model,
   h: HtmlBuilder<Message>,
-): infer _ => {
+) => {
   return [
     h.div(
       [h.Class('demo-field')],
@@ -152,7 +152,7 @@ export const animatedDemo = (
               viewInputs: {
                 ...menuViewConfig(animatedItemsClassName),
               },
-              toParentMessage: (message): infer _ =>
+              toParentMessage: (message) =>
                 Message.GotMenuAnimatedDemoMessage({ message }),
             }),
           ],

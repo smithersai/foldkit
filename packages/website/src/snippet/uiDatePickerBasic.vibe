@@ -322,7 +322,7 @@ const view = (model: Model, h: HtmlBuilder<Message>) => {
                 default: $optionNone();
               }
             },
-          toCalendarView: (u: UiCalendar.CalendarAttributes): infer _ => match (u) {
+          toCalendarView: (u: UiCalendar.CalendarAttributes) => match (u) {
             when { _tag: "Days" } and let days: daysView(days, h);
             when { _tag: "Months" } and let months: monthsView(months, h);
             when { _tag: "Years" } and let years: yearsView(years, h);

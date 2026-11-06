@@ -16,11 +16,11 @@ const findDraggedCard = (
   maybeItemId: Option<string>,
 ): Option<DemoCardType> =>
   maybeItemId
-    .flatMap((itemId): infer _ =>
+    .flatMap((itemId) =>
       pipe(
         columns,
-        Arr.flatMap(({ cards }): infer _ => cards),
-        Arr.findFirst(({ id }): infer _ => id === itemId),
+        Arr.flatMap(({ cards }) => cards),
+        Arr.findFirst(({ id }) => id === itemId),
       )
     )
 
@@ -39,7 +39,7 @@ const cardView = (
   const maybeItemId = DragAndDrop.maybeDraggedItemId(dragAndDropModel)
   const isBeingDragged = Option.exists(
     maybeItemId,
-    (id): infer _ => id === card.id,
+    (id) => id === card.id,
   )
 
   const isKeyboardDragged = isBeingDragged
@@ -58,7 +58,7 @@ const cardView = (
       ...DragAndDrop.draggable(
         {
           model: dragAndDropModel,
-          toParentMessage: (message): infer _ =>
+          toParentMessage: (message) =>
             Message.GotDragAndDropDemoMessage({ message }),
           itemId: card.id,
           containerId,
@@ -92,22 +92,21 @@ const columnView = (
   const isTargetColumn = isDragging
     && Option.exists(
       maybeTarget,
-      ({ containerId }): infer _ => containerId === column.id,
+      ({ containerId }) => containerId === column.id,
     )
 
   const visibleCards = maybeItemId
     .match({
-      onNone: (): infer _ => column.cards,
-      onSome: (draggedId): infer _ =>
+      onNone: () => column.cards,
+      onSome: (draggedId) =>
         isDragging
-          ? Arr.filter(column.cards, ({ id }): infer _ => id !== draggedId)
+          ? Arr.filter(column.cards, ({ id }) => id !== draggedId)
           : column.cards,
     })
 
   const cardElements = Arr.map(
     visibleCards,
-    (card, index): infer _ =>
-      cardView(card, index, column.id, dragAndDropModel, h),
+    (card, index) => cardView(card, index, column.id, dragAndDropModel, h),
   )
 
   if (!isTargetColumn) {
@@ -116,8 +115,8 @@ const columnView = (
 
   const targetIndex = maybeTarget
     .match({
-      onNone: (): infer _ => visibleCards.length,
-      onSome: ({ index }): infer _ => Math.min(index, visibleCards.length),
+      onNone: () => visibleCards.length,
+      onSome: ({ index }) => Math.min(index, visibleCards.length),
     })
 
   const insertElement = isPointerDragging
@@ -136,7 +135,7 @@ const columnView = (
   const withInsert: ReadonlyArray<Html> = pipe(
     cardElements,
     Arr.insertAt(targetIndex, insertElement),
-    Option.getOrElse((): infer _ => [...cardElements, insertElement]),
+    Option.getOrElse(() => [...cardElements, insertElement]),
   )
 
   return renderColumn(column, dragAndDropModel, withInsert, h)
@@ -152,7 +151,7 @@ const renderColumn = (
   const isDropTarget = DragAndDrop.isDragging(dragAndDropModel)
     && Option.exists(
       maybeTarget,
-      ({ containerId }): infer _ => containerId === column.id,
+      ({ containerId }) => containerId === column.id,
     )
 
   return h.div(
@@ -190,15 +189,15 @@ const ghostView = (
   const maybeItemId = DragAndDrop.maybeDraggedItemId(dragAndDropModel)
 
   return DragAndDrop.ghostStyle(dragAndDropModel)
-    .flatMap((ghostStyle): infer _ =>
-      Option.map(findDraggedCard(columns, maybeItemId), (card): infer _ => ({
+    .flatMap((ghostStyle) =>
+      Option.map(findDraggedCard(columns, maybeItemId), (card) => ({
         ghostStyle,
         card,
       }))
     )
     .match({
-      onNone: (): infer _ => ih.empty,
-      onSome: ({ ghostStyle, card }): infer _ =>
+      onNone: () => ih.empty,
+      onSome: ({ ghostStyle, card }) =>
         ih.div(
           [
             ih.Style(ghostStyle),
@@ -221,7 +220,7 @@ export const demo = (
       [
         h.div(
           [h.Class('grid grid-cols-2 gap-4')],
-          Arr.map(model.dragAndDropDemoColumns, (column): infer _ =>
+          Arr.map(model.dragAndDropDemoColumns, (column) =>
             columnView(
               model.dragAndDropDemoColumns,
               column,

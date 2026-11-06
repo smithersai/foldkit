@@ -57,7 +57,7 @@ export const docIslands = (
       { name, label, class: className },
       _content,
       occurrenceIndex,
-    ): infer _ => match (lookupSnippet(name)) {
+    ) => match (lookupSnippet(name)) {
       when { _tag: "None" }: ih.empty;
       when { _tag: "Some", value: let snippet }: CodeBlock.highlightedView(
         `${pageId}-snippet-${name}-${occurrenceIndex}`,
@@ -77,16 +77,14 @@ export const docIslands = (
       );
     },
 
-    Info: ({ label }, content): infer _ => infoCalloutBlocks(label, content),
+    Info: ({ label }, content) => infoCalloutBlocks(label, content),
 
-    Warning: ({ label }, content): infer _ =>
-      warningCalloutBlocks(label, content),
+    Warning: ({ label }, content) => warningCalloutBlocks(label, content),
 
-    Cta: (_attributes, content): infer _ => ctaLinks(content),
+    Cta: (_attributes, content) => ctaLinks(content),
 
-    Demo: ({ name }): infer _ =>
-      demoRegion(demoLabels, name, resolveDemo(slots, name)),
+    Demo: ({ name }) => demoRegion(demoLabels, name, resolveDemo(slots, name)),
 
-    Faq: ({ id, question }, content): infer _ =>
+    Faq: ({ id, question }, content) =>
       renderFaqSection(slots, id, question, content),
   })

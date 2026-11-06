@@ -259,7 +259,7 @@ export const buildExampleFileMap = async (
 
 export const playgroundFilesPlugin = (): Plugin => ({
   name: 'playground-files',
-  resolveId(id): infer _ {
+  resolveId(id) {
     if (id === VIRTUAL_MODULE_ID) {
       return RESOLVED_VIRTUAL_MODULE_ID
     }

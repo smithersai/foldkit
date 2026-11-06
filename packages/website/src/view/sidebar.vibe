@@ -76,7 +76,7 @@ const sidebarGroup = (
           isOpen: config.isOpen,
           onToggle: config.onToggle,
           isDisabled: config.isLocked,
-          toView: (attributes): infer _ =>
+          toView: (attributes) =>
             h.div(
               [],
               [
@@ -118,7 +118,7 @@ const sidebarGroup = (
   )
 }
 
-const linkClass = (isActive: boolean): infer _ =>
+const linkClass = (isActive: boolean) =>
   clsx(
     'block px-4 py-2.5 md:px-2.5 md:py-1 rounded-md transition text-sm font-normal',
     {
@@ -134,7 +134,7 @@ const navLink = (
   isActive: boolean,
   label: string,
   h: HtmlBuilder<Message>,
-): infer _ =>
+) =>
   h.li(
     [],
     [
@@ -149,7 +149,7 @@ const navLink = (
     ],
   )
 
-const getStartedClass = (isActive: boolean): infer _ =>
+const getStartedClass = (isActive: boolean) =>
   clsx('block px-4 py-2.5 md:py-0 transition text-sm font-medium', {
     'text-accent-700 dark:text-accent-400 underline underline-offset-2':
       isActive,
@@ -198,7 +198,7 @@ const computeNavLinks = (
     (route): route is typeof AppRoute.ExampleDetail.Type =>
       route._tag === 'ExampleDetail',
   )
-    .map((route): infer _ => route.exampleSlug)
+    .map((route) => route.exampleSlug)
   const maybeActiveSectionKey = findActiveSectionKey(
     route._tag,
     maybeExampleSlug,
@@ -209,7 +209,7 @@ const computeNavLinks = (
   const pageGroupList = (pages: ReadonlyArray<NavPage>): Html =>
     h.ul(
       [h.Class('space-y-1')],
-      Arr.map(pages, (page): infer _ =>
+      Arr.map(pages, (page) =>
         navLink(
           page.href,
           isNavPageActive(route._tag, maybeExampleSlug, page._tag),
@@ -229,7 +229,7 @@ const computeNavLinks = (
               id: `${idPrefix}-${GROUP_ID.blog}`,
               label: 'Blog',
               isOpen: sidebarGroups.blog,
-              onToggle: (isOpen): infer _ =>
+              onToggle: (isOpen) =>
                 Message.ToggledSidebarGroup({ key: 'blog', isOpen }),
               isLocked: isLocked('blog'),
               children: h.ul(
@@ -241,18 +241,18 @@ const computeNavLinks = (
           ),
         ]
         : []),
-      ...Arr.map(docsSections, (section): infer _ => {
+      ...Arr.map(docsSections, (section) => {
         return sidebarGroup(
           {
             id: `${idPrefix}-${GROUP_ID[section.key]}`,
             label: section.label,
             isOpen: sidebarGroups[section.key],
-            onToggle: (isOpen): infer _ =>
+            onToggle: (isOpen) =>
               Message.ToggledSidebarGroup({ key: section.key, isOpen }),
             isLocked: isLocked(section.key),
             children: h.div(
               [h.Class('divide-y divide-gray-200 dark:divide-gray-800')],
-              Arr.map(section.pageGroups, (group): infer _ =>
+              Arr.map(section.pageGroups, (group) =>
                 h.div(
                   [h.Class('py-3 first:pt-0 last:pb-0')],
                   [pageGroupList(group)],
@@ -267,12 +267,12 @@ const computeNavLinks = (
           id: `${idPrefix}-${GROUP_ID.apiReference}`,
           label: 'API Reference',
           isOpen: sidebarGroups.apiReference,
-          onToggle: (isOpen): infer _ =>
+          onToggle: (isOpen) =>
             Message.ToggledSidebarGroup({ key: 'apiReference', isOpen }),
           isLocked: isLocked('apiReference'),
           children: h.ul(
             [h.Class('space-y-1')],
-            Arr.map(apiModuleIndex, ({ slug, name }): infer _ =>
+            Arr.map(apiModuleIndex, ({ slug, name }) =>
               navLink(
                 apiModuleRouter({
                   moduleSlug: slug,
@@ -415,7 +415,7 @@ export const mobileView = (model: Model, h: HtmlBuilder<Message>): Html => {
     view: Dialog.view,
     viewInputs: {
       hasDescription: true,
-      toView: (renderInfo): infer _ =>
+      toView: (renderInfo) =>
         h.dialog(
           [...renderInfo.dialog, h.Class('md:hidden')],
           renderInfo.isVisible
@@ -437,7 +437,7 @@ export const mobileView = (model: Model, h: HtmlBuilder<Message>): Html => {
             : [],
         ),
     },
-    toParentMessage: (message): infer _ =>
+    toParentMessage: (message) =>
       Message.GotMobileMenuDialogMessage({ message }),
   })
 }

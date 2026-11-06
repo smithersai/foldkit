@@ -18,8 +18,8 @@ export const boot = (
 ): InitReturn => {
   const init_ = init()
   return Update.combine(init_.model, [
-    (stepModel): infer _ => update(stepModel, Message.RequestedApiData()),
-    (stepModel): infer _ => match (maybeApiData) {
+    (stepModel) => update(stepModel, Message.RequestedApiData()),
+    (stepModel) => match (maybeApiData) {
       when Option.None: ({ model: stepModel });
       // Prerender seeds a module slice; hydration still loads the full reference.
       when Option.Some(let apiData): update(

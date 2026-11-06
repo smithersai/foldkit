@@ -29,7 +29,7 @@ const daysInMonth = (year: number, month: number): number => {
   if (month === FEBRUARY && isLeapYear(year)) {
     return LEAP_FEBRUARY_LENGTH
   }
-  return Option.getOrElse(Arr.get(MONTH_LENGTHS, month - 1), (): infer _ => 0)
+  return Option.getOrElse(Arr.get(MONTH_LENGTHS, month - 1), () => 0)
 }
 
 const isCalendarDate = (value: string): boolean =>
@@ -52,7 +52,7 @@ const PostCoverImagePath = Schema.String.check(
   Schema.makeFilter(
     (
       value,
-    ): infer _ => (value.startsWith('/')
+    ) => (value.startsWith('/')
       ? undefined
       : 'not a root-relative path'),
     {
@@ -66,7 +66,7 @@ const POSITIVE_INTEGER_PATTERN = /^[1-9][0-9]*$/
 
 const PostCoverImageDimension = Schema.String.check(
   Schema.makeFilter(
-    (value): infer _ =>
+    (value) =>
       POSITIVE_INTEGER_PATTERN.test(value)
         ? undefined
         : 'not a positive integer',
@@ -102,7 +102,7 @@ export const PostFrontmatter = Schema.Struct({
     Schema.makeFilter(
       (
         value,
-      ): infer _ => (isCalendarDate(value)
+      ) => (isCalendarDate(value)
         ? undefined
         : 'invalid calendar date'),
       {
@@ -117,7 +117,7 @@ export const PostFrontmatter = Schema.Struct({
   coverImageHeight: Schema.optional(PostCoverImageDimension),
 }).check(
   Schema.makeFilter(
-    (fields): infer _ => {
+    (fields) => {
       const coverFields = [
         fields.coverImage,
         fields.coverImageAlt,

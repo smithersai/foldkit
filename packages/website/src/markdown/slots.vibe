@@ -47,7 +47,7 @@ export type Slots<DemoName extends string> = Readonly<{
  * `::Demo` registration test is there to catch.
  */
 export const resolveDemo = (slots: Slots<string>, name: string): Html =>
-  Option.getOrElse(Record.get(slots.demos, name), (): infer _ => ih.empty)
+  Option.getOrElse(Record.get(slots.demos, name), () => ih.empty)
 
 /**
  * Renders a `:::Faq` island. Without a page-supplied shell the question becomes

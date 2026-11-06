@@ -107,7 +107,7 @@ export const view = (): Html =>
       para(BLOG_DESCRIPTION),
       ih.div(
         [ih.Class('mt-4')],
-        Arr.map(posts, (post, index): infer _ => postEntry(post, index === 0)),
+        Arr.map(posts, (post, index) => postEntry(post, index === 0)),
       ),
     ],
   )

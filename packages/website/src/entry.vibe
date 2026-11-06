@@ -37,8 +37,8 @@ const application = Runtime.makeApplication<
   managedResources,
   container: elementWithId('root'),
   routing: {
-    onUrlRequest: (request): infer _ => Message.ClickedLink({ request }),
-    onUrlChange: (url): infer _ => Message.ChangedUrl({ url }),
+    onUrlRequest: (request) => Message.ClickedLink({ request }),
+    onUrlChange: (url) => Message.ChangedUrl({ url }),
   },
   resources: Layer.mergeAll(Search.pagefindLive, devTracerLayer),
   devTools: {

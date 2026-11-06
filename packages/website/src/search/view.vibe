@@ -28,9 +28,7 @@ const handleSearchInputKeyDown = (
       model.searchState,
       resultsFromState,
       Arr.get(model.activeResultIndex),
-      Option.map((result): infer _ =>
-        Message.SelectedSearchResult({ url: result.url })
-      ),
+      Option.map((result) => Message.SelectedSearchResult({ url: result.url })),
     )
     : Option.none();
   default: Option.none();
@@ -65,10 +63,8 @@ const searchInputView = (model: Model, h: HtmlBuilder<Message>): Html => {
         h.Class(
           'flex-1 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none text-base',
         ),
-        h.OnInput((value): infer _ =>
-          Message.UpdatedSearchQuery({ query: value })
-        ),
-        h.OnKeyDownPreventDefault((key): infer _ =>
+        h.OnInput((value) => Message.UpdatedSearchQuery({ query: value })),
+        h.OnKeyDownPreventDefault((key) =>
           handleSearchInputKeyDown(key, model)
         ),
       ]),
@@ -86,7 +82,7 @@ const resultLabelText = (
     Option.liftPredicate(result.kind, Str.isNonEmpty),
     Option.liftPredicate(
       result.section,
-      (section): infer _ => Str.isNonEmpty(section) && section !== result.title,
+      (section) => Str.isNonEmpty(section) && section !== result.title,
     ),
   ])
 
@@ -178,8 +174,8 @@ const resultListView = (
   h: HtmlBuilder<Message>,
 ): Html =>
   Arr.match(results, {
-    onEmpty: (): infer _ => h.empty,
-    onNonEmpty: (nonEmptyResults): infer _ =>
+    onEmpty: () => h.empty,
+    onNonEmpty: (nonEmptyResults) =>
       h.div(
         [
           h.Id(RESULTS_LIST_ID),
@@ -189,7 +185,7 @@ const resultListView = (
         ],
         Arr.map(
           nonEmptyResults,
-          (result, index): infer _ =>
+          (result, index) =>
             resultItemView(result, index, index === activeResultIndex, h),
         ),
       ),
@@ -197,18 +193,16 @@ const resultListView = (
 
 const resultsListView = (model: Model, h: HtmlBuilder<Message>): Html =>
   SearchState.match<Html>(model.searchState, {
-    Idle: (): infer _ => emptyPrompt,
-    Loading: ({ results }): infer _ =>
+    Idle: () => emptyPrompt,
+    Loading: ({ results }) =>
       Arr.match(results, {
-        onEmpty: (): infer _ => searchingIndicator,
-        onNonEmpty: (): infer _ =>
-          resultListView(results, model.activeResultIndex, h),
+        onEmpty: () => searchingIndicator,
+        onNonEmpty: () => resultListView(results, model.activeResultIndex, h),
       }),
-    Ok: ({ results }): infer _ =>
+    Ok: ({ results }) =>
       Arr.match(results, {
-        onEmpty: (): infer _ => noResultsView(model.query),
-        onNonEmpty: (): infer _ =>
-          resultListView(results, model.activeResultIndex, h),
+        onEmpty: () => noResultsView(model.query),
+        onNonEmpty: () => resultListView(results, model.activeResultIndex, h),
       }),
   })
 
@@ -249,7 +243,7 @@ export const view = Submodel.defineView<Model, Message>((model, h): Html =>
         model: model.dialog,
         view: Dialog.view,
         viewInputs: {
-          toView: ({ dialog, backdrop, panel, title, isVisible }): infer _ =>
+          toView: ({ dialog, backdrop, panel, title, isVisible }) =>
             h.dialog(
               [...dialog],
               isVisible
@@ -290,7 +284,7 @@ export const view = Submodel.defineView<Model, Message>((model, h): Html =>
                 : [],
             ),
         },
-        toParentMessage: (message): infer _ =>
+        toParentMessage: (message) =>
           Message.GotSearchDialogMessage({ message }),
       }),
     ],

@@ -9,9 +9,8 @@ import * as NotePlayerDemo from './notePlayerDemo.vibe'
 const notePlayerDemoManagedResources = ManagedResource.lift(
   NotePlayerDemo.managedResources,
 )<Model, Message>({
-  read: (model): infer _ => Option.some(model.notePlayerDemo),
-  toParentMessage: (message): infer _ =>
-    Message.GotNotePlayerDemoMessage({ message }),
+  read: (model) => Option.some(model.notePlayerDemo),
+  toParentMessage: (message) => Message.GotNotePlayerDemoMessage({ message }),
 })
 
 export const managedResources = ManagedResource.aggregate<Model, Message>()(

@@ -574,10 +574,10 @@ const isFeaturedExample = (example: ExampleMeta): boolean =>
 const landingExampleMetas = Arr.appendAll(
   Arr.flatMap(
     featuredExampleSlugs,
-    (featuredExampleSlug): infer _ =>
+    (featuredExampleSlug) =>
       Arr.filter(
         exampleMetas,
-        (example): infer _ => example.slug === featuredExampleSlug,
+        (example) => example.slug === featuredExampleSlug,
       ),
   ),
   Arr.filter(exampleMetas, Predicate.not(isFeaturedExample)),

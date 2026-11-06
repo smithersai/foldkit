@@ -51,7 +51,7 @@ export const view = (
       anchor: THEME_MENU_ANCHOR,
       ariaLabel: `Theme: ${activePreference}`,
       items: THEME_PREFERENCES,
-      itemToConfig: (preference): infer _ => {
+      itemToConfig: (preference) => {
         const isSelected = preference === activePreference
 
         return {
@@ -88,7 +88,6 @@ export const view = (
       backdropAttributes: childAttributes([ih.Class('fixed inset-0 z-[60]')]),
       attributes: childAttributes([ih.Class('inline-flex')]),
     },
-    toParentMessage: (message): infer _ =>
-      Message.GotThemeMenuMessage({ message }),
+    toParentMessage: (message) => Message.GotThemeMenuMessage({ message }),
   })
 }

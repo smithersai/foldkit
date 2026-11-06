@@ -40,11 +40,11 @@ const chatBodies = [
 const INITIAL_VIRTUAL_LIST_CHAT_MESSAGE_COUNT = 24
 
 const initialVirtualListChatMessages: ReadonlyArray<VirtualListChatMessage> =
-  Arr.makeBy(INITIAL_VIRTUAL_LIST_CHAT_MESSAGE_COUNT, (index): infer _ => ({
+  Arr.makeBy(INITIAL_VIRTUAL_LIST_CHAT_MESSAGE_COUNT, (index) => ({
     id: index,
     body: Option.getOrElse(
       Arr.get(chatBodies, index % chatBodies.length),
-      (): infer _ => 'Message',
+      () => 'Message',
     ),
     isExpanded: index % 7 === 0,
   }))

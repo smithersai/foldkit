@@ -107,14 +107,11 @@ const allParameterDescriptions = (
   apiFunction: ApiFunction,
 ): ReadonlyArray<Html> =>
   pipe(
-    Arr.flatMap(apiFunction.signatures, (signature): infer _ =>
-      signature.parameters),
-    Arr.dedupeWith((a, b): infer _ =>
-      a.name === b.name
-    ),
-    Arr.filterMap((parameter): infer _ =>
+    Arr.flatMap(apiFunction.signatures, (signature) => signature.parameters),
+    Arr.dedupeWith((a, b) => a.name === b.name),
+    Arr.filterMap((parameter) =>
       Result.fromOption(
-        Option.map(parameter.description, (description): infer _ =>
+        Option.map(parameter.description, (description) =>
           ih.div(
             [ih.Class('mb-1')],
             [
@@ -128,12 +125,12 @@ const allParameterDescriptions = (
               ),
             ],
           )),
-        (): infer _ => undefined,
+        () => undefined,
       )
     ),
     Arr.match({
-      onEmpty: (): infer _ => [],
-      onNonEmpty: (items): infer _ => [
+      onEmpty: () => [],
+      onNonEmpty: (items) => [
         ih.div(
           [
             ih.Class(
@@ -183,7 +180,7 @@ const signaturesView = (
         ...descriptionCommentFallback(apiFunction.description),
         ...Arr.flatMap(
           apiFunction.signatures,
-          (signature): infer _ => signatureChildrenFallback(signature),
+          (signature) => signatureChildrenFallback(signature),
         ),
       ],
     });
@@ -208,9 +205,8 @@ const signaturesView = (
       {
         id: key,
         isOpen: isSignatureDisclosureOpen,
-        onToggle: (isOpen): infer _ =>
-          Message.ToggledSignature({ id: key, isOpen }),
-        toView: (attributes): infer _ =>
+        onToggle: (isOpen) => Message.ToggledSignature({ id: key, isOpen }),
+        toView: (attributes) =>
           h.div(
             [],
             [
@@ -247,9 +243,9 @@ const parameterDescriptions = (
 ): ReadonlyArray<Html> =>
   pipe(
     parameters,
-    Arr.filterMap((parameter): infer _ =>
+    Arr.filterMap((parameter) =>
       Result.fromOption(
-        Option.map(parameter.description, (description): infer _ =>
+        Option.map(parameter.description, (description) =>
           ih.div(
             [ih.Class('mb-1')],
             [
@@ -263,12 +259,12 @@ const parameterDescriptions = (
               ),
             ],
           )),
-        (): infer _ => undefined,
+        () => undefined,
       )
     ),
     Arr.match({
-      onEmpty: (): infer _ => [],
-      onNonEmpty: (items): infer _ => [
+      onEmpty: () => [],
+      onNonEmpty: (items) => [
         ih.div(
           [
             ih.Class(
@@ -299,13 +295,13 @@ const parameterListView = (
   parameters: ReadonlyArray<ApiParameter>,
 ): ReadonlyArray<Html> =>
   Arr.match(parameters, {
-    onEmpty: (): infer _ => [ih.div([ih.Class('mb-2')], [punctuation('()')])],
-    onNonEmpty: (nonEmpty): infer _ => [
+    onEmpty: () => [ih.div([ih.Class('mb-2')], [punctuation('()')])],
+    onNonEmpty: (nonEmpty) => [
       ih.div(
         [ih.Class('mb-2')],
         [
           punctuation('('),
-          ...Arr.flatMap(nonEmpty, (parameter, index): infer _ => [
+          ...Arr.flatMap(nonEmpty, (parameter, index) => [
             ...(index > 0 ? [punctuation(', ')] : []),
             ...parameterView(parameter),
           ]),
@@ -343,8 +339,8 @@ const signatureChildrenFallback = (signature: {
   readonly typeParameters: ReadonlyArray<string>
 }): ReadonlyArray<Html> => [
   ...Arr.match(signature.typeParameters, {
-    onEmpty: (): infer _ => [],
-    onNonEmpty: (typeParameters): infer _ => [
+    onEmpty: () => [],
+    onNonEmpty: (typeParameters) => [
       ih.div(
         [ih.Class('text-gray-600 mb-2')],
         [`<${Arr.join(typeParameters, ', ')}>`],
@@ -582,8 +578,8 @@ const section = <T extends { readonly name: string }>(
   itemView: (item: T) => Html,
 ): ReadonlyArray<Html> =>
   Arr.match(items, {
-    onEmpty: (): infer _ => [],
-    onNonEmpty: (items): infer _ => [
+    onEmpty: () => [],
+    onNonEmpty: (items) => [
       headingWithContent(
         'h2',
         sectionId(moduleName, label),
@@ -622,7 +618,7 @@ export const view = Submodel.defineView<Model, Message, ViewInputs>(
           'Functions',
           module.functions,
           renderHeadingLink,
-          (apiFunction): infer _ => {
+          (apiFunction) => {
             const key = scopedId('function', module.name, apiFunction.name)
             return lazyItem(key, functionView, [
               module.name,
@@ -639,7 +635,7 @@ export const view = Submodel.defineView<Model, Message, ViewInputs>(
           'Types',
           module.types,
           renderHeadingLink,
-          (type): infer _ => {
+          (type) => {
             const key = scopedId('type', module.name, type.name)
             return lazyItem(key, typeView, [
               module.name,
@@ -655,7 +651,7 @@ export const view = Submodel.defineView<Model, Message, ViewInputs>(
           'Interfaces',
           module.interfaces,
           renderHeadingLink,
-          (apiInterface): infer _ => {
+          (apiInterface) => {
             const key = scopedId('interface', module.name, apiInterface.name)
             return lazyItem(key, interfaceView, [
               module.name,
@@ -671,7 +667,7 @@ export const view = Submodel.defineView<Model, Message, ViewInputs>(
           'Constants',
           module.variables,
           renderHeadingLink,
-          (variable): infer _ => {
+          (variable) => {
             const key = scopedId('const', module.name, variable.name)
             return lazyItem(key, variableView, [
               module.name,
@@ -709,7 +705,7 @@ export const skeletonView = (): Html =>
       ih.div([ih.Class(`h-7 w-36 mb-6 rounded ${skeletonSurfaceClass}`)]),
       ...Arr.map(
         skeletonFunctionBlocks,
-        ({ id, labelWidth, bodyHeight }): infer _ =>
+        ({ id, labelWidth, bodyHeight }) =>
           ih.keyed('div')(
             id,
             [ih.Class('mb-8')],

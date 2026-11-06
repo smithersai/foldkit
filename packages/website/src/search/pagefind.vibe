@@ -23,7 +23,7 @@ type PagefindModule = Readonly<{
 const PAGEFIND_PATH = '/pagefind/pagefind.js'
 
 const NOOP_PAGEFIND: PagefindModule = {
-  search: (): infer _ => Promise.resolve({ results: [] }),
+  search: () => Promise.resolve({ results: [] }),
 }
 
 export service PagefindService {

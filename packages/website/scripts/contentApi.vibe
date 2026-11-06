@@ -105,8 +105,8 @@ export const buildPageDocument = (
 const sectionRank = (section: string): number =>
   pipe(
     SECTION_ORDER,
-    Arr.findFirstIndex((candidate): infer _ => candidate === section),
-    Option.getOrElse((): infer _ => SECTION_ORDER.length),
+    Arr.findFirstIndex((candidate) => candidate === section),
+    Option.getOrElse(() => SECTION_ORDER.length),
   )
 
 const sectionOrder: Order<string> = Order.mapInput(
@@ -120,16 +120,16 @@ export const buildSectionsIndex = (
 ): unknown => {
   const sections = pipe(
     entries,
-    Arr.filter((entry): infer _ => Str.isNonEmpty(entry.metadata.section)),
-    Arr.groupBy((entry): infer _ => entry.metadata.section),
+    Arr.filter((entry) => Str.isNonEmpty(entry.metadata.section)),
+    Arr.groupBy((entry) => entry.metadata.section),
     Record.toEntries,
-    Arr.sortBy(Order.mapInput(sectionOrder, ([section]): infer _ => section)),
-    Arr.map(([section, sectionEntries]): infer _ => ({
+    Arr.sortBy(Order.mapInput(sectionOrder, ([section]) => section)),
+    Arr.map(([section, sectionEntries]) => ({
       section,
       count: sectionEntries.length,
       pages: Arr.map(
         sectionEntries,
-        (entry): infer _ => toPageSummary(entry).path,
+        (entry) => toPageSummary(entry).path,
       ),
     })),
   )
@@ -144,7 +144,7 @@ export const buildSectionsIndex = (
 
 // EXAMPLES
 
-const toExampleSummary = (example: ExampleMeta): infer _ => ({
+const toExampleSummary = (example: ExampleMeta) => ({
   slug: example.slug,
   title: example.title,
   description: example.description,
@@ -170,7 +170,7 @@ export const buildExamplesIndex = (
 
 // BLOG
 
-const toBlogSummary = (entry: BlogPostEntry): infer _ => ({
+const toBlogSummary = (entry: BlogPostEntry) => ({
   slug: entry.slug,
   title: entry.frontmatter.title,
   description: entry.frontmatter.description,
@@ -178,7 +178,7 @@ const toBlogSummary = (entry: BlogPostEntry): infer _ => ({
   url: `${SITE_URL}/blog/${entry.slug}`,
   markdownUrl: `${SITE_URL}/blog/${entry.slug}.md`,
   coverUrl: entry.maybeCoverAsset
-    .map((cover): infer _ => `${SITE_URL}${cover.src}`)
+    .map((cover) => `${SITE_URL}${cover.src}`)
     .getOrUndefined(),
 })
 
@@ -433,12 +433,12 @@ export const contentApiDocuments = ({
     },
   ]
 
-  const pageDocuments = Arr.map(pages, (entry): infer _ => ({
+  const pageDocuments = Arr.map(pages, (entry) => ({
     path: apiPagePath(entry.urlPath),
     document: buildPageDocument(entry, generated),
   }))
 
-  const problemDocuments = Arr.map(PROBLEMS, (problem): infer _ => ({
+  const problemDocuments = Arr.map(PROBLEMS, (problem) => ({
     path: problemPath(problem),
     document: buildProblemDocument(problem),
   }))

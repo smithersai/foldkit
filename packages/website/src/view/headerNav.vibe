@@ -40,11 +40,11 @@ export const view = (
     items: headerSections,
     ariaLabel: 'Primary',
     toHref: sectionToHref,
-    isItemCurrent: (section): infer _ => isSectionCurrent(route, section),
-    toView: ({ nav, items }): infer _ =>
+    isItemCurrent: (section) => isSectionCurrent(route, section),
+    toView: ({ nav, items }) =>
       h.nav(
         [...nav, h.Class(className)],
-        items.map((item): infer _ =>
+        items.map((item) =>
           h.a([...item.link, h.Class(linkClassName)], [item.value])
         ),
       ),

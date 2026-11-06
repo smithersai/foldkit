@@ -24,9 +24,9 @@ export const sliceApiDataToModule = (
 ): Option<ApiData> =>
   Option.map(
     resolveModule(apiData.parsedApi, moduleSlug),
-    (module): infer _ => ({
+    (module) => ({
       parsedApi: { modules: [module] },
-      highlights: Record.filter(apiData.highlights, (_, id): infer _ =>
+      highlights: Record.filter(apiData.highlights, (_, id) =>
         scopedIdBelongsToModule(id, module.name)),
     }),
   )

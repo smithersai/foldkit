@@ -265,7 +265,7 @@ const yearsView = (
 // calendar's current `viewMode`, so the match hands each grid to its own view
 // function:
 const view = (model: Model, h: HtmlBuilder<Message>) => {
-  const calendarView = (u: UiCalendar.CalendarAttributes): infer _ => match (u) {
+  const calendarView = (u: UiCalendar.CalendarAttributes) => match (u) {
     when { _tag: "Days" } and let days: daysView(days, h);
     when { _tag: "Months" } and let months: monthsView(months, h);
     when { _tag: "Years" } and let years: yearsView(years, h);

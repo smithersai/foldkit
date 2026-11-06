@@ -44,7 +44,7 @@ export const view = (
   entries: ReadonlyArray<TableOfContentsEntry>,
   maybeActiveSectionId: Option<string>,
   h: HtmlBuilder<Message>,
-): infer _ =>
+) =>
   h.aside(
     [
       h.Class(
@@ -64,12 +64,12 @@ export const view = (
         [
           h.ul(
             [h.Class('space-y-3 text-sm')],
-            Arr.map(entries, (entry): infer _ =>
+            Arr.map(entries, (entry) =>
               tableOfContentsEntryView(
                 entry,
                 Option.exists(
                   maybeActiveSectionId,
-                  (activeSectionId): infer _ => activeSectionId === entry.id,
+                  (activeSectionId) => activeSectionId === entry.id,
                 ),
                 h,
               )),
@@ -84,16 +84,16 @@ export const mobileView = (
   maybeActiveSectionId: Option<string>,
   isOpen: boolean,
   h: HtmlBuilder<Message>,
-): infer _ => {
+) => {
   const firstEntryText = Arr.head(entries)
     .match({
-      onNone: (): infer _ => '',
-      onSome: ({ text }): infer _ => text,
+      onNone: () => '',
+      onSome: ({ text }) => text,
     })
 
   const activeSectionText = match (maybeActiveSectionId) {
     when { _tag: "None" }: firstEntryText;
-    when { _tag: "Some", value: let activeSectionId }: match (Arr.findFirst(entries, ({ id }): infer _ => id === activeSectionId)) {
+    when { _tag: "Some", value: let activeSectionId }: match (Arr.findFirst(entries, ({ id }) => id === activeSectionId)) {
       when { _tag: "None" }: firstEntryText;
       when { _tag: "Some", value: let optionValue1 }: do {
         const { text } = optionValue1
@@ -106,7 +106,7 @@ export const mobileView = (
     [
       h.Id('mobile-table-of-contents'),
       h.Open(isOpen),
-      h.OnToggle((open): infer _ =>
+      h.OnToggle((open) =>
         Message.ToggledMobileTableOfContents({ isOpen: open })
       ),
       h.Class(
@@ -156,7 +156,7 @@ export const mobileView = (
         [
           h.ul(
             [h.Class('text-sm divide-y divide-gray-200 dark:divide-gray-800')],
-            Arr.map(entries, ({ level, id, text }): infer _ => {
+            Arr.map(entries, ({ level, id, text }) => {
               const isActive = match (maybeActiveSectionId) {
                 when { _tag: "None" }: false;
                 when { _tag: "Some", value: let activeSectionId }:

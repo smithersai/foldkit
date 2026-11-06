@@ -55,8 +55,8 @@ export const SECTION_ORDER: ReadonlyArray<string> = [
 const sectionRank = (section: string): number =>
   pipe(
     SECTION_ORDER,
-    Arr.findFirstIndex((candidate): infer _ => candidate === section),
-    Option.getOrElse((): infer _ => SECTION_ORDER.length),
+    Arr.findFirstIndex((candidate) => candidate === section),
+    Option.getOrElse(() => SECTION_ORDER.length),
   )
 
 const sectionOrder: Order<string> = Order.mapInput(
@@ -72,7 +72,7 @@ const renderIndexEntry = (entry: LlmsIndexEntry): string =>
 
 const titleOrder: Order<LlmsIndexEntry> = Order.mapInput(
   Order.String,
-  (entry: LlmsIndexEntry): infer _ => entry.metadata.title,
+  (entry: LlmsIndexEntry) => entry.metadata.title,
 )
 
 const renderIndexSection = (
@@ -122,14 +122,14 @@ export const buildLlmsIndex = (
 ): string => {
   const sectioned = pipe(
     entries,
-    Arr.filter((entry): infer _ => entry.metadata.section.length > 0),
-    Arr.groupBy((entry): infer _ => entry.metadata.section),
+    Arr.filter((entry) => entry.metadata.section.length > 0),
+    Arr.groupBy((entry) => entry.metadata.section),
   )
 
   const sectionBlocks = pipe(
     Object.entries(sectioned),
-    Arr.sortBy(Order.mapInput(sectionOrder, ([section]): infer _ => section)),
-    Arr.map(([section, sectionEntries]): infer _ =>
+    Arr.sortBy(Order.mapInput(sectionOrder, ([section]) => section)),
+    Arr.map(([section, sectionEntries]) =>
       renderIndexSection(section, sectionEntries)
     ),
   )
@@ -158,7 +158,7 @@ const fullEntryOrder: Order<LlmsFullEntry> = Order.combine(
   Order.mapInput(Order.Number, sectionRankForEntry),
   Order.mapInput(
     Order.Number,
-    (entry: LlmsFullEntry): infer _ => entry.orderIndex,
+    (entry: LlmsFullEntry) => entry.orderIndex,
   ),
 )
 

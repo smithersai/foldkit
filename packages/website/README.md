@@ -72,3 +72,6 @@ original atom's construction, exact service operations and result states across
 103 mutation models, plus listener acquisition, sharing, events and cleanup
 across 102 lifecycle models. Compiled omitted-operation and missing-cancellation
 mutants must fail those observations.
+
+Plain native functions use ordinary TypeScript return inference. No return
+annotation is needed to infer a curried callback or an object literal.

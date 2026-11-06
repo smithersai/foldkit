@@ -130,11 +130,11 @@ export type Message = typeof Message.Type
 
 const validateNoteInput = FieldValidation.validate(noteInputRules)
 
-const parseNotes = (value: string): infer _ =>
+const parseNotes = (value: string) =>
   pipe(
     value,
     Arr.fromIterable,
-    Arr.filterMap((character): infer _ => {
+    Arr.filterMap((character) => {
       const decoded = Schema.decodeUnknownOption(Note)(character)
       return match (decoded) {
         when Option.None: Result.failVoid;
@@ -166,7 +166,7 @@ export const init = (): UpdateReturn => ({
 // UPDATE
 
 const prependToLog =
-  (entry: string): infer _ =>
+  (entry: string) =>
   (messageLog: ReadonlyArray<string>): ReadonlyArray<string> =>
     Arr.take([entry, ...messageLog], MAX_LOG_ENTRIES)
 
@@ -191,12 +191,12 @@ const enterNoteCommandPhase = (
   noteIndex: number,
 ): UpdateReturn => ({
   model: modifyFields(model, {
-    playbackState: (): infer _ =>
+    playbackState: () =>
       PlaybackState.Playing({
         noteSequence,
         currentNoteIndex: noteIndex,
       }),
-    highlightPhase: (): infer _ => 'NoteCommand',
+    highlightPhase: () => 'NoteCommand',
   }),
   commands: [
     PlayNote({
@@ -211,9 +211,9 @@ const foldNoteDurationRadioGroupOutMessage = RadioGroup.OutMessage.match<
   Update.Step<Model, Message>,
   RadioGroup.OutMessage<NoteDuration>
 >({
-  Selected: ({ value }): infer _ => (model): infer _ => ({
+  Selected: ({ value }) => (model) => ({
     model: modifyFields(model, {
-      noteDuration: (): infer _ => value,
+      noteDuration: () => value,
       messageLog: prependToLog(`Selected(${value})`),
     }),
   }),
@@ -221,19 +221,18 @@ const foldNoteDurationRadioGroupOutMessage = RadioGroup.OutMessage.match<
 
 const foldNoteDurationRadioGroup = Update.foldChild({
   update: NoteDurationRadioGroup.update,
-  read: (model: Model): infer _ => Option.some(model.noteDurationRadioGroup),
-  write: (model, nextNoteDurationRadioGroup): infer _ =>
+  read: (model: Model) => Option.some(model.noteDurationRadioGroup),
+  write: (model, nextNoteDurationRadioGroup) =>
     modifyFields(model, {
-      noteDurationRadioGroup: (): infer _ => nextNoteDurationRadioGroup,
+      noteDurationRadioGroup: () => nextNoteDurationRadioGroup,
     }),
-  toParentMessage: (message): infer _ =>
-    Message.GotNoteDurationMessage({ message }),
+  toParentMessage: (message) => Message.GotNoteDurationMessage({ message }),
   foldOutMessage: foldNoteDurationRadioGroupOutMessage,
 })
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
-    ChangedNoteInput: ({ value }): infer _ => {
+    ChangedNoteInput: ({ value }) => {
       const uppercased = Str.toUpperCase(value)
       const fieldState = Str.isEmpty(uppercased)
         ? FieldValidation.NotValidated({ value: uppercased })
@@ -241,27 +240,27 @@ export const update = (model: Model, message: Message): infer _ =>
 
       return {
         model: modifyFields(model, {
-          noteInput: (): infer _ => fieldState,
-          playbackState: (): infer _ => PlaybackState.Idle(),
-          highlightPhase: (): infer _ => 'Idle',
+          noteInput: () => fieldState,
+          playbackState: () => PlaybackState.Idle(),
+          highlightPhase: () => 'Idle',
         }),
       }
     },
 
-    GotNoteDurationMessage: ({ message }): infer _ =>
+    GotNoteDurationMessage: ({ message }) =>
       foldNoteDurationRadioGroup(model, message),
 
-    ClickedPlay: (): infer _ =>
+    ClickedPlay: () =>
       PlaybackState.match<UpdateReturn>(model.playbackState, {
-        Playing: (): infer _ => ({ model }),
-        Paused: ({ noteSequence, currentNoteIndex }): infer _ => {
+        Playing: () => ({ model }),
+        Paused: ({ noteSequence, currentNoteIndex }) => {
           const resumeIndex = currentNoteIndex + 1
 
           if (resumeIndex >= noteSequence.length) {
             return {
               model: modifyFields(model, {
-                playbackState: (): infer _ => PlaybackState.Idle(),
-                highlightPhase: (): infer _ => 'Idle',
+                playbackState: () => PlaybackState.Idle(),
+                highlightPhase: () => 'Idle',
                 messageLog: prependToLog('ClickedPlay'),
               }),
             }
@@ -271,19 +270,19 @@ export const update = (model: Model, message: Message): infer _ =>
 
           return {
             model: modifyFields(model, {
-              playbackState: (): infer _ =>
+              playbackState: () =>
                 PlaybackState.Playing({
                   noteSequence,
                   currentNoteIndex: resumeIndex,
                 }),
-              highlightPhase: (): infer _ => 'PlayMessage',
-              generation: (): infer _ => nextGeneration,
+              highlightPhase: () => 'PlayMessage',
+              generation: () => nextGeneration,
               messageLog: prependToLog('ClickedPlay'),
             }),
             commands: [DelayAdvancePhase({ generation: nextGeneration })],
           }
         },
-        Idle: (): infer _ => {
+        Idle: () => {
           const noteSequence = model.noteInput._tag === 'Valid'
             ? parseNotes(model.noteInput.value)
             : []
@@ -296,13 +295,13 @@ export const update = (model: Model, message: Message): infer _ =>
 
           return {
             model: modifyFields(model, {
-              playbackState: (): infer _ =>
+              playbackState: () =>
                 PlaybackState.Playing({
                   noteSequence,
                   currentNoteIndex: 0,
                 }),
-              highlightPhase: (): infer _ => 'PlayMessage',
-              generation: (): infer _ => nextGeneration,
+              highlightPhase: () => 'PlayMessage',
+              generation: () => nextGeneration,
               messageLog: prependToLog('ClickedPlay'),
             }),
             commands: [DelayAdvancePhase({ generation: nextGeneration })],
@@ -310,20 +309,20 @@ export const update = (model: Model, message: Message): infer _ =>
         },
       }),
 
-    ClickedPause: (): infer _ =>
+    ClickedPause: () =>
       match (model.playbackState) {
         when { _tag: 'Playing' }: do {
           const { noteSequence, currentNoteIndex } = model.playbackState
           const nextGeneration = model.generation + 1
           ;({
             model: modifyFields(model, {
-              playbackState: (): infer _ =>
+              playbackState: () =>
                 PlaybackState.Paused({
                   noteSequence,
                   currentNoteIndex,
                 }),
-              highlightPhase: (): infer _ => 'PauseMessage',
-              generation: (): infer _ => nextGeneration,
+              highlightPhase: () => 'PauseMessage',
+              generation: () => nextGeneration,
               messageLog: prependToLog('ClickedPause'),
             }),
             commands: [DelayAdvancePhase({ generation: nextGeneration })],
@@ -332,15 +331,15 @@ export const update = (model: Model, message: Message): infer _ =>
         default: ({ model });
       },
 
-    ClickedStop: (): infer _ => ({
+    ClickedStop: () => ({
       model: modifyFields(model, {
-        playbackState: (): infer _ => PlaybackState.Idle(),
-        highlightPhase: (): infer _ => 'Idle',
+        playbackState: () => PlaybackState.Idle(),
+        highlightPhase: () => 'Idle',
         messageLog: prependToLog('ClickedStop'),
       }),
     }),
 
-    CompletedPlayNote: ({ noteIndex }): infer _ => {
+    CompletedPlayNote: ({ noteIndex }) => {
       if (
         model.playbackState._tag !== 'Playing'
         || noteIndex !== model.playbackState.currentNoteIndex
@@ -352,15 +351,15 @@ export const update = (model: Model, message: Message): infer _ =>
 
       return {
         model: modifyFields(model, {
-          highlightPhase: (): infer _ => 'NoteMessage',
-          generation: (): infer _ => nextGeneration,
+          highlightPhase: () => 'NoteMessage',
+          generation: () => nextGeneration,
           messageLog: prependToLog(`CompletedPlayNote(${noteIndex})`),
         }),
         commands: [DelayAdvancePhase({ generation: nextGeneration })],
       }
     },
 
-    CompletedDelayAdvancePhase: ({ generation }): infer _ => {
+    CompletedDelayAdvancePhase: ({ generation }) => {
       if (generation !== model.generation) {
         return { model }
       }
@@ -368,16 +367,16 @@ export const update = (model: Model, message: Message): infer _ =>
       return match (model.highlightPhase) {
         when 'PlayMessage': ({
           model: modifyFields(model, {
-            highlightPhase: (): infer _ => 'PlayUpdate',
+            highlightPhase: () => 'PlayUpdate',
           }),
           commands: [DelayAdvancePhase({ generation: generation })],
         });
         when 'PauseMessage': ({
-          model: modifyFields(model, { highlightPhase: (): infer _ => 'Idle' }),
+          model: modifyFields(model, { highlightPhase: () => 'Idle' }),
         });
         when 'PlayUpdate': ({
           model: modifyFields(model, {
-            highlightPhase: (): infer _ => 'PlayModel',
+            highlightPhase: () => 'PlayModel',
           }),
           commands: [DelayAdvancePhase({ generation: generation })],
         });
@@ -388,19 +387,19 @@ export const update = (model: Model, message: Message): infer _ =>
           };
           default: ({
             model: modifyFields(model, {
-              highlightPhase: (): infer _ => 'Idle',
+              highlightPhase: () => 'Idle',
             }),
           });
         };
         when 'NoteMessage': ({
           model: modifyFields(model, {
-            highlightPhase: (): infer _ => 'NoteUpdate',
+            highlightPhase: () => 'NoteUpdate',
           }),
           commands: [DelayAdvancePhase({ generation: generation })],
         });
         when 'NoteUpdate': ({
           model: modifyFields(model, {
-            highlightPhase: (): infer _ => 'NoteModel',
+            highlightPhase: () => 'NoteModel',
           }),
           commands: [DelayAdvancePhase({ generation: generation })],
         });
@@ -411,8 +410,8 @@ export const update = (model: Model, message: Message): infer _ =>
             match (nextIndex >= noteSequence.length) {
               when true: ({
                 model: modifyFields(model, {
-                  playbackState: (): infer _ => PlaybackState.Idle(),
-                  highlightPhase: (): infer _ => 'Idle',
+                  playbackState: () => PlaybackState.Idle(),
+                  highlightPhase: () => 'Idle',
                 }),
               });
               when false: enterNoteCommandPhase(model, noteSequence, nextIndex);
@@ -420,7 +419,7 @@ export const update = (model: Model, message: Message): infer _ =>
           };
           default: ({
             model: modifyFields(model, {
-              highlightPhase: (): infer _ => 'Idle',
+              highlightPhase: () => 'Idle',
             }),
           });
         };
@@ -428,17 +427,17 @@ export const update = (model: Model, message: Message): infer _ =>
       }
     },
 
-    SucceededAcquireAudioContext: (): infer _ => ({
-      model: modifyFields(model, { audio: (): infer _ => AudioState.Ready() }),
+    SucceededAcquireAudioContext: () => ({
+      model: modifyFields(model, { audio: () => AudioState.Ready() }),
     }),
 
-    FailedAcquireAudioContext: (): infer _ => ({
+    FailedAcquireAudioContext: () => ({
       model: modifyFields(model, {
-        audio: (): infer _ => AudioState.Unavailable(),
+        audio: () => AudioState.Unavailable(),
       }),
     }),
 
-    ReleasedAudioContext: (): infer _ => ({ model }),
+    ReleasedAudioContext: () => ({ model }),
   })
 
 // MANAGED RESOURCE
@@ -449,10 +448,10 @@ type AudioContextService = ManagedResource.ServiceOf<
 >
 
 export const managedResources = ManagedResource.make<Model, Message>()(
-  (entry): infer _ => ({
+  (entry) => ({
     audioContext: entry(Schema.Option(Schema.Null), {
       resource: AudioContextResource,
-      modelToMaybeRequirements: (): infer _ => Option.some(null),
+      modelToMaybeRequirements: () => Option.some(null),
       acquire: (): AudioContext!AudioContextUnavailable!never =>
         effect {
           return try Effect.try({
@@ -467,9 +466,9 @@ export const managedResources = ManagedResource.make<Model, Message>()(
         effect {
           try Effect.promise(() => audioContext.close().catch(() => undefined))
         },
-      onAcquired: (): infer _ => Message.SucceededAcquireAudioContext(),
-      onReleased: (): infer _ => Message.ReleasedAudioContext(),
-      onAcquireError: (): infer _ => Message.FailedAcquireAudioContext(),
+      onAcquired: () => Message.SucceededAcquireAudioContext(),
+      onReleased: () => Message.ReleasedAudioContext(),
+      onAcquireError: () => Message.FailedAcquireAudioContext(),
     }),
   }),
 )
@@ -553,10 +552,10 @@ const PlayNote = Command.define('PlayNote', {
 
 const inputBorderClass = (field: FieldValidation.Field<string>): string =>
   FieldValidation.match(field, {
-    onNotValidated: (): infer _ => 'border-gray-300 dark:border-gray-600',
-    onValidating: (): infer _ => 'border-accent-300 dark:border-accent-600',
-    onValid: (): infer _ => 'border-gray-300 dark:border-gray-600',
-    onInvalid: (): infer _ => 'border-red-500 dark:border-red-400',
+    onNotValidated: () => 'border-gray-300 dark:border-gray-600',
+    onValidating: () => 'border-accent-300 dark:border-accent-600',
+    onValid: () => 'border-gray-300 dark:border-gray-600',
+    onInvalid: () => 'border-red-500 dark:border-red-400',
   })
 
 const durationButtonClass = (
@@ -630,11 +629,11 @@ const noteInputView = (
     {
       id: 'note-input',
       value: model.noteInput.value,
-      onInput: (value): infer _ => Message.ChangedNoteInput({ value }),
+      onInput: (value) => Message.ChangedNoteInput({ value }),
       isDisabled: isInputLocked,
       isInvalid: model.noteInput._tag === 'Invalid',
       placeholder: 'CDEFGAB',
-      toView: (attributes): infer _ =>
+      toView: (attributes) =>
         h.div(
           [
             h.Class(
@@ -664,22 +663,22 @@ const noteInputView = (
               h.Autocomplete('off'),
             ]),
             FieldValidation.match(model.noteInput, {
-              onNotValidated: (): infer _ =>
+              onNotValidated: () =>
                 h.p(
                   [h.Class('text-xs text-gray-500 dark:text-gray-500')],
                   [`${MIN_NOTES}–${MAX_NOTES} notes, A through G`],
                 ),
-              onValidating: (): infer _ =>
+              onValidating: () =>
                 h.p(
                   [h.Class('text-xs text-gray-500 dark:text-gray-500')],
                   [''],
                 ),
-              onValid: (value): infer _ =>
+              onValid: (value) =>
                 h.p(
                   [h.Class('text-xs text-gray-600 dark:text-gray-400')],
                   [`${parseNotes(value).length} notes`],
                 ),
-              onInvalid: ({ errors }): infer _ =>
+              onInvalid: ({ errors }) =>
                 h.p(
                   [h.Class('text-xs text-red-600 dark:text-red-400')],
                   [Arr.headNonEmpty(errors)],
@@ -715,7 +714,7 @@ const durationSelectorView = (
           ariaLabel: 'Note length',
           orientation: 'Horizontal',
           isDisabled: isInputLocked,
-          toView: ({ group, options }): infer _ =>
+          toView: ({ group, options }) =>
             h.div(
               [
                 ...group,
@@ -723,7 +722,7 @@ const durationSelectorView = (
                   'flex rounded-lg bg-gray-200 dark:bg-gray-800 overflow-hidden',
                 ),
               ],
-              options.map((option): infer _ =>
+              options.map((option) =>
                 h.div(
                   [
                     ...option.option,
@@ -736,7 +735,7 @@ const durationSelectorView = (
               ),
             ),
         },
-        toParentMessage: (message): infer _ =>
+        toParentMessage: (message) =>
           Message.GotNoteDurationMessage({ message }),
       }),
     ],
@@ -760,7 +759,7 @@ const playbackControlView = (
             ? Button.view(
               {
                 onClick: Message.ClickedPause(),
-                toView: (attributes): infer _ =>
+                toView: (attributes) =>
                   h.button(
                     [
                       ...attributes.button,
@@ -778,7 +777,7 @@ const playbackControlView = (
               {
                 onClick: Message.ClickedPlay(),
                 isDisabled: !canPlay,
-                toView: (attributes): infer _ =>
+                toView: (attributes) =>
                   h.button(
                     [
                       ...attributes.button,
@@ -803,7 +802,7 @@ const playbackControlView = (
             {
               onClick: Message.ClickedStop(),
               isDisabled: !isActive,
-              toView: (attributes): infer _ =>
+              toView: (attributes) =>
                 h.button(
                   [
                     ...attributes.button,
@@ -847,7 +846,7 @@ const audioUnavailableNoticeView = (
 const placeholderVisualizerView = (): Html =>
   ih.div(
     [ih.Class('flex gap-2')],
-    Arr.makeBy(MIN_NOTES, (index): infer _ =>
+    Arr.makeBy(MIN_NOTES, (index) =>
       ih.keyed('div')(
         `placeholder-${index}`,
         [
@@ -870,9 +869,8 @@ const noteSequenceView = (model: Model): Html => {
     ],
     [
       Arr.match(notes, {
-        onEmpty: (): infer _ => placeholderVisualizerView(),
-        onNonEmpty: (validNotes): infer _ =>
-          noteVisualizerView(model, validNotes),
+        onEmpty: () => placeholderVisualizerView(),
+        onNonEmpty: (validNotes) => noteVisualizerView(model, validNotes),
       }),
     ],
   )
@@ -888,10 +886,10 @@ const noteVisualizerView = (model: Model, notes: ReadonlyArray<Note>): Html => {
 
   return ih.div(
     [ih.Class('flex gap-2')],
-    Arr.map(notes, (note, index): infer _ => {
+    Arr.map(notes, (note, index) => {
       const isCurrentNote = Option.exists(
         maybeCurrentIndex,
-        (currentIndex): infer _ => currentIndex === index,
+        (currentIndex) => currentIndex === index,
       )
       const key = `${note}-${index}`
 
@@ -918,19 +916,18 @@ const noteVisualizerView = (model: Model, notes: ReadonlyArray<Note>): Html => {
 
 const noteInputLabel = (model: Model): string =>
   FieldValidation.match(model.noteInput, {
-    onNotValidated: (value): infer _ => `NotValidated("${value}")`,
-    onValidating: (value): infer _ => `Validating("${value}")`,
-    onValid: (value): infer _ => `Valid("${value}")`,
-    onInvalid: ({ errors }): infer _ =>
-      `Invalid("${Arr.headNonEmpty(errors)}")`,
+    onNotValidated: (value) => `NotValidated("${value}")`,
+    onValidating: (value) => `Validating("${value}")`,
+    onValid: (value) => `Valid("${value}")`,
+    onInvalid: ({ errors }) => `Invalid("${Arr.headNonEmpty(errors)}")`,
   })
 
 const playbackStateLabel = (model: Model): string =>
   PlaybackState.match(model.playbackState, {
-    Idle: (): infer _ => 'Idle',
-    Playing: ({ currentNoteIndex, noteSequence }): infer _ =>
+    Idle: () => 'Idle',
+    Playing: ({ currentNoteIndex, noteSequence }) =>
       `PlaybackState.Playing(${currentNoteIndex + 1}/${noteSequence.length})`,
-    Paused: ({ currentNoteIndex, noteSequence }): infer _ =>
+    Paused: ({ currentNoteIndex, noteSequence }) =>
       `PlaybackState.Paused(${currentNoteIndex + 1}/${noteSequence.length})`,
   })
 

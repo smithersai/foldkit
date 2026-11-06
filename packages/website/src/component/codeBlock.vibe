@@ -43,7 +43,7 @@ export const view = (
     maybeLanguage = Option.none(),
     copyButtonPositionClass = DEFAULT_COPY_BUTTON_POSITION_CLASS,
   }: ViewOptions = {},
-): infer _ => {
+) => {
   const languageAttribute = match (maybeLanguage) {
     when { _tag: "None" }: [];
     when { _tag: "Some", value: let language }: [
@@ -90,7 +90,7 @@ export const highlightedView = (
   renderSnippet: RenderSnippet,
   className?: string,
   title?: string,
-): infer _ =>
+) =>
   renderSnippet({
     id,
     ...(title === undefined ? {} : { title }),
@@ -105,7 +105,7 @@ export const highlightedView = (
  * rendered inside a Submodel. Bind once at the top of the view and the call
  * sites below it are unchanged.
  */
-export const highlightedViewFor = (renderSnippet: RenderSnippet): infer _ =>
+export const highlightedViewFor = (renderSnippet: RenderSnippet) =>
 (
   id: string,
   content: Html,

@@ -25,7 +25,7 @@ const demoLabelEntry = (
   if (island.name === DEMO_ISLAND_NAME) {
     return Option.map(
       Option.all([Record.get(island.attributes, 'name'), maybeHeadingId]),
-      ([demoName, headingId]): infer _ => [demoName, headingId],
+      ([demoName, headingId]) => [demoName, headingId],
     )
   } else {
     return Option.none()
@@ -50,7 +50,7 @@ export const collectDemoLabels = (
         maybeHeadingId: Option.none<string>(),
         entries: Arr.empty<DemoLabelEntry>(),
       },
-      (walk: DemoLabelWalk, block): infer _ => match (block) {
+      (walk: DemoLabelWalk, block) => match (block) {
         when { _tag: 'Heading' } and let heading: ({
           maybeHeadingId: Option.fromNullishOr(idByHeading.get(heading)),
           entries: walk.entries,

@@ -37,17 +37,17 @@ const DATE_PICKER_ANCHOR: AnchorConfig = {
 
 const formatTriggerLabel = (
   date: Readonly<{ year: number; month: number; day: number }>,
-): infer _ =>
+) =>
   `${date.year}-${String(date.month).padStart(2, '0')}-${
     String(date.day).padStart(2, '0')
   }`
 
-export const basicDemo = (model: Model, h: HtmlBuilder<Message>): infer _ => {
+export const basicDemo = (model: Model, h: HtmlBuilder<Message>) => {
   const triggerContent = (
     maybeDate: Option<
       Readonly<{ year: number; month: number; day: number }>
     >,
-  ): infer _ =>
+  ) =>
     h.div(
       [h.Class(triggerContentClassName)],
       [
@@ -88,7 +88,7 @@ export const basicDemo = (model: Model, h: HtmlBuilder<Message>): infer _ => {
             className: wrapperClassName,
             toCalendarView: calendarView(calendarWrapperClassName, h),
           },
-          toParentMessage: (message): infer _ =>
+          toParentMessage: (message) =>
             Message.GotDatePickerBasicDemoMessage({ message }),
         }),
       ],

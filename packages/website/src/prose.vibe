@@ -48,7 +48,7 @@ export const renderHeadingLink = <Message>(
   toMessage: (id: string) => Message,
   h: HtmlBuilder<Message>,
 ): RenderHeadingLink =>
-(id, text): infer _ => headingLinkButton(id, text, toMessage, h)
+(id, text) => headingLinkButton(id, text, toMessage, h)
 
 export const link = (href: string, text: string): Html =>
   ih.a([ih.Href(href), ih.Class('link-accent')], [text])
@@ -139,7 +139,7 @@ export const subPara = (...content: ReadonlyArray<string | Html>): Html =>
  * rendered inside a Submodel. Bind once at the top of the view and the call
  * sites below it are unchanged.
  */
-export const headingsFor = (renderHeadingLink: RenderHeadingLink): infer _ => ({
+export const headingsFor = (renderHeadingLink: RenderHeadingLink) => ({
   heading: (level: 'h2' | 'h3' | 'h4', id: string, text: string): Html =>
     headingWithContent(level, id, text, [text], renderHeadingLink),
   tableOfContentsEntryToHeader: (entry: TableOfContentsEntry): Html =>
@@ -155,7 +155,7 @@ export const headingsFor = (renderHeadingLink: RenderHeadingLink): infer _ => ({
 export const bullets = (...items: ReadonlyArray<string | Html>): Html =>
   ih.ul(
     [ih.Class('list-disc mb-6 space-y-2')],
-    Arr.map(items, (item): infer _ => ih.li([], [item])),
+    Arr.map(items, (item) => ih.li([], [item])),
   )
 
 export const bulletPoint = (label: string, description: string): Html =>

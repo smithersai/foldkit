@@ -40,14 +40,14 @@ import {
 
 export const subscriptions = Subscription.make<Model, Message>()((
   entry,
-): infer _ => ({
+) => ({
   activeSection: entry(
     {
       pageId: Schema.String,
       sections: Schema.Array(Schema.String),
     },
     {
-      modelToDependencies: (model): infer _ => {
+      modelToDependencies: (model) => {
         const currentPageTableOfContents = match (model.route) {
           when { _tag: "WhyFoldkit" }: WhyFoldkit.tableOfContents;
           when { _tag: "Performance" }: Performance.tableOfContents;
@@ -81,7 +81,7 @@ export const subscriptions = Subscription.make<Model, Message>()((
               when { _tag: "Some", value: let data }: ApiReference
                 .resolveModule(data.parsedApi, moduleSlug)
                 .match({
-                  onNone: (): infer _ => [],
+                  onNone: () => [],
                   onSome: ApiReference.toModuleTableOfContents,
                 });
             }
@@ -188,11 +188,11 @@ export const subscriptions = Subscription.make<Model, Message>()((
           pageId: model.route._tag,
           sections: Arr.map(
             currentPageTableOfContents,
-            ({ id }): infer _ => id,
+            ({ id }) => id,
           ),
         }
       },
-      dependenciesToStream: ({ sections }): infer _ =>
+      dependenciesToStream: ({ sections }) =>
         Stream.callback<typeof Message.ChangedActiveSection.Type>((
           queue,
         ): never!never!Scope =>

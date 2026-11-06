@@ -77,7 +77,7 @@ export const STATIC_ROUTES: ReadonlyArray<AppRoute> = [
   AppRoute.Examples(),
   ...EffectArray.map(
     exampleSlugs,
-    (slug): infer _ => AppRoute.ExampleDetail({ exampleSlug: slug }),
+    (slug) => AppRoute.ExampleDetail({ exampleSlug: slug }),
   ),
   AppRoute.TypingTerminal(),
   AppRoute.BestPracticesSideEffects(),
@@ -162,13 +162,13 @@ export const STATIC_ROUTES: ReadonlyArray<AppRoute> = [
   AppRoute.Blog(),
   ...EffectArray.map(
     blogPostSlugs,
-    (slug): infer _ => AppRoute.BlogPost({ postSlug: slug }),
+    (slug) => AppRoute.BlogPost({ postSlug: slug }),
   ),
 ]
 
 const PLAYGROUND_ROUTES: ReadonlyArray<AppRoute> = EffectArray.map(
   runnableExampleSlugs,
-  (exampleSlug): infer _ => AppRoute.Playground({ exampleSlug }),
+  (exampleSlug) => AppRoute.Playground({ exampleSlug }),
 )
 export const INDEX_OUTPUT_PATH = 'index.html'
 
@@ -185,7 +185,7 @@ export const enumerateRoutes = (
   pipe(
     STATIC_ROUTES,
     EffectArray.appendAll(
-      EffectArray.map(apiModuleSlugs, (moduleSlug): infer _ =>
+      EffectArray.map(apiModuleSlugs, (moduleSlug) =>
         AppRoute.ApiModule({ moduleSlug })),
     ),
   )
@@ -329,15 +329,15 @@ type PrerenderResult = Readonly<{
 const buildApiModuleNameResolver = (
   modules: ReadonlyArray<ApiModule>,
 ): ApiModuleNameResolver => {
-  const nameBySlug = Record.fromIterableWith(modules, ({ name }): infer _ => [
+  const nameBySlug = Record.fromIterableWith(modules, ({ name }) => [
     moduleNameToSlug(name),
     name,
   ])
-  return (slug): infer _ =>
+  return (slug) =>
     pipe(
       nameBySlug,
       Record.get(slug),
-      Option.getOrElse((): infer _ => slugToModuleName(slug)),
+      Option.getOrElse(() => slugToModuleName(slug)),
     )
 }
 
@@ -345,7 +345,7 @@ const prerenderRoute = (
   serverEntry: typeof ServerEntry,
   baseHtml: string,
   resolveApiModuleName: ApiModuleNameResolver,
-): infer _ =>
+) =>
 effect (route: AppRoute) => {
   return (effect {
     const urlPath = routeToUrlPath(route)
@@ -516,14 +516,13 @@ const formatDateIso = (dateTime: DateTime): string => {
   )
 }
 
-const routeToSitemapEntry =
-  (lastModification: string): infer _ => (route: AppRoute): infer _ => {
-    const urlPath = routeToUrlPath(route)
-    return `<url>
+const routeToSitemapEntry = (lastModification: string) => (route: AppRoute) => {
+  const urlPath = routeToUrlPath(route)
+  return `<url>
   <loc>${SITE_URL}${urlPath}</loc>
   <lastmod>${lastModification}</lastmod>
 </url>`
-  }
+}
 
 const buildSitemap = (
   routes: ReadonlyArray<AppRoute>,
@@ -568,10 +567,10 @@ export const extractPostArticleHtml = (
   pageHtml: string,
 ): Option<string> =>
   EffectString.indexOf('<article')(pageHtml)
-    .flatMap((startIndex): infer _ =>
+    .flatMap((startIndex) =>
       Option.map(
         EffectString.indexOf('</article>')(pageHtml),
-        (endIndex): infer _ =>
+        (endIndex) =>
           pageHtml.slice(startIndex, endIndex + '</article>'.length),
       )
     )
@@ -652,7 +651,7 @@ export const buildBlogRssFeed = (
 ): string => {
   const items = pipe(
     posts,
-    EffectArray.map((entry): infer _ =>
+    EffectArray.map((entry) =>
       blogPostRssItem(
         entry,
         Option.fromNullishOr(articleHtmlBySlug.get(entry.slug)),
@@ -762,14 +761,14 @@ const writeContentApi = effect (
 // PROGRAM
 
 const resultToIndexEntry =
-  (resolveApiModuleName: ApiModuleNameResolver): infer _ =>
+  (resolveApiModuleName: ApiModuleNameResolver) =>
   (result: PrerenderResult): LlmsIndexEntry => ({
     urlPath: result.urlPath,
     metadata: routeToMetadata(result.route, resolveApiModuleName),
   })
 
 const resultToApiPageEntry =
-  (resolveApiModuleName: ApiModuleNameResolver): infer _ =>
+  (resolveApiModuleName: ApiModuleNameResolver) =>
   (result: PrerenderResult): ApiPageEntry => ({
     urlPath: result.urlPath,
     metadata: routeToMetadata(result.route, resolveApiModuleName),
@@ -777,7 +776,7 @@ const resultToApiPageEntry =
   })
 
 const resultToFullEntry =
-  (resolveApiModuleName: ApiModuleNameResolver): infer _ =>
+  (resolveApiModuleName: ApiModuleNameResolver) =>
   (result: PrerenderResult, orderIndex: number): LlmsFullEntry => ({
     urlPath: result.urlPath,
     metadata: routeToMetadata(result.route, resolveApiModuleName),
@@ -808,7 +807,7 @@ const program = effect {
       const apiModules = try readApiModules
       const apiModuleSlugs = EffectArray.map(
         apiModules,
-        ({ name }): infer _ => moduleNameToSlug(name),
+        ({ name }) => moduleNameToSlug(name),
       )
       const resolveApiModuleName = buildApiModuleNameResolver(apiModules)
       const routes = enumerateRoutes(apiModuleSlugs)
@@ -853,7 +852,7 @@ const program = effect {
       }
       const markdownResults = EffectArray.filter(
         successfulResults,
-        (result): infer _ => result.markdown.length > 0,
+        (result) => result.markdown.length > 0,
       )
 
       const lastModification = formatDateIso(try DateTime.now)

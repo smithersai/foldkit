@@ -51,9 +51,9 @@ const tableCellClassName =
 const tableLabel = (table: Markdown.Table): string =>
   pipe(
     table.headerRow.cells,
-    Arr.map((cell): infer _ => inlineToText(cell.content)),
+    Arr.map((cell) => inlineToText(cell.content)),
     Arr.join(', '),
-    (header): infer _ => `Table: ${header}`,
+    (header) => `Table: ${header}`,
   )
 
 const alignmentAttributes = (
@@ -80,10 +80,10 @@ const titleAttributes = (
  */
 export const docViews = (config: DocViewConfig): Partial<Markdown.Views> => {
   return {
-    Paragraph: (_paragraph, content): infer _ =>
+    Paragraph: (_paragraph, content) =>
       ih.p([ih.Class('mb-5 leading-7 md:leading-[1.875rem]')], content),
 
-    Link: (link, content): infer _ =>
+    Link: (link, content) =>
       ih.a(
         [
           ih.Href(link.url),
@@ -93,9 +93,9 @@ export const docViews = (config: DocViewConfig): Partial<Markdown.Views> => {
         content,
       ),
 
-    InlineCode: ({ value }): infer _ => inlineCode(value),
+    InlineCode: ({ value }) => inlineCode(value),
 
-    Heading: (heading, content): infer _ => {
+    Heading: (heading, content) => {
       const { maybeId, text } = parseHeadingId(heading.content)
       const id = headingId(config.idByHeading, heading)
       const displayContent = match (maybeId) {
@@ -146,7 +146,7 @@ export const docViews = (config: DocViewConfig): Partial<Markdown.Views> => {
       }
     },
 
-    CodeBlock: ({ maybeLanguage, value }, occurrenceIndex): infer _ =>
+    CodeBlock: ({ maybeLanguage, value }, occurrenceIndex) =>
       Option.contains(maybeLanguage, diagramLanguage)
         ? diagram(value)
         : CodeBlock.view(
@@ -157,7 +157,7 @@ export const docViews = (config: DocViewConfig): Partial<Markdown.Views> => {
           { className: 'mb-6', maybeLanguage },
         ),
 
-    List: (list, items): infer _ => {
+    List: (list, items) => {
       if (list.isOrdered) {
         const start = match (list.maybeStartNumber) {
           when { _tag: "None" }: [];
@@ -174,13 +174,13 @@ export const docViews = (config: DocViewConfig): Partial<Markdown.Views> => {
       }
     },
 
-    Blockquote: (_blockquote, blocks): infer _ =>
+    Blockquote: (_blockquote, blocks) =>
       ih.blockquote([ih.Class(blockquoteClassName)], blocks),
 
-    ThematicBreak: (): infer _ =>
+    ThematicBreak: () =>
       ih.hr([ih.Class('my-8 border-gray-200 dark:border-gray-800')]),
 
-    Image: ({ url, alt, maybeTitle }): infer _ =>
+    Image: ({ url, alt, maybeTitle }) =>
       ih.img([
         ih.Src(url),
         ih.Alt(alt),
@@ -188,7 +188,7 @@ export const docViews = (config: DocViewConfig): Partial<Markdown.Views> => {
         ...titleAttributes(maybeTitle),
       ]),
 
-    Table: (table, headerRow, bodyRows): infer _ =>
+    Table: (table, headerRow, bodyRows) =>
       ih.div(
         [
           ih.Class(tableWrapperClassName),
@@ -207,10 +207,9 @@ export const docViews = (config: DocViewConfig): Partial<Markdown.Views> => {
         ],
       ),
 
-    TableRow: (_tableRow, cells): infer _ =>
-      ih.tr([ih.Class(tableRowClassName)], cells),
+    TableRow: (_tableRow, cells) => ih.tr([ih.Class(tableRowClassName)], cells),
 
-    TableCell: (_tableCell, content, alignment, isHeader): infer _ => {
+    TableCell: (_tableCell, content, alignment, isHeader) => {
       if (isHeader) {
         return ih.th(
           [

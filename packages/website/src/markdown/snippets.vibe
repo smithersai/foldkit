@@ -41,18 +41,18 @@ const snippetLanguage = (path: string): string => match (path) {
 // record sidesteps the pipeline entirely.
 const registry: globalThis.Record<string, Snippet> = pipe(
   Record.toEntries(rawByPath),
-  Arr.filterMap(([path, raw]): infer _ =>
+  Arr.filterMap(([path, raw]) =>
     pipe(
       Option.all([snippetName(path), Record.get(highlightedByPath, path)]),
       Option.map(([name, highlighted]): SnippetEntry => [
         name,
         { raw, highlighted, language: snippetLanguage(path) },
       ]),
-      Result.fromOption((): infer _ => undefined),
+      Result.fromOption(() => undefined),
     )
   ),
   Record.fromEntries,
-  (existing): infer _ => ({ ...existing, ...cssSnippets }),
+  (existing) => ({ ...existing, ...cssSnippets }),
 )
 
 /**

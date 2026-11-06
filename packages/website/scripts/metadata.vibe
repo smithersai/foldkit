@@ -494,8 +494,8 @@ export const routeToMetadata = (
     when { _tag: 'BlogPost' }: do {
       const { postSlug } = route
       const { frontmatter } = Option.getOrThrowWith(
-        Arr.findFirst(blogPosts, ({ slug }): infer _ => slug === postSlug),
-        (): infer _ =>
+        Arr.findFirst(blogPosts, ({ slug }) => slug === postSlug),
+        () =>
           new Error(
             `Blog post "${postSlug}" is missing from the blog post registry.`,
           ),
@@ -506,7 +506,7 @@ export const routeToMetadata = (
       const { exampleSlug } = route
       const example = Option.getOrThrowWith(
         findBySlug(exampleSlug),
-        (): infer _ =>
+        () =>
           new Error(
             `Example "${exampleSlug}" is missing from the example registry.`,
           ),
@@ -517,7 +517,7 @@ export const routeToMetadata = (
       const { exampleSlug } = route
       const example = Option.getOrThrowWith(
         findBySlug(exampleSlug),
-        (): infer _ =>
+        () =>
           new Error(
             `Playground example "${exampleSlug}" is missing from the example registry.`,
           ),

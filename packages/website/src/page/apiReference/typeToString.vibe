@@ -22,7 +22,7 @@ export const reflectionFingerprint = (
 ): string =>
   pipe(
     children,
-    Arr.map(({ name }): infer _ => name),
+    Arr.map(({ name }) => name),
     Arr.sort(Order.String),
     Arr.join('|'),
   )
@@ -36,13 +36,13 @@ const objectLiteralToString = (
   when Option.Some(let children): pipe(
     children,
     Arr.map(
-      (child): infer _ =>
+      (child) =>
         `${indent(depth + 1)}${child.name}: ${
           typeToString(child.type, depth + 1, namedSchemas)
         }`,
     ),
     Arr.join('\n'),
-    (properties): infer _ => `{\n${properties}\n${indent(depth)}}`,
+    (properties) => `{\n${properties}\n${indent(depth)}}`,
   );
 }
 const callSignatureToString = (
@@ -54,7 +54,7 @@ const callSignatureToString = (
     when Option.None: '';
     when Option.Some(let params): pipe(
       params,
-      Arr.map((parameter): infer _ => {
+      Arr.map((parameter) => {
         const optionalSuffix = parameter.flags.isOptional ? '?' : ''
         return `${parameter.name}${optionalSuffix}: ${
           typeToString(parameter.type, depth, namedSchemas)
@@ -87,8 +87,8 @@ const matchNamedSchema = (
 ): Option<string> =>
   item.children
     .filter(Arr.isReadonlyArrayNonEmpty)
-    .filter((children): infer _ => !isSchemaEncodedReflection(children))
-    .flatMap((children): infer _ =>
+    .filter((children) => !isSchemaEncodedReflection(children))
+    .flatMap((children) =>
       Option.fromNullishOr(namedSchemas.get(reflectionFingerprint(children)))
     )
 
@@ -103,19 +103,18 @@ const reflectionToString = (
       onNone: () => string
       onSome: (item: TypeDocItem) => string
     } = {
-      onNone: (): infer _ => '{}',
-      onSome: (item): infer _ =>
+      onNone: () => '{}',
+      onSome: (item) =>
         Option.getOrElse(
           Option.firstSomeOf([
             item.signatures
               .flatMap(Arr.head)
-              .map((signature): infer _ =>
+              .map((signature) =>
                 callSignatureToString(signature, depth, namedSchemas)
               ),
             matchNamedSchema(item, namedSchemas),
           ]),
-          (): infer _ =>
-            objectLiteralToString(item.children, depth, namedSchemas),
+          () => objectLiteralToString(item.children, depth, namedSchemas),
         ),
     }
     const { onNone: $optionNone, onSome: $optionSome } = $optionHandlers
@@ -148,9 +147,7 @@ const formatType = (
         when Option.Some(let arguments_): `${name}<${
           pipe(
             arguments_,
-            Arr.map((argument): infer _ =>
-              formatType(argument, depth, namedSchemas)
-            ),
+            Arr.map((argument) => formatType(argument, depth, namedSchemas)),
             Arr.join(', '),
           )
         }>`;
@@ -168,23 +165,23 @@ const formatType = (
       const { elements } = type
       const formatted = Arr.map(
         elements,
-        (element): infer _ => formatType(element, depth, namedSchemas),
+        (element) => formatType(element, depth, namedSchemas),
       )
       const isMultiLine = Arr.some(
         formatted,
-        (line): infer _ => line.includes('\n'),
+        (line) => line.includes('\n'),
       )
       isMultiLine
         ? pipe(
           elements,
           Arr.map(
-            (element): infer _ =>
+            (element) =>
               `${indent(depth + 1)}${
                 formatType(element, depth + 1, namedSchemas)
               }`,
           ),
           Arr.join(',\n'),
-          (joined): infer _ => `[\n${joined}\n${indent(depth)}]`,
+          (joined) => `[\n${joined}\n${indent(depth)}]`,
         )
         : `[${Arr.join(formatted, ', ')}]`
     };
@@ -192,7 +189,7 @@ const formatType = (
       const { types } = type
       pipe(
         types,
-        Arr.map((member): infer _ => formatType(member, depth, namedSchemas)),
+        Arr.map((member) => formatType(member, depth, namedSchemas)),
         Arr.join(' | '),
       )
     };
@@ -200,7 +197,7 @@ const formatType = (
       const { types } = type
       pipe(
         types,
-        Arr.map((member): infer _ => formatType(member, depth, namedSchemas)),
+        Arr.map((member) => formatType(member, depth, namedSchemas)),
         Arr.join(' & '),
       )
     };
@@ -253,11 +250,11 @@ const formatType = (
       pipe(
         tail,
         Arr.map(
-          ([memberType, text]): infer _ =>
+          ([memberType, text]) =>
             `\${${formatType(memberType, depth, namedSchemas)}}${text}`,
         ),
         Arr.join(''),
-        (interpolations): infer _ => `\`${head}${interpolations}\``,
+        (interpolations) => `\`${head}${interpolations}\``,
       )
     };
     when { type: 'inferred' }: do {
@@ -278,8 +275,8 @@ export const typeToString = (
       onNone: () => string
       onSome: (type: TypeDocType) => string
     } = {
-      onNone: (): infer _ => 'unknown',
-      onSome: (type): infer _ => formatType(type, depth, namedSchemas),
+      onNone: () => 'unknown',
+      onSome: (type) => formatType(type, depth, namedSchemas),
     }
     const { onNone: $optionNone, onSome: $optionSome } = $optionHandlers
     match ($optionSubject) {
@@ -296,10 +293,10 @@ export const typeDefFromChildren = (
   when Option.Some(let items): pipe(
     items,
     Arr.map(
-      (child): infer _ =>
+      (child) =>
         `  ${child.name}: ${typeToString(child.type, 1, namedSchemas)}`,
     ),
     Arr.join('\n'),
-    (properties): infer _ => `{\n${properties}\n}`,
+    (properties) => `{\n${properties}\n}`,
   );
 }

@@ -53,9 +53,8 @@ const isDeclarationFile = Predicate.some([
   Str.endsWith('.d.cts'),
 ])
 
-const swapExtension =
-  (from: string, to: string): infer _ => (value: string): string =>
-    value.slice(0, -from.length) + to
+const swapExtension = (from: string, to: string) => (value: string): string =>
+  value.slice(0, -from.length) + to
 
 const collectFilePaths = async (
   directory: string,
@@ -478,7 +477,7 @@ const collectExampleDependencyRoots = async (): Promise<
 
 export const playgroundTypesPlugin = (): Plugin => ({
   name: 'playground-types',
-  resolveId(id): infer _ {
+  resolveId(id) {
     if (id === VIRTUAL_MODULE_ID) {
       return RESOLVED_VIRTUAL_MODULE_ID
     }

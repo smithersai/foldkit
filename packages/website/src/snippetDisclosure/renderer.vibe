@@ -25,13 +25,13 @@ const isMeasuredToOverflow = (
   model: Model,
   id: string,
   rawCode: string,
-): infer _ => match (HashMap.get(model.snippetSizes, id)) {
+) => match (HashMap.get(model.snippetSizes, id)) {
   when { _tag: "None" }: isEstimatedToOverflow(rawCode);
   when { _tag: "Some", value: let snippetSize }: SnippetSize.match(
     snippetSize,
     {
-      Fits: (): infer _ => false,
-      Overflows: (): infer _ => true,
+      Fits: () => false,
+      Overflows: () => true,
     },
   );
 }
@@ -50,7 +50,7 @@ export const renderer = <ParentMessage>(
   rawCode,
   copyAriaLabel,
   className,
-}): infer _ => {
+}) => {
   const disclosureId = disclosureGroupId ?? id
   const isOpen = HashSet.has(model.openDisclosureIds, disclosureId)
   const isCollapsible = isMeasuredToOverflow(model, id, rawCode)
@@ -116,14 +116,14 @@ export const renderer = <ParentMessage>(
     {
       id,
       isOpen,
-      onToggle: (nextIsOpen): infer _ =>
+      onToggle: (nextIsOpen) =>
         toParentMessage(
           Message.ToggledCodeDisclosure({
             disclosureId,
             isOpen: nextIsOpen,
           }),
         ),
-      toView: ({ button, panel, animatePanel }): infer _ =>
+      toView: ({ button, panel, animatePanel }) =>
         shell(shellAttributes, [
           ...titleBar,
           h.div(

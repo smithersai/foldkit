@@ -190,8 +190,8 @@ export effect function captureProcessOutput(
   const fiber = try Effect.forkScoped(
     Stream.runForEach(
       Stream.fromReadableStream({
-        evaluate: (): infer _ => output,
-        onError: (cause): infer _ =>
+        evaluate: () => output,
+        onError: (cause) =>
           new WebContainerError({
             message: `Failed to read ${label} output.`,
             cause,

@@ -148,7 +148,7 @@ const cssSnippetsPlugin = (): Plugin => {
 
   return {
     name: 'css-snippets',
-    resolveId(id): infer _ {
+    resolveId(id) {
       return id === CSS_SNIPPETS_ID ? RESOLVED_CSS_SNIPPETS_ID : undefined
     },
     async load(id) {
@@ -191,7 +191,7 @@ const cssSnippetsPlugin = (): Plugin => {
     // NOTE: Vite runs this once per environment. Without the client guard a
     // single snippet edit sends a full reload for the client and again for
     // ssr.
-    hotUpdate({ file, server, modules }): infer _ {
+    hotUpdate({ file, server, modules }) {
       if (this.environment.name !== 'client' || !isCssSnippet(file)) {
         return undefined
       }
@@ -244,8 +244,7 @@ const loadApiTypeDocJson = async (): Promise<TypeDocJson> => {
 }
 
 const formatTypeParam =
-  (namedSchemas: NamedSchemas): infer _ =>
-  (typeParam: TypeDocTypeParam): string => {
+  (namedSchemas: NamedSchemas) => (typeParam: TypeDocTypeParam): string => {
     const constraint = match (typeParam.type) {
       when { _tag: "None" }: '';
       when { _tag: "Some", value: let optionValue3 }: do {
@@ -264,7 +263,7 @@ const formatTypeParam =
   }
 
 const formatParam =
-  (namedSchemas: NamedSchemas): infer _ =>
+  (namedSchemas: NamedSchemas) =>
   (parameter: TypeDocParam, depth: number): string => {
     const optionalSuffix = parameter.flags.isOptional ? '?' : ''
     return `${parameter.name}${optionalSuffix}: ${
@@ -273,38 +272,37 @@ const formatParam =
   }
 
 const formatParams =
-  (namedSchemas: NamedSchemas): infer _ =>
+  (namedSchemas: NamedSchemas) =>
   (parameters: ReadonlyArray<TypeDocParam>): string => {
     const format = formatParam(namedSchemas)
     return Arr.matchLeft(parameters, {
-      onEmpty: (): infer _ => '()',
-      onNonEmpty: (first, rest): infer _ =>
+      onEmpty: () => '()',
+      onNonEmpty: (first, rest) =>
         Arr.match(rest, {
-          onEmpty: (): infer _ => `(${format(first, 0)})`,
-          onNonEmpty: (): infer _ =>
+          onEmpty: () => `(${format(first, 0)})`,
+          onNonEmpty: () =>
             pipe(
               parameters,
-              Arr.map((parameter): infer _ => `  ${format(parameter, 1)}`),
+              Arr.map((parameter) => `  ${format(parameter, 1)}`),
               Arr.join(',\n'),
-              (joined): infer _ => `(\n${joined}\n)`,
+              (joined) => `(\n${joined}\n)`,
             ),
         }),
     })
   }
 
 const buildFunctionSignatureString =
-  (namedSchemas: NamedSchemas): infer _ =>
-  (signature: TypeDocSignature): string => {
+  (namedSchemas: NamedSchemas) => (signature: TypeDocSignature): string => {
     const typeParamString = signature.typeParameters
       .filter(Arr.isReadonlyArrayNonEmpty)
       .match({
-        onNone: (): infer _ => '',
-        onSome: (typeParams): infer _ =>
+        onNone: () => '',
+        onSome: (typeParams) =>
           pipe(
             typeParams,
             Arr.map(formatTypeParam(namedSchemas)),
             Arr.join(', '),
-            (joined): infer _ => `<${joined}>`,
+            (joined) => `<${joined}>`,
           ),
       })
 
@@ -312,7 +310,7 @@ const buildFunctionSignatureString =
     const isNonEmpty = Arr.isReadonlyArrayNonEmpty
     const formatSomeParameters = formatParams(namedSchemas)
     const paramString = parameters.filter(isNonEmpty).match({
-      onNone: (): infer _ => '()',
+      onNone: () => '()',
       onSome: formatSomeParameters,
     })
 
@@ -325,22 +323,22 @@ const partsToText = (
   parts: ReadonlyArray<TypeDocCommentPart>,
 ): Option<string> =>
   pipe(
-    Arr.map(parts, ({ text }): infer _ => text),
+    Arr.map(parts, ({ text }) => text),
     Arr.join(''),
-    (text): infer _ => text.trim(),
-    Option.liftPredicate((text): infer _ => text.length > 0),
+    (text) => text.trim(),
+    Option.liftPredicate((text) => text.length > 0),
   )
 
 const itemDescription = (item: TypeDocItem): Option<string> =>
   item.comment
-    .flatMap((comment): infer _ => comment.summary)
+    .flatMap((comment) => comment.summary)
     .flatMap(partsToText)
 
 const signatureDescription = (item: TypeDocItem): Option<string> =>
   item.signatures
     .flatMap(Arr.head)
-    .flatMap(({ comment }): infer _ => comment)
-    .flatMap((comment): infer _ => comment.summary)
+    .flatMap(({ comment }) => comment)
+    .flatMap((comment) => comment.summary)
     .flatMap(partsToText)
 
 const formatAsDocComment = (description: string): string => {
@@ -348,7 +346,7 @@ const formatAsDocComment = (description: string): string => {
   if (lines.length === 1) {
     return `/** ${description} */`
   }
-  return ['/**', ...lines.map((line): infer _ => ` * ${line}`), ' */'].join(
+  return ['/**', ...lines.map((line) => ` * ${line}`), ' */'].join(
     '\n',
   )
 }
@@ -363,7 +361,7 @@ const prependDescription = (
   }\n${code}`;
 }
 
-const functionEntries = (namedSchemas: NamedSchemas): infer _ =>
+const functionEntries = (namedSchemas: NamedSchemas) =>
 (
   prefix: string,
   item: TypeDocItem,
@@ -372,16 +370,15 @@ const functionEntries = (namedSchemas: NamedSchemas): infer _ =>
   return item.signatures
     .filter(Arr.isReadonlyArrayNonEmpty)
     .match({
-      onNone: (): infer _ => [],
-      onSome: (signatures): infer _ => [
+      onNone: () => [],
+      onSome: (signatures) => [
         [
           `function-${prefix}${item.name}`,
           prependDescription(
             pipe(
               signatures,
               Arr.map(
-                (signature): infer _ =>
-                  `declare function _${buildSignature(signature)}`,
+                (signature) => `declare function _${buildSignature(signature)}`,
               ),
               Arr.join('\n\n'),
             ),
@@ -393,9 +390,9 @@ const functionEntries = (namedSchemas: NamedSchemas): infer _ =>
 }
 
 const isExtractedTypeAlias = (item: TypeDocItem): boolean =>
-  Option.exists(item.type, ({ type }): infer _ => type === 'query')
+  Option.exists(item.type, ({ type }) => type === 'query')
 
-const typeAliasEntries = (namedSchemas: NamedSchemas): infer _ =>
+const typeAliasEntries = (namedSchemas: NamedSchemas) =>
 (
   prefix: string,
   item: TypeDocItem,
@@ -420,7 +417,7 @@ const typeAliasEntries = (namedSchemas: NamedSchemas): infer _ =>
   ]
 }
 
-const interfaceEntries = (namedSchemas: NamedSchemas): infer _ =>
+const interfaceEntries = (namedSchemas: NamedSchemas) =>
 (
   prefix: string,
   item: TypeDocItem,
@@ -436,7 +433,7 @@ const interfaceEntries = (namedSchemas: NamedSchemas): infer _ =>
   ] as const,
 ]
 
-const variableEntries = (namedSchemas: NamedSchemas): infer _ =>
+const variableEntries = (namedSchemas: NamedSchemas) =>
 (
   prefix: string,
   item: TypeDocItem,
@@ -450,7 +447,7 @@ const variableEntries = (namedSchemas: NamedSchemas): infer _ =>
   ] as const,
 ]
 
-const itemToEntries = (namedSchemas: NamedSchemas): infer _ => {
+const itemToEntries = (namedSchemas: NamedSchemas) => {
   const fnEntries = functionEntries(namedSchemas)
   const typeEntries = typeAliasEntries(namedSchemas)
   const ifaceEntries = interfaceEntries(namedSchemas)
@@ -497,7 +494,7 @@ const stripDeclarePrefix = (html: string): string =>
 
 const highlightApiSignaturesPlugin = (): Plugin => ({
   name: 'highlight-api-signatures',
-  resolveId(id): infer _ {
+  resolveId(id) {
     if (id === VIRTUAL_MODULE_ID) {
       return RESOLVED_VIRTUAL_MODULE_ID
     } else {
@@ -557,7 +554,7 @@ const highlightApiSignaturesPlugin = (): Plugin => ({
 // HTML, both of which are loaded lazily via virtual:parsed-api and virtual:api-highlights.
 const apiModuleIndexPlugin = (): Plugin => ({
   name: 'api-module-index',
-  resolveId(id): infer _ {
+  resolveId(id) {
     if (id === API_MODULE_INDEX_ID) {
       return RESOLVED_API_MODULE_INDEX_ID
     } else {
@@ -613,7 +610,7 @@ const apiModuleIndexPlugin = (): Plugin => ({
 
 const parsedApiPlugin = (): Plugin => ({
   name: 'parsed-api',
-  resolveId(id): infer _ {
+  resolveId(id) {
     if (id === PARSED_API_ID) {
       return RESOLVED_PARSED_API_ID
     } else {
@@ -650,7 +647,7 @@ const readBakedStarCount = effect () => {
 
 const landingDataPlugin = (): Plugin => ({
   name: 'landing-data',
-  resolveId(id): infer _ {
+  resolveId(id) {
     if (id === LANDING_DATA_ID) {
       return RESOLVED_LANDING_DATA_ID
     } else {
@@ -693,7 +690,7 @@ const landingDataPlugin = (): Plugin => ({
 const cssLoadOrderPlugin = (): Plugin => ({
   name: 'css-load-order',
   enforce: 'post',
-  transformIndexHtml(html): infer _ {
+  transformIndexHtml(html) {
     const cssLinkPattern =
       /<link\s+rel="stylesheet"[^>]*crossorigin[^>]*href="[^"]*\.css"[^>]*>/g
     const cssLinks = html.match(cssLinkPattern)
@@ -706,7 +703,7 @@ const cssLoadOrderPlugin = (): Plugin => ({
       result = result.replace(link, '')
     }
 
-    const cleanedLinks = cssLinks.map((link): infer _ =>
+    const cleanedLinks = cssLinks.map((link) =>
       link.replace(/\s+crossorigin/, '')
     )
 
@@ -811,7 +808,7 @@ const sortExampleFiles = (
   files: ReadonlyArray<string>,
   baseDirectory: string,
 ): ReadonlyArray<string> =>
-  [...files].sort((fileA, fileB): infer _ => {
+  [...files].sort((fileA, fileB) => {
     const relativeA = paths.relative(baseDirectory, fileA)
     const relativeB = paths.relative(baseDirectory, fileB)
     const isMainA = /^main\.(?:ts|vibe)$/.test(paths.basename(fileA))
@@ -853,7 +850,7 @@ const highlightExampleFile = async (
 
 const highlightExampleSourcesPlugin = (): Plugin => ({
   name: 'highlight-example-sources',
-  resolveId(id): infer _ {
+  resolveId(id) {
     if (id.startsWith(EXAMPLE_SOURCES_PREFIX)) {
       return '\0' + id
     } else {
@@ -907,8 +904,8 @@ const highlightExampleSourcesPlugin = (): Plugin => ({
 
 const embeddedExampleRedirectPlugin = (): Plugin => ({
   name: 'embedded-example-redirect',
-  configureServer(server): infer _ {
-    server.middlewares.use((req, res, next): infer _ => {
+  configureServer(server) {
+    server.middlewares.use((req, res, next) => {
       if (!req.url) {
         return next()
       }
@@ -940,7 +937,7 @@ const embeddedExampleRedirectPlugin = (): Plugin => ({
 const setIsolationHeaders = (
   url: string | undefined,
   res: { setHeader: (name: string, value: string) => void },
-): infer _ => {
+) => {
   const isPlaygroundRequest = url?.startsWith('/playground/') ?? false
   const isMonacoWorkerRequest = url?.startsWith('/monacoworkers/') ?? false
   res.setHeader('Cross-Origin-Resource-Policy', 'same-origin')
@@ -954,14 +951,14 @@ const setIsolationHeaders = (
 
 const playgroundIsolationHeadersPlugin = (): Plugin => ({
   name: 'playground-isolation-headers',
-  configureServer(server): infer _ {
-    server.middlewares.use((req, res, next): infer _ => {
+  configureServer(server) {
+    server.middlewares.use((req, res, next) => {
       setIsolationHeaders(req.url, res)
       next()
     })
   },
-  configurePreviewServer(server): infer _ {
-    server.middlewares.use((req, res, next): infer _ => {
+  configurePreviewServer(server) {
+    server.middlewares.use((req, res, next) => {
       setIsolationHeaders(req.url, res)
       next()
     })
@@ -977,7 +974,7 @@ const playgroundIsolationHeadersPlugin = (): Plugin => ({
 // empty and there's no landing markup to flash.
 const playgroundShellFallbackPlugin = (): Plugin => ({
   name: 'playground-shell-fallback',
-  configurePreviewServer(server): infer _ {
+  configurePreviewServer(server) {
     server.middlewares.use(async (req, _res, next): Promise<void> => {
       try {
         if (req.url) {

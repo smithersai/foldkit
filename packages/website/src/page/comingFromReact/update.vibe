@@ -5,9 +5,9 @@ import type { Model } from './model.vibe'
 
 export type UpdateReturn = Update.Return<Model, Message>
 
-export const update = (model: Model, message: Message): infer _ =>
+export const update = (model: Model, message: Message) =>
   Message.match<UpdateReturn>(message, {
-    ToggledFaq: ({ id, isOpen }): infer _ => ({
+    ToggledFaq: ({ id, isOpen }) => ({
       model: Record.set(model, id, isOpen),
     }),
   })

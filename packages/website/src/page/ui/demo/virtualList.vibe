@@ -98,7 +98,7 @@ const targetForVerb = (verb: string, index: number): string => {
 
 const sampleActivities: ReadonlyArray<Activity> = Arr.makeBy(
   ROW_COUNT,
-  (index): infer _ => {
+  (index) => {
     const actor = cycle(actorNames, index)
     const verb = cycle(actionVerbs, index)
     const colorClass = cycle(colorClasses, index)
@@ -149,7 +149,7 @@ const headerClassName =
 export const view = (
   model: VirtualList.Model,
   h: HtmlBuilder<Message>,
-): infer _ => {
+) => {
   return [
     h.div(
       [h.Class('flex flex-col gap-4 w-full')],
@@ -173,8 +173,8 @@ export const view = (
           view: VirtualList.view<Activity>(),
           viewInputs: {
             items: sampleActivities,
-            itemToKey: (row): infer _ => String(row.id),
-            itemToView: (row): infer _ =>
+            itemToKey: (row) => String(row.id),
+            itemToView: (row) =>
               h.div(
                 [h.Class(rowClassName)],
                 [
@@ -201,7 +201,7 @@ export const view = (
               h.Tabindex(0),
             ]),
           },
-          toParentMessage: (message): infer _ =>
+          toParentMessage: (message) =>
             Message.GotVirtualListDemoMessage({ message }),
         }),
       ],
@@ -288,8 +288,8 @@ const variableArtifactClassName =
 export const virtualListVariableDemo = (
   model: VirtualList.Model,
   h: HtmlBuilder<Message>,
-): infer _ => {
-  const variableTallRow = (row: Activity, summary: Summary): infer _ =>
+) => {
+  const variableTallRow = (row: Activity, summary: Summary) =>
     h.div(
       [h.Class(variableTallRowClassName)],
       [
@@ -316,7 +316,7 @@ export const virtualListVariableDemo = (
       ],
     )
 
-  const variableShortRow = (row: Activity): infer _ =>
+  const variableShortRow = (row: Activity) =>
     h.div(
       [h.Class(rowClassName)],
       [
@@ -363,9 +363,9 @@ export const virtualListVariableDemo = (
           view: VirtualList.view<Activity>(),
           viewInputs: {
             items: variableActivities,
-            itemToKey: (row): infer _ => String(row.id),
+            itemToKey: (row) => String(row.id),
             itemToRowHeightPx: variableRowHeightPx,
-            itemToView: (row, index): infer _ =>
+            itemToView: (row, index) =>
               row.hasSummary
                 ? variableTallRow(row, summaryFor(index))
                 : variableShortRow(row),
@@ -375,7 +375,7 @@ export const virtualListVariableDemo = (
               h.Tabindex(0),
             ]),
           },
-          toParentMessage: (message): infer _ =>
+          toParentMessage: (message) =>
             Message.GotVirtualListVariableDemoMessage({ message }),
         }),
       ],
@@ -403,7 +403,7 @@ const EXPANDED_CHAT_MESSAGE_ESTIMATED_HEIGHT_PX = 80
 const chatMessageView = (
   message: VirtualListChatMessage,
   h: HtmlBuilder<Message>,
-): infer _ => {
+) => {
   const isSentMessage = message.id % 2 !== 0
 
   return h.div(
@@ -456,7 +456,7 @@ export const virtualListChatDemo = (
   model: VirtualList.Model,
   messages: ReadonlyArray<VirtualListChatMessage>,
   h: HtmlBuilder<Message>,
-): infer _ => [
+) => [
   h.div(
     [h.Class('flex w-full flex-col gap-4')],
     [
@@ -501,10 +501,10 @@ export const virtualListChatDemo = (
         view: VirtualList.view<VirtualListChatMessage>(),
         viewInputs: {
           items: messages,
-          itemToKey: (message): infer _ => globalThis.String(message.id),
-          itemToView: (message): infer _ => chatMessageView(message, h),
+          itemToKey: (message) => globalThis.String(message.id),
+          itemToView: (message) => chatMessageView(message, h),
           dynamicRowHeights: true,
-          itemToEstimatedRowHeightPx: (message): infer _ =>
+          itemToEstimatedRowHeightPx: (message) =>
             message.isExpanded
               ? EXPANDED_CHAT_MESSAGE_ESTIMATED_HEIGHT_PX
               : COLLAPSED_CHAT_MESSAGE_ESTIMATED_HEIGHT_PX,
@@ -516,7 +516,7 @@ export const virtualListChatDemo = (
             h.Tabindex(0),
           ]),
         },
-        toParentMessage: (message): infer _ =>
+        toParentMessage: (message) =>
           Message.GotVirtualListChatDemoMessage({ message }),
       }),
       h.div(

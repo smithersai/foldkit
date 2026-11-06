@@ -45,7 +45,7 @@ export const maybeCoverMimeType = (src: string): Option<string> =>
   pipe(
     Str.split(src, '.'),
     Arr.lastNonEmpty,
-    (extension): infer _ =>
+    (extension) =>
       Record.get(COVER_MIME_TYPE_BY_EXTENSION, extension.toLowerCase()),
   )
 
@@ -134,5 +134,5 @@ export const blogPosts: ReadonlyArray<BlogPostEntry> = await Effect.runPromise(
 
 export const blogPostSlugs: ReadonlyArray<string> = Arr.map(
   blogPosts,
-  ({ slug }): infer _ => slug,
+  ({ slug }) => slug,
 )

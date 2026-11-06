@@ -50,8 +50,8 @@ const faqItem = (
     {
       id,
       isOpen: isFaqOpen,
-      onToggle: (isOpen): infer _ => Message.ToggledFaq({ id, isOpen }),
-      toView: (attributes): infer _ =>
+      onToggle: (isOpen) => Message.ToggledFaq({ id, isOpen }),
+      toView: (attributes) =>
         h.div(
           [h.Class('mb-2')],
           [
@@ -100,7 +100,7 @@ export const view = Submodel.defineView<Model, Message, ViewInputs>(
   (model, { renderCopyButton, renderSnippet, renderHeadingLink }, h): Html =>
     renderPage({
       demos: {},
-      renderFaq: (id, question, content): infer _ =>
+      renderFaq: (id, question, content) =>
         faqItem(id, question, content, model, h),
       renderCopyButton,
       renderSnippet,

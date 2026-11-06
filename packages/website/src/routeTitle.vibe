@@ -41,21 +41,21 @@ export const routeTitle = (
     } | API | ${SITE_NAME}`;
     when { _tag: 'ExampleDetail', exampleSlug: let exampleSlug }: match (Arr.findFirst(
         allPages,
-        ({ _tag }): infer _ => _tag === `ExampleDetail:${exampleSlug}`,
+        ({ _tag }) => _tag === `ExampleDetail:${exampleSlug}`,
       )) {
       when Option.None: `${exampleSlug} | Examples | ${SITE_NAME}`;
       when Option.Some(let page): `${page.label} | Examples | ${SITE_NAME}`;
     };
     when { _tag: 'Playground', exampleSlug: let exampleSlug }: match (Arr.findFirst(
         allPages,
-        ({ _tag }): infer _ => _tag === `ExampleDetail:${exampleSlug}`,
+        ({ _tag }) => _tag === `ExampleDetail:${exampleSlug}`,
       )) {
       when Option.None: `Playground | ${SITE_NAME}`;
       when Option.Some(let page): `${page.label} | Playground | ${SITE_NAME}`;
     };
     default: do {
       const { _tag } = route
-      match (Arr.findFirst(allPages, (page): infer _ => page._tag === _tag)) {
+      match (Arr.findFirst(allPages, (page) => page._tag === _tag)) {
         when Option.None: SITE_NAME;
         when Option.Some(let page): `${page.label} | ${SITE_NAME}`;
       }

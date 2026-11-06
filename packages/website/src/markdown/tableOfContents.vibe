@@ -57,11 +57,11 @@ export const collectHeadings = (
 
   const tableOfContents = Arr.filterMap(
     document.blocks,
-    (block): infer _ =>
+    (block) =>
       match (block) {
         when { _tag: 'Heading' } and let heading: do {
           const { maybeId, text } = parseHeadingId(heading.content)
-          const base = Option.getOrElse(maybeId, (): infer _ => slugify(text))
+          const base = Option.getOrElse(maybeId, () => slugify(text))
           const id = uniqueHeadingId(base, usedIds)
           usedIds.add(id)
           idByHeading.set(heading, id)
@@ -77,7 +77,7 @@ export const collectHeadings = (
 /** Resolves a heading's id from the shared map, falling back to a fresh slug. */
 export const headingId = (idByHeading: HeadingIds, heading: Heading): string =>
   Option.fromNullishOr(idByHeading.get(heading))
-    .getOrElse((): infer _ => {
+    .getOrElse(() => {
       const { maybeId, text } = parseHeadingId(heading.content)
-      return Option.getOrElse(maybeId, (): infer _ => slugify(text))
+      return Option.getOrElse(maybeId, () => slugify(text))
     })

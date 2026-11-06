@@ -52,7 +52,7 @@ const headingButton = <Message>(
 const weekRow = <Message>(week: Calendar.Week, h: HtmlBuilder<Message>): Html =>
   h.div(
     [...week.attributes, h.Class(rowClassName)],
-    week.cells.map((cell): infer _ =>
+    week.cells.map((cell) =>
       h.div(
         [...cell.cellAttributes, h.Class(cellClassName)],
         [
@@ -86,14 +86,14 @@ const daysView = <Message>(
         [
           h.div(
             [...days.headerRow, h.Class(rowClassName)],
-            days.columnHeaders.map((header): infer _ =>
+            days.columnHeaders.map((header) =>
               h.div(
                 [...header.attributes, h.Class(columnHeaderClassName)],
                 [header.name],
               )
             ),
           ),
-          ...days.weeks.map((week): infer _ => weekRow(week, h)),
+          ...days.weeks.map((week) => weekRow(week, h)),
         ],
       ),
     ],
@@ -113,7 +113,7 @@ const monthsView = <Message>(
       ),
       h.div(
         [...months.grid, h.Class(monthYearGridClassName)],
-        months.cells.map((cell): infer _ =>
+        months.cells.map((cell) =>
           h.div(
             [...cell.cellAttributes, h.Class(cellClassName)],
             [
@@ -149,7 +149,7 @@ const yearsView = <Message>(
       ),
       h.div(
         [...years.grid, h.Class(monthYearGridClassName)],
-        years.cells.map((cell): infer _ =>
+        years.cells.map((cell) =>
           h.div(
             [...cell.cellAttributes, h.Class(cellClassName)],
             [
@@ -167,8 +167,8 @@ const yearsView = <Message>(
 export const calendarView = <Message>(
   rootClassName: string,
   h: HtmlBuilder<Message>,
-): infer _ =>
-(u: Calendar.CalendarAttributes): infer _ => match (u) {
+) =>
+(u: Calendar.CalendarAttributes) => match (u) {
   when { _tag: "Days" } and let days: daysView(days, rootClassName, h);
   when { _tag: "Months" } and let months: monthsView(months, rootClassName, h);
   when { _tag: "Years" } and let years: yearsView(years, rootClassName, h);
