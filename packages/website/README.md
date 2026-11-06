@@ -97,3 +97,6 @@ while excluding generated `@throws {never}` metadata and emitter formatting.
 Generated controls retain literal text, other failure contracts, optionality,
 readonly fields and changed return types. Qualified `Option.Option<number>`
 fixtures also preserve their TypeScript declarations and `Some` values.
+
+Imported Effect `Option` return types stay qualified as `Option.Option<T>`,
+matching TypeScript and leaving VIP-only migration idempotent.

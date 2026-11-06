@@ -231,7 +231,9 @@ const urlPathToSlug = (urlPath: string): string => {
 
 // COVER IMAGES
 
-const maybeRoutePostEntry = (route: AppRoute): Option<BlogPostEntry> => match (route) {
+const maybeRoutePostEntry = (
+  route: AppRoute,
+): Option.Option<BlogPostEntry> => match (route) {
   when { _tag: 'BlogPost', let postSlug }: Arr.findFirst(
     blogPosts,
     ({ slug }) => slug === postSlug,
@@ -239,7 +241,7 @@ const maybeRoutePostEntry = (route: AppRoute): Option<BlogPostEntry> => match (r
   default: Option.none();
 }
 
-const maybeRouteCover = (route: AppRoute): Option<PostCover> =>
+const maybeRouteCover = (route: AppRoute): Option.Option<PostCover> =>
   Option.flatMap(
     maybeRoutePostEntry(route),
     ({ frontmatter }) => maybePostCover(frontmatter),
@@ -476,7 +478,7 @@ const sitePageJsonLd = (
     publisher: { '@id': ORGANIZATION_ID },
   })
 
-const maybeSitePageSchemaType = (route: AppRoute): Option<string> => match (route) {
+const maybeSitePageSchemaType = (route: AppRoute): Option.Option<string> => match (route) {
   when { _tag: 'About' }: Option.some('AboutPage');
   when { _tag: 'Contact' }: Option.some('ContactPage');
   when { _tag: 'Privacy' }: Option.some('WebPage');
