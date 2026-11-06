@@ -78,3 +78,7 @@ annotation is needed to infer a curried callback or an object literal.
 
 Native Message constructors run directly inside `effect` bodies. Their generated
 declarations preserve nonthrowing contracts across module boundaries.
+
+The API reference parser uses native `match` expressions for optional signatures,
+parameters, types and namespace children. Mapper creation and getter order stay
+the same when those values are absent.

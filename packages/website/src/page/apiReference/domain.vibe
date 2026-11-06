@@ -13,7 +13,9 @@ import {
   type TypeDocJson,
   type TypeDocModule,
   type TypeDocParam,
+  type TypeDocSignature,
   type TypeDocType,
+  type TypeDocTypeParam,
 } from './typedoc.vibe'
 
 // SCHEMA
@@ -204,14 +206,13 @@ const collectFromItems = (
             variableQualifiedName(modulePath, item.name),
             item,
           );
-        when let selected and if (selected === patternNamespace): Option.match(
-          item.children,
-          {
-            onNone: () => [],
-            onSome: (children) =>
-              collectFromItems(`${modulePath}/${item.name}`, children),
-          },
-        );
+        when let selected and if (selected === patternNamespace): match (item.children) {
+          when Option.None: [];
+          when Option.Some(let children): collectFromItems(
+            `${modulePath}/${item.name}`,
+            children,
+          );
+        };
         default: [];
       }
     })
@@ -279,21 +280,36 @@ const parseParameter =
 const parseSignatures = (
   namedSchemas: NamedSchemas,
   item: TypeDocItem,
-): ReadonlyArray<ApiFunctionSignature> =>
-  Option.match(item.signatures, {
-    onNone: () => [],
-    onSome: Arr.map((signature) => ({
-      parameters: Option.match(signature.parameters, {
-        onNone: () => [],
-        onSome: Arr.map(parseParameter(namedSchemas)),
-      }),
-      returnType: typeToString(signature.type, 0, namedSchemas),
-      typeParameters: Option.match(signature.typeParameters, {
-        onNone: () => [],
-        onSome: Arr.map(({ name }) => name),
-      }),
-    })),
-  })
+): ReadonlyArray<ApiFunctionSignature> => {
+  const maybeSignatures = item.signatures
+  const mapSignatures: (
+    values: ReadonlyArray<TypeDocSignature>,
+  ) => ReadonlyArray<ApiFunctionSignature> = Arr.map(signature => ({
+    parameters: do {
+      const maybeParameters = signature.parameters
+      const mapParameters = Arr.map(parseParameter(namedSchemas))
+      match (maybeParameters) {
+        when Option.None: [];
+        when Option.Some(let parameters): mapParameters(parameters);
+      }
+    },
+    returnType: typeToString(signature.type, 0, namedSchemas),
+    typeParameters: do {
+      const maybeTypeParameters = signature.typeParameters
+      const mapTypeParameterNames = Arr.map(({ name }: TypeDocTypeParam) =>
+        name
+      )
+      match (maybeTypeParameters) {
+        when Option.None: [];
+        when Option.Some(let parameters): mapTypeParameterNames(parameters);
+      }
+    },
+  }))
+  return match (maybeSignatures) {
+    when Option.None: [];
+    when Option.Some(let signatures): mapSignatures(signatures);
+  }
+}
 
 const parseFunction = (namedSchemas: NamedSchemas) =>
 (
@@ -309,10 +325,10 @@ const parseType =
   (namedSchemas: NamedSchemas) => (item: TypeDocItem): ApiType => ({
     name: item.name,
     description: itemToDescription(item),
-    typeDefinition: Option.match(item.type, {
-      onNone: () => typeDefFromChildren(item.children, namedSchemas),
-      onSome: () => typeToString(item.type, 0, namedSchemas),
-    }),
+    typeDefinition: match (item.type) {
+      when Option.None: typeDefFromChildren(item.children, namedSchemas);
+      when Option.Some: typeToString(item.type, 0, namedSchemas);
+    },
     sourceUrl: itemToSourceUrl(item),
   })
 
@@ -388,16 +404,14 @@ const collectModules = (
 
   const nestedModules = Arr.flatMap(
     namespaces,
-    (namespace) =>
-      Option.match(namespace.children, {
-        onNone: () => [],
-        onSome: (namespaceChildren) =>
-          collectModules(
-            namedSchemas,
-            `${qualifiedName}/${namespace.name}`,
-            namespaceChildren,
-          ),
-      }),
+    (namespace) => match (namespace.children) {
+      when Option.None: [];
+      when Option.Some(let namespaceChildren): collectModules(
+        namedSchemas,
+        `${qualifiedName}/${namespace.name}`,
+        namespaceChildren,
+      );
+    },
   )
 
   return Arr.match(directChildren, {

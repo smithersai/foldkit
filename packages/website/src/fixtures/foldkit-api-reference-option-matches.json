@@ -1,0 +1,6 @@
+{
+  "seed": 72056,
+  "runs": 200,
+  "pattern": "nested optional TypeDoc signatures, parameters, types and namespace children",
+  "rule": "Option matching evaluates only the selected branch; argument getters keep their order."
+}
