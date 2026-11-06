@@ -50,20 +50,9 @@ export const FetchSearchResults = Command.define('FetchSearchResults', {
               kind: data.meta?.kind ?? '',
             }),
         )
-        return (try Effect.orDie(
-          Effect.try({
-            try: () => Message.CompletedFetchSearchResults({ results, query }),
-            catch: error => error,
-          }),
-        ))
+        return Message.CompletedFetchSearchResults({ results, query })
       }) catch effect () => {
-        return (try Effect.orDie(
-          Effect.try({
-            try: () =>
-              Message.CompletedFetchSearchResults({ results: [], query }),
-            catch: error => error,
-          }),
-        ))
+        return Message.CompletedFetchSearchResults({ results: [], query })
       }
     },
 })

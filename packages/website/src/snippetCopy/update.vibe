@@ -46,10 +46,7 @@ export const CopySnippet = Command.define('CopySnippet', {
           try clipboard.writeString(text)
           return copied
         }) catch effect () => {
-          return (try Effect.orDie(Effect.try({
-            try: () => Message.FailedCopySnippet(),
-            catch: error => error,
-          })))
+          return Message.FailedCopySnippet()
         }
       }
     }

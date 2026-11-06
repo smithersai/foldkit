@@ -140,20 +140,14 @@ const loadBrowserEnvironment = effect {
   const now = try DateTime.now
   const currentYear = DateTime.getPartUtc(now, 'year')
   const today = try Calendar.today.local
-  return (try Effect.orDie(
-    Effect.try({
-      try: () =>
-        Message.CompletedLoadBrowserEnvironment({
-          maybeThemePreference: themePreference,
-          maybeSidebarState,
-          systemTheme,
-          isPlaygroundSupported,
-          currentYear,
-          today,
-        }),
-      catch: error => error,
-    }),
-  ))
+  return Message.CompletedLoadBrowserEnvironment({
+    maybeThemePreference: themePreference,
+    maybeSidebarState,
+    systemTheme,
+    isPlaygroundSupported,
+    currentYear,
+    today,
+  })
 }
 
 // INIT
@@ -924,12 +918,7 @@ const CopyLink = Command.define('CopyLink', {
           try clipboard.writeString(url)
           return copied
         }) catch effect () => {
-          return (try Effect.orDie(
-            Effect.try({
-              try: () => Message.FailedCopyLink(),
-              catch: error => error,
-            }),
-          ))
+          return Message.FailedCopyLink()
         }
       }
     }
@@ -942,12 +931,7 @@ export const ScrollToTop = Command.define('ScrollToTop', {
     try Effect.sync(() =>
       browserWindow().scrollTo({ top: 0, behavior: 'instant' })
     )
-    return (try Effect.orDie(
-      Effect.try({
-        try: () => Message.CompletedScrollToTop(),
-        catch: error => error,
-      }),
-    ))
+    return Message.CompletedScrollToTop()
   },
 })
 
@@ -1046,12 +1030,7 @@ const ApplyTheme = Command.define('ApplyTheme', {
           };
         }
       })
-      return (try Effect.orDie(
-        Effect.try({
-          try: () => Message.CompletedApplyTheme(),
-          catch: error => error,
-        }),
-      ))
+      return Message.CompletedApplyTheme()
     },
 })
 
@@ -1066,19 +1045,9 @@ const SaveThemePreference = Command.define('SaveThemePreference', {
         return (effect {
           const store = try KeyValueStore.KeyValueStore
           try store.set(THEME_STORAGE_KEY, JSON.stringify(preference))
-          return (try Effect.orDie(
-            Effect.try({
-              try: () => Message.CompletedSaveThemePreference(),
-              catch: error => error,
-            }),
-          ))
+          return Message.CompletedSaveThemePreference()
         }) catch effect () => {
-          return (try Effect.orDie(
-            Effect.try({
-              try: () => Message.CompletedSaveThemePreference(),
-              catch: error => error,
-            }),
-          ))
+          return Message.CompletedSaveThemePreference()
         }
       }
     },
@@ -1096,19 +1065,9 @@ const SaveSidebarState = Command.define('SaveSidebarState', {
           const store = try KeyValueStore.KeyValueStore
           const json = try Schema.encodeEffect(SidebarStateJsonString)(state)
           try store.set(SIDEBAR_STORAGE_KEY, json)
-          return (try Effect.orDie(
-            Effect.try({
-              try: () => Message.CompletedSaveSidebarState(),
-              catch: error => error,
-            }),
-          ))
+          return Message.CompletedSaveSidebarState()
         }) catch effect () => {
-          return (try Effect.orDie(
-            Effect.try({
-              try: () => Message.CompletedSaveSidebarState(),
-              catch: error => error,
-            }),
-          ))
+          return Message.CompletedSaveSidebarState()
         }
       }
     },

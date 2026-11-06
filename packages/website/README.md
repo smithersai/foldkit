@@ -75,3 +75,6 @@ mutants must fail those observations.
 
 Plain native functions use ordinary TypeScript return inference. No return
 annotation is needed to infer a curried callback or an object literal.
+
+Native Message constructors run directly inside `effect` bodies. Their generated
+declarations preserve nonthrowing contracts across module boundaries.

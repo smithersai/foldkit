@@ -32,30 +32,18 @@ const LoadApiData = Command.define('LoadApiData', {
       const parsedApi = try Schema.decodeUnknownEffect(ParsedApiReference)(
         parsedApiModule.default,
       )
-      return (try Effect.orDie(
-        Effect.try({
-          try: () =>
-            Message.SucceededLoadApiData({
-              apiData: {
-                parsedApi,
-                highlights: highlightsModule.default,
-              },
-            }),
-          catch: error => error,
-        }),
-      ))
+      return Message.SucceededLoadApiData({
+        apiData: {
+          parsedApi,
+          highlights: highlightsModule.default,
+        },
+      })
     }) catch effect (error) => {
-      return (try Effect.orDie(
-        Effect.try({
-          try: () =>
-            Message.FailedLoadApiData({
-              error: typeof error === 'string'
-                ? error
-                : 'Failed to load API data',
-            }),
-          catch: error => error,
-        }),
-      ))
+      return Message.FailedLoadApiData({
+        error: typeof error === 'string'
+          ? error
+          : 'Failed to load API data',
+      })
     }
   },
 })

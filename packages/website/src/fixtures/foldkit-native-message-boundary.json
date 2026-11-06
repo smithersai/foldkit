@@ -1,0 +1,5 @@
+{
+  "seed": 192054,
+  "runs": 200,
+  "pattern": "native message constructor exported through a generated declaration"
+}
