@@ -82,3 +82,6 @@ declarations preserve nonthrowing contracts across module boundaries.
 The API reference parser uses native `match` expressions for optional signatures,
 parameters, types and namespace children. Mapper creation and getter order stay
 the same when those values are absent.
+
+The note-player fallback waits for its duration before constructing its native
+completion Message. Other failures, defects and interruption keep their channels.

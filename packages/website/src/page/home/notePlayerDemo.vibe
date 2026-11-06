@@ -537,10 +537,7 @@ const PlayNote = Command.define('PlayNote', {
         match (error) {
           when { _tag: 'ResourceNotAvailable' }: do {
             try Effect.sleep(Duration.millis(DURATION_MILLISECONDS[duration]))
-            const completed = try Effect.orDie(Effect.try({
-              try: () => Message.CompletedPlayNote({ noteIndex }),
-              catch: error => error,
-            }))
+            const completed = Message.CompletedPlayNote({ noteIndex })
             completed
           };
           default: throw error;
