@@ -1183,8 +1183,7 @@ const observeVirtualList = (
             isHtmlElement(element) ? Option.some(element) : Option.none()
           )
           if (Option.isNone(maybeHtmlElement)) {
-            const cleanup = (): void => undefined
-            return cleanup
+            return { cleanup: Effect.void }
           }
           const htmlElement = maybeHtmlElement.value
 
@@ -1272,14 +1271,8 @@ const observeVirtualList = (
             }
           }
 
-          const mutationObserver = try Effect.acquireRelease(
-            Effect.sync((): MutationObserver =>
-              createMutationObserver(reconcileRows)
-            ),
-            effect observer =>
-              try Effect.sync((): void =>
-                disconnectMutationObserver(observer)
-              ),
+          const mutationObserver = try Effect.sync((): MutationObserver =>
+            createMutationObserver(reconcileRows)
           )
           try Effect.sync((): void =>
             observeMutations(
@@ -1302,7 +1295,7 @@ const observeVirtualList = (
           containers.add(htmlElement)
           mountedContainers.set(id, containers)
 
-          const cleanup = (): void => {
+          const cleanup = Effect.sync((): void => {
             const containers = mountedContainers.get(id)
             if (containers !== undefined) {
               containers.delete(htmlElement)
@@ -1310,12 +1303,13 @@ const observeVirtualList = (
                 mountedContainers.delete(id)
               }
             }
+            disconnectMutationObserver(mutationObserver)
             rowResizeObserver.disconnect()
             htmlElement.removeEventListener('scroll', scrollListener)
-          }
-          return cleanup
+          })
+          return { cleanup }
         },
-        effect cleanup => try Effect.sync(cleanup),
+        effect resource => try resource.cleanup,
       )
       try Effect.never
     }

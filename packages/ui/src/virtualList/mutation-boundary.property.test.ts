@@ -6,7 +6,7 @@ import { expect, it, vi } from 'vitest'
 import examples from './fixtures/foldkit-mutation-observer-failure.json' with { type: 'json' }
 import { ObserveVirtualList } from './index.vibe'
 
-it('preserves observer setup defects and releases an acquired mutation observer', async () => {
+it('preserves observer setup defects and original acquisition-failure cleanup', async () => {
   await fc.assert(
     fc.asyncProperty(
       fc.record({
@@ -68,7 +68,24 @@ it('preserves observer setup defects and releases an acquired mutation observer'
             expect(Result.isSuccess(found)).toBe(true)
             if (Result.isSuccess(found)) expect(found.success).toBe(fault)
           }
-          expect(disconnects).toBe(isConstructorFailure ? 0 : 1)
+          const actualDisconnects = disconnects
+          disconnects = 0
+          // The original acquisition returns its cleanup only after observe succeeds.
+          const originalExit = await Effect.runPromiseExit(
+            Effect.scoped(
+              Effect.acquireRelease(
+                Effect.sync(() => {
+                  const observer = new MutationProbe(() => {})
+                  observer.observe()
+                  return () => observer.disconnect()
+                }),
+                cleanup => Effect.sync(cleanup),
+              ),
+            ),
+          )
+          expect(Exit.isFailure(originalExit)).toBe(true)
+          expect(disconnects).toBe(0)
+          expect(actualDisconnects).toBe(disconnects)
         } finally {
           vi.unstubAllGlobals()
         }
