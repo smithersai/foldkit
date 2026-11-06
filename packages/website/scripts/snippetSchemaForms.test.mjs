@@ -158,7 +158,7 @@ const program = (fields, native) =>
   (native
     ? 'export schema Example {\n' +
       fields
-        .map(field => '  ' + field.name + ': ' + forms[field.kind][1])
+        .map(field => '  readonly ' + field.name + ': ' + forms[field.kind][1])
         .join('\n') +
       '\n}\n'
     : 'export const Example = Schema.Struct({\n' +

@@ -85,3 +85,6 @@ the same when those values are absent.
 
 The note-player fallback waits for its duration before constructing its native
 completion Message. Other failures, defects and interruption keep their channels.
+
+Generated schema fixtures keep their fields `readonly`, matching the original
+`Schema.Struct` data and declaration contracts.
