@@ -1,7 +1,11 @@
-import { createResizeObserver } from './virtualList.platform.ts'
+import {
+  createMutationObserver,
+  createResizeObserver,
+  disconnectMutationObserver,
+  observeMutations,
+} from './virtualList.platform.ts'
 import {
   ExperimentalBrowserDocument,
-  ExperimentalBrowserMutationObserver,
   ExperimentalBrowserResizeObserver,
 } from 'vibelang-runtime/experimental/platform-browser'
 import { Array, Number, pipe } from 'effect'
@@ -1169,14 +1173,10 @@ const observeVirtualList = (
     provide Layer.mergeAll(
       ExperimentalBrowserDocument.layer,
       ExperimentalBrowserResizeObserver.layer,
-      ExperimentalBrowserMutationObserver.layer,
     ) {
       const { isHTMLElement: isHtmlElement } = try Experimental.Document
         .Document
       const resizeObserver = try Experimental.ResizeObserver.ResizeObserver
-      const mutationObserverService = try Experimental.MutationObserver
-        .MutationObserver
-
       try Effect.acquireRelease(
         effect {
           const maybeHtmlElement = try Effect.sync((): Option<HTMLElement> =>
@@ -1272,15 +1272,30 @@ const observeVirtualList = (
             }
           }
 
-          try mutationObserverService.observe(htmlElement, reconcileRows, {
-            attributes: true,
-            attributeFilter: [
-              'data-virtual-list-layout-version',
-              'data-virtual-list-measure',
-            ],
-            childList: true,
-            subtree: true,
-          })
+          const mutationObserver = try Effect.acquireRelease(
+            Effect.sync((): MutationObserver =>
+              createMutationObserver(reconcileRows)
+            ),
+            effect observer =>
+              try Effect.sync((): void =>
+                disconnectMutationObserver(observer)
+              ),
+          )
+          try Effect.sync((): void =>
+            observeMutations(
+              mutationObserver,
+              htmlElement,
+              {
+                attributes: true,
+                attributeFilter: [
+                  'data-virtual-list-layout-version',
+                  'data-virtual-list-measure',
+                ],
+                childList: true,
+                subtree: true,
+              },
+            )
+          )
           reconcileRows()
 
           const containers = mountedContainers.get(id) ?? new Set<HTMLElement>()
