@@ -1,6 +1,10 @@
-import { ExperimentalBrowserIntersectionObserver } from 'vibelang-runtime/experimental/platform-browser'
+import {
+  disconnectIntersectionObserver,
+  makeIntersectionObserver,
+  observeIntersectionTarget,
+} from './activeSection.platform.ts'
 import { elementWithId } from '../browserDocument.ts'
-import { Array as Arr, Iterable as Iter } from 'effect'
+import { Array as Arr } from 'effect'
 import { AsyncData, Render, Subscription } from 'foldkit'
 
 import { Message } from '../message.vibe'
@@ -203,48 +207,74 @@ export const subscriptions = Subscription.make<Model, Message>()((
 
             try Render.afterCommit
 
-            provide ExperimentalBrowserIntersectionObserver.layer {
-              const visibleSections = MutableRef.make(HashSet.empty<string>())
-              const targets = Iter.filter(
-                Iter.map(sections, elementWithId),
-                (element): element is HTMLElement => element !== null,
-              )
-              try (try Experimental.IntersectionObserver.IntersectionObserver)
-                .observe(
-                  targets,
-                  entries => {
-                    Arr.forEach(
-                      entries,
-                      ({ isIntersecting, target: { id } }) => {
-                        if (isIntersecting) {
-                          MutableRef.update(visibleSections, HashSet.add(id))
-                        } else {
-                          MutableRef.update(visibleSections, HashSet.remove(id))
+            try Effect.acquireRelease(
+              effect {
+                const visibleSections = MutableRef.make(HashSet.empty<string>())
+                const observer = try Effect.orDie(Effect.try({
+                  try: () =>
+                    makeIntersectionObserver(
+                      entries => {
+                        Arr.forEach(
+                          entries,
+                          ({ isIntersecting, target: { id } }) => {
+                            if (isIntersecting) {
+                              MutableRef.update(
+                                visibleSections,
+                                HashSet.add(id),
+                              )
+                            } else {
+                              MutableRef.update(
+                                visibleSections,
+                                HashSet.remove(id),
+                              )
+                            }
+                          },
+                        )
+
+                        const activeSectionId = Arr.findFirst(
+                          sections,
+                          sectionId =>
+                            HashSet.has(
+                              MutableRef.get(visibleSections),
+                              sectionId,
+                            ),
+                        )
+
+                        match (activeSectionId) {
+                          when Option.None: undefined;
+                          when Option.Some(let sectionId): do {
+                            Queue.offerUnsafe(
+                              queue,
+                              Message.ChangedActiveSection({ sectionId }),
+                            )
+                            undefined
+                          };
                         }
                       },
-                    )
-
-                    const activeSectionId = Arr.findFirst(
-                      sections,
-                      sectionId =>
-                        HashSet.has(MutableRef.get(visibleSections), sectionId),
-                    )
-
-                    match (activeSectionId) {
-                      when Option.None: undefined;
-                      when Option.Some(let sectionId): do {
-                        Queue.offerUnsafe(
-                          queue,
-                          Message.ChangedActiveSection({ sectionId }),
-                        )
-                        undefined
-                      };
-                    }
-                  },
-                  { rootMargin: '-100px 0px -80% 0px' },
-                )
-              return try Effect.never
-            }
+                      { rootMargin: '-100px 0px -80% 0px' },
+                    ),
+                  catch: error => error,
+                }))
+                for (const sectionId of sections) {
+                  const target = try Effect.orDie(Effect.try({
+                    try: () => elementWithId(sectionId),
+                    catch: error => error,
+                  }))
+                  if (target === null) continue
+                  try Effect.orDie(Effect.try({
+                    try: () => observeIntersectionTarget(observer, target),
+                    catch: error => error,
+                  }))
+                }
+                return observer
+              },
+              observer =>
+                Effect.orDie(Effect.try({
+                  try: () => disconnectIntersectionObserver(observer),
+                  catch: error => error,
+                })),
+            )
+            return try Effect.never
           }
         ),
     },

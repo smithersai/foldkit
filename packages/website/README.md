@@ -100,3 +100,8 @@ fixtures also preserve their TypeScript declarations and `Some` values.
 
 Imported Effect `Option` return types stay qualified as `Option.Option<T>`,
 matching TypeScript and leaving VIP-only migration idempotent.
+
+Intersection-observer construction, observation and disconnection live in an
+Effect-free platform sibling. Native acquisition retains callback state, target
+order and scope ownership. Failed acquisition keeps the original defect and
+does not register a release; completed acquisition disconnects exactly once.
