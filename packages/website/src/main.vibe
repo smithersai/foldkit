@@ -808,12 +808,25 @@ export const update = (model: Model, message: Message) =>
 
       return Update.combine(model, [
         applyBrowserEnvironment,
-        (stepModel) =>
-          Update.foldChildInit(Ui.init(today), {
+        (stepModel) => {
+          const dateDemos = Ui.init(today)
+          // Mounted demos can publish state before the browser clock loads.
+          return Update.foldChildInit({
+            ...dateDemos,
+            model: modifyFields(stepModel.uiPages, {
+              calendarBasicDemo: () => dateDemos.model.calendarBasicDemo,
+              maybeCalendarBasicDemoSelectedDate: () =>
+                dateDemos.model.maybeCalendarBasicDemoSelectedDate,
+              datePickerBasicDemo: () => dateDemos.model.datePickerBasicDemo,
+              maybeDatePickerBasicDemoSelectedDate: () =>
+                dateDemos.model.maybeDatePickerBasicDemoSelectedDate,
+            }),
+          }, {
             toParentModel: (uiPages) =>
               modifyFields(stepModel, { uiPages: () => uiPages }),
             toParentMessage: (message) => Message.GotUiPageMessage({ message }),
-          }),
+          })
+        },
       ])
     },
 

@@ -105,3 +105,8 @@ Intersection-observer construction, observation and disconnection live in an
 Effect-free platform sibling. Native acquisition retains callback state, target
 order and scope ownership. Failed acquisition keeps the original defect and
 does not register a release; completed acquisition disconnects exactly once.
+
+Loading browser preferences preserves unrelated UI demos during hydration.
+Completed list measurements, input values and other demo selections remain in
+the Model. Calendar and date-picker setup still uses the local date. Regression
+properties cover startup event ordering and every unrelated UI field.
