@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { noRawDomEventAttributes } from '../../src/rules/no-raw-dom-event-attributes.ts'
+import { noRawDomEventAttributes } from '../../src/rules/no-raw-dom-event-attributes.vibe'
 
 const callExpression = (
   callee: unknown,

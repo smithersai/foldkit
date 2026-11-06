@@ -1,0 +1,41 @@
+import { Array as EffectArray } from 'effect'
+import { Command } from 'foldkit'
+import { Transition } from 'foldkit/route'
+import { Message } from './message'
+
+type Commands = ReadonlyArray<Command.Command<Message>>
+
+// Leaving a route is a fact too: one-shot Commands on the way out...
+const commandsOnExit = (
+  transition: Transition.Transition<AppRoute>,
+): Commands =>
+  match (Transition.exited(transition, 'Person')) {
+    when { _tag: "None" }: [];
+    when { _tag: "Some", value: let optionValue2 }: do {
+      const { personId } = optionValue2
+      ;[RecordVisitEnded({ personId })]
+    };
+  }
+
+// ...and stayed hands you both sides of a within-route change:
+const commandsOnPersonChange = (
+  transition: Transition.Transition<AppRoute>,
+): Commands =>
+  match (Transition.stayed(transition, 'Person')) {
+    when { _tag: "None" }: [];
+    when { _tag: "Some", value: let optionValue1 }: do {
+      const { previousRoute, nextRoute } = optionValue1
+      previousRoute.personId === nextRoute.personId
+        ? []
+        : [FetchPerson({ personId: nextRoute.personId })]
+    };
+  }
+
+// Transition helpers compose by concatenation
+const commandsForTransition = (
+  transition: Transition.Transition<AppRoute>,
+): Commands =>
+  EffectArray.flatten([
+    commandsOnExit(transition),
+    commandsOnPersonChange(transition),
+  ])

@@ -306,3 +306,15 @@ Explain a thing the way you would say it out loud to another person. You write a
 The test is whether you would say the sentence to a colleague at a whiteboard. If you would not, it is jargon or hedging, and the version you would say is the one to write. That catches word choice too: "three rules govern the value" is stiffer than anything anyone says out loud, where it would be "three things have to be true". Idioms fail from the other side, since "has the most miles" reads fine and does not survive translation.
 
 Write "For example:" when a colon introduces illustrations rather than the complete set. A bare colon reads as an exhaustive enumeration, so a reader takes three illustrations for the only three cases that exist. Use the bare colon when the list really is exhaustive, which is what makes the distinction worth keeping. Applies to docs, TSDoc, changesets, commit messages, and website copy.
+
+<!-- vibelang agents: start. `npx vibelang agents init` writes this section; rerun it to update. -->
+
+## VibeLang
+
+`.vibe` files are VibeLang: Effect programs in TypeScript syntax. Load the `vibelang` skill (`.agents/skills/vibelang/SKILL.md`) before you write or review one.
+
+- After you edit `.vibe` files, run `npx vibelang agents check <file>...`. It applies `vibelang --fix` and prints each diagnostic left; fix every error before you finish. Claude Code, Codex and opencode run it for you after each edit and show you the result.
+- `npx vibelang --noEmit` checks the whole project. Each `EKxxxx` diagnostic says how to fix it.
+- `npx vibelang lint` runs the built-in Effect type-aware rules on `.vibe` files using the repository’s Oxlint configuration; pass `-c <config>` for a non-default config. Run it before finishing a change.
+
+<!-- vibelang agents: end -->

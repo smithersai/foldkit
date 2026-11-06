@@ -13,18 +13,18 @@ import {
 import { describe, expect, it } from 'vitest'
 
 import { defineMessageUnion } from '../message/index.js'
-import { modifyFields } from '../struct/index.js'
-import { EventFrame, MAX_DISPATCH_BATCH_SIZE, Request } from './protocol.js'
+import { modifyFields } from '../struct/index.vibe'
+import { EventFrame, MAX_DISPATCH_BATCH_SIZE, Request } from './protocol.vibe'
 import {
   type Bridge,
   type CreateDevToolsStoreOptions,
   createDevToolsStore,
-} from './store.js'
+} from './store.vibe'
 import {
   EVENT_CHANNEL,
   dispatchRequest,
   startWebSocketBridge,
-} from './webSocketBridge.js'
+} from './webSocketBridge.vibe'
 
 const CounterModel = Schema.Struct({ count: Schema.Number })
 type CounterModel = typeof CounterModel.Type

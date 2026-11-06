@@ -1,0 +1,16 @@
+{
+  "seed": 413965,
+  "runs": 500,
+  "cases": [
+    {
+      "id": "known",
+      "known": true,
+      "reason": ""
+    },
+    {
+      "id": "unknown",
+      "known": false,
+      "reason": "not connected"
+    }
+  ]
+}

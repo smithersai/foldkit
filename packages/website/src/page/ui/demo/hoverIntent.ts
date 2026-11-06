@@ -2,7 +2,7 @@ import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { HoverIntent } from '@foldkit/ui'
 
-import { Message } from '../message'
+import { Message } from '../message.vibe'
 
 const triggerClassName =
   'button-accent inline-flex cursor-pointer items-center rounded-lg px-4 py-2 text-sm shadow-sm'

@@ -1,0 +1,150 @@
+#!/usr/bin/env node
+import * as NodeChildProcessSpawner from '@effect/platform-node/NodeChildProcessSpawner'
+import * as NodeFileSystem from '@effect/platform-node/NodeFileSystem'
+import * as NodePath from '@effect/platform-node/NodePath'
+import * as NodeRuntime from '@effect/platform-node/NodeRuntime'
+import * as NodeStdio from '@effect/platform-node/NodeStdio'
+import { Server } from '@modelcontextprotocol/sdk/server/index.js'
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js'
+import { runInit } from './install.ts'
+import { makeRelayClient } from './relayClient.vibe'
+import {
+  configuredRelayUrl,
+  loadSettings,
+  resolveRelayTargets,
+} from './relayLocation.vibe'
+import { makeRelayRegistryReader } from './relayRegistry.ts'
+import { observeStdinClose } from './server.platform.ts'
+import { type ToolDefinition, buildTools } from './tools.vibe'
+
+type ToolReply = Effect.Success<ReturnType<ToolDefinition['handle']>>
+type ToolListing = {
+  tools: Array<Pick<ToolDefinition, 'name' | 'description' | 'inputSchema'>>
+}
+
+const main = effect {
+  const settings = try loadSettings
+  const maybeConfiguredUrl = configuredRelayUrl(settings)
+  match (maybeConfiguredUrl) {
+    when Option.None: try Console.error(
+      `[foldkit-devtools-mcp] looking up Foldkit dev servers for ${settings.projectRoot} on each tool call`,
+    );
+    when Option.Some(let url): try Console.error(
+      `[foldkit-devtools-mcp] using the DevTools MCP relay at ${url}`,
+    );
+  }
+  const registryReader = try makeRelayRegistryReader
+  const relayClient = try Effect.acquireRelease(
+    makeRelayClient(resolveRelayTargets(settings, registryReader)),
+    client => client.close,
+  )
+  const tools = buildTools(relayClient)
+  const toolsByName = HashMap.fromIterable(
+    tools.map(tool => [tool.name, tool] as const),
+  )
+  const runtime = try Effect.context<never>()
+  const server = try Effect.acquireRelease(
+    sync(
+      () =>
+        new Server(
+          { name: '@foldkit/devtools-mcp', version: '0.1.0' },
+          { capabilities: { tools: {} } },
+        ),
+    ),
+    server => Effect.promise(() => server.close()),
+  )
+  try sync(
+    (server: Server, tools: ReturnType<typeof buildTools>) =>
+      server.setRequestHandler(
+        ListToolsRequestSchema,
+        (): Promise<ToolListing> =>
+          Promise.resolve({
+            tools: tools.map(({ name, description, inputSchema }) => ({
+              name,
+              description,
+              inputSchema,
+            })),
+          }),
+      ),
+    server,
+    tools,
+  )
+  try sync(
+    (
+      server: Server,
+      toolsByName: HashMap<string, ReturnType<typeof buildTools>[number]>,
+      runtime: Context<never>,
+    ) =>
+      server.setRequestHandler(
+        CallToolRequestSchema,
+        (request, { signal }): Promise<ToolReply> => match (HashMap.get(toolsByName, request.params.name)) {
+          when Option.None: Promise.resolve({
+            content: [{
+              type: 'text',
+              text: `Error: unknown tool ${request.params.name}`,
+            }],
+            isError: true,
+          });
+          when Option.Some(let tool): Effect.runPromiseWith(runtime)(
+            tool.handle(request.params.arguments ?? {}),
+            { signal },
+          );
+        },
+      ),
+    server,
+    toolsByName,
+    runtime,
+  )
+  const transport = try sync(() => new StdioServerTransport())
+  try Effect.tryPromise(() => server.connect(transport))
+  try Console.error('[foldkit-devtools-mcp] MCP server ready on stdio')
+  // The host closing stdin ends the Scope before the subprocess exits.
+  try callback<void, never, [typeof observeStdinClose]>(
+    (listen, resume) => {
+      const detach = listen(() => resume(undefined))
+      return detach === undefined ? undefined : Effect.sync(detach)
+    },
+    onClose => observeStdinClose(onClose),
+  )
+}
+const subcommand = runSync(effect {
+  provide NodeStdio.layer {
+    const stdio = try Stdio.Stdio
+    const args = try stdio.args
+    return args[0]
+  }
+})
+if (subcommand === 'init') {
+  runInit()
+} else {
+  const live = effect {
+    provide Layer.provideMerge(
+      Layer.provideMerge(
+        NodeChildProcessSpawner.layer,
+        Layer.mergeAll(NodeFileSystem.layer, NodePath.layer),
+      ),
+      Layer.succeed(Logger.LogToStderr, true),
+    ) {
+      try Effect.scoped(main)
+    }
+  }
+  NodeRuntime.runMain(
+    Effect.tapCause(
+      live,
+      effect (cause) => {
+        if (Cause.hasInterruptsOnly(cause)) {
+          return
+        }
+        try Console.error(
+          '[foldkit-devtools-mcp] fatal error',
+          Cause.pretty(cause),
+        )
+      },
+    ),
+    { disableErrorReporting: true },
+  )
+}

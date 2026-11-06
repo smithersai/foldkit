@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { noModuleLevelMutableState } from '../../src/rules/no-module-level-mutable-state.ts'
+import { noModuleLevelMutableState } from '../../src/rules/no-module-level-mutable-state.vibe'
 
 const variableDeclaration = (
   kind: 'let' | 'var' | 'const',

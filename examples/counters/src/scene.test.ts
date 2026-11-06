@@ -12,7 +12,7 @@ import {
 } from 'foldkit/scene'
 import { describe, test } from 'vitest'
 
-import { type Model, update, view } from './main'
+import { type Model, update, view } from './main.vibe'
 
 const initialModel: Model = {
   rows: [

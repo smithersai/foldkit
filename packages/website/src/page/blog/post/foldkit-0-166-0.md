@@ -14,7 +14,7 @@ Foldkit 0.165.0 and 0.166.0 bring Effect 4 stable and an experimental Query modu
 
 The experimental Query module lets you define a Submodel that manages remote data through loading, failure, and refresh. The parent update decides when to load or refresh, and existing data stays available during a refresh.
 
-With an existing `Post` Schema and `fetchPosts` Effect, include the Query's Model and Messages in the parent:
+With an existing `Post` Schema and `fetchPosts` Effect, include the Query's Model and Messages in the parent. The `schema Model` declaration embeds `postsQuery.Model`:
 
 ::Snippet{name="release0166Query" label="Defining the posts Submodel"}
 

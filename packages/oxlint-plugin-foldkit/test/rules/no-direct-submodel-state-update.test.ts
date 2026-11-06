@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { noDirectSubmodelStateUpdate } from '../../src/rules/no-direct-submodel-state-update.ts'
+import { noDirectSubmodelStateUpdate } from '../../src/rules/no-direct-submodel-state-update.vibe'
 
 const property = (key: string, value: unknown) => ({
   type: 'Property',

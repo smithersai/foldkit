@@ -39,6 +39,8 @@ This is the usual Command error-to-Message boundary. The Model should gate the o
 
 When setup and teardown are already packaged as an Effect `Layer`, keep that lifecycle intact. `acquire` runs with the Managed Resource’s `Scope` in its context. `Layer.build` registers the Layer’s finalizers on that Scope, and the runtime closes it on release or reacquisition. Map the built Context down to the bare service value that Commands need.
 
+The raw worker constructor lives in the Effect-free `chessWorker.platform.ts` helper. The native layer owns acquisition and calls `terminate()` when its scope closes.
+
 ::Snippet{name="managedResourcesLayer" label="Layer-backed ManagedResource"}
 
 The resource tag holds that bare value, so Commands read it through `.get` with no wrapper to destructure. Any finalizer registered during `acquire`, through either `Layer.build` or `Effect.addFinalizer`, runs when the handle is released. In that case the explicit `release` can be `() => Effect.void`. The explicit callback runs first, followed by the Scope finalizers in Effect’s last-in-first-out order.
@@ -50,6 +52,8 @@ A child Submodel defines its Managed Resources in its own Model and Message term
 ### Optional Child Models
 
 `read` returns an `Option` of the child Model. Returning `None` releases the child’s resources without reading their requirements. Returning `Some` lets the child determine which resources it needs. Wrap an always-present child in `Option.some`.
+
+The socket constructor service returns a `Socket.WebSocketLike` handle immediately. The managed release owns its `close()` call.
 
 ::Snippet{name="managedResourcesLift" label="Composing child ManagedResources"}
 

@@ -14,6 +14,6 @@ export {
   TransitionState,
   WaitForPaint,
   WaitForAnimationSettled,
-} from './index.js'
+} from './index.vibe'
 
-export type { InitConfig, ViewInputs } from './index.js'
+export type { InitConfig, ViewInputs } from './index.vibe'

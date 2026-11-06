@@ -1,3 +1,3 @@
-import { startHost } from './host'
+import { startHost } from './host.vibe'
 
 startHost()

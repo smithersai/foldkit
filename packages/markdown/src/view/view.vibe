@@ -1,0 +1,413 @@
+import { Array as EffectArray, Option, Record, Schema } from 'effect'
+import { Html, inertHtml as ih } from 'foldkit/html'
+
+import {
+  Alignment,
+  Block,
+  Blockquote,
+  CodeBlock,
+  Emphasis,
+  HardBreak,
+  Heading,
+  Image,
+  Inline,
+  InlineCode,
+  Island,
+  Link,
+  List,
+  ListItem,
+  MarkdownDocument,
+  Paragraph,
+  Strikethrough,
+  Strong,
+  Table,
+  TableCell,
+  TableRow,
+  Text,
+  ThematicBreak,
+} from '../ast/index.js'
+import type { IslandDefinitions } from '../island/index.js'
+import {
+  warnInvalidAttributesOnce,
+  warnMissingIslandOnce,
+} from './view.platform.js'
+
+/** Rendered inline content, ready to pass as element children. */
+export type InlineContent = ReadonlyArray<Html | string>
+
+/**
+ * Renders one island directive. Receives the directive's attributes, the
+ * rendered nested blocks (empty for leaf directives), and the zero-based
+ * occurrence of this island name in the document, in document order. Use the
+ * occurrence index to derive identifiers that must be unique per instance,
+ * such as an `h.submodel` slotId.
+ */
+export type IslandView = (
+  attributes: Readonly<globalThis.Record<string, string>>,
+  content: ReadonlyArray<Html>,
+  occurrenceIndex: number,
+) => Html
+
+/** Island views by directive name. */
+export type Islands = Readonly<globalThis.Record<string, IslandView>>
+
+/**
+ * One typed island view per definition. Each view receives its attributes
+ * already decoded through the island's schema, so the record is exhaustive
+ * over the declared island names by construction.
+ */
+export type IslandViewsFor<Definitions extends IslandDefinitions> = Readonly<
+  {
+    [Name in keyof Definitions]: (
+      attributes: Definitions[Name]['Type'],
+      content: ReadonlyArray<Html>,
+      occurrenceIndex: number,
+    ) => Html
+  }
+>
+
+/**
+ * One view function per markdown node. Container nodes receive their already
+ * rendered content alongside the node itself. Code blocks additionally receive
+ * their zero-based occurrence index in document order so consumers can derive
+ * stable per-instance identifiers.
+ */
+export type Views = Readonly<{
+  Text: (text: Text) => Html | string
+  InlineCode: (inlineCode: InlineCode) => Html
+  HardBreak: (hardBreak: HardBreak) => Html
+  Emphasis: (emphasis: Emphasis, content: InlineContent) => Html
+  Strong: (strong: Strong, content: InlineContent) => Html
+  Strikethrough: (strikethrough: Strikethrough, content: InlineContent) => Html
+  Link: (link: Link, content: InlineContent) => Html
+  Image: (image: Image) => Html
+  Heading: (heading: Heading, content: InlineContent) => Html
+  Paragraph: (paragraph: Paragraph, content: InlineContent) => Html
+  CodeBlock: (codeBlock: CodeBlock, occurrenceIndex: number) => Html
+  List: (list: List, items: ReadonlyArray<Html>) => Html
+  ListItem: (listItem: ListItem, blocks: ReadonlyArray<Html>) => Html
+  Blockquote: (blockquote: Blockquote, blocks: ReadonlyArray<Html>) => Html
+  ThematicBreak: (thematicBreak: ThematicBreak) => Html
+  Table: (table: Table, headerRow: Html, bodyRows: ReadonlyArray<Html>) => Html
+  TableRow: (tableRow: TableRow, cells: ReadonlyArray<Html>) => Html
+  TableCell: (
+    tableCell: TableCell,
+    content: InlineContent,
+    alignment: Alignment,
+    isHeader: boolean,
+  ) => Html
+}>
+
+/** Configuration for {@link view} and {@link viewBlocks}. */
+export type ViewConfig = Readonly<{
+  islands?: Islands | undefined
+  views?: Partial<Views> | undefined
+}>
+
+const titleAttribute = (maybeTitle: Option.Option<string>) => match (maybeTitle) {
+  when Option.Some(let title): [ih.Title(title)];
+  default: [];
+}
+
+const startAttribute = (maybeStartNumber: Option.Option<number>) => match (maybeStartNumber) {
+  when Option.Some(let startNumber): [ih.Start(startNumber)];
+  default: [];
+}
+
+const alignmentAttribute = (alignment: Alignment) => match (alignment) {
+  when 'None': [];
+  when 'Left': [ih.Style({ 'text-align': 'left' })];
+  when 'Center': [ih.Style({ 'text-align': 'center' })];
+  when 'Right': [ih.Style({ 'text-align': 'right' })];
+}
+
+/**
+ * Unstyled semantic defaults for every markdown node. Spread these into your
+ * own record and replace the nodes you want to restyle:
+ *
+ * @example
+ * ```typescript
+ * const blogViews: Markdown.Views = {
+ *   ...Markdown.defaultViews,
+ *   Paragraph: (paragraph, content) =>
+ *     ih.p([ih.Class('leading-relaxed text-stone-700')], content),
+ * }
+ * ```
+ */
+// NOTE: These views deliberately render without vdom keys. A markdown document
+// is immutable data, so a given position never switches branches within one
+// document, and per-branch keys like 'Ordered' or 'Header' would repeat across
+// sibling lists and cells, which corrupts snabbdom's keyed diff. Identity for a
+// whole document belongs on the consumer's key around the rendered output.
+export const defaultViews: Views = {
+  Text: ({ value }) => value,
+  InlineCode: ({ value }) => ih.code([], [value]),
+  HardBreak: () => ih.br([]),
+  Emphasis: (_emphasis, content) => ih.em([], content),
+  Strong: (_strong, content) => ih.strong([], content),
+  Strikethrough: (_strikethrough, content) => ih.del([], content),
+  Link: ({ url, maybeTitle }, content) =>
+    ih.a([ih.Href(url), ...titleAttribute(maybeTitle)], content),
+  Image: ({ url, alt, maybeTitle }) =>
+    ih.img([ih.Src(url), ih.Alt(alt), ...titleAttribute(maybeTitle)]),
+  Heading: ({ level }, content) => match (level) {
+    when 1: ih.h1([], content);
+    when 2: ih.h2([], content);
+    when 3: ih.h3([], content);
+    when 4: ih.h4([], content);
+    when 5: ih.h5([], content);
+    when 6: ih.h6([], content);
+  },
+  Paragraph: (_paragraph, content) => ih.p([], content),
+  CodeBlock: ({ value }) => ih.pre([], [ih.code([], [value])]),
+  List: ({ isOrdered, maybeStartNumber }, items) => {
+    if (isOrdered) {
+      return ih.ol(startAttribute(maybeStartNumber), items)
+    } else {
+      return ih.ul([], items)
+    }
+  },
+  ListItem: (_listItem, blocks) => ih.li([], blocks),
+  Blockquote: (_blockquote, blocks) => ih.blockquote([], blocks),
+  ThematicBreak: () => ih.hr([]),
+  Table: (_table, headerRow, bodyRows) =>
+    ih.table([], [ih.thead([], [headerRow]), ih.tbody([], bodyRows)]),
+  TableRow: (_tableRow, cells) => ih.tr([], cells),
+  TableCell: (_tableCell, content, alignment, isHeader) => {
+    if (isHeader) {
+      return ih.th(alignmentAttribute(alignment), content)
+    } else {
+      return ih.td(alignmentAttribute(alignment), content)
+    }
+  },
+}
+
+const inlineView = (views: Views, inline: Inline): Html | string => match (inline) {
+  when { _tag: 'Text' } and let text: views.Text(text);
+  when { _tag: 'InlineCode' } and let inlineCode: views.InlineCode(inlineCode);
+  when { _tag: 'HardBreak' } and let hardBreak: views.HardBreak(hardBreak);
+  when { _tag: 'Emphasis' } and let emphasis: views.Emphasis(
+    emphasis,
+    inlineContent(views, emphasis.content),
+  );
+  when { _tag: 'Strong' } and let strong: views.Strong(
+    strong,
+    inlineContent(views, strong.content),
+  );
+  when { _tag: 'Strikethrough' } and let strikethrough: views.Strikethrough(
+    strikethrough,
+    inlineContent(views, strikethrough.content),
+  );
+  when { _tag: 'Link' } and let link: views.Link(
+    link,
+    inlineContent(views, link.content),
+  );
+  when { _tag: 'Image' } and let image: views.Image(image);
+}
+
+const inlineContent = (
+  views: Views,
+  content: ReadonlyArray<Inline>,
+): InlineContent =>
+  EffectArray.map(content, inline => inlineView(views, inline))
+
+const alignmentAt = (
+  alignments: ReadonlyArray<Alignment>,
+  columnIndex: number,
+): Alignment =>
+  Option.getOrElse(EffectArray.get(alignments, columnIndex), () => 'None')
+
+const tableRowView = (
+  views: Views,
+  table: Table,
+  row: TableRow,
+  isHeader: boolean,
+): Html =>
+  views.TableRow(
+    row,
+    EffectArray.map(row.cells, (cell, columnIndex) =>
+      views.TableCell(
+        cell,
+        inlineContent(views, cell.content),
+        alignmentAt(table.alignments, columnIndex),
+        isHeader,
+      )),
+  )
+
+const missingIsland = (islandName: string): Html => {
+  warnMissingIslandOnce(islandName)
+  return null
+}
+
+// NOTE: Attribute decoding runs inside `render`, so a schema failure and a
+// failing view both warn once for the island and render nothing.
+const renderDecodedIsland = (islandName: string, render: () => Html): Html => {
+  try {
+    return render()
+  } catch (error) {
+    warnInvalidAttributesOnce(
+      islandName,
+      error instanceof Error ? error.message : String(error),
+    )
+    return null
+  }
+}
+
+/**
+ * Pairs island attribute schemas with typed views, producing the plain
+ * {@link Islands} record the fold consumes. Attributes decode through each
+ * island's schema before dispatch, and the views record must cover every
+ * declared island name. Pass the same definitions to the markdown Vite
+ * plugin's `islands` option so invalid directives fail the build instead of
+ * reaching this decode.
+ */
+export const islandsFor = <const Definitions extends IslandDefinitions>(
+  definitions: Definitions,
+  islandViews: IslandViewsFor<Definitions>,
+): Islands => {
+  /* eslint-disable-next-line @typescript-eslint/consistent-type-assertions */
+  const islandViewsByName = islandViews as Readonly<
+    globalThis.Record<
+      string,
+      (
+        attributes: unknown,
+        content: ReadonlyArray<Html>,
+        occurrenceIndex: number,
+      ) => Html
+    >
+  >
+
+  return Record.map(definitions, (attributesSchema, islandName): IslandView => {
+    const decodeAttributes = Schema.decodeUnknownSync(attributesSchema)
+
+    return (attributes, content, occurrenceIndex): Html => match (Record.get(islandViewsByName, islandName)) {
+      when Option.Some(let renderIsland): renderDecodedIsland(
+        islandName,
+        () =>
+          renderIsland(decodeAttributes(attributes), content, occurrenceIndex),
+      );
+      default: missingIsland(islandName);
+    }
+  })
+}
+
+type ViewState = Readonly<{
+  islandOccurrenceCounts: Map<string, number>
+  blockOccurrenceCounts: Map<Block['_tag'], number>
+}>
+
+const nextOccurrenceIndex = <Key>(
+  occurrenceCounts: Map<Key, number>,
+  key: Key,
+): number => {
+  const occurrenceIndex = occurrenceCounts.get(key) ?? 0
+  occurrenceCounts.set(key, occurrenceIndex + 1)
+  return occurrenceIndex
+}
+
+const islandView = (
+  views: Views,
+  islands: Islands,
+  viewState: ViewState,
+  island: Island,
+): Html => {
+  const occurrenceIndex = nextOccurrenceIndex(
+    viewState.islandOccurrenceCounts,
+    island.name,
+  )
+
+  return match (Record.get(islands, island.name)) {
+    when Option.Some(let renderIsland): renderIsland(
+      island.attributes,
+      EffectArray.map(
+        island.blocks,
+        block => blockView(views, islands, viewState, block),
+      ),
+      occurrenceIndex,
+    );
+    default: missingIsland(island.name);
+  }
+}
+
+const blockView = (
+  views: Views,
+  islands: Islands,
+  viewState: ViewState,
+  block: Block,
+): Html => match (block) {
+  when { _tag: 'Heading' } and let heading: views.Heading(
+    heading,
+    inlineContent(views, heading.content),
+  );
+  when { _tag: 'Paragraph' } and let paragraph: views.Paragraph(
+    paragraph,
+    inlineContent(views, paragraph.content),
+  );
+  when { _tag: 'CodeBlock' } and let codeBlock: views.CodeBlock(
+    codeBlock,
+    nextOccurrenceIndex(viewState.blockOccurrenceCounts, codeBlock._tag),
+  );
+  when { _tag: 'List' } and let list: views.List(
+    list,
+    EffectArray.map(list.items, item =>
+      views.ListItem(
+        item,
+        EffectArray.map(item.blocks, child =>
+          blockView(views, islands, viewState, child)),
+      )),
+  );
+  when { _tag: 'Blockquote' } and let blockquote: views.Blockquote(
+    blockquote,
+    EffectArray.map(
+      blockquote.blocks,
+      child => blockView(views, islands, viewState, child),
+    ),
+  );
+  when { _tag: 'ThematicBreak' } and let thematicBreak: views.ThematicBreak(
+    thematicBreak,
+  );
+  when { _tag: 'Table' } and let table: views.Table(
+    table,
+    tableRowView(views, table, table.headerRow, true),
+    EffectArray.map(
+      table.bodyRows,
+      row => tableRowView(views, table, row, false),
+    ),
+  );
+  when { _tag: 'Island' } and let island: islandView(
+    views,
+    islands,
+    viewState,
+    island,
+  );
+}
+
+/**
+ * Folds a document into one Html node per top-level block. Use this when the
+ * blocks should land directly inside your own container element.
+ */
+export const viewBlocks = (
+  document: MarkdownDocument,
+  config: ViewConfig = {},
+): ReadonlyArray<Html> => {
+  const views: Views = { ...defaultViews, ...config.views }
+  const islands = config.islands ?? {}
+  const viewState: ViewState = {
+    islandOccurrenceCounts: new Map(),
+    blockOccurrenceCounts: new Map(),
+  }
+  return EffectArray.map(
+    document.blocks,
+    block => blockView(views, islands, viewState, block),
+  )
+}
+
+/**
+ * Folds a document into a single Html tree. Every node renders through
+ * {@link defaultViews} unless overridden in `config.views`, and every Island
+ * directive renders through the matching entry in `config.islands`.
+ */
+export const view = (
+  document: MarkdownDocument,
+  config: ViewConfig = {},
+): Html => ih.div([], viewBlocks(document, config))

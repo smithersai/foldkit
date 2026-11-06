@@ -1,0 +1,384 @@
+import { afterCommit, afterPaint } from '../render/render.vibe'
+import { DialogRuntime } from './dialogRuntime.vibe'
+import { queryElement } from './dom.platform.ts'
+import {
+  advanceFocusFrom,
+  closeDialogElement,
+  releaseDialogHygieneById,
+  scrollElementIntoViewIfNotVisible,
+  showDialogElement,
+} from './domBehavior.vibe'
+import { asDialogElement, asHtmlElement } from './domPredicates.platform.ts'
+import { ElementNotFound } from './error.vibe'
+import { unlockScroll } from './scrollLock.vibe'
+
+// NOTE: The dialog machinery, focus management and scrolling are plain
+// VibeLang in domBehavior.vibe, over the document reads and writes of
+// dom.platform.ts (VIP-33); this module keeps the public Effect API and
+// reaches them through hatches.
+
+const queryHTMLElement = effect (
+  selector: string,
+): HTMLElement!ElementNotFound => {
+  const element = try sync((selector) => queryElement(selector), selector)
+  const htmlElement = try sync((element) => asHtmlElement(element), element)
+  if (htmlElement !== null) {
+    return htmlElement
+  }
+  throw new ElementNotFound({ selector })
+}
+
+/**
+ * Focuses an element matching the given selector after the next render has
+ * committed.
+ *
+ * Use `Dom.focus` inside a Command for focus that's caused by a Message
+ * dispatching: a dialog opening, an input becoming the active step in a
+ * form, returning focus to a trigger button after a popover closes,
+ * keyboard navigation across a stable layout. The Command fires from
+ * `update`'s return; the focus runs after the next render commits, so the
+ * element is in place by the time `.focus()` runs.
+ *
+ * Do not use `OnMount` for focus. The cause of focus-on-open is the
+ * Message, not the element appearing. Mount is for per-instance lifecycle
+ * effects bound to a VNode existing where the live element handle is
+ * needed (positioning, portaling, observer attachment, library setup).
+ *
+ * Waiting for the commit puts the element in the DOM. It does not make the
+ * element focusable. `.focus()` is a no-op on an element that is not
+ * rendered, so a target behind `visibility: hidden` or `display: none`
+ * leaves focus where it was, with nothing to distinguish that from focus
+ * having landed. This is worth knowing when something asynchronous reveals
+ * the target after the render commits: a panel held at `visibility: hidden`
+ * until a positioning library resolves its first layout is still hidden
+ * when the Command runs, however long the Command waits. Focus a target
+ * like that from whatever performs the reveal, which is the one place that
+ * knows the element has become focusable. The Message still causes the
+ * reveal, so the focus belongs to that Message rather than to a lifecycle
+ * effect standing in for it.
+ *
+ * Section headings, articles, and other non-natively-focusable elements
+ * are common URL fragment targets, but `.focus()` is a no-op on them
+ * without a `tabindex`. Pass `makeFocusable: true` to inject
+ * `tabindex="-1"` on the target if it has none, making programmatic
+ * focus actually land. Pass `preventScroll: true` to suppress the
+ * browser's default scroll-on-focus, useful when the focus call follows
+ * a deliberate scroll that should not be undone. The two options compose
+ * with `scrollIntoViewAfterPaint` for URL-fragment-navigation
+ * accessibility: scroll the section into view, then focus the same
+ * selector so keyboard users start Tab navigation from the target.
+ *
+ * Fails with `ElementNotFound` if the selector does not match an `HTMLElement`.
+ *
+ * @example
+ * ```typescript
+ * Dom.focus('#email-input')
+ * Dom.focus('#section', { preventScroll: true, makeFocusable: true })
+ * ```
+ */
+export const focus = effect (
+  selector: string,
+  options?: Readonly<{ preventScroll?: boolean; makeFocusable?: boolean }>,
+): void!ElementNotFound => {
+  try afterCommit
+  const element = try queryHTMLElement(selector)
+  try sync(
+    (element, options) => {
+      if (options?.makeFocusable && !element.hasAttribute('tabindex')) {
+        element.setAttribute('tabindex', '-1')
+      }
+      element.focus({ preventScroll: options?.preventScroll ?? false })
+    },
+    element,
+    options,
+  )
+}
+
+/**
+ * Opens a dialog element using `show()` with high z-index, focus trapping,
+ * and Escape key handling. An unhandled Escape on the topmost dialog dispatches
+ * a `CustomEvent` named `cancel`, distinguishing it from native `cancel` events
+ * while preserving the dialog event contract. Uses `show()` instead of
+ * `showModal()` so that DevTools (and any other high-z-index overlay) remains
+ * interactive. Pass `isModal: true` to make the background inert and hide it
+ * from assistive technology. `allowedOutsideSelectors` keeps separate developer
+ * overlays available while modal isolation is active. Stacked modal dialogs
+ * isolate against the topmost one, and closing it restores the dialog beneath.
+ * The Dialog component provides its own backdrop, scroll locking,
+ * and transitions. Fails with `ElementNotFound` if the selector does not match
+ * an `HTMLDialogElement`.
+ *
+ * Pass `focusSelector` to focus an element inside the dialog when it opens.
+ * When it does not match a focusable element, or when none is provided, focus
+ * falls back to the first focusable descendant and then to the dialog itself.
+ *
+ * Records the element that had focus when the dialog opened so `closeDialog`
+ * can return focus there, the way `showModal()` would natively. Resolves to
+ * `true` when it installs the dialog resources, or `false` when that id already
+ * holds them. The latter makes concurrent lifecycle recovery and application
+ * Commands safe without duplicating focus traps or stack entries.
+ *
+ * @example
+ * ```typescript
+ * Dom.showDialog('#my-dialog')
+ * Dom.showDialog('#my-dialog', { focusSelector: '#search-input' })
+ * Dom.showDialog('#my-dialog', { isModal: true })
+ * ```
+ */
+export const showDialog = effect (
+  selector: string,
+  options?: Readonly<{
+    focusSelector?: string
+    isModal?: boolean
+    allowedOutsideSelectors?: ReadonlyArray<string>
+  }>,
+): boolean!ElementNotFound => {
+  try afterCommit
+
+  const element = try sync(
+    (selector) => asDialogElement(queryElement(selector)),
+    selector,
+  )
+
+  if (element === null) {
+    throw new ElementNotFound({ selector })
+  }
+
+  const maybeDialogRuntime = try Effect.serviceOption(DialogRuntime)
+
+  return try sync(
+    (element, options, maybeDialogRuntime) =>
+      showDialogElement(element, options, maybeDialogRuntime),
+    element,
+    options,
+    maybeDialogRuntime,
+  )
+}
+
+/**
+ * Closes a dialog element using `.close()`.
+ * Cleans up the keyboard handlers installed by `showDialog`, restores modal
+ * background isolation, and then returns focus to the element that was focused
+ * before the dialog opened (the trigger, or the dialog beneath it when closing
+ * a stacked dialog).
+ * Resolves to `true` when it released the keyboard handlers, the return
+ * focus, and the stack entry.
+ * Resolves to `false` when the dialog held none, for example when the close
+ * runs before `showDialog` has installed them. A caller that unlocks page
+ * scroll after the close should unlock only when the result is `true`.
+ * Fails with `ElementNotFound` if the selector does not match an `HTMLDialogElement`.
+ *
+ * @example
+ * ```typescript
+ * Dom.closeDialog('#my-dialog')
+ * ```
+ */
+export const closeDialog = effect (
+  selector: string,
+): boolean!ElementNotFound => {
+  const element = try sync(
+    (selector) => asDialogElement(queryElement(selector)),
+    selector,
+  )
+  if (element !== null) {
+    return try sync((element) => closeDialogElement(element), element)
+  }
+  throw new ElementNotFound({ selector })
+}
+
+/**
+ * Releases the framework hygiene a dialog holds while open: the focus-trap
+ * keyboard handler, modal background isolation, the recorded return focus,
+ * the dialog stack entry, the z-index counter, and one page scroll lock.
+ * Use this when the element is removed without a close Message, such as
+ * navigation away from a route-keyed subtree. The runtime also calls it
+ * directly on disposal. The normal close path already releases these.
+ * That path is `closeDialog` first, then the Dialog component's scroll unlock
+ * when `closeDialog` reports a release. This function is the cleanup for the
+ * case where no close Message ever reaches `update`.
+ *
+ * Addressed by the dialog's id, not a selector, because the element is
+ * typically already gone from the DOM by the time this runs (that is the whole
+ * point of the backstop). The hygiene installed by `showDialog` is tracked by
+ * id so it can be reclaimed without a live element handle. The id must be
+ * non-empty and unique within the document, since it keys this cleanup
+ * accounting; a duplicate or empty id would release the wrong dialog's hygiene.
+ *
+ * Idempotent and exactly-once. It releases only when the dialog currently
+ * holds hygiene, then clears the per-dialog marker, so calling it after a
+ * normal close, or twice, is a no-op that never under-counts the shared
+ * scroll lock. Carries no application close semantics: the Dialog component
+ * owns the user-facing close (animation, `Closed` OutMessage, consumer
+ * Commands); this only reclaims framework resources.
+ *
+ * Resolves to `true` when it released resources, `false` when there was
+ * nothing to release. Never fails: an id with no held hygiene is a no-op,
+ * since the goal is reclaiming resources that may already be gone.
+ *
+ * @example
+ * ```typescript
+ * Dom.releaseDialogResources('my-dialog')
+ * ```
+ */
+export const releaseDialogResources = effect (id: string): boolean!! => {
+  const released = try sync((id) => releaseDialogHygieneById(id), id)
+  if (released) {
+    try unlockScroll
+    return true
+  }
+  return false
+}
+
+/**
+ * Programmatically clicks an element matching the given selector.
+ * Fails with `ElementNotFound` if the selector does not match an `HTMLElement`.
+ *
+ * @example
+ * ```typescript
+ * Dom.clickElement('#menu-item-2')
+ * ```
+ */
+export const clickElement = effect (
+  selector: string,
+): void!ElementNotFound => {
+  try afterCommit
+  const element = try queryHTMLElement(selector)
+  try sync((element) => element.click(), element)
+}
+
+/**
+ * Scrolls an element into view by selector. Resolves the selector after
+ * `Render.afterCommit`. Defaults to `{ block: 'nearest' }`; pass a different
+ * `block` for use cases like URL-fragment landing where `'start'` is right.
+ * For a target the same Message just brought into the DOM,
+ * `scrollIntoViewAfterPaint` is the right choice.
+ *
+ * Fails with `ElementNotFound` if the selector does not match an `HTMLElement`.
+ *
+ * @example
+ * ```typescript
+ * Dom.scrollIntoView('#active-item')
+ * Dom.scrollIntoView('#section-2', { block: 'start' })
+ * ```
+ */
+export const scrollIntoView = effect (
+  selector: string,
+  options?: Readonly<{ block?: ScrollLogicalPosition }>,
+): void!ElementNotFound => {
+  try afterCommit
+  const element = try queryHTMLElement(selector)
+  try sync(
+    (element, block) => element.scrollIntoView({ block }),
+    element,
+    options?.block ?? 'nearest',
+  )
+}
+
+/**
+ * Like `scrollIntoView`, but waits for `Render.afterPaint` instead of
+ * `Render.afterCommit` before resolving the selector.
+ *
+ * Reach for this when the target was just brought into the DOM by the same
+ * Message that dispatches the scroll, such as a routing flow landing at a
+ * URL fragment. The two-frame wait gives the runtime time to commit the new
+ * Model and the browser time to lay it out before the scroll runs. For a
+ * target that's already on screen, `scrollIntoView` is the lighter choice.
+ *
+ * Defaults to `{ block: 'nearest' }`; pass `{ block: 'start' }` for URL
+ * fragment landings where the target should sit at the top of the viewport.
+ *
+ * Fails with `ElementNotFound` if the selector does not match an `HTMLElement`.
+ *
+ * @example
+ * ```typescript
+ * Dom.scrollIntoViewAfterPaint('#overview')
+ * Dom.scrollIntoViewAfterPaint(`#${hash}`, { block: 'start' })
+ * ```
+ */
+export const scrollIntoViewAfterPaint = effect (
+  selector: string,
+  options?: Readonly<{ block?: ScrollLogicalPosition }>,
+): void!ElementNotFound => {
+  try afterPaint
+  const element = try queryHTMLElement(selector)
+  try sync(
+    (element, block) => element.scrollIntoView({ block }),
+    element,
+    options?.block ?? 'nearest',
+  )
+}
+
+/**
+ * Like `scrollIntoViewAfterPaint`, but skips the scroll if the element is
+ * already fully visible within its scroll container.
+ *
+ * Defaults to `{ block: 'center' }`; pass a different `block` when the
+ * target should land at a specific position when it does need to scroll.
+ *
+ * `when` selects the timing gate. `'Paint'` (the default) waits for
+ * `Render.afterPaint`, so the scroll lands after the target is on screen.
+ * `'Commit'` waits for `Render.afterCommit` instead, so the scroll lands in
+ * the same frame the DOM patch applies, before the browser paints. Use
+ * `'Commit'` when the target is brought into view and scrolled by the same
+ * Message (such as a menu opening), so it appears already scrolled rather
+ * than visibly jumping.
+ *
+ * Fails with `ElementNotFound` if the selector does not match an `HTMLElement`.
+ *
+ * @example
+ * ```typescript
+ * Dom.scrollIntoViewIfNotVisible('#active-nav-link')
+ * Dom.scrollIntoViewIfNotVisible('#active-nav-link', { block: 'nearest' })
+ * Dom.scrollIntoViewIfNotVisible('#active-nav-link', { when: 'Commit' })
+ * ```
+ */
+export const scrollIntoViewIfNotVisible = effect (
+  selector: string,
+  options?: Readonly<{
+    block?: ScrollLogicalPosition
+    when?: 'Paint' | 'Commit'
+  }>,
+): void!ElementNotFound => {
+  const when = options?.when ?? 'Paint'
+  match (when) {
+    when 'Paint': try afterPaint;
+    when 'Commit': try afterCommit;
+  }
+  const element = try queryHTMLElement(selector)
+  try sync(
+    (element, block) => scrollElementIntoViewIfNotVisible(element, block),
+    element,
+    options?.block ?? 'center',
+  )
+}
+
+/** Direction for focus advancement: forward or backward in tab order. */
+export type FocusDirection = 'Next' | 'Previous'
+
+/**
+ * Focuses the next or previous focusable element in the document relative to the element matching the given selector.
+ * Fails with `ElementNotFound` if the selector does not match an `HTMLElement`.
+ *
+ * @example
+ * ```typescript
+ * Dom.advanceFocus('#menu-button', 'Next')
+ * ```
+ */
+export const advanceFocus = effect (
+  selector: string,
+  direction: FocusDirection,
+): void!ElementNotFound => {
+  try afterCommit
+
+  const reference = try queryHTMLElement(selector)
+
+  const advanced = try sync(
+    (reference, direction) => advanceFocusFrom(reference, direction),
+    reference,
+    direction,
+  )
+
+  if (!advanced) {
+    throw new ElementNotFound({ selector })
+  }
+}

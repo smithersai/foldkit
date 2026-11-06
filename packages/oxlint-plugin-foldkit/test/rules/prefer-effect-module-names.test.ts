@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { preferEffectModuleNames } from '../../src/rules/prefer-effect-module-names.ts'
+import { preferEffectModuleNames } from '../../src/rules/prefer-effect-module-names.vibe'
 
 const run = (
   source: string,

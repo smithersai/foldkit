@@ -5,8 +5,8 @@ import {
   toInspectableValue,
   toSerializedEntry,
   toSerializedMount,
-} from './serialize.js'
-import type { HistoryEntry } from './store.js'
+} from './serialize.vibe'
+import type { HistoryEntry } from './store.vibe'
 
 describe('toInspectableValue', () => {
   it('converts a Date to its ISO string', () => {

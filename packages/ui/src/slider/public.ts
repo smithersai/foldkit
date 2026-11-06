@@ -19,6 +19,6 @@ export {
   type ReleasedDragPointer,
   type CancelledDrag,
   type PressedKeyboardNavigation,
-} from './index.js'
+} from './index.vibe'
 
-export type { InitConfig, ViewInputs, SliderAttributes } from './index.js'
+export type { InitConfig, ViewInputs, SliderAttributes } from './index.vibe'

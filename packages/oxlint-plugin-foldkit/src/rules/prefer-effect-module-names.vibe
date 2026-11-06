@@ -1,0 +1,263 @@
+import { Array as EffectArray } from 'effect'
+import {
+  Diagnostic,
+  type ESTree,
+  type FixFn,
+  type OxlintScope,
+  type Reference,
+  Rule,
+  RuleContext,
+  type Variable,
+} from 'effect-oxlint'
+
+import { isIdentifier, isStringLiteral } from '../guards.vibe'
+
+const EFFECT_MODULE_NAME = /^[A-Z]/
+
+const isSemanticConflictAlias = (name: string, localName: string): boolean =>
+  localName === `Effect${name}`
+
+type AliasedEffectModule = Readonly<{
+  specifier: ESTree.ImportSpecifier
+  name: string
+}>
+
+const importedName = (
+  specifier: ESTree.ImportSpecifier,
+): Option<string> => {
+  if (isIdentifier(specifier.imported)) {
+    return Option.some(specifier.imported.name)
+  }
+  if (isStringLiteral(specifier.imported)) {
+    return Option.some(specifier.imported.value)
+  }
+  return Option.none()
+}
+
+const importVariable = (
+  ctx: RuleContext['Service'],
+  specifier: ESTree.ImportSpecifier,
+): Variable | undefined => {
+  const scopeManager = ctx.sourceCode.scopeManager
+
+  if (scopeManager === undefined) {
+    return undefined
+  }
+
+  return EffectArray.findFirst(
+    scopeManager.getDeclaredVariables(specifier),
+    (variable) => variable.name === specifier.local.name,
+  )
+    .getOrUndefined()
+}
+
+const hasUnshadowedReference = (
+  ctx: RuleContext['Service'],
+  name: string,
+): boolean =>
+  EffectArray.some(
+    ctx.sourceCode.scopeManager?.scopes ?? [],
+    (scope) =>
+      EffectArray.some(
+        scope.references,
+        (reference) =>
+          reference.identifier.name === name
+          && (reference.resolved === null
+            || EffectArray.isArrayEmpty(reference.resolved.defs)),
+      ),
+  )
+
+const preservesObservableName = (node: ESTree.Node): boolean => {
+  const parent = node.parent
+
+  if (parent === null) {
+    return true
+  }
+  if (parent.type === 'Property' && parent.shorthand) {
+    return false
+  }
+  return parent.type !== 'ExportSpecifier'
+}
+
+const hasInterveningBinding = (
+  scope: OxlintScope,
+  importScope: OxlintScope,
+  name: string,
+): boolean => {
+  if (scope === importScope) {
+    return false
+  }
+  if (scope.set.get(name) !== undefined || scope.upper === null) {
+    return true
+  }
+  return hasInterveningBinding(scope.upper, importScope, name)
+}
+
+const referenceCanBeRenamed = (
+  reference: Reference,
+  importScope: OxlintScope,
+  name: string,
+): boolean =>
+  preservesObservableName(reference.identifier)
+  && !hasInterveningBinding(reference.from, importScope, name)
+
+const aliasedEffectModule = (
+  specifier: ESTree.ImportDeclaration['specifiers'][number],
+): Option<AliasedEffectModule> => {
+  if (specifier.type !== 'ImportSpecifier' || specifier.importKind === 'type') {
+    return Option.none()
+  }
+
+  return Option.flatMap(
+    importedName(specifier),
+    (name) =>
+      EFFECT_MODULE_NAME.test(name)
+        && specifier.local.name !== name
+        && !isSemanticConflictAlias(name, specifier.local.name)
+        ? Option.some({ specifier, name })
+        : Option.none(),
+  )
+}
+
+const importsEffectModuleAsAlias = (
+  variable: Variable,
+  name: string,
+): boolean =>
+  EffectArray.some(variable.defs, (definition) => {
+    if (
+      definition.type !== 'ImportBinding'
+      || definition.node.type !== 'ImportSpecifier'
+    ) {
+      return false
+    }
+
+    const declaration = definition.node.parent
+
+    if (
+      declaration.type !== 'ImportDeclaration'
+      || declaration.source.value !== 'effect'
+      || declaration.importKind === 'type'
+    ) {
+      return false
+    }
+
+    return match (aliasedEffectModule(definition.node)) {
+      when Option.None: false;
+      when Option.Some(let alias): alias.name === name;
+    }
+  })
+
+const hasCompetingRenameTarget = (variable: Variable, name: string): boolean =>
+  EffectArray.some(
+    variable.scope.variables,
+    (candidate) =>
+      candidate !== variable && importsEffectModuleAsAlias(candidate, name),
+  )
+
+const canRenameBinding = (
+  ctx: RuleContext['Service'],
+  variable: Variable,
+  name: string,
+): boolean =>
+  variable.scope.set.get(name) === undefined
+  && !hasUnshadowedReference(ctx, name)
+  && !hasCompetingRenameTarget(variable, name)
+  && EffectArray.every(variable.references, (reference) =>
+    referenceCanBeRenamed(reference, variable.scope, name))
+
+const fixesForAlias = (
+  ctx: RuleContext['Service'],
+  { specifier, name }: AliasedEffectModule,
+): ReadonlyArray<FixFn> => {
+  const variable = importVariable(ctx, specifier)
+
+  if (
+    variable === undefined
+    || EffectArray.isArrayNonEmpty(ctx.sourceCode.getCommentsInside(specifier))
+    || !canRenameBinding(ctx, variable, name)
+  ) {
+    return []
+  }
+
+  return [
+    Diagnostic.replaceText(specifier, name),
+    ...EffectArray.map(
+      variable.references,
+      (reference) => Diagnostic.replaceText(reference.identifier, name),
+    ),
+  ]
+}
+
+/** Requires PascalCase Effect modules to keep their exported names. */
+export const preferEffectModuleNames = Rule.define({
+  name: 'prefer-effect-module-names',
+  meta: Rule.meta({
+    type: 'suggestion',
+    description: 'Use Effect module names without import aliases.',
+    fixable: 'code',
+  }),
+  create: effect () => {
+    const ctx = try RuleContext
+
+    return {
+      ImportDeclaration: effect (node: ESTree.Node) => {
+        if (
+          node.type !== 'ImportDeclaration'
+          || node.source.value !== 'effect'
+          || node.importKind === 'type'
+        ) {
+          return undefined
+        }
+
+        const aliases = EffectArray.flatMap(
+          node.specifiers,
+          (specifier) => match (aliasedEffectModule(specifier)) {
+            when Option.None: [];
+            when Option.Some(let alias): [alias];
+          },
+        )
+
+        if (EffectArray.isReadonlyArrayEmpty(aliases)) {
+          return undefined
+        }
+
+        const replacements = EffectArray.map(
+          aliases,
+          ({ specifier, name }) =>
+            `\`${name}\` instead of \`${specifier.local.name}\``,
+        )
+        const diagnostic = try Effect.orDie(
+          Effect.try({
+            try: () =>
+              Diagnostic.make({
+                node,
+                message: `Use Effect module names without aliases: ${
+                  replacements.join(', ')
+                }. Qualify same-named globals through \`globalThis\`.`,
+              }),
+            catch: error => error,
+          }),
+        )
+        const fixes = EffectArray.flatMap(
+          aliases,
+          (alias) => fixesForAlias(ctx, alias),
+        )
+
+        return try ctx.report(
+          EffectArray.isReadonlyArrayEmpty(fixes)
+            ? diagnostic
+            : (try Effect.orDie(
+              Effect.try({
+                try: () =>
+                  Diagnostic.withFix(
+                    diagnostic,
+                    Diagnostic.composeFixes(...fixes),
+                  ),
+                catch: error => error,
+              }),
+            )),
+        )
+      },
+    }
+  },
+})

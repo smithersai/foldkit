@@ -1,0 +1,228 @@
+import { Array as Arr, Number as Num } from 'effect'
+
+import { fetchJson, isSuccessfulStatus, makeUrl } from './http.vibe'
+
+// CONSTANT
+
+const GITHUB_REPOSITORY_API = 'https://api.github.com/repos/foldkit/foldkit'
+const HTTP_ACCEPTED = 202
+const STAR_HISTORY_PAGE_SIZE = 30
+const STAT_MAX_RETRIES = 1
+const STAT_RETRY_DELAY = '2 seconds' as const
+const RELEASE_PAGE_SIZE = 100
+
+// SCHEMA
+
+export schema GitHubRepositoryResponse {
+  readonly stargazers_count: number
+  readonly forks_count: number
+  readonly watchers_count: number
+  readonly open_issues_count: number
+  readonly pushed_at: string
+  readonly default_branch: string
+}
+
+export const GitHubContributorResponse = Schema.Struct({
+  login: Schema.String,
+  contributions: Schema.Number,
+  avatar_url: Schema.OptionFromOptional(Schema.String),
+})
+export type GitHubContributorResponse = typeof GitHubContributorResponse.Type
+
+export const GitHubIssueResponse = Schema.Struct({
+  pull_request: Schema.OptionFromOptional(Schema.Unknown),
+})
+
+export schema GitHubPullRequestResponse { readonly id: number }
+
+export const GitHubReleaseResponse = Schema.Struct({
+  published_at: Schema.OptionFromOptional(Schema.String),
+})
+
+export schema GitHubStarHistoryResponse {
+  readonly week: number
+  readonly total: number
+  readonly days: ReadonlyArray<number>
+}
+
+export schema GitHubCommitActivityResponse {
+  readonly week: number
+  readonly total: number
+}
+
+// SERVICE
+
+export type GitHubStatResult<A> = Readonly<{
+  data: Option<A>
+  warnings: ReadonlyArray<string>
+}>
+
+export service GitHubApi {
+  static readonly key = 'charting/GitHubApi'
+
+  readonly fetchRepository: typeof GitHubRepositoryResponse.Type!Error
+  readonly fetchContributors:
+    ReadonlyArray<typeof GitHubContributorResponse.Type>!Error
+  readonly fetchIssues: ReadonlyArray<typeof GitHubIssueResponse.Type>!Error
+  readonly fetchPullRequests:
+    ReadonlyArray<typeof GitHubPullRequestResponse.Type>!Error
+  fetchReleases(
+    yearCutoff: DateTime.Utc,
+  ): ReadonlyArray<typeof GitHubReleaseResponse.Type>!Error
+  fetchStarHistory(
+    yearCutoff: DateTime.Utc,
+  ): ReadonlyArray<typeof GitHubStarHistoryResponse.Type>!Error
+  readonly fetchCommitActivity:
+    GitHubStatResult<ReadonlyArray<typeof GitHubCommitActivityResponse.Type>>!!
+}
+
+error GitHubStatsPending
+error GitHubStatError
+
+const fetchOptionalGitHubStat =
+  (client: HttpClient) =>
+  <A, I>(schema: Schema.Codec<A, I>) =>
+  (path: string, label: string) => {
+    const url = `${GITHUB_REPOSITORY_API}${path}`
+    const attempt: GitHubStatResult<A>!GitHubStatsPending = effect {
+      return (effect {
+        const response = client.execute(HttpClientRequest.get(url)) catch effect () => {
+            throw new GitHubStatError()
+          }
+        if (response.status === HTTP_ACCEPTED) {
+          throw new GitHubStatsPending()
+        }
+        if (!isSuccessfulStatus(response.status)) {
+          return {
+            data: Option.none<A>(),
+            warnings: [`${label} returned HTTP ${response.status}.`],
+          }
+        }
+        const data = try Effect.option(effect {
+          const json = try response.json
+          return try Schema.decodeUnknownEffect(schema)(json)
+        })
+        return match (data) {
+          when Option.None: ({
+            data: Option.none<A>(),
+            warnings: [`${label} returned an unexpected response shape.`],
+          });
+          when Option.Some(let value): ({
+            data: Option.some(value),
+            warnings: [],
+          });
+        }
+      }) catch effect (error) => match (error) {
+        when GitHubStatError: ({
+          data: Option.none<A>(),
+          warnings: [`${label} is unavailable right now.`],
+        });
+        default: throw error;
+      }
+    }
+    return effect {
+      return retry(attempt, {
+        while: (error: GitHubStatsPending): boolean =>
+          error._tag === 'GitHubStatsPending',
+        schedule: Schedule.spaced(STAT_RETRY_DELAY),
+        times: STAT_MAX_RETRIES,
+      }) catch effect (error) => match (error) {
+        when GitHubStatsPending: ({
+          data: Option.none<A>(),
+          warnings: [`${label} is still being prepared by GitHub.`],
+        });
+        default: throw error;
+      }
+    }
+  }
+
+export const GitHubApiLive: Layer<GitHubApi, never, HttpClient> = Layer.effect(
+  GitHubApi,
+  effect {
+    const client = try HttpClient.HttpClient
+    const fetch_ = fetchJson(client)
+    const fetchStat_ = fetchOptionalGitHubStat(client)
+    return {
+      fetchRepository: fetch_(GitHubRepositoryResponse)(GITHUB_REPOSITORY_API),
+      fetchContributors: fetch_(Schema.Array(GitHubContributorResponse))(
+        makeUrl(`${GITHUB_REPOSITORY_API}/contributors`, {
+          per_page: '100',
+          anon: 'false',
+        }),
+      ),
+      fetchIssues: fetch_(Schema.Array(GitHubIssueResponse))(
+        makeUrl(`${GITHUB_REPOSITORY_API}/issues`, {
+          state: 'open',
+          per_page: '100',
+        }),
+      ),
+      fetchPullRequests: fetch_(Schema.Array(GitHubPullRequestResponse))(
+        makeUrl(`${GITHUB_REPOSITORY_API}/pulls`, {
+          state: 'open',
+          per_page: '100',
+        }),
+      ),
+      fetchReleases: effect (yearCutoff: DateTime.Utc) => {
+        const fetchPage = effect (page: number) => {
+          return try fetch_(Schema.Array(GitHubReleaseResponse))(
+            makeUrl(`${GITHUB_REPOSITORY_API}/releases`, {
+              per_page: `${RELEASE_PAGE_SIZE}`,
+              page: `${page}`,
+            }),
+          )
+        }
+        const fetchFrom = effect (
+          page: number,
+          accumulated: ReadonlyArray<typeof GitHubReleaseResponse.Type>,
+        ): ReadonlyArray<typeof GitHubReleaseResponse.Type>!Error => {
+          const releases = try fetchPage(page)
+          if (releases.length === 0) return accumulated
+          const withinYear = Arr.filter(
+            releases,
+            release =>
+              release.published_at.flatMap(DateTime.make).exists(
+                DateTime.isGreaterThanOrEqualTo(yearCutoff),
+              ),
+          )
+          const nextAccumulated = Arr.appendAll(accumulated, withinYear)
+          const hitCutoff = Arr.length(withinYear) < Arr.length(releases)
+          const isLastPage = Arr.length(releases) < RELEASE_PAGE_SIZE
+          if (!hitCutoff && !isLastPage) {
+            return try fetchFrom(Num.increment(page), nextAccumulated)
+          }
+          return nextAccumulated
+        }
+        return try fetchFrom(1, [])
+      },
+      fetchStarHistory: effect (yearCutoff: DateTime.Utc) => {
+        const fetchFrom = effect (
+          page: number,
+          accumulated: ReadonlyArray<typeof GitHubStarHistoryResponse.Type>,
+        ): ReadonlyArray<typeof GitHubStarHistoryResponse.Type>!Error => {
+          const history = try fetch_(Schema.Array(GitHubStarHistoryResponse))(
+            makeUrl(`${GITHUB_REPOSITORY_API}/stargazers/history`, {
+              per_page: `${STAR_HISTORY_PAGE_SIZE}`,
+              page: `${page}`,
+            }),
+          )
+          const nextAccumulated = Arr.appendAll(accumulated, history)
+          const isLastPage = Arr.length(history) < STAR_HISTORY_PAGE_SIZE
+          const isCutoffReached = Arr.some(
+            history,
+            ({ week }) =>
+              DateTime.isLessThanOrEqualTo(
+                DateTime.fromEpochSeconds(week),
+                yearCutoff,
+              ),
+          )
+          if (isLastPage || isCutoffReached) return nextAccumulated
+          return try fetchFrom(Num.increment(page), nextAccumulated)
+        }
+        return try fetchFrom(1, [])
+      },
+      fetchCommitActivity: fetchStat_(
+        Schema.Array(GitHubCommitActivityResponse),
+      )('/stats/commit_activity', 'Commit activity'),
+    }
+  },
+)

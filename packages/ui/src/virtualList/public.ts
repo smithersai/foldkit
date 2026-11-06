@@ -13,11 +13,11 @@ export {
   ContentAlignment,
   ScrollAlignment,
   ScrollTarget,
-} from './index.js'
+} from './index.vibe'
 
 export type {
   InitConfig,
   RowHeightInputs,
   ScrollToOptions,
   ViewInputs,
-} from './index.js'
+} from './index.vibe'

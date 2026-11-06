@@ -14,14 +14,14 @@ import {
   foldkitBuild,
   manifestPath,
   renderTargetFor,
-} from '../src/build.ts'
+} from '../src/build.vibe'
 import { foldkitBuildToken } from '../src/buildToken.ts'
 import {
   type FoldkitBuildApi,
   FoldkitBuildManifest,
   FoldkitBuildMetadata,
   foldkit,
-} from '../src/index.ts'
+} from '../src/index.vibe'
 
 const FIXTURE_ROOT = resolve(import.meta.dirname, 'fixtures/build')
 const SERVER_ENTRY = '/entry.server.ts'

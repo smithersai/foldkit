@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { keyedRequiredForMappedRows } from '../../src/rules/keyed-required-for-mapped-rows.ts'
+import { keyedRequiredForMappedRows } from '../../src/rules/keyed-required-for-mapped-rows.vibe'
 
 const callExpression = (
   callee: unknown,

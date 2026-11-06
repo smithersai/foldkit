@@ -1,0 +1,218 @@
+{
+  "originalSource": "import { Array, Match, Option, Predicate, String, flow, pipe } from 'effect'\nimport type { Html } from 'foldkit/html'\n\nimport type { Inline } from '@foldkit/markdown'\n\n// SLUG\n\n/**\n * Flattens inline markdown content to its plain text, dropping formatting. Used\n * to derive heading ids, heading aria labels, and table of contents entry text\n * from a heading's inline content.\n */\nexport const inlineToText = (content: ReadonlyArray<Inline>): string =>\n  pipe(\n    content,\n    Array.map(inline =>\n      Match.value(inline).pipe(\n        Match.withReturnType<string>(),\n        Match.tagsExhaustive({\n          Text: ({ value }) => value,\n          InlineCode: ({ value }) => value,\n          HardBreak: () => ' ',\n          Emphasis: ({ content }) => inlineToText(content),\n          Strong: ({ content }) => inlineToText(content),\n          Strikethrough: ({ content }) => inlineToText(content),\n          Link: ({ content }) => inlineToText(content),\n          Image: ({ alt }) => alt,\n        }),\n      ),\n    ),\n    Array.join(''),\n  )\n\n/**\n * Derives a URL fragment id from heading text: lowercased, with apostrophes\n * dropped, every run of non-alphanumeric characters collapsed to a single dash,\n * and surrounding dashes trimmed. `\"HTTP Requests\"` becomes `\"http-requests\"`.\n * Apostrophes go before the collapse so a contraction stays one word:\n * `\"Don’t Compute in Update\"` becomes `\"dont-compute-in-update\"`, not\n * `\"don-t-compute-in-update\"`.\n */\nexport const slugify: (text: string) => string = flow(\n  String.replaceAll(/['’]/g, ''),\n  String.toLowerCase,\n  String.replaceAll(/[^a-z0-9]+/g, '-'),\n  String.replaceAll(/^-+|-+$/g, ''),\n)\n\nconst HEADING_ID_OVERRIDE_PATTERN = /^(.*?)\\s*\\{#([A-Za-z0-9-]+)\\}$/\n\nconst hasTerminalPlainText = (content: ReadonlyArray<Inline>): boolean =>\n  Option.exists(Array.last(content), last => last._tag === 'Text')\n\n/**\n * Reads an optional trailing `{#custom-id}` override off a heading's inline\n * content. The override counts only when the marker is the heading's terminal\n * plain-text run: `## createLazy {#create-lazy}` returns\n * `{ maybeId: Some(\"create-lazy\"), text: \"createLazy\" }`. A marker nested inside\n * emphasis or inline code (`## **Use {#use}**`) is left as ordinary text, because\n * the rendered heading can only strip a terminal plain-text marker. Returning\n * `{ maybeId: None, text: <the whole flattened heading> }` there keeps the derived\n * id and the visible heading in agreement. The override pins an anchor that\n * `slugify` alone would not produce.\n */\nexport const parseHeadingId = (\n  content: ReadonlyArray<Inline>,\n): Readonly<{ maybeId: Option.Option<string>; text: string }> => {\n  const raw = inlineToText(content)\n  const maybeOverride = hasTerminalPlainText(content)\n    ? String.match(HEADING_ID_OVERRIDE_PATTERN)(raw)\n    : Option.none<RegExpMatchArray>()\n\n  return Option.match(maybeOverride, {\n    onNone: () => ({ maybeId: Option.none(), text: raw }),\n    onSome: ([, base = raw, id]) => ({\n      maybeId: Option.fromNullishOr(id),\n      text: base,\n    }),\n  })\n}\n\nconst HEADING_ID_MARKER_SUFFIX_PATTERN = /\\s*\\{#[A-Za-z0-9-]+\\}$/\n\n/**\n * Drops a trailing `{#custom-id}` marker from a heading's rendered inline content,\n * leaving inline formatting intact. The marker is plain text, so it is always the\n * final string element: `[\"Use \", codeHtml, \" {#lazy}\"]` becomes `[\"Use \",\n * codeHtml]`.\n */\nexport const stripHeadingIdMarker = (\n  content: ReadonlyArray<Html | string>,\n): ReadonlyArray<Html | string> =>\n  Array.matchRight(content, {\n    onEmpty: () => content,\n    onNonEmpty: (init, last) => {\n      if (Predicate.isString(last)) {\n        const stripped = String.replace(\n          HEADING_ID_MARKER_SUFFIX_PATTERN,\n          '',\n        )(last)\n        return String.isEmpty(stripped) ? init : Array.append(init, stripped)\n      } else {\n        return content\n      }\n    },\n  })\n",
+  "seed": 5311400,
+  "numRuns": 1000,
+  "fixed": [
+    {
+      "content": [],
+      "text": ""
+    },
+    {
+      "content": [
+        {
+          "_tag": "HardBreak"
+        }
+      ],
+      "text": "HardBreak"
+    },
+    {
+      "content": [
+        {
+          "_tag": "Text",
+          "value": "Use {#pin}"
+        }
+      ],
+      "text": "Don’t Compute in Update"
+    },
+    {
+      "content": [
+        {
+          "_tag": "InlineCode",
+          "value": "Use {#pin}"
+        }
+      ],
+      "text": "Don’t Compute in Update"
+    },
+    {
+      "content": [
+        {
+          "_tag": "Emphasis",
+          "content": [
+            {
+              "_tag": "Text",
+              "value": "Use {#pin}"
+            }
+          ]
+        }
+      ],
+      "text": "HTTP Requests"
+    },
+    {
+      "content": [
+        {
+          "_tag": "Strong",
+          "content": [
+            {
+              "_tag": "Text",
+              "value": "Use {#pin}"
+            }
+          ]
+        }
+      ],
+      "text": "HTTP Requests"
+    },
+    {
+      "content": [
+        {
+          "_tag": "Strikethrough",
+          "content": [
+            {
+              "_tag": "Text",
+              "value": "Use {#pin}"
+            }
+          ]
+        }
+      ],
+      "text": "HTTP Requests"
+    },
+    {
+      "content": [
+        {
+          "_tag": "Link",
+          "content": [
+            {
+              "_tag": "Text",
+              "value": "Use {#pin}"
+            }
+          ],
+          "url": "/target",
+          "maybeTitle": null
+        }
+      ],
+      "text": "HTTP Requests"
+    },
+    {
+      "content": [
+        {
+          "_tag": "Image",
+          "url": "/image",
+          "alt": "diagram {#diagram}",
+          "maybeTitle": null
+        }
+      ],
+      "text": "What's in it"
+    },
+    {
+      "content": [
+        {
+          "_tag": "Text",
+          "value": " {#id}"
+        }
+      ],
+      "text": " {#id}"
+    },
+    {
+      "content": [
+        {
+          "_tag": "Text",
+          "value": "createLazy {#create-lazy}"
+        }
+      ],
+      "text": "createLazy {#create-lazy}"
+    },
+    {
+      "content": [
+        {
+          "_tag": "Text",
+          "value": "Title {#x_1}"
+        }
+      ],
+      "text": "Title {#x_1}"
+    },
+    {
+      "content": [
+        {
+          "_tag": "Text",
+          "value": "Title {#}"
+        }
+      ],
+      "text": "Title {#}"
+    },
+    {
+      "content": [
+        {
+          "_tag": "Text",
+          "value": "Title {#MiXeD-123}"
+        }
+      ],
+      "text": "Title {#MiXeD-123}"
+    },
+    {
+      "content": [
+        {
+          "_tag": "Text",
+          "value": "Tabs\tAnd\nLines"
+        }
+      ],
+      "text": "Tabs\tAnd\nLines"
+    },
+    {
+      "content": [
+        {
+          "_tag": "Text",
+          "value": "Café 中文 🦊"
+        }
+      ],
+      "text": "Café 中文 🦊"
+    },
+    {
+      "content": [
+        {
+          "_tag": "Text",
+          "value": "---Title---"
+        }
+      ],
+      "text": "---Title---"
+    },
+    {
+      "content": [
+        {
+          "_tag": "Text",
+          "value": "’''"
+        }
+      ],
+      "text": "’''"
+    },
+    {
+      "content": [
+        {
+          "_tag": "Text",
+          "value": "x {#first} {#second}"
+        }
+      ],
+      "text": "x {#first} {#second}"
+    },
+    {
+      "content": [
+        {
+          "_tag": "Strong",
+          "content": [
+            {
+              "_tag": "Text",
+              "value": "Use "
+            },
+            {
+              "_tag": "InlineCode",
+              "value": "modifyFields"
+            }
+          ]
+        },
+        {
+          "_tag": "Text",
+          "value": " {#use-modifyFields}"
+        }
+      ],
+      "text": "---"
+    }
+  ]
+}

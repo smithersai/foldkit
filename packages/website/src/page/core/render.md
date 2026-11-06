@@ -34,6 +34,8 @@ Use `Render.afterPaint` when the committed state must be visible before the next
 The [Dom helpers](/core/dom) already wait for the commit or paint their operation requires. Use `Render` directly when implementing timing-sensitive DOM work that those helpers do not cover.
 :::
 
+Read the page through `Experimental.Document.Document` after `Render.afterCommit`. Its `isHTMLElement` predicate retains the HTML-element check before measuring.
+
 ::Snippet{name="renderBasic" label="Waiting for DOM commit and paint"}
 
 ## Full API Surface

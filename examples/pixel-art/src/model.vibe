@@ -1,0 +1,86 @@
+import { Dialog, Listbox, RadioGroup } from '@foldkit/ui'
+
+// CONSTANT
+
+export schema PaletteIndex =
+  | 0
+  | 1
+  | 2
+  | 3
+  | 4
+  | 5
+  | 6
+  | 7
+  | 8
+  | 9
+  | 10
+  | 11
+  | 12
+  | 13
+  | 14
+  | 15
+
+export const HexColor = Schema.String.check(
+  Schema.isPattern(/^#[0-9a-f]{6}$/),
+).pipe(Schema.brand('HexColor'))
+export type HexColor = typeof HexColor.Type
+
+export schema Tool = 'Brush' | 'Fill' | 'Eraser'
+
+export schema MirrorMode = 'None' | 'Horizontal' | 'Vertical' | 'Both'
+
+export const Cell = Schema.Option(PaletteIndex)
+export type Cell = typeof Cell.Type
+
+const Row = Schema.Array(Cell)
+export schema Grid = ReadonlyArray<Row>
+
+export schema Position { readonly x: number; readonly y: number }
+
+const SavedCell = Schema.Option(PaletteIndex)
+const SavedRow = Schema.Array(SavedCell)
+const SavedGrid = Schema.Array(SavedRow)
+
+export schema SavedCanvas {
+  readonly grid: SavedGrid
+  readonly gridSize: number
+  readonly paletteThemeIndex: number
+  readonly selectedColorIndex: PaletteIndex
+}
+
+export const SavedCanvasJsonString = Schema.fromJsonString(
+  Schema.toCodecJson(SavedCanvas),
+)
+
+// MODEL
+
+export const Model = Schema.Struct({
+  grid: Grid,
+  undoStack: Schema.Array(Grid),
+  redoStack: Schema.Array(Grid),
+  selectedColorIndex: PaletteIndex,
+  gridSize: Schema.Number,
+  tool: Tool,
+  mirrorMode: MirrorMode,
+  isDrawing: Schema.Boolean,
+  maybeHoveredCell: Schema.Option(Position),
+  errorDialog: Dialog.Model,
+  maybeExportError: Schema.Option(Schema.String),
+  paletteThemeIndex: Schema.Number,
+  gridSizeConfirmDialog: Dialog.Model,
+  maybePendingGridSize: Schema.Option(Schema.Number),
+  themeListbox: Listbox.Model,
+  toolRadioGroup: RadioGroup.Model,
+  gridSizeRadioGroup: RadioGroup.Model,
+  paletteRadioGroup: RadioGroup.Model,
+})
+export type Model = typeof Model.Type
+
+export const paletteIndexFromValue = (
+  value: string,
+  fallback: PaletteIndex,
+): PaletteIndex =>
+  Option.getOrElse(
+    Schema.decodeUnknownOption(PaletteIndex)(Number(value)),
+    () => fallback,
+  )

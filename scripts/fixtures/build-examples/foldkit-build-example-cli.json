@@ -1,0 +1,44 @@
+[
+  {
+    "only": null,
+    "id": "fixed-id",
+    "bom": false,
+    "fail": null
+  },
+  {
+    "only": "static-a",
+    "id": "",
+    "bom": true,
+    "fail": null
+  },
+  {
+    "only": "spa-a,static-b",
+    "id": null,
+    "bom": false,
+    "fail": null
+  },
+  {
+    "only": "",
+    "id": null,
+    "bom": true,
+    "fail": null
+  },
+  {
+    "only": "unknown",
+    "id": null,
+    "bom": false,
+    "fail": null
+  },
+  {
+    "only": null,
+    "id": "fixed-id",
+    "bom": false,
+    "fail": "spa-a"
+  },
+  {
+    "only": "spa-a,spa-b",
+    "id": null,
+    "bom": false,
+    "fail": "spa-a"
+  }
+]

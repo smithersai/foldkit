@@ -1,0 +1,22 @@
+export schema Step =
+  | 'PersonalInfo'
+  | 'WorkHistory'
+  | 'Education'
+  | 'Skills'
+  | 'CoverLetter'
+  | 'Attachments'
+  | 'Review'
+
+export const all = Step.literals
+
+export const indexOf = (step: Step): number => all.indexOf(step)
+
+export const show = (step: Step): string => match (step) {
+  when 'PersonalInfo': 'Personal Info';
+  when 'WorkHistory': 'Work History';
+  when 'Education': 'Education';
+  when 'Skills': 'Skills';
+  when 'CoverLetter': 'Cover Letter';
+  when 'Attachments': 'Attachments';
+  when 'Review': 'Review';
+}

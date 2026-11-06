@@ -1,0 +1,36 @@
+diff --git a/dist/util/resolve.js b/dist/util/resolve.js
+index 1242b597707ccf95cee23bb1eb2853e26c340e82..487f2482879ae93d457f4e6f9b823f9852e71c54 100644
+--- a/dist/util/resolve.js
++++ b/dist/util/resolve.js
+@@ -37,7 +37,9 @@ export const resolvePackageManifestPath = (packageName, baseDir) => {
+ const createSyncModuleResolver = (extensions, tsConfigFile) => {
+     const baseOptions = {
+         extensions,
+-        extensionAlias,
++        extensionAlias: extensions.includes('.vibe')
++            ? { ...extensionAlias, '.js': [...extensionAlias['.js'], '.vibe'] }
++            : extensionAlias,
+         conditionNames: ['require', 'import', 'node', 'default'],
+         nodePath: false,
+     };
+diff --git a/dist/util/to-source-path.js b/dist/util/to-source-path.js
+index 0ed080496ba43e96f1722a139a9174586e27447f..ba171286d9456da777d57e567f2fa1b4504810c3 100644
+--- a/dist/util/to-source-path.js
++++ b/dist/util/to-source-path.js
+@@ -70,6 +70,7 @@ export const getWorkspacePackageTargetHandler = (chief) => {
+     };
+ };
+ export const getModuleSourcePathHandler = (chief) => {
++    const configuredSourceExtensions = [...new Set([...sourceExtensions, ...chief.config.compilers.keys()])];
+     const toSourceMapCache = new Map();
+     return (filePath) => {
+         if (!isInternal(filePath) || hasTSExt.test(filePath))
+@@ -83,7 +84,7 @@ export const getModuleSourcePathHandler = (chief) => {
+                 if (!(isUnderOutDir(filePath, outDir) || srcDir === outDir))
+                     continue;
+                 const basePath = (srcDir + filePath.slice(outDir.length)).replace(matchExt, '');
+-                const srcFilePath = findFileWithExtensions(basePath, sourceExtensions);
++                const srcFilePath = findFileWithExtensions(basePath, configuredSourceExtensions);
+                 if (srcFilePath && srcFilePath !== filePath) {
+                     debugLog('*', `Source mapping ${toRelative(filePath, chief.cwd)} → ${toRelative(srcFilePath, chief.cwd)}`);
+                     result = srcFilePath;

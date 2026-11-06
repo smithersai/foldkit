@@ -1,0 +1,255 @@
+import { Array as Arr, Number as Num, String as Str } from 'effect'
+import { Command, Update } from 'foldkit'
+import * as Dom from 'foldkit/dom'
+import { pushUrl } from 'foldkit/navigation'
+import { modifyFields } from 'foldkit/struct'
+
+import { Dialog } from '@foldkit/ui'
+
+import { Message, SearchResult } from './message.vibe'
+import type { Model } from './model.vibe'
+import { SearchState, resultsFromState } from './model.vibe'
+import { PagefindService } from './pagefind.vibe'
+
+error SearchFailed { message: string }
+
+const MAX_RESULTS = 8
+
+export const SEARCH_INPUT_ID = 'search-input'
+export const KEYBOARD_WARMUP_INPUT_ID = 'search-keyboard-warmup'
+
+const SEARCH_RESULT_SELECTOR = '[data-search-result-index='
+
+export const FetchSearchResults = Command.define('FetchSearchResults', {
+  args: { query: Schema.String },
+  messages: [Message.CompletedFetchSearchResults],
+  execute: (
+    { query },
+  ): (typeof Message.CompletedFetchSearchResults.Type)!never!PagefindService =>
+    effect {
+      return (effect {
+        const pagefind = try PagefindService
+        const searchResponse = try Effect.tryPromise({
+          try: () => pagefind.search(query),
+          catch: () => new SearchFailed({ message: 'Pagefind search failed' }),
+        })
+        const topResults = Arr.take(searchResponse.results, MAX_RESULTS)
+        const loadedResults = try Effect.tryPromise({
+          try: () => Promise.all(topResults.map(result => result.data())),
+          catch: () =>
+            new SearchFailed({ message: 'Failed to load result data' }),
+        })
+        const results = Arr.map(
+          loadedResults,
+          (data) =>
+            SearchResult.make({
+              url: data.url,
+              title: data.meta?.title ?? 'Untitled',
+              excerpt: data.excerpt,
+              section: data.meta?.section ?? '',
+              kind: data.meta?.kind ?? '',
+            }),
+        )
+        return Message.CompletedFetchSearchResults({ results, query })
+      }) catch effect () => {
+        return Message.CompletedFetchSearchResults({ results: [], query })
+      }
+    },
+})
+
+export const ScrollToResult = Command.define('ScrollToResult', {
+  args: { index: Schema.Number },
+  messages: [Message.CompletedScrollToResult],
+  execute: (
+    { index },
+  ): (typeof Message.CompletedScrollToResult.Type)!never!never => {
+    const scrolling: void!never!never = Effect.ignore(
+      Dom.scrollIntoView(`${SEARCH_RESULT_SELECTOR}\"${index}\"]`),
+    )
+    const completed = Message.CompletedScrollToResult()
+    return effect {
+      try scrolling
+      return completed
+    }
+  },
+})
+
+export const NavigateToResult = Command.define('NavigateToResult', {
+  args: { url: Schema.String },
+  messages: [Message.CompletedNavigateToResult],
+  execute: (
+    { url },
+  ): (typeof Message.CompletedNavigateToResult.Type)!never!never => {
+    const navigation: void!never!never = pushUrl(url)
+    const completed = Message.CompletedNavigateToResult()
+    return effect {
+      try navigation
+      return completed
+    }
+  },
+})
+
+export const FocusSearchInput = Command.define('FocusSearchInput', {
+  messages: [Message.CompletedFocusSearchInput],
+  execute: do {
+    const focusSearchInput: void!never!never = Effect.ignore(
+      Dom.focus(`#${SEARCH_INPUT_ID}`),
+    )
+    const completedFocusSearchInput = Message.CompletedFocusSearchInput()
+    effect {
+      try focusSearchInput
+      return completedFocusSearchInput
+    }
+  },
+})
+
+export type UpdateReturn = Update.Return<Model, Message, PagefindService>
+
+const foldSearchDialogOutMessage = Dialog.OutMessage.match<
+  Update.Step<Model, Message>
+>({
+  Opened: () => (model) => ({ model }),
+  Closed: () => (model) => ({ model }),
+})
+
+const foldSearchDialog = Update.foldChild({
+  update: Dialog.update,
+  read: (model: Model) => Option.some(model.dialog),
+  write: (model, nextDialog) =>
+    modifyFields(model, { dialog: () => nextDialog }),
+  toParentMessage: (message) => Message.GotSearchDialogMessage({ message }),
+  foldOutMessage: foldSearchDialogOutMessage,
+})
+
+const foldSearchDialogOpen: Update.Step<Model, Message> = Update.foldChildStep({
+  update: Dialog.open,
+  read: (model: Model) => Option.some(model.dialog),
+  write: (model, nextDialog) =>
+    modifyFields(model, { dialog: () => nextDialog }),
+  toParentMessage: (message) => Message.GotSearchDialogMessage({ message }),
+  foldOutMessage: foldSearchDialogOutMessage,
+})
+
+const foldSearchDialogClose = Update.foldChildStep({
+  update: Dialog.close,
+  read: (model: Model) => Option.some(model.dialog),
+  write: (model, nextDialog) =>
+    modifyFields(model, { dialog: () => nextDialog }),
+  toParentMessage: (message) => Message.GotSearchDialogMessage({ message }),
+  foldOutMessage: foldSearchDialogOutMessage,
+})
+
+export const open = (model: Model): UpdateReturn =>
+  Update.combine(model, [
+    foldSearchDialogOpen,
+    (stepModel) => ({
+      model: stepModel,
+      commands: [FocusSearchInput()],
+    }),
+  ])
+
+export const update = (model: Model, message: Message) =>
+  Message.match<UpdateReturn>(message, {
+    UpdatedSearchQuery: ({ query }) => {
+      if (query === model.query) {
+        return { model }
+      }
+
+      if (Str.isEmpty(query)) {
+        return {
+          model: modifyFields(model, {
+            query: () => '',
+            searchState: () => SearchState.Idle(),
+            activeResultIndex: () => -1,
+          }),
+        }
+      }
+
+      const previousResults = resultsFromState(model.searchState)
+
+      return {
+        model: modifyFields(model, {
+          query: () => query,
+          searchState: () => SearchState.Loading({ results: previousResults }),
+          activeResultIndex: () => -1,
+        }),
+        commands: [FetchSearchResults({ query })],
+      }
+    },
+
+    CompletedFetchSearchResults: ({ results, query }) => {
+      if (query !== model.query) {
+        return { model }
+      }
+
+      return {
+        model: modifyFields(model, {
+          searchState: () => SearchState.Ok({ results }),
+          activeResultIndex: () => 0,
+        }),
+      }
+    },
+
+    SelectedSearchResult: ({ url }) => ({
+      model: modifyFields(model, {
+        query: () => '',
+        searchState: () => SearchState.Idle(),
+        activeResultIndex: () => -1,
+      }),
+      commands: [NavigateToResult({ url })],
+    }),
+
+    GotSearchDialogMessage: ({ message }) =>
+      Update.combine(model, [
+        foldSearchDialog(message),
+        (stepModel) =>
+          message._tag === 'CompletedCloseDialog'
+            ? {
+              model: modifyFields(stepModel, {
+                query: () => '',
+                searchState: () => SearchState.Idle(),
+                activeResultIndex: () => -1,
+              }),
+            }
+            : { model: stepModel },
+      ]),
+
+    ClearedSearchQuery: () => ({
+      model: modifyFields(model, {
+        query: () => '',
+        searchState: () => SearchState.Idle(),
+        activeResultIndex: () => -1,
+      }),
+    }),
+
+    PressedArrowKey: ({ direction }) => {
+      const results = resultsFromState(model.searchState)
+      const lastIndex = results.length - 1
+
+      const nextIndex = match (direction) {
+        when 'Up': model.activeResultIndex <= 0
+          ? lastIndex
+          : Num.decrement(model.activeResultIndex);
+        when 'Down': model.activeResultIndex >= lastIndex
+          ? 0
+          : Num.increment(model.activeResultIndex);
+      }
+
+      return {
+        model: modifyFields(model, {
+          activeResultIndex: () => nextIndex,
+        }),
+        commands: [ScrollToResult({ index: nextIndex })],
+      }
+    },
+
+    CompletedNavigateToResult: () => ({ model }),
+    CompletedScrollToResult: () => ({ model }),
+    CompletedFocusSearchInput: () => ({ model }),
+  })
+
+export const informRouteChanged = (model: Model): UpdateReturn =>
+  Update.combine(model, [
+    (stepModel) => update(stepModel, Message.ClearedSearchQuery()),
+    foldSearchDialogClose,
+  ])

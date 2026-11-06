@@ -1,0 +1,408 @@
+import { getSomes, sort } from 'effect/Array'
+import { ExperimentalNodeProcess } from 'vibelang-runtime/experimental/platform-node'
+import { runCommand } from './packages-command.vibe'
+
+import {
+  Effect,
+  FileSystem,
+  Option,
+  Order,
+  Path,
+  Record,
+  Schema,
+  pipe,
+} from 'effect'
+
+import { type Scaffold } from '../rendering.vibe'
+
+export type PackageManager = 'pnpm' | 'npm' | 'yarn' | 'bun'
+
+export const installCommand = (packageManager: PackageManager): string =>
+  `${packageManager} install`
+
+const DEV_COMMANDS: Record<PackageManager, string> = {
+  pnpm: 'pnpm dev',
+  npm: 'npm run dev',
+  yarn: 'yarn dev',
+  bun: 'bun dev',
+}
+
+export const devCommand = (packageManager: PackageManager): string =>
+  DEV_COMMANDS[packageManager]
+
+const RUN_SCRIPT_PREFIXES: Record<PackageManager, string> = {
+  pnpm: 'pnpm',
+  npm: 'npm run',
+  yarn: 'yarn',
+  bun: 'bun run',
+}
+
+export const runScriptCommand = (
+  packageManager: PackageManager,
+  script: string,
+): string => `${RUN_SCRIPT_PREFIXES[packageManager]} ${script}`
+
+const isWindows = runSync(effect {
+  provide ExperimentalNodeProcess.layer {
+    return (try (try Experimental.Process.Process).platform) === 'win32'
+  }
+})
+
+const StringRecord = Schema.Record(Schema.String, Schema.String)
+
+const DefaultDependencies = StringRecord.pipe(
+  Schema.withDecodingDefaultKey(Effect.succeed({})),
+)
+const DefaultDevDependencies = StringRecord.pipe(
+  Schema.withDecodingDefaultKey(Effect.succeed({})),
+)
+
+schema PackageJson {
+  readonly dependencies: DefaultDependencies
+  readonly devDependencies: DefaultDevDependencies
+}
+
+schema ProjectPackageJson {
+  readonly name: string
+  readonly version: string
+  readonly type: string
+  readonly scripts: StringRecord
+}
+
+schema ReleaseManifest {
+  readonly schemaVersion: 1
+  readonly channel: 'stable' | 'canary'
+  readonly sourceCommit: string
+  readonly packages: StringRecord
+  readonly dependencies: StringRecord
+}
+
+const TEMPLATE_DEV_DEPENDENCIES = [
+  '@effect/tsgo',
+  '@foldkit/devtools',
+  '@foldkit/vite-plugin',
+  '@foldkit/devtools-mcp',
+  '@foldkit/oxlint-plugin',
+  'happy-dom',
+  'oxfmt',
+  'oxlint',
+  'oxlint-tsgolint',
+  'vitest',
+]
+
+const SERVER_RENDERING_DEV_DEPENDENCIES = ['@types/node']
+
+data UnresolvedSpec {
+  Keep { readonly version: string }
+  Release
+  Workspace
+}
+const { Keep, Release, Workspace } = UnresolvedSpec
+
+const toUnresolvedSpec = (spec: string): UnresolvedSpec => {
+  if (spec.includes('workspace:')) {
+    return Workspace()
+  } else {
+    return Keep({ version: spec })
+  }
+}
+
+const preferConcreteSpec = (
+  templateSpec: UnresolvedSpec,
+  exampleSpec: UnresolvedSpec,
+): UnresolvedSpec => (exampleSpec._tag === 'Keep' ? exampleSpec : templateSpec)
+
+/**
+ * Build the runtime dependency map for a scaffolded project from an example's
+ * raw `dependencies`. Concrete versions are kept and workspace versions are
+ * marked for lookup in the CLI release manifest. Workspace packages absent
+ * from that public release set are dropped during resolution.
+ */
+export const buildUnresolvedDeps = (
+  exampleDeps: Record<string, string>,
+): Record<string, UnresolvedSpec> => Record.map(exampleDeps, toUnresolvedSpec)
+
+/**
+ * Build the devDependency map for a scaffolded project by merging the always-on
+ * template tooling and any extra scaffold devDependencies with the example's
+ * own `devDependencies`. A concrete version from the example wins over a
+ * release marker for the same package.
+ */
+export const buildUnresolvedDevDeps = (
+  exampleDevDeps: Record<string, string>,
+  extraDevDependencies: ReadonlyArray<string>,
+): Record<string, UnresolvedSpec> => {
+  const templateSpecs = Record.fromIterableWith(
+    [...TEMPLATE_DEV_DEPENDENCIES, ...extraDevDependencies],
+    name => [name, Release()],
+  )
+  const exampleSpecs = Record.map(exampleDevDeps, toUnresolvedSpec)
+
+  return Record.union(templateSpecs, exampleSpecs, preferConcreteSpec)
+}
+
+/**
+ * The repo example whose `package.json` supplies a scaffold's dependency
+ * versions. An SPA scaffold reads from its chosen starter example; the SSG and
+ * SSR scaffolds read from the reference apps their overlay files mirror.
+ */
+export const dependencyExample = (scaffold: Scaffold): string => match (scaffold) {
+  when { _tag: 'Spa', let example }: example;
+  when { _tag: 'Ssg' }: 'ssg';
+  when { _tag: 'Ssr' }: 'ssr';
+}
+
+/**
+ * The devDependencies a scaffold needs beyond the template tooling and the
+ * example's own list. The server-rendered scaffolds ship Node build
+ * scripts, so they need `@types/node` to typecheck.
+ */
+export const scaffoldDevDependencies = (
+  scaffold: Scaffold,
+): ReadonlyArray<string> => match (scaffold) {
+  when { _tag: 'Spa' }: [];
+  when { _tag: 'Ssg' }: SERVER_RENDERING_DEV_DEPENDENCIES;
+  when { _tag: 'Ssr' }: SERVER_RENDERING_DEV_DEPENDENCIES;
+}
+
+const getTemplateRoot = (currentDir: string) =>
+  effect {
+    const fs = try FileSystem.FileSystem
+    const path = try Path.Path
+    const bundledRoot = path.resolve(currentDir, '..', 'templates')
+
+    if (try fs.exists(bundledRoot)) {
+      return bundledRoot
+    } else {
+      return path.resolve(currentDir, '..', '..', 'templates')
+    }
+  }
+
+const readReleaseManifest = effect {
+  const fs = try FileSystem.FileSystem
+  const path = try Path.Path
+  const currentDir = path.dirname(
+    try Effect.orDie(path.fromFileUrl(new URL(import.meta.url))),
+  )
+  const templateRoot = try getTemplateRoot(currentDir)
+  const content = try fs.readFileString(
+    path.join(templateRoot, 'release.json'),
+  )
+
+  return try Schema.decodeUnknownEffect(ReleaseManifest)(
+    try Effect.orDie(Effect.try({
+      try: () => JSON.parse(content),
+      catch: cause => cause,
+    })),
+  )
+}
+
+/**
+ * The git ref in the Foldkit repository that matches a CLI release manifest.
+ * A stable release is tagged `foldkit@<version>` at promotion, so the ref is
+ * that tag for the manifest's `foldkit` package. A canary release is
+ * commit-addressed and never tagged, so the ref is its source commit.
+ */
+export const foldkitSubtreeRef = (
+  manifest: typeof ReleaseManifest.Type,
+): string => match (manifest.channel) {
+  when 'stable': match (Record.get(manifest.packages, 'foldkit')) {
+    when Option.None: manifest.sourceCommit;
+    when Option.Some(let version): `foldkit@${version}`;
+  };
+  when 'canary': manifest.sourceCommit;
+}
+
+/**
+ * The subtree ref for the release manifest bundled with this CLI. The create
+ * command resolves it before scaffolding, so a broken manifest fails before
+ * any files are created, then prints it in the success message so the user
+ * vendors the Foldkit repository at the release the scaffold installs.
+ */
+export const readFoldkitSubtreeRef = effect {
+  const manifest = try readReleaseManifest
+  return foldkitSubtreeRef(manifest)
+}
+
+const releaseVersions = (manifest: typeof ReleaseManifest.Type) =>
+  Record.union(
+    manifest.dependencies,
+    manifest.packages,
+    (_, version) => version,
+  )
+
+const resolveReleaseVersion = (
+  versions: Record<string, string>,
+  name: string,
+): string!string => match (Record.get(versions, name)) {
+  when Option.None: effect {
+    throw `The CLI release does not declare ${name}.`
+  };
+  when Option.Some(let version): effect {
+    return version
+  };
+}
+
+const resolveEntry = (
+  versions: Record<string, string>,
+  name: string,
+  spec: UnresolvedSpec,
+): Option.Option<readonly [string, string]>!string =>
+  match (spec) {
+    when { _tag: 'Keep', let version }: do {
+      const result: Option.Option<readonly [string, string]> = Option.some([
+        name,
+        version,
+      ])
+      effect {
+        return result
+      }
+    };
+    when { _tag: 'Release' }: do {
+      const resolved = resolveReleaseVersion(versions, name)
+      effect {
+        const version = try resolved
+        return Option.some<readonly [string, string]>([name, version])
+      }
+    };
+    when { _tag: 'Workspace' }: do {
+      const result = Option.map(
+        Record.get(versions, name),
+        (version): readonly [string, string] => [name, version],
+      )
+      effect {
+        return result
+      }
+    };
+  }
+
+const resolveSpecs = (
+  versions: Record<string, string>,
+  unresolved: Record<string, UnresolvedSpec>,
+) =>
+  effect {
+    const entries = Record.toEntries(unresolved)
+
+    const resolved = try Effect.forEach(
+      entries,
+      ([name, spec]) => resolveEntry(versions, name, spec),
+      { concurrency: 'unbounded' },
+    )
+
+    return Record.fromEntries(getSomes(resolved))
+  }
+
+const byPackageName = Order.mapInput(
+  Order.String,
+  ([name]: readonly [string, string]) => name,
+)
+
+const sortDependencies = (
+  dependencies: Record<string, string>,
+): Record<string, string> =>
+  pipe(
+    dependencies,
+    Record.toEntries,
+    sort(byPackageName),
+    Record.fromEntries,
+  )
+
+const readExamplePackageJson = (
+  example: string,
+  maybeDependencyManifestsDirectory: Option.Option<string>,
+) => match (maybeDependencyManifestsDirectory) {
+  when Option.None: effect {
+    const fs = try FileSystem.FileSystem
+    const path = try Path.Path
+    const currentDir = path.dirname(
+      try Effect.orDie(path.fromFileUrl(new URL(import.meta.url))),
+    )
+    const templateRoot = try getTemplateRoot(currentDir)
+    const content = try fs.readFileString(
+      path.join(templateRoot, 'examples', example, 'package.json'),
+    )
+    return try Schema.decodeUnknownEffect(PackageJson)(
+      try Effect.orDie(Effect.try({
+        try: () => JSON.parse(content),
+        catch: cause => cause,
+      })),
+    )
+  };
+  when Option.Some(let directory): effect {
+    const fs = try FileSystem.FileSystem
+    const path = try Path.Path
+    const content = try fs.readFileString(
+      path.join(directory, example, 'package.json'),
+    )
+    return try Schema.decodeUnknownEffect(PackageJson)(
+      try Effect.orDie(Effect.try({
+        try: () => JSON.parse(content),
+        catch: cause => cause,
+      })),
+    )
+  };
+}
+
+const writeManifest = (
+  projectPath: string,
+  dependencies: Record<string, string>,
+  devDependencies: Record<string, string>,
+) =>
+  effect {
+    const fs = try FileSystem.FileSystem
+    const path = try Path.Path
+
+    const packageJsonPath = path.join(projectPath, 'package.json')
+    const content = try fs.readFileString(packageJsonPath)
+    const packageJson = try Schema.decodeUnknownEffect(ProjectPackageJson)(
+      try Effect.orDie(
+        Effect.try({ try: () => JSON.parse(content), catch: cause => cause }),
+      ),
+    )
+
+    const updated = {
+      ...packageJson,
+      dependencies,
+      devDependencies,
+    }
+
+    try fs.writeFileString(
+      packageJsonPath,
+      `${JSON.stringify(updated, null, 2)}\n`,
+    )
+  }
+
+export const installDependencies = (
+  projectPath: string,
+  packageManager: PackageManager,
+  scaffold: Scaffold,
+  maybeDependencyManifestsDirectory: Option.Option<string>,
+) =>
+  effect {
+    const releaseManifest = try readReleaseManifest
+    const versions = releaseVersions(releaseManifest)
+    const examplePackageJson = try readExamplePackageJson(
+      dependencyExample(scaffold),
+      maybeDependencyManifestsDirectory,
+    )
+
+    const dependencies = try resolveSpecs(
+      versions,
+      buildUnresolvedDeps(examplePackageJson.dependencies),
+    )
+    const devDependencies = try resolveSpecs(
+      versions,
+      buildUnresolvedDevDeps(
+        examplePackageJson.devDependencies,
+        scaffoldDevDependencies(scaffold),
+      ),
+    )
+
+    try writeManifest(
+      projectPath,
+      sortDependencies(dependencies),
+      sortDependencies(devDependencies),
+    )
+
+    try runCommand(packageManager, ['install'], projectPath, isWindows)
+  }

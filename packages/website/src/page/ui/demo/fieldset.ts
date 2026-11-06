@@ -2,8 +2,8 @@ import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { Checkbox, Fieldset, Input, Textarea } from '@foldkit/ui'
 
-import { Message } from '../message'
-import type { Model } from '../model'
+import { Message } from '../message.vibe'
+import type { Model } from '../model.vibe'
 
 const FIELDSET_CHECKBOX_DEMO_ID = 'fieldset-checkbox-demo'
 const FIELDSET_DISABLED_CHECKBOX_ID = 'fieldset-disabled-checkbox'

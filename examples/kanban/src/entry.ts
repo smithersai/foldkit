@@ -9,7 +9,7 @@ import {
   subscriptions,
   update,
   view,
-} from './main'
+} from './main.vibe'
 
 const application = Runtime.makeApplication({
   Model,

@@ -1,6 +1,6 @@
 import { Runtime } from 'foldkit'
 
-import { Flags, Message, Model, flags, init, update, view } from './main'
+import { Flags, Message, Model, flags, init, update, view } from './main.vibe'
 
 const application = Runtime.makeApplication({
   Model,

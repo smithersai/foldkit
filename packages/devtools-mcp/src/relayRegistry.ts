@@ -24,7 +24,7 @@ import { homedir, tmpdir } from 'node:os'
 import {
   type RelayRegistryTrust,
   relayRegistryTrust,
-} from './relayRegistryTrust.js'
+} from './relayRegistryTrust.vibe'
 
 const RUNTIME_DIRECTORY_VARIABLE = 'XDG_RUNTIME_DIR'
 const RECORD_FILE_EXTENSION = '.json'

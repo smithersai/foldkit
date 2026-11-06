@@ -40,6 +40,8 @@ git subtree pull --prefix=repos/effect https://github.com/Effect-TS/effect.git "
 
 ## Before You Push
 
+The Effect prebundle guard checks emitted JavaScript, including imports VibeLang adds for implicit Effect namespaces. The hook builds the workspace before running `pnpm check:effect-prebundle`; when running that check alone after runtime edits, run `pnpm build:packages` first.
+
 The pre-push hook runs `pnpm pre-push`, which is the same suite CI runs. You can run it yourself at any point:
 
 ```sh
@@ -58,6 +60,8 @@ pnpm format
 ```
 
 If a typecheck reports something like `Cannot find module 'foldkit'`, the libraries have not been built. Foldkit's `exports` map points at `dist/`, so anything depending on it needs a build before it will typecheck. Run `pnpm build` once, or `pnpm dev:libs` to rebuild in watch mode while you work.
+
+`pnpm check:dead-code` preloads `vibelang/register` so tool configurations can import `.vibe` modules. It preserves inherited `NODE_OPTIONS`, including any existing Node preload hooks.
 
 Beyond the usual lint, typecheck, and test steps, the suite enforces a few repository-specific rules that are easy to trip over:
 

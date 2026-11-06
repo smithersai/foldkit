@@ -3,10 +3,10 @@ import { afterEach, beforeEach, expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import { MountTracker } from '../mount/index.js'
+import { MountTracker } from '../mount/index.vibe'
 import { Dispatch } from '../runtime/index.js'
 import { h } from '../snabbdom/index.js'
-import { type VNode, dedupeSharedVNodes, memoizedVNodes } from '../vdom.js'
+import { type VNode, dedupeSharedVNodes, memoizedVNodes } from '../vdom.vibe'
 import {
   type BoundaryRegistry,
   beginRender,
@@ -17,12 +17,12 @@ import {
   createKeyedLazy,
   createLazy,
   observeLazyResolutions,
-} from './lazy.js'
+} from './lazy.vibe'
 import {
   type DispatchSync,
   clearRuntime,
   setRuntime,
-} from './runtimeSingleton.js'
+} from './runtimeSingleton.vibe'
 
 const noOpDispatchSync: DispatchSync = () => {}
 

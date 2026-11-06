@@ -1,1 +1,1 @@
-export { modifyFields, makeModifyFieldsFor } from './index.js'
+export { modifyFields, makeModifyFieldsFor } from './index.vibe'

@@ -1,7 +1,10 @@
-import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join, sep } from 'node:path'
 
-import { transformViewIdentity } from './viewIdentity.js'
+import remapping from '@jridgewell/remapping'
+import { TraceMap } from '@jridgewell/trace-mapping'
+
+import { transformCode } from './viewIdentityTransform.ts'
 
 const SYNTHETIC_ROOT = '/virtual'
 const SCRIPT_FILE_EXTENSION = '.js'
@@ -42,9 +45,47 @@ export const brandDistDirectory = (
     const posixRelativePath = relativePath.split(sep).join('/')
     const syntheticId = `${SYNTHETIC_ROOT}/${packageName}/${posixRelativePath}`
     const code = readFileSync(absolutePath, 'utf8')
-    const result = transformViewIdentity(code, syntheticId, SYNTHETIC_ROOT)
+    const mapPath = absolutePath + '.map'
+    const originalMap = existsSync(mapPath)
+      ? readFileSync(mapPath, 'utf8')
+      : undefined
+    const hasNativeSource =
+      originalMap !== undefined &&
+      new TraceMap(originalMap, mapPath).resolvedSources.some(source =>
+        source.endsWith('.vibe'),
+      )
+    const nativeSource =
+      hasNativeSource || posixRelativePath.endsWith('.vibe.js')
+        ? () => {
+            if (!existsSync(mapPath)) {
+              throw new Error(
+                'Native dist view branding requires sourceMap and inlineSources in the build config: ' +
+                  posixRelativePath,
+              )
+            }
+            return {
+              map: readFileSync(mapPath, 'utf8'),
+              url: mapPath,
+              parserRoot: packageRoot,
+            }
+          }
+        : undefined
+    const result = transformCode(
+      code,
+      syntheticId,
+      SYNTHETIC_ROOT,
+      undefined,
+      nativeSource,
+    )
     if (result === null) {
       return false
+    }
+    if (existsSync(mapPath)) {
+      const composed = remapping(
+        [result.map.toString(), readFileSync(mapPath, 'utf8')],
+        () => null,
+      )
+      writeFileSync(mapPath, composed.toString())
     }
     writeFileSync(absolutePath, result.code)
     return true

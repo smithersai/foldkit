@@ -1,0 +1,11 @@
+import { Option } from 'effect';
+import type { Html } from 'foldkit/html';
+import { HtmlBuilder } from 'foldkit/html';
+import type { Telemetry } from '../domain.vibe';
+import { Message } from '../message.vibe';
+import type { Model } from '../model.vibe';
+export declare const headerView: (model: Model, h: HtmlBuilder<Message>) => Html;
+export declare const telemetryStateView: (model: Model, h: HtmlBuilder<Message>) => Html;
+export declare const loadingView: (h: HtmlBuilder<Message>) => Html;
+export declare const failureView: (error: string, h: HtmlBuilder<Message>) => Html;
+export declare const dashboardShellView: (model: Model, telemetry: Telemetry, maybeBanner: Option.Option<string>, h: HtmlBuilder<Message>) => Html;

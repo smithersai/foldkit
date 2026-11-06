@@ -1,7 +1,7 @@
 import { Schema } from 'effect'
 import { describe, expect, expectTypeOf, it } from 'vitest'
 
-import { defineRouteUnion, defineTaggedUnion } from './index.js'
+import { defineRouteUnion, defineTaggedUnion } from './index.vibe'
 
 const Submission = defineTaggedUnion({
   NotSubmitted: {},

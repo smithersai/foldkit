@@ -75,6 +75,8 @@ const scaffoldServerRendering =
       'examples/ssr/package.json',
       'packages/examples-e2e/package.json',
       'scripts/check-scaffold-server-rendering.ts',
+      'scripts/check-scaffold-server-rendering.platform.mts',
+      'scripts/check-scaffold-server-rendering.vibe',
       'scripts/scaffold-dependencies.ts',
       'scripts/scaffold-dependencies.test.mjs',
     ],
@@ -95,6 +97,7 @@ const domStateParity =
     files: [
       'packages/examples-e2e/package.json',
       'scripts/check-dom-state-parity.mts',
+      'scripts/check-dom-state-parity.vibe',
     ],
     prefixes: ['packages/foldkit/'],
   })
@@ -144,6 +147,7 @@ const website =
       '.github/workflows/deploy-website.yml',
       '.github/workflows/release.yml',
       'scripts/build-examples.ts',
+      'scripts/build-examples.vibe',
       'scripts/check-playground-ssg-build.ts',
       'scripts/example-bridge.js',
       'scripts/lib/package-version.d.mts',

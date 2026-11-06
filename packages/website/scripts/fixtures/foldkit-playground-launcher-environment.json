@@ -1,0 +1,13 @@
+{
+  "key": "check:playground-ssg-build:register-env-leaks",
+  "seed": 5311470,
+  "numRuns": 100,
+  "rule": "The checker must load native dependencies in its own Node process, preserve caller NODE_OPTIONS, and let generated child processes start without an inherited VibeLang loader before dependencies are installed.",
+  "scriptPath": "scripts/check-playground-ssg-build.ts",
+  "legacyLauncher": "NODE_OPTIONS=\"${NODE_OPTIONS:+$NODE_OPTIONS }--import=vibelang/register\" node scripts/check-playground-ssg-build.ts",
+  "fixedOptions": [
+    "",
+    "--no-warnings",
+    "--stack-trace-limit=12 --enable-source-maps"
+  ]
+}

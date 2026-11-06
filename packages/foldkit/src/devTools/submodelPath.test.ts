@@ -1,7 +1,7 @@
 import { Option } from 'effect'
 import { describe, expect, it } from 'vitest'
 
-import { extractSubmodelInfo } from './submodelPath.js'
+import { extractSubmodelInfo } from './submodelPath.vibe'
 
 describe('extractSubmodelInfo', () => {
   it('returns an empty path and None for top-level Messages', () => {

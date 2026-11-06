@@ -1,0 +1,20 @@
+import { Command, File } from 'foldkit'
+
+const SelectResume = Command.define('SelectResume', {
+  messages: [CompletedSelectResume, CancelledSelectResume],
+  execute: effect {
+    const maybeFile = try File.select(['application/pdf'])
+    return match (maybeFile) {
+      when Option.None: CancelledSelectResume();
+      when Option.Some(let file): CompletedSelectResume({ file });
+    }
+  },
+})
+
+const SelectAttachments = Command.define('SelectAttachments', {
+  messages: [CompletedSelectAttachments],
+  execute: effect {
+    const files = try File.selectMultiple(['image/*', 'application/pdf'])
+    return CompletedSelectAttachments({ files })
+  },
+})

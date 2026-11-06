@@ -3,10 +3,14 @@ set -euo pipefail
 
 # Detect circular dependencies in application source directories.
 # Uses madge to trace the import graph and fails on any cycle not in the
-# allowlist. Excludes .d.ts files (library dist cycles are harmless).
+# allowlist. Excludes .d.ts files (library dist cycles are harmless) and the
+# .d.vibe.ts declaration sidecars of VibeLang modules (their .vibe source is
+# the node in the graph; patches/precinct and patches/filing-cabinet teach
+# madge to read .vibe and .vibex modules and to resolve imports of them).
 #
 # To update the allowlist after intentionally adding a safe cycle, run:
-#   pnpm madge --circular --extensions ts --exclude '\.d\.ts$' <dir>
+#   pnpm madge --circular --extensions ts,vibe,vibex \
+#     --exclude '\.d\.ts$|\.d\.vibe\.ts$' <dir>
 # and add the new cycle below.
 
 ALLOWLIST=(
@@ -18,7 +22,7 @@ ALLOWLIST=(
   "message.ts > page/index.ts > page/room/index.ts > page/room/view/index.ts > page/room/view/view.ts > page/room/view/playing.ts"
 
   # Mutual type dependency between room update helpers.
-  "page/room/update/handleRoomUpdates.ts > page/room/update/update.ts"
+  "page/room/update/handleRoomUpdates.vibe > page/room/update/update.vibe"
 )
 
 DIRS=(
@@ -33,8 +37,8 @@ for DIR in "${DIRS[@]}"; do
     continue
   fi
 
-  OUTPUT=$(pnpm madge --circular --extensions ts --exclude '\.d\.ts$' "$DIR" 2>&1 || true)
-  CYCLES=$(echo "$OUTPUT" | grep -E '^\d+\)' || true)
+  OUTPUT=$(pnpm madge --circular --extensions ts,vibe,vibex --exclude '\.d\.ts$|\.d\.vibe\.ts$' "$DIR" 2>&1 || true)
+  CYCLES=$(echo "$OUTPUT" | grep -E '^[0-9]+\)' || true)
 
   if [ -z "$CYCLES" ]; then
     continue

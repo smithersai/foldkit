@@ -1,0 +1,20 @@
+export const cleanupProgram = effect (
+  failBody: boolean,
+  failCleanup: boolean,
+  bodyError: unknown,
+  cleanupError: unknown,
+  record: (stage: string) => void,
+) => {
+  const outcome = try Effect.onExit(
+    exit(effect {
+      record('body')
+      if (failBody) throw bodyError
+      return 'value'
+    }),
+    effect () => {
+      record('cleanup')
+      if (failCleanup) throw cleanupError
+    },
+  )
+  return try outcome
+}

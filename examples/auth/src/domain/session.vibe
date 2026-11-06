@@ -1,0 +1,9 @@
+export schema Session {
+  readonly userId: string
+  readonly email: string
+  readonly name: string
+}
+
+export const SessionJsonString = Schema.fromJsonString(
+  Schema.toCodecJson(Session),
+)

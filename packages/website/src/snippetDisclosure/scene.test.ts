@@ -12,12 +12,12 @@ import {
 } from 'foldkit/scene'
 import { describe, test } from 'vitest'
 
-import { init } from './init'
-import { Message } from './message'
-import { type Model, SnippetSize } from './model'
-import { MeasureSnippetHeight } from './mount'
-import { renderer } from './renderer'
-import { update } from './update'
+import { init } from './init.vibe'
+import { Message } from './message.vibe'
+import { type Model, SnippetSize } from './model.vibe'
+import { MeasureSnippetHeight } from './mount.vibe'
+import { renderer } from './renderer.vibe'
+import { update } from './update.vibe'
 
 const snippetId = 'counter-example'
 const shortCode = 'const count = 0'

@@ -1,0 +1,21 @@
+import { createDuplicateIdScanner as createDuplicateIdScannerRaw } from './duplicateIdScanner.platform.ts'
+
+/** The coalescing scanner: `schedule` queues a scan of a root, `cancel` drops it. */
+export type DuplicateIdScanner = Readonly<{
+  schedule: (root: Node | undefined) => void
+  cancel: () => void
+}>
+
+/** Coalesces `warnDuplicateIds` scans so rapid successive renders trigger at
+ *  most one full-tree scan per `DUPLICATE_ID_SCAN_INTERVAL_MS`, bounding the
+ *  cost under high-frequency dev rendering such as animationFrame subscriptions
+ *  or per-keystroke input. A real duplicate id persists across renders, so
+ *  scanning the latest tree on a trailing timer never misses a genuine
+ *  collision, and the retained `warnedIds` keeps each id to a single warning.
+ *  Dev-only: the runtime both creates the scanner and calls `schedule` behind
+ *  `import.meta.hot`, so the scanner and its DOM scan tree-shake out of
+ *  production builds. */
+// NOTE: The scan, its warning and its timer are platform code, so they live
+// unchanged in duplicateIdScanner.platform.ts (VIP-33); this keeps the API.
+export const createDuplicateIdScanner: () => DuplicateIdScanner =
+  createDuplicateIdScannerRaw

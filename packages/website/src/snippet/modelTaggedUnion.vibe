@@ -1,0 +1,23 @@
+import { defineTaggedUnion } from 'foldkit/schema'
+
+const EditorMode = defineTaggedUnion({
+  Browsing: {},
+  Editing: { noteId: Schema.String },
+  Previewing: { noteId: Schema.String },
+})
+type EditorMode = typeof EditorMode.Type
+
+schema Model {
+  readonly editorMode: EditorMode
+}
+
+const init = (): Model => ({
+  editorMode: EditorMode.Browsing(),
+})
+
+const modeLabel = (mode: EditorMode): string =>
+  EditorMode.match(mode, {
+    Browsing: () => 'Browsing notes',
+    Editing: ({ noteId }) => `Editing ${noteId}`,
+    Previewing: ({ noteId }) => `Previewing ${noteId}`,
+  })

@@ -7,12 +7,13 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview --outDir dist/client",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "vibelang --noEmit"
   },
   "dependencies": {
-    "@effect/platform-browser": "4.0.0",
-    "effect": "4.0.0",
-    "foldkit": "workspace:*"
+    "@effect/platform-browser": "4.1.1",
+    "effect": "4.1.1",
+    "foldkit": "workspace:*",
+    "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-4a7e790005b5.tgz"
   },
   "devDependencies": {
     "@foldkit/devtools": "workspace:*",
@@ -20,6 +21,8 @@
     "@tailwindcss/vite": "^4.3.3",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
-    "vite": "^8.3.1"
+    "vite": "^8.3.1",
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-6a4c55d7d3ae.tgz",
+    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a43d2b04075f.tgz"
   }
 }

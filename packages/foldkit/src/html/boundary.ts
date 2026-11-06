@@ -1,4 +1,4 @@
-import type { DispatchSync } from './runtimeSingleton.js'
+import type { DispatchSync } from './runtimeSingleton.vibe'
 
 /** Wrapping descriptor stored per Submodel boundary. */
 export type WrapDescriptor = Readonly<{
@@ -155,7 +155,9 @@ const captureCallSite = (): string => {
   const lines = stack.split('\n')
   for (const line of lines) {
     const trimmed = line.trim()
-    const isLazyInternalFrame = /[/\\]html[/\\]lazy\.[cm]?[jt]s/.test(trimmed)
+    const isLazyInternalFrame = /[/\\]html[/\\]lazy\.(?:[cm]?[jt]s|vibe)/.test(
+      trimmed,
+    )
     if (
       trimmed.length === 0 ||
       trimmed.startsWith('Error') ||

@@ -3,11 +3,11 @@ import type { Html } from 'foldkit/html'
 
 import { type CodeBlock } from '../../component'
 import { slotDocPage } from '../../markdown'
-import { type RenderHeadingLink, demoContainer } from '../../prose'
-import * as FileDrop from './demo/fileDrop'
+import { type RenderHeadingLink, demoContainer } from '../../prose.vibe'
+import * as FileDrop from './demo/fileDrop.vibe'
 import raw from './fileDropPage.md'
-import type { Message } from './message'
-import type { Model } from './model'
+import type { Message } from './message.vibe'
+import type { Model } from './model.vibe'
 
 const { tableOfContents, view: renderPage } = slotDocPage<'basic'>(
   raw,

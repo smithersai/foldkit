@@ -1,0 +1,6 @@
+{
+  "seed": 88046,
+  "runs": 200,
+  "source": "managedResourcesLayer",
+  "operation": "raw Worker lifetime"
+}

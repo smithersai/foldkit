@@ -6,18 +6,19 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "start": "node scripts/serve.ts",
-    "typecheck": "tsc --noEmit",
+    "start": "node --import vibelang/register scripts/serve.vibe",
+    "typecheck": "vibelang --noEmit",
     "test": "vitest run"
   },
   "dependencies": {
-    "@effect/platform-browser": "4.0.0",
-    "@effect/platform-node": "4.0.0",
-    "@effect/platform-node-shared": "4.0.0",
+    "@effect/platform-browser": "4.1.1",
+    "@effect/platform-node": "4.1.1",
+    "@effect/platform-node-shared": "4.1.1",
     "@foldkit/node": "workspace:*",
     "@foldkit/ui": "workspace:*",
-    "effect": "4.0.0",
-    "foldkit": "workspace:*"
+    "effect": "4.1.1",
+    "foldkit": "workspace:*",
+    "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-4a7e790005b5.tgz"
   },
   "devDependencies": {
     "@foldkit/devtools": "workspace:*",
@@ -27,6 +28,8 @@
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "^8.3.1",
-    "vitest": "^5.0.2"
+    "vitest": "^5.0.2",
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-6a4c55d7d3ae.tgz",
+    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a43d2b04075f.tgz"
   }
 }

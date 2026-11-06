@@ -4,7 +4,7 @@ import {
   Deployment,
   deploymentFromCanaryCommit,
   isTelemetryEnabled,
-} from './deployment'
+} from './deployment.vibe'
 
 describe('deploymentFromCanaryCommit', () => {
   test('uses the production deployment without canary metadata', () => {

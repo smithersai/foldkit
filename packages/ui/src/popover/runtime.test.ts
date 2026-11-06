@@ -6,7 +6,7 @@ import { modifyFields } from 'foldkit/struct'
 import * as Update from 'foldkit/update'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import * as Popover from './index.js'
+import * as Popover from './index.vibe'
 
 const popoverId = 'badge-popover'
 const portalRootId = 'foldkit-portal-root'

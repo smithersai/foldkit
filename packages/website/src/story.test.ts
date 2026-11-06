@@ -6,7 +6,7 @@ import { describe, expect, test } from 'vitest'
 
 import { Dialog, Menu } from '@foldkit/ui'
 
-import { Deployment } from './deployment'
+import { Deployment } from './deployment.vibe'
 import {
   LoadPlayground,
   ScrollSidebarActiveLinkIntoView,
@@ -14,11 +14,11 @@ import {
   init,
   managedResources,
   update,
-} from './main'
-import { Message } from './message'
-import { type Model } from './model'
+} from './main.vibe'
+import { Message } from './message.vibe'
+import { type Model } from './model.vibe'
 import { Home } from './page'
-import * as NotePlayerDemo from './page/home/notePlayerDemo'
+import * as NotePlayerDemo from './page/home/notePlayerDemo.vibe'
 import * as Search from './search'
 import * as SnippetCopy from './snippetCopy'
 import * as SnippetDisclosure from './snippetDisclosure'

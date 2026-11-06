@@ -14,6 +14,8 @@ import { tmpdir } from 'node:os'
 import { dirname, extname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
+import { requiredPeerDependencies } from './lib/consumer-required-peers.ts'
+
 // A Foldkit application built outside this repository, from packed tarballs,
 // with no source alias and no workspace link. Everything about the build id
 // depends on that shape and cannot be observed inside the monorepo: the plugin
@@ -248,6 +250,10 @@ const writeConsumerProject = (
   const exampleManifest = readJson<Manifest>(
     join(REPO_ROOT, 'examples/ssr/package.json'),
   )
+  // Legacy peer mode skips transitive peers too; declare the runtime's required peers.
+  const platformNodeManifest = readJson<Manifest>(
+    join(REPO_ROOT, 'node_modules', '@effect', 'platform-node', 'package.json'),
+  )
   const platformBrowserVersion =
     foldkitManifest.peerDependencies?.['@effect/platform-browser']
   const effectVersion = foldkitManifest.peerDependencies?.['effect']
@@ -269,6 +275,7 @@ const writeConsumerProject = (
         type: 'module',
         scripts: { build: 'vite build' },
         dependencies: {
+          ...requiredPeerDependencies(platformNodeManifest),
           '@effect/platform-browser': platformBrowserVersion,
           '@foldkit/markdown': `file:${markdownTarball}`,
           '@foldkit/ui': `file:${uiTarball}`,

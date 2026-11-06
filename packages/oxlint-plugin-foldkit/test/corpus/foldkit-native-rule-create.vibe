@@ -1,0 +1,23 @@
+import { Diagnostic, type ESTree, Rule, RuleContext } from 'effect-oxlint'
+
+// Minimized Foldkit rule: native setup and visitor callbacks share RuleContext.
+export const nativeRule = Rule.define({
+  name: 'foldkit-native-create',
+  meta: Rule.meta({ type: 'problem', description: 'Native rule callback' }),
+  create: effect () => {
+    const context = try RuleContext
+    return {
+      ThrowStatement: effect (node: ESTree.Node) => {
+        try context.report(
+          try Effect.orDie(
+            Effect.try({
+              try: () =>
+                Diagnostic.make({ node, message: 'native Foldkit callback' }),
+              catch: error => error,
+            }),
+          ),
+        )
+      },
+    }
+  },
+})

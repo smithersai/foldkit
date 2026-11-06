@@ -1,0 +1,301 @@
+import { Array as Arr, pipe } from 'effect'
+import { Command, Dom, Runtime, Subscription, type Update } from 'foldkit'
+import { Document, Html, HtmlBuilder } from 'foldkit/html'
+import { defineMessageUnion } from 'foldkit/message'
+import { modifyFields } from 'foldkit/struct'
+
+import { getKeyboardTarget } from './keyboardTarget.ts'
+
+import { GAME, GAME_SPEED } from './constants.ts'
+import { Apple, Direction, Position, Snake } from './domain/index.ts'
+
+// MODEL
+
+export schema GameState = 'NotStarted' | 'Playing' | 'Paused' | 'GameOver'
+
+export schema Model {
+  readonly snake: Snake.Snake
+  readonly apple: Position.Position
+  readonly direction: Direction.Direction
+  readonly nextDirection: Direction.Direction
+  readonly gameState: GameState
+  readonly points: number
+  readonly highScore: number
+}
+
+// MESSAGE
+
+export const Message = defineMessageUnion({
+  TickedClock: {},
+  PressedKey: { key: Schema.String },
+  PausedGame: {},
+  RestartedGame: {},
+  CompletedGenerateApplePosition: { position: Position.Position },
+})
+
+export type Message = typeof Message.Type
+
+// INIT
+
+export const init: Runtime.ApplicationInit<Model, Message> = () => {
+  const snake = Snake.create(GAME.INITIAL_POSITION)
+
+  return {
+    model: {
+      snake,
+      apple: { x: 15, y: 15 },
+      direction: GAME.INITIAL_DIRECTION,
+      nextDirection: GAME.INITIAL_DIRECTION,
+      gameState: 'NotStarted',
+      points: 0,
+      highScore: 0,
+    },
+    commands: [GenerateApplePosition({ snake: snake })],
+  }
+}
+
+// UPDATE
+
+type UpdateReturn = Update.Return<Model, Message>
+
+export const update = (model: Model, message: Message) =>
+  Message.match<UpdateReturn>(message, {
+    PressedKey: ({ key }): UpdateReturn =>
+      match (key) {
+        when "ArrowUp" or "ArrowDown" or "ArrowLeft" or "ArrowRight" or "w" or "a" or "s" or "d":
+          do {
+            const nextDirection: Direction.Direction = match (key) {
+              when "ArrowUp" or "w": 'Up';
+              when "ArrowDown" or "s": 'Down';
+              when "ArrowLeft" or "a": 'Left';
+              when "ArrowRight" or "d": 'Right';
+            }
+            model.gameState === 'Playing'
+              ? {
+                model: modifyFields(model, {
+                  nextDirection: () => nextDirection,
+                }),
+              }
+              : { model }
+          };
+        when " ": do {
+          const nextGameState: GameState = match (model.gameState) {
+            when "NotStarted": 'Playing';
+            when "Playing": 'Paused';
+            when "Paused": 'Playing';
+            when "GameOver": 'GameOver';
+          }
+          ;({ model: modifyFields(model, { gameState: () => nextGameState }) })
+        };
+        when "r": do {
+          const nextSnake = Snake.create(GAME.INITIAL_POSITION)
+          ;({
+            model: modifyFields(model, {
+              snake: () => nextSnake,
+              direction: () => GAME.INITIAL_DIRECTION,
+              nextDirection: () => GAME.INITIAL_DIRECTION,
+              gameState: () => 'NotStarted',
+              points: () => 0,
+            }),
+            commands: [GenerateApplePosition({ snake: nextSnake })],
+          })
+        };
+        default: ({ model });
+      },
+
+    TickedClock: () => {
+      if (model.gameState !== 'Playing') {
+        return { model }
+      }
+
+      const currentDirection = Direction.isOpposite(
+          model.direction,
+          model.nextDirection,
+        )
+        ? model.direction
+        : model.nextDirection
+
+      const newHead = Position.move(model.snake[0], currentDirection)
+      const willEatApple = Position.equivalence(newHead, model.apple)
+
+      const nextSnake = willEatApple
+        ? Snake.grow(model.snake, currentDirection)
+        : Snake.move(model.snake, currentDirection)
+
+      if (Snake.hasCollision(nextSnake)) {
+        return {
+          model: modifyFields(model, {
+            gameState: () => 'GameOver',
+            highScore: highScore => Math.max(model.points, highScore),
+          }),
+        }
+      }
+
+      const commands = willEatApple
+        ? [GenerateApplePosition({ snake: nextSnake })]
+        : []
+
+      return {
+        model: modifyFields(model, {
+          snake: () => nextSnake,
+          direction: () => currentDirection,
+          points: points =>
+            willEatApple ? points + GAME.POINTS_PER_APPLE : points,
+        }),
+        commands,
+      }
+    },
+
+    PausedGame: () => ({
+      model: modifyFields(model, {
+        gameState: gameState => gameState === 'Playing' ? 'Paused' : 'Playing',
+      }),
+    }),
+
+    RestartedGame: () => {
+      const startPosition: Position.Position = { x: 10, y: 10 }
+      const nextSnake = Snake.create(startPosition)
+
+      return {
+        model: modifyFields(model, {
+          snake: () => nextSnake,
+          direction: () => 'Right',
+          nextDirection: () => 'Right',
+          gameState: () => 'NotStarted',
+          points: () => 0,
+        }),
+        commands: [GenerateApplePosition({ snake: nextSnake })],
+      }
+    },
+
+    CompletedGenerateApplePosition: ({ position }) => ({
+      model: modifyFields(model, {
+        apple: () => position,
+      }),
+    }),
+  })
+
+// COMMAND
+
+export const GenerateApplePosition = Command.define('GenerateApplePosition', {
+  args: { snake: Snake.Snake },
+  messages: [Message.CompletedGenerateApplePosition],
+  execute: (
+    { snake },
+  ): ReturnType<typeof Message.CompletedGenerateApplePosition>!! =>
+    effect {
+      const position = try Apple.generatePosition(snake)
+      return Message.CompletedGenerateApplePosition({ position })
+    },
+})
+
+// SUBSCRIPTION
+
+export const subscriptions = Subscription.make<Model, Message>()(entry => ({
+  gameClock: entry(
+    {
+      isPlaying: Schema.Boolean,
+      interval: Schema.Number,
+    },
+    {
+      modelToDependencies: model => ({
+        isPlaying: model.gameState === 'Playing',
+        interval: Math.max(
+          GAME_SPEED.MIN_INTERVAL,
+          GAME_SPEED.BASE_INTERVAL - model.points,
+        ),
+      }),
+      dependenciesToStream: ({ isPlaying, interval }) =>
+        Stream.when(
+          Stream.tick(Duration.millis(interval)).drop(1).map(
+            Message.TickedClock,
+          ),
+          effect {
+            return isPlaying
+          },
+        ),
+    },
+  ),
+
+  keyboard: Subscription.persistentEntry(
+    Dom.streamFromEventFilterMapPreventDefault({
+      target: getKeyboardTarget(),
+      type: 'keydown',
+      filterMapEvent: keyboardEvent =>
+        Option.some(Message.PressedKey({ key: keyboardEvent.key })),
+    }),
+  ),
+}))
+
+// VIEW
+
+const cellClass = (x: number, y: number, model: Model): string => {
+  const isSnakeHead = Position.equivalence({ x, y }, model.snake[0])
+  const isSnakeTail = pipe(
+    model.snake,
+    Arr.tailNonEmpty,
+    Arr.some(segment => Position.equivalence({ x, y }, segment)),
+  )
+  const isApple = Position.equivalence({ x, y }, model.apple)
+
+  return match ({ isSnakeHead, isSnakeTail, isApple }) {
+    when { isSnakeHead: true }: 'bg-green-700';
+    when { isSnakeTail: true }: 'bg-green-500';
+    when { isApple: true }: 'bg-red-500';
+    default: 'bg-gray-800';
+  }
+}
+
+const gridView = (model: Model, h: HtmlBuilder<Message>): Html =>
+  h.div(
+    [h.Class('inline-block border-2 border-gray-600')],
+    Arr.makeBy(GAME.GRID_SIZE, y =>
+      h.div(
+        [h.Class('flex')],
+        Arr.makeBy(
+          GAME.GRID_SIZE,
+          x => h.div([h.Class(`w-6 h-6 ${cellClass(x, y, model)}`)]),
+        ),
+      )),
+  )
+
+const gameStateView = (gameState: GameState): string => match (gameState) {
+  when 'NotStarted': 'Press SPACE to start';
+  when 'Playing': 'Playing - SPACE to pause';
+  when 'Paused': 'Paused - SPACE to continue';
+  when 'GameOver': 'Game Over - Press R to restart';
+}
+
+const instructionsView = (h: HtmlBuilder<Message>): Html =>
+  h.div(
+    [h.Class('mt-4 text-sm text-gray-400')],
+    [
+      h.p([], ['Use ARROW KEYS or WASD to move']),
+      h.p([], ['SPACE to pause/start']),
+      h.p([], ['R to restart']),
+    ],
+  )
+
+export const view = (model: Model, h: HtmlBuilder<Message>): Document => ({
+  title: `Snake | ${model.points} pts`,
+  body: h.div(
+    [
+      h.Class(
+        'flex flex-col items-center justify-center min-h-screen bg-black text-white p-8',
+      ),
+    ],
+    [
+      h.h1([h.Class('text-4xl font-bold mb-4')], ['Snake Game']),
+      h.div(
+        [h.Class('flex gap-8 mb-4')],
+        [
+          h.p([h.Class('text-xl')], [`Score: ${model.points}`]),
+          h.p([h.Class('text-xl')], [`High Score: ${model.highScore}`]),
+        ],
+      ),
+      h.p([h.Class('text-lg mb-4')], [gameStateView(model.gameState)]),
+      gridView(model, h),
+      instructionsView(h),
+    ],
+  ),
+})

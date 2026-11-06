@@ -1,0 +1,23 @@
+import { GAME } from '../constants.ts'
+import { Position } from './position.vibe'
+import * as Snake from './snake.vibe'
+
+export const generatePosition = effect (snake: Snake.Snake) => {
+  return try Effect.orDie(retry(
+    effect {
+      const x = try Random.nextIntBetween(0, GAME.GRID_SIZE, {
+        halfOpen: true,
+      })
+      const y = try Random.nextIntBetween(0, GAME.GRID_SIZE, {
+        halfOpen: true,
+      })
+      const pos: Position = { x, y }
+      if (Snake.contains(snake, pos)) {
+        throw 'PositionCollision'
+      } else {
+        return pos
+      }
+    },
+    Schedule.forever,
+  ))
+}

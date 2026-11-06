@@ -1,11 +1,15 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "rewriteRelativeImportExtensions": true,
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "rootDir": "./src",
+    "rootDir": ".",
     "types": ["node"],
     "noEmit": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "vibelang": {
+    "trustedPackages": ["chalk"]
+  }
 }

@@ -1,7 +1,7 @@
 import { Option } from 'effect'
 import { describe, expect, it } from 'vitest'
 
-import { type HtmlBuilder, __htmlBuilder } from './index.js'
+import { type HtmlBuilder, __htmlBuilder } from './index.vibe'
 
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
 const pointerDownHandlerOf = (

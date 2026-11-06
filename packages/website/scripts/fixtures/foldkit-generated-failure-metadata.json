@@ -1,0 +1,13 @@
+{
+  "seed": 270064,
+  "runs": 200,
+  "pattern": "Declaration type and documentation identity excludes generated never-failure metadata",
+  "controls": [
+    "literal text",
+    "documentation text",
+    "return types",
+    "readonly fields",
+    "optional fields",
+    "unknown failure contract"
+  ]
+}

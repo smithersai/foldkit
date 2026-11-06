@@ -1,0 +1,21 @@
+import { Html, inertHtml as ih } from 'foldkit/html'
+
+const foreignBrowserExamples: ReadonlyArray<string> = [
+  'lintAcquireReleaseConstructsInAcquireBody',
+  'lintNoImpureCallAtDecisionTime',
+  'lintNoPreventDefaultInStreamOperator',
+]
+
+export const snippetNotice = (name: string, language: string): Html =>
+  language !== 'vibe'
+    ? ih.empty
+    : ih.p(
+      [ih.Class(
+        'border-b border-gray-200 px-4 py-3 text-sm text-gray-600 dark:border-gray-700/50 dark:text-gray-400',
+      )],
+      [
+        foreignBrowserExamples.includes(name)
+          ? 'Illustrative excerpt. Browser API lines are foreign JavaScript; checked VibeLang programs use Effect platform services.'
+          : 'Illustrative VibeLang excerpt; application context may be omitted.',
+      ],
+    )

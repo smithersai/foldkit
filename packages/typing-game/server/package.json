@@ -4,18 +4,22 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "node --watch src/index.ts",
+    "dev": "node --import vibelang/register --watch src/index.vibe",
     "start": "node dist/index.js",
-    "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "build": "vibelang",
+    "typecheck": "vibelang --noEmit",
+    "test": "pnpm build && node --test --test-concurrency=1 tests/*.test.mjs"
   },
   "dependencies": {
-    "@effect/platform-node": "4.0.0",
+    "@effect/platform-node": "4.1.1",
     "@typing-game/shared": "workspace:*",
-    "effect": "4.0.0"
+    "effect": "4.1.1",
+    "vibelang-runtime": "file:../../../.vibelang-toolchain/vibelang-runtime-0.0.11-4a7e790005b5.tgz"
   },
   "devDependencies": {
     "@types/node": "26.4.0",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vibelang": "file:../../../.vibelang-toolchain/vibelang-0.0.11-6a4c55d7d3ae.tgz",
+    "fast-check": "^4.10.2"
   }
 }

@@ -4,7 +4,7 @@ import { expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import * as Animation from '../animation/index.js'
+import * as Animation from '../animation/index.vibe'
 import {
   DetectMovementOrAnimationEnd,
   FocusButton,
@@ -17,7 +17,7 @@ import {
   UnlockScroll,
   init,
   update,
-} from './index.js'
+} from './index.vibe'
 
 const animationEndMessage = (generation: number) =>
   Message.GotAnimationMessage({

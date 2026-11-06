@@ -20,7 +20,7 @@ export {
   type SelectedMonth,
   type SelectedYear,
   FocusGrid,
-} from './index.js'
+} from './index.vibe'
 
 export type {
   InitConfig,
@@ -35,4 +35,4 @@ export type {
   Week,
   MonthCell,
   YearCell,
-} from './index.js'
+} from './index.vibe'

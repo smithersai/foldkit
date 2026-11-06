@@ -17,35 +17,41 @@
   ],
   "scripts": {
     "clean": "rimraf dist *.tsbuildinfo",
-    "build": "pnpm run clean && tsc -b",
-    "watch": "tsc -b --watch",
-    "typecheck": "tsc -b --noEmit && tsc -p tsconfig.test.json",
+    "build": "pnpm run clean && vibelang -b",
+    "watch": "vibelang -b --watch",
+    "typecheck": "vibelang -b --noEmit && vibelang -p tsconfig.test.json",
     "test": "vitest run"
   },
   "peerDependencies": {
-    "effect": "4.0.0",
+    "effect": "4.1.1",
     "foldkit": ">=0.167.0",
     "vite": "^8.0.0"
   },
   "dependencies": {
-    "@effect/platform-node": "4.0.0",
-    "@effect/platform-node-shared": "4.0.0",
+    "@effect/platform-node": "4.1.1",
+    "@effect/platform-node-shared": "4.1.1",
     "magic-string": "^1.4.2",
     "vitefu": "^1.1.3",
-    "ws": "^8.21.3"
+    "ws": "^8.21.3",
+    "@jridgewell/trace-mapping": "^0.3.31",
+    "@jridgewell/remapping": "^2.3.5",
+    "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-4a7e790005b5.tgz"
   },
   "devDependencies": {
     "@types/node": "26.4.0",
     "@types/ws": "^8.18.1",
     "@vitejs/plugin-basic-ssl": "^2.3.0",
-    "effect": "4.0.0",
+    "effect": "4.1.1",
     "foldkit": "workspace:*",
     "happy-dom": "^20.14.5",
     "rimraf": "^6.1.3",
     "typescript": "^7.0.2",
     "vite": "^8.3.1",
     "vite-host": "npm:vite@8.2.1",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.11",
+    "fast-check": "^4.10.2",
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-6a4c55d7d3ae.tgz",
+    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a43d2b04075f.tgz"
   },
   "keywords": [
     "vite",
@@ -66,5 +72,32 @@
   },
   "engines": {
     "node": ">=20.19.0"
+  },
+  "imports": {
+    "#vibelang/emitted/src/build": {
+      "vibelang-source": "./src/build.vibe",
+      "types": "./dist/build.d.ts",
+      "default": "./dist/build.js"
+    },
+    "#vibelang/emitted/src/foldkitPackages": {
+      "vibelang-source": "./src/foldkitPackages.vibe",
+      "types": "./src/foldkitPackages.d.vibe.ts",
+      "default": "./dist/foldkitPackages.js"
+    },
+    "#vibelang/emitted/src/relayRegistryTrust": {
+      "vibelang-source": "./src/relayRegistryTrust.vibe",
+      "types": "./src/relayRegistryTrust.d.vibe.ts",
+      "default": "./dist/relayRegistryTrust.js"
+    },
+    "#vibelang/emitted/src/ssr": {
+      "vibelang-source": "./src/ssr.vibe",
+      "types": "./dist/ssr.d.ts",
+      "default": "./dist/ssr.js"
+    },
+    "#vibelang/emitted/src/ssrRender": {
+      "vibelang-source": "./src/ssrRender.vibe",
+      "types": "./src/ssrRender.d.vibe.ts",
+      "default": "./dist/ssrRender.js"
+    }
   }
 }

@@ -1,0 +1,337 @@
+import { Array as Arr, String as Str } from 'effect'
+import { AsyncData, Command, Http, Runtime, type Update } from 'foldkit'
+import { Document, Html, HtmlBuilder } from 'foldkit/html'
+import { defineMessageUnion } from 'foldkit/message'
+import { modifyFields } from 'foldkit/struct'
+
+import { Button, Input } from '@foldkit/ui'
+
+// MODEL
+
+export schema WeatherData {
+  readonly zipCode: string
+  readonly temperature: number
+  readonly description: string
+  readonly humidity: number
+  readonly windSpeed: number
+  readonly locationName: string
+  readonly region: string
+}
+
+export const WeatherAsyncData = AsyncData.Schema(WeatherData, Schema.String)
+
+export const Model = Schema.Struct({
+  zipCodeInput: Schema.String,
+  weather: WeatherAsyncData.schema,
+})
+export type Model = typeof Model.Type
+
+// MESSAGE
+
+export const Message = defineMessageUnion({
+  UpdatedZipCodeInput: { value: Schema.String },
+  SubmittedWeatherForm: {},
+  SucceededFetchWeather: { weather: WeatherData },
+  FailedFetchWeather: { error: Schema.String },
+})
+
+export type Message = typeof Message.Type
+
+export const update = (model: Model, message: Message) =>
+  Message.match<Update.Return<Model, Message>>(message, {
+    UpdatedZipCodeInput: ({ value }) => ({
+      model: modifyFields(model, {
+        zipCodeInput: () => value,
+      }),
+    }),
+
+    SubmittedWeatherForm: () => {
+      if (AsyncData.isPending(model.weather)) {
+        return { model }
+      }
+      return {
+        model: modifyFields(model, {
+          weather: () => WeatherAsyncData.Loading(),
+        }),
+        commands: [FetchWeather({ zipCode: model.zipCodeInput })],
+      }
+    },
+
+    SucceededFetchWeather: ({ weather }) => ({
+      model: modifyFields(model, {
+        weather: () => WeatherAsyncData.Success({ data: weather }),
+      }),
+    }),
+
+    FailedFetchWeather: ({ error }) => ({
+      model: modifyFields(model, {
+        weather: () => WeatherAsyncData.Failure({ error }),
+      }),
+    }),
+  })
+
+// INIT
+
+export const init: Runtime.ApplicationInit<Model, Message> = () => ({
+  model: {
+    zipCodeInput: '',
+    weather: WeatherAsyncData.Idle(),
+  },
+})
+
+// COMMAND
+
+const GEOCODING_API = 'https://geocoding-api.open-meteo.com/v1/search'
+const WEATHER_API = 'https://api.open-meteo.com/v1/forecast'
+
+const GeocodingResult = Schema.Struct({
+  name: Schema.String,
+  latitude: Schema.Number,
+  longitude: Schema.Number,
+  admin1: Schema.OptionFromOptional(Schema.String),
+})
+
+const GeocodingResponse = Schema.Struct({
+  results: Schema.OptionFromOptional(Schema.Array(GeocodingResult)),
+})
+
+schema WeatherResponse {
+  readonly current: {
+    readonly temperature_2m: number
+    readonly relative_humidity_2m: number
+    readonly wind_speed_10m: number
+    readonly weather_code: number
+  }
+}
+
+const weatherCodeToDescription = (code: number): string => match (code) {
+  when 0: 'Clear sky';
+  when 1 or 2 or 3: 'Partly cloudy';
+  when 45 or 48: 'Foggy';
+  when 51 or 53 or 55: 'Drizzle';
+  when 61 or 63 or 65: 'Rain';
+  when 66 or 67: 'Freezing rain';
+  when 71 or 73 or 75 or 77: 'Snow';
+  when 80 or 81 or 82: 'Rain showers';
+  when 85 or 86: 'Snow showers';
+  when 95 or 96 or 99: 'Thunderstorm';
+  default: 'Unknown';
+}
+
+export const fetchWeatherEffect = effect (zipCode: string) => {
+  return (effect {
+    if (Str.isEmpty(zipCode.trim())) {
+      throw Message.FailedFetchWeather({ error: 'Zip code required' })
+    }
+    const client = try HttpClient.HttpClient
+    const geocodeRequest = HttpClientRequest.setUrlParams(
+      HttpClientRequest.get(GEOCODING_API),
+      {
+        name: zipCode,
+        count: '1',
+        language: 'en',
+        format: 'json',
+      },
+    )
+    const geocodeResponse = try client.execute(geocodeRequest)
+    if (geocodeResponse.status !== 200) {
+      throw Message.FailedFetchWeather({ error: 'Location not found' })
+    }
+    const geocodeJson = try geocodeResponse.json
+    const geocodeData = try Schema.decodeUnknownEffect(GeocodingResponse)(
+      geocodeJson,
+    )
+    const geoResult = match (geocodeData.results.flatMap(Arr.head)) {
+      when Option.None: throw Message.FailedFetchWeather({
+        error: 'Location not found',
+      });
+      when Option.Some(let result): result;
+    }
+    const weatherRequest = HttpClientRequest.setUrlParams(
+      HttpClientRequest.get(WEATHER_API),
+      {
+        latitude: geoResult.latitude.toString(),
+        longitude: geoResult.longitude.toString(),
+        current:
+          'temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code',
+        temperature_unit: 'fahrenheit',
+        wind_speed_unit: 'mph',
+      },
+    )
+    const weatherResponse = try client.execute(weatherRequest)
+    if (weatherResponse.status !== 200) {
+      throw Message.FailedFetchWeather({
+        error: 'Failed to fetch weather data',
+      })
+    }
+    const weatherJson = try weatherResponse.json
+    const weatherData = try Schema.decodeUnknownEffect(WeatherResponse)(
+      weatherJson,
+    )
+    const weather = WeatherData.make({
+      zipCode,
+      temperature: Math.round(weatherData.current.temperature_2m),
+      description: weatherCodeToDescription(weatherData.current.weather_code),
+      humidity: weatherData.current.relative_humidity_2m,
+      windSpeed: Math.round(weatherData.current.wind_speed_10m),
+      locationName: geoResult.name,
+      region: geoResult.admin1.getOrElse(() => ''),
+    })
+    return Message.SucceededFetchWeather({ weather })
+  }) catch (error) => match (error) {
+    when { _tag: 'FailedFetchWeather' } and let failed: failed;
+    default: Message.FailedFetchWeather({
+      error: 'Failed to fetch weather data',
+    });
+  }
+}
+
+export const FetchWeather = Command.define('FetchWeather', {
+  args: { zipCode: Schema.String },
+  messages: [Message.SucceededFetchWeather, Message.FailedFetchWeather],
+  execute: (
+    { zipCode },
+  ): (ReturnType<typeof Message.SucceededFetchWeather> | ReturnType<typeof Message.FailedFetchWeather>)!! =>
+    effect {
+      provide Http.layer {
+        return try fetchWeatherEffect(zipCode)
+      }
+    },
+})
+
+// VIEW
+
+export const view = (model: Model, h: HtmlBuilder<Message>): Document => ({
+  title: 'Weather',
+  body: h.div(
+    [
+      h.Class(
+        'min-h-screen bg-gradient-to-br from-blue-100 to-blue-300 flex flex-col items-center justify-center gap-6 p-6',
+      ),
+    ],
+    [
+      h.h1([h.Class('text-4xl font-bold text-blue-900 mb-8')], ['Weather']),
+
+      h.form(
+        [
+          h.Class('flex flex-col gap-4 items-center w-full max-w-md'),
+          h.OnSubmit(Message.SubmittedWeatherForm()),
+        ],
+        [
+          Input.view(
+            {
+              id: 'location',
+              value: model.zipCodeInput,
+              placeholder: 'Enter a zip code',
+              onInput: value => Message.UpdatedZipCodeInput({ value }),
+              toView: attributes =>
+                h.input([
+                  ...attributes.input,
+                  h.Autocomplete('off'),
+                  h.DataAttribute('1p-ignore', ''),
+                  h.AriaLabel('Zip code'),
+                  h.Class(
+                    'w-full px-4 py-2 rounded-lg border-2 border-blue-300 focus:border-blue-500 outline-none',
+                  ),
+                ]),
+            },
+            h,
+          ),
+          Button.view(
+            {
+              type: 'submit',
+              isDisabled: AsyncData.isPending(model.weather),
+              toView: attributes =>
+                h.button(
+                  [
+                    ...attributes.button,
+                    h.Class(
+                      'px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition data-[disabled]:opacity-50',
+                    ),
+                  ],
+                  [
+                    AsyncData.isPending(model.weather)
+                      ? 'Loading...'
+                      : 'Get Weather',
+                  ],
+                ),
+            },
+            h,
+          ),
+        ],
+      ),
+
+      AsyncData.matchDataSplitEmpty(model.weather, {
+        onIdle: () => h.empty,
+        onLoading: () =>
+          h.div(
+            [h.Class('text-blue-600 font-semibold text-center')],
+            ['Fetching weather...'],
+          ),
+        onFailure: error =>
+          h.div(
+            [
+              h.Class(
+                'p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg',
+              ),
+            ],
+            [error],
+          ),
+        onData: weather =>
+          h.div([h.Class('w-full max-w-md')], [weatherView(weather, h)]),
+      }),
+    ],
+  ),
+})
+
+const weatherView = (weather: WeatherData, h: HtmlBuilder<Message>): Html =>
+  h.article(
+    [h.Class('bg-white rounded-xl shadow-lg p-8 w-full')],
+    [
+      h.h2(
+        [h.Class('text-2xl font-bold text-gray-800 mb-3 text-center')],
+        [weather.zipCode],
+      ),
+      h.p(
+        [h.Class('text-center text-gray-600 mb-6')],
+        [weather.locationName + ', ' + weather.region],
+      ),
+
+      h.div(
+        [h.Class('text-center mb-6')],
+        [
+          h.div(
+            [h.Class('text-6xl font-bold text-blue-600')],
+            [`${weather.temperature}°F`],
+          ),
+          h.div([h.Class('text-xl text-gray-600 mt-2')], [weather.description]),
+        ],
+      ),
+
+      h.div(
+        [h.Class('grid grid-cols-2 gap-4 text-center')],
+        [
+          h.div(
+            [h.Class('bg-blue-50 p-4 rounded-lg')],
+            [
+              h.div([h.Class('text-sm text-gray-600')], ['Humidity']),
+              h.div(
+                [h.Class('text-lg font-semibold')],
+                [`${weather.humidity}%`],
+              ),
+            ],
+          ),
+          h.div(
+            [h.Class('bg-blue-50 p-4 rounded-lg')],
+            [
+              h.div([h.Class('text-sm text-gray-600')], ['Wind Speed']),
+              h.div(
+                [h.Class('text-lg font-semibold')],
+                [`${weather.windSpeed} mph`],
+              ),
+            ],
+          ),
+        ],
+      ),
+    ],
+  )

@@ -1,0 +1,33 @@
+import { type Response, ResponseFrame } from 'foldkit/devtools-protocol'
+import type { RawData } from 'ws'
+
+export type PendingResponses = HashMap<
+  string,
+  Deferred<typeof Response.Type, Error>
+>
+
+// Decode before runForkWith starts the program, as the original factory did.
+export const handleIncomingMessage = (
+  raw: RawData,
+  pendingResponsesRef: Ref<PendingResponses>,
+): void!! => {
+  const decoded = Schema.decodeExit(Schema.fromJsonString(ResponseFrame))(
+    raw.toString(),
+  )
+  return match (decoded) {
+    when Exit.Failure(let error): effect {
+      try Console.error('[foldkit-devtools-mcp] failed to decode frame', error)
+    };
+    when Exit.Success(let responseFrame): effect {
+      const map = try Ref.get(pendingResponsesRef)
+      match (HashMap.get(map, responseFrame.id)) {
+        when Option.None: undefined;
+        when Option.Some(let deferred): do {
+          try Ref.update(pendingResponsesRef, HashMap.remove(responseFrame.id))
+          try Deferred.succeed(deferred, responseFrame.response)
+          undefined
+        };
+      }
+    };
+  }
+}

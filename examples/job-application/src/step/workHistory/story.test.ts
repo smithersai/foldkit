@@ -4,7 +4,7 @@ import { Command, given, message, model, story } from 'foldkit/story'
 import { describe, expect, test } from 'vitest'
 
 import * as Entry from './entry'
-import { GenerateEntryId, Message, init, update } from './workHistory'
+import { GenerateEntryId, Message, init, update } from './workHistory.vibe'
 
 const today = Calendar.make(2026, 4, 16)
 const givenInitial = given(init(today, 'work-history-entry-1'))

@@ -3,9 +3,9 @@ import { type Html, type HtmlBuilder, inertHtml as ih } from 'foldkit/html'
 import { Shared } from '../component'
 import { Icon } from '../icon'
 import { Link } from '../link'
-import { Message } from '../message'
-import { type Model } from '../model'
-import { getStartedRouter, homeRouter } from '../route'
+import { Message } from '../message.vibe'
+import { type Model } from '../model.vibe'
+import { getStartedRouter, homeRouter } from '../route.vibe'
 import { HeaderNav, Search, Sidebar, ThemeSelector } from '../view'
 
 const PagefindBody = ih.DataAttribute('pagefind-body', '')

@@ -3,7 +3,7 @@ import { afterEach, beforeEach, expect, vi } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import { MountTracker } from '../mount/index.js'
+import { MountTracker } from '../mount/index.vibe'
 import { Dispatch } from '../runtime/index.js'
 import { h as snabbdomH } from '../snabbdom/index.js'
 import {
@@ -11,13 +11,13 @@ import {
   beginRender,
   createBoundaryRegistry,
 } from './boundary.js'
-import { type ChildAttribute, childAttributes } from './childAttribute.js'
-import { type Html, __htmlBuilder } from './index.js'
+import { type ChildAttribute, childAttributes } from './childAttribute.vibe'
+import { type Html, __htmlBuilder } from './index.vibe'
 import {
   type DispatchSync,
   clearRuntime,
   setRuntime,
-} from './runtimeSingleton.js'
+} from './runtimeSingleton.vibe'
 import {
   type AnySubmodelView,
   type SubmodelConfig,

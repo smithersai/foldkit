@@ -1,7 +1,7 @@
 import { Deferred, Effect, Stream } from 'effect'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
-import { Message, MountMap } from './main'
+import { Message, MountMap } from './main.vibe'
 
 const maplibre = vi.hoisted(() => {
   let container: HTMLElement | undefined

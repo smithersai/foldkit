@@ -14,12 +14,12 @@ import { describe, test } from 'vitest'
 
 import { RadioGroup } from '@foldkit/ui'
 
-import { SyncChart } from './command'
+import { SyncChart } from './command.vibe'
 import { loadingModel, readyModel, sampleTelemetry } from './main.fixture'
-import { Message } from './message'
-import { TelemetryAsyncData } from './model'
-import { update } from './update'
-import { CHART_HOST_ID, MountChart } from './view/chart'
+import { Message } from './message.vibe'
+import { TelemetryAsyncData } from './model.vibe'
+import { update } from './update.vibe'
+import { CHART_HOST_ID, MountChart } from './view/chart.vibe'
 import { view } from './view/index'
 
 const acknowledgeChartMount = Mount.resolve(

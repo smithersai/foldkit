@@ -1,1 +1,1 @@
-export * from './anchor.js'
+export * from './anchor.vibe'

@@ -10,7 +10,7 @@ import {
   PLAYGROUND_DEPENDENCY_OVERRIDES,
   loadPlaygroundFiles,
   loadPlaygroundWorkspacePackageVersions,
-} from './playgroundFilesPlugin'
+} from './playgroundFilesPlugin.vibe'
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
 

@@ -1,0 +1,26 @@
+{
+  "key": "foldkit:alchemy-62:readLiveRecordFile",
+  "seed": 620274,
+  "fixedModels": [
+    {
+      "none": true,
+      "alive": true,
+      "runs": 1,
+      "pid": 0
+    },
+    {
+      "none": false,
+      "alive": true,
+      "runs": 2,
+      "pid": 1
+    },
+    {
+      "none": false,
+      "alive": false,
+      "runs": 3,
+      "pid": 42
+    }
+  ],
+  "generatedModels": 200,
+  "wrongEmittedFunction": "(filePath) => {\n    const maybeRecord = readRecordFile(filePath);\n    let $is1;\n    let $extracted2;\n    let record;\n    if (((($is1 = maybeRecord), true) && (($extracted2 = (subject_1 => Option_1.isOption(subject_1) && Option_1.isSome(subject_1) && [subject_1.value])($is1)), true) && $extracted2 !== false && $extracted2.length === 1 && ((record = $extracted2[0]), true))\n        && !Effect_1.sync(((pid) => isProcessAlive(pid)).bind(undefined, record.pid))) {\n        retireStaleRecord(filePath, record);\n        return Option.none();\n    }\n    return maybeRecord;\n}"
+}

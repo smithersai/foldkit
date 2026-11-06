@@ -1,14 +1,19 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "rewriteRelativeImportExtensions": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "allowImportingTsExtensions": true,
     "noPropertyAccessFromIndexSignature": false,
     "noEmit": true,
     "rootDir": ".",
-    "types": ["node"]
+    "types": ["node"],
+    "outDir": "dist/native"
   },
   "include": ["src", "test"],
-  "exclude": ["test/integration/fixtures"]
+  "exclude": ["test/integration/fixtures"],
+  "vibelang": {
+    "trustedPackages": ["effect-oxlint", "@oxlint/plugins"]
+  }
 }

@@ -1,2 +1,2 @@
-export { Model, Message, init, update } from './attachments'
-export { view } from './view'
+export { Model, Message, init, update } from './attachments.vibe'
+export { view } from './view.vibe'

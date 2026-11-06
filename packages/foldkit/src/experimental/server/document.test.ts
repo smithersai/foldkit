@@ -3,7 +3,7 @@ import { expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import { DocumentAssets, renderDocument } from './document.js'
+import { DocumentAssets, renderDocument } from './document.vibe'
 
 const assets = DocumentAssets.make({
   entryScript: '/assets/app.js',

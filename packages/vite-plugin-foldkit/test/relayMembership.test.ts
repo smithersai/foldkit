@@ -3,7 +3,7 @@ import { type ViteDevServer, createServer } from 'vite'
 import { expect, it, onTestFinished } from 'vitest'
 import type { RawData, WebSocket } from 'ws'
 
-import { foldkit } from '../src/index.ts'
+import { foldkit } from '../src/index.vibe'
 import {
   POLL_TIMEOUT,
   UNKNOWN_RUNTIME_FAILURE_BUDGET,

@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "allowArbitraryExtensions": true,
     "strict": true,
     "noEmit": true,
     "declaration": true,

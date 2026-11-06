@@ -9,8 +9,8 @@ import { type RawData, WebSocket } from 'ws'
 
 import { foldkit } from '@foldkit/vite-plugin'
 
-import { type RelayClient, makeRelayClient } from '../src/relayClient.ts'
-import { resolveRelayTargets } from '../src/relayLocation.ts'
+import { type RelayClient, makeRelayClient } from '../src/relayClient.vibe'
+import { resolveRelayTargets } from '../src/relayLocation.vibe'
 import {
   type RelayRegistryReader,
   makeRelayRegistryReader,

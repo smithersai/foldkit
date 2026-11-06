@@ -1,0 +1,75 @@
+import * as Clipboard from '@effect/platform-browser/Clipboard'
+import { Command, Update } from 'foldkit'
+import { modifyFields } from 'foldkit/struct'
+
+import { Message } from './message.vibe'
+import { type Model } from './model.vibe'
+
+// UPDATE
+
+export const update = (model: Model, message: Message) =>
+  Message.match<Update.Return<Model, Message>>(message, {
+    ClickedCopySnippet: ({ snippetId, text }) => ({
+      model,
+      commands: [CopySnippet({ snippetId, text })],
+    }),
+    SucceededCopySnippet: ({ snippetId }) =>
+      HashSet.has(model.copiedSnippetIds, snippetId)
+        ? { model }
+        : {
+          model: modifyFields(model, {
+            copiedSnippetIds: HashSet.add(snippetId),
+          }),
+          commands: [WaitBeforeHidingCopiedIndicator({ snippetId })],
+        },
+    FailedCopySnippet: () => ({ model }),
+    CompletedWaitBeforeHidingCopiedIndicator: ({ snippetId }) => ({
+      model: modifyFields(model, {
+        copiedSnippetIds: HashSet.remove(snippetId),
+      }),
+    }),
+  })
+
+// COMMAND
+
+export const CopySnippet = Command.define('CopySnippet', {
+  args: { snippetId: Schema.String, text: Schema.String },
+  messages: [Message.SucceededCopySnippet, Message.FailedCopySnippet],
+  execute: (
+    { snippetId, text },
+  ): (typeof Message.FailedCopySnippet.Type | typeof Message.SucceededCopySnippet.Type)!never!never => {
+    const copied = Message.SucceededCopySnippet({ snippetId })
+    return effect {
+      provide Clipboard.layer {
+        return (effect {
+          const clipboard = try Clipboard.Clipboard
+          try clipboard.writeString(text)
+          return copied
+        }) catch effect () => {
+          return Message.FailedCopySnippet()
+        }
+      }
+    }
+  },
+})
+
+const COPY_INDICATOR_DURATION = '2 seconds'
+
+export const WaitBeforeHidingCopiedIndicator = Command.define(
+  'WaitBeforeHidingCopiedIndicator',
+  {
+    args: { snippetId: Schema.String },
+    messages: [Message.CompletedWaitBeforeHidingCopiedIndicator],
+    execute: (
+      { snippetId },
+    ): (typeof Message.CompletedWaitBeforeHidingCopiedIndicator.Type)!never!never => {
+      const completed = Message.CompletedWaitBeforeHidingCopiedIndicator({
+        snippetId,
+      })
+      return effect {
+        try sleep(COPY_INDICATOR_DURATION)
+        return completed
+      }
+    },
+  },
+)

@@ -3,7 +3,7 @@ export type {
   MountDefinition,
   MountDefinitionNoArgs,
   MountDefinitionWithArgs,
-} from './index.js'
+} from './index.vibe'
 export {
   MountDefinitionTypeId,
   MountTracker,
@@ -12,4 +12,4 @@ export {
   defineStream,
   liveViewStateChanges,
   mapMessage,
-} from './index.js'
+} from './index.vibe'

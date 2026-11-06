@@ -1,0 +1,36 @@
+import { ExperimentalBrowserDocument } from 'vibelang-runtime/experimental/platform-browser'
+import { Command, Runtime } from 'foldkit'
+import { Model } from './model'
+
+service ApiClientService: ApiClient {
+  static readonly key = 'ApiClientService'
+}
+
+const ApiClientLive = Layer.effect(ApiClientService, makeApiClient)
+
+const LoadUser = Command.define('LoadUser', {
+  args: { userId: Schema.String },
+  messages: [CompletedLoadUser],
+  execute: effect ({ userId }) => {
+    const apiClient = try ApiClientService
+    const user = try apiClient.getUser(userId)
+    return CompletedLoadUser({ user })
+  },
+})
+
+const application = Runtime.makeApplication({
+  Model,
+  init,
+  update,
+  view,
+  container: Effect.runSync(effect {
+    provide ExperimentalBrowserDocument.layer {
+      const page = try (try Experimental.Document.Document).current
+      return try Effect.orDie(Effect.try({
+        try: () => page.getElementById('root'),
+        catch: error => error,
+      }))
+    }
+  }),
+  resources: ApiClientLive,
+})

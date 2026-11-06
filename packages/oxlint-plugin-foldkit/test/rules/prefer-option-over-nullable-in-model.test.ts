@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { preferOptionOverNullableInModel } from '../../src/rules/prefer-option-over-nullable-in-model.ts'
+import { preferOptionOverNullableInModel } from '../../src/rules/prefer-option-over-nullable-in-model.vibe'
 
 const modelStruct = (
   name: string,

@@ -19,3 +19,4 @@ test-results/
 
 # Build output written by the vite-plugin build tests
 dist-test
+.vibelang-toolchain/

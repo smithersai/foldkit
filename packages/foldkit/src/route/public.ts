@@ -26,4 +26,4 @@ export type {
   RouteUnion,
 } from './index.js'
 
-export * as Transition from './transition.js'
+export * as Transition from './transition.vibe'

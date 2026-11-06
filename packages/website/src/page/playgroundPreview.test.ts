@@ -10,7 +10,7 @@ import {
 } from 'foldkit/scene'
 import { describe, expect as expectValue, test } from 'vitest'
 
-import * as PlaygroundPreview from './playgroundPreview'
+import * as PlaygroundPreview from './playgroundPreview.vibe'
 
 const PREVIEW_URL = 'https://preview.example.test'
 const STALE_PREVIEW_URL = 'https://stale.example.test'

@@ -1,0 +1,80 @@
+import { ExperimentalBrowserWindow } from 'vibelang-runtime/experimental/platform-browser'
+import { Subscription } from 'foldkit'
+import { defineMessageUnion } from 'foldkit/message'
+
+const Message = defineMessageUnion({
+  AdvancedAutoScrollFrame: {},
+})
+type Message = typeof Message.Type
+
+schema Model {
+  readonly isDragging: boolean
+  readonly clientY: number
+}
+
+const subscriptions = Subscription.make<Model, Message>()(entry => ({
+  autoScroll: entry(
+    {
+      isDragging: Schema.Boolean,
+      clientY: Schema.Number,
+    },
+    {
+      modelToDependencies: model => ({
+        isDragging: model.isDragging,
+        clientY: model.clientY,
+      }),
+      // Only restart the stream when isDragging changes.
+      // Without this, every clientY change (every pixel) would tear down
+      // and recreate the requestAnimationFrame loop.
+      keepAliveEquivalence: Equivalence.Struct({
+        isDragging: Equivalence.Boolean,
+      }),
+      // readDependencies returns the latest dependencies without restarting the stream.
+      // The rAF loop calls readDependencies() each frame to get the current clientY.
+      dependenciesToStream: ({ isDragging }, readDependencies) =>
+        Stream.when(
+          Stream.callback<typeof Message.AdvancedAutoScrollFrame.Type>(
+            (queue): never!never!Scope =>
+              effect {
+                provide ExperimentalBrowserWindow.layer {
+                  const browser = try (try Experimental.Window.Window).current
+                  try Effect.acquireRelease(
+                    Effect.sync(() => {
+                      const animationFrameIdRef = { current: 0 }
+                      const step = () => {
+                        const { clientY } = readDependencies()
+                        browser.scrollBy(
+                          0,
+                          clientY > browser.innerHeight - 40 ? 5 : 0,
+                        )
+                        Queue.offerUnsafe(
+                          queue,
+                          Message.AdvancedAutoScrollFrame(),
+                        )
+                        animationFrameIdRef.current = browser
+                          .requestAnimationFrame(
+                            step,
+                          )
+                      }
+                      animationFrameIdRef.current = browser
+                        .requestAnimationFrame(step)
+                      return animationFrameIdRef
+                    }),
+                    animationFrameIdRef =>
+                      Effect.sync(() =>
+                        browser.cancelAnimationFrame(
+                          animationFrameIdRef.current,
+                        )
+                      ),
+                  )
+                  return try Effect.never
+                }
+              },
+          ),
+          effect {
+            return isDragging
+          },
+        ),
+    },
+  ),
+}))

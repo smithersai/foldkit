@@ -17,32 +17,36 @@
   },
   "scripts": {
     "clean": "rimraf dist *.tsbuildinfo",
-    "build": "pnpm run clean && tsc -b && pnpm run bundle",
+    "build": "pnpm run clean && vibelang -b && pnpm run bundle",
     "bundle": "rolldown -c rolldown.config.ts",
-    "watch": "tsc -b --watch",
-    "typecheck": "tsc -b --noEmit && tsc -p tsconfig.test.json",
+    "watch": "vibelang -b --watch",
+    "typecheck": "vibelang -b --noEmit && vibelang -p tsconfig.test.json",
     "test": "vitest run"
   },
   "peerDependencies": {
-    "effect": "4.0.0",
+    "effect": "4.1.1",
     "foldkit": ">=0.165.0"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.29.0",
-    "ws": "^8.21.3"
+    "ws": "^8.21.3",
+    "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-4a7e790005b5.tgz"
   },
   "devDependencies": {
-    "@effect/platform-node": "4.0.0",
+    "@effect/platform-node": "4.1.1",
     "@foldkit/vite-plugin": "workspace:*",
     "@types/node": "26.4.0",
     "@types/ws": "^8.18.1",
-    "effect": "4.0.0",
+    "effect": "4.1.1",
     "foldkit": "workspace:*",
     "rimraf": "^6.1.3",
     "rolldown": "^1.2.11",
     "typescript": "^7.0.2",
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-6a4c55d7d3ae.tgz",
+    "vibelang-unplugin": "file:../../.vibelang-toolchain/vibelang-unplugin-0.0.11-45a3600458c6.tgz",
     "vite": "^8.3.1",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.11",
+    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a43d2b04075f.tgz"
   },
   "files": [
     "dist"

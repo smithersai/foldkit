@@ -1,1 +1,1 @@
-export * as People from './people'
+export * as People from './people.vibe'

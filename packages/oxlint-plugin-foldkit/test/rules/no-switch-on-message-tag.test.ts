@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { noSwitchOnMessageTag } from '../../src/rules/no-switch-on-message-tag.ts'
+import { noSwitchOnMessageTag } from '../../src/rules/no-switch-on-message-tag.vibe'
 
 const switchOn = (discriminant: unknown) => ({
   type: 'SwitchStatement',

@@ -1,0 +1,26 @@
+import { Subscription } from 'foldkit'
+import { defineMessageUnion } from 'foldkit/message'
+
+// MESSAGE
+
+const Message = defineMessageUnion({
+  TickedFrame: { deltaTime: Schema.Number },
+  ClickedTogglePlay: {},
+})
+type Message = typeof Message.Type
+
+// MODEL
+
+schema Model {
+  readonly isPlaying: boolean
+  readonly angle: number
+}
+
+// SUBSCRIPTION
+
+const subscriptions = Subscription.make<Model, Message>()(_entry => ({
+  frame: Subscription.animationFrameEntry({
+    isActive: model => model.isPlaying,
+    toMessage: deltaTime => Message.TickedFrame({ deltaTime }),
+  }),
+}))

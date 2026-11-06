@@ -2,4 +2,4 @@ export {
   PreserveModelMessage,
   RequestModelMessage,
   RestoreModelMessage,
-} from './modelPreservation.js'
+} from './modelPreservation.vibe'

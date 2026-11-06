@@ -1,0 +1,6 @@
+{
+  "files": ["resources", "resourcesFlags"],
+  "key": "ApiClientService",
+  "seed": 88038,
+  "runs": 100
+}

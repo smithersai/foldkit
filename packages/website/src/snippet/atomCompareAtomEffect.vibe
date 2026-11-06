@@ -1,0 +1,33 @@
+import { BrowserStream } from '@effect/platform-browser'
+
+import { useAtomMount, useAtomSet } from '@effect/atom-react'
+
+// A mutation is a function atom. Reactivity keys invalidate dependents.
+const createTodoAtom = runtime.fn(
+  effect function(text: string) {
+    const api = try Api
+    try api.createTodo(text)
+  },
+  { reactivityKeys: ['todos'] },
+)
+
+// A scoped event program starts when the atom is read,
+// then its interruptor stops the listener when the atom is finalized.
+const mouseUpAtom = Atom.make(get => {
+  const stop = Effect.runCallback(effect {
+    try Stream.runForEach(
+      BrowserStream.fromEventListenerWindow('mouseup'),
+      effect (_event) => {
+        get.setSelf(false)
+      },
+    )
+  })
+  get.addFinalizer(stop)
+  return false
+})
+
+const Canvas = () => {
+  useAtomMount(mouseUpAtom) // keep the listener alive while this component is mounted
+  const createTodo = useAtomSet(createTodoAtom)
+  // ...
+}

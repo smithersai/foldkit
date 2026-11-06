@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { noRouteQueryConstructorDefault } from '../../src/rules/no-route-query-constructor-default.ts'
+import { noRouteQueryConstructorDefault } from '../../src/rules/no-route-query-constructor-default.vibe'
 
 const withConstructorDefaultCall = (object: string) =>
   Testing.callOfMember(object, 'withConstructorDefault', [Testing.arrowFn()])

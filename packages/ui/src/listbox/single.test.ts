@@ -6,7 +6,7 @@ import { expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import * as Animation from '../animation/index.js'
+import * as Animation from '../animation/index.vibe'
 import {
   AnchorListbox,
   ClickItem,
@@ -23,9 +23,9 @@ import {
   ScrollIntoView,
   UnlockScroll,
   buttonId,
-} from './shared.js'
-import { create, init, update } from './single.js'
-import type { Model, ViewInputs } from './single.js'
+} from './shared.vibe'
+import { create, init, update } from './single.vibe'
+import type { Model, ViewInputs } from './single.vibe'
 
 const TestListbox = create<string>()
 const view = TestListbox.view

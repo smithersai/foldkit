@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { noNoopMessage } from '../../src/rules/no-noop-message.ts'
+import { noNoopMessage } from '../../src/rules/no-noop-message.vibe'
 
 const message = (name: string, fields: unknown = Testing.objectExpr([])) => ({
   key: name,

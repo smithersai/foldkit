@@ -1,2 +1,2 @@
-export * as Item from './item'
-export * as Cart from './cart'
+export * as Item from './item.vibe'
+export * as Cart from './cart.vibe'

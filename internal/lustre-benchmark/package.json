@@ -12,12 +12,13 @@
     "bench:verify": "node bench/verify.mjs",
     "dev": "vite",
     "profile": "RUN_LUSTRE_PROFILE=1 vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "vibelang --noEmit && tsc --noEmit"
   },
   "dependencies": {
-    "@effect/platform-browser": "4.0.0",
-    "effect": "4.0.0",
-    "foldkit": "workspace:*"
+    "@effect/platform-browser": "4.1.1",
+    "effect": "4.1.1",
+    "foldkit": "workspace:*",
+    "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-4a7e790005b5.tgz"
   },
   "devDependencies": {
     "@foldkit/vite-plugin": "workspace:*",
@@ -26,6 +27,8 @@
     "playwright": "^1.63.0",
     "typescript": "^7.0.2",
     "vite": "^8.3.1",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.11",
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-6a4c55d7d3ae.tgz",
+    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a43d2b04075f.tgz"
   }
 }

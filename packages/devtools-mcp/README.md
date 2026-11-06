@@ -137,3 +137,7 @@ See [foldkit.dev/ai/mcp](https://foldkit.dev/ai/mcp) for the full guide.
 ## License
 
 MIT
+
+## Registry read lifecycle
+
+Constructing a registry read does no I/O. Each run rereads the record and retires it when its process is stale. The registry, trust checks and relay location modules remain TypeScript while their VibeLang migrations are qualified. The seeded regression in `packages/website/scripts/relayReadLivePhase.test.mjs` checks 203 lifecycle models and rejects the incorrect compiler emission for every model.

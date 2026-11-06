@@ -3,10 +3,10 @@ import { afterEach, beforeEach, expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import { MountTracker } from '../mount/index.js'
+import { MountTracker } from '../mount/index.vibe'
 import { Dispatch } from '../runtime/index.js'
 import { h } from '../snabbdom/index.js'
-import { type VNode, dedupeSharedVNodes, memoizedVNodes } from '../vdom.js'
+import { type VNode, dedupeSharedVNodes, memoizedVNodes } from '../vdom.vibe'
 import {
   type BoundaryRegistry,
   beginRender,
@@ -14,8 +14,8 @@ import {
   registerBoundaryWrap,
   resolveMountBoundaryDispatch,
 } from './boundary.js'
-import { __htmlBuilder } from './index.js'
-import { createKeyedLazy, createLazy } from './lazy.js'
+import { __htmlBuilder } from './index.vibe'
+import { createKeyedLazy, createLazy } from './lazy.vibe'
 import {
   type DispatchSync,
   clearRuntime,
@@ -23,7 +23,7 @@ import {
   requireDispatch,
   requireMountDispatch,
   setRuntime,
-} from './runtimeSingleton.js'
+} from './runtimeSingleton.vibe'
 import {
   type AnySubmodelView,
   type SubmodelConfig,

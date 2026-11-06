@@ -1,9 +1,15 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "rewriteRelativeImportExtensions": true,
     "moduleResolution": "bundler",
     "noEmit": true
   },
-  "include": ["src/**/*.ts", "vite.config.ts"],
+  "include": [
+    "src/**/*.ts",
+    "vite.config.ts",
+    "src/**/*.vibe",
+    "vite.config.vibe"
+  ],
   "exclude": ["node_modules", "dist", "../../packages/foldkit/src"]
 }

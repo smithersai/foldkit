@@ -1,11 +1,22 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
+    "rewriteRelativeImportExtensions": true,
     "noEmit": false,
     "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "sourceMap": true,
+    "inlineSources": true
   },
-  "exclude": ["src/**/*.test.ts"]
+  "exclude": ["src/**/*.test.ts"],
+  "vibelang": {
+    "trustedPackages": ["foldkit"]
+  },
+  "vibe": {
+    "severities": {
+      "EK4842": "off"
+    }
+  }
 }

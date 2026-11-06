@@ -4,7 +4,7 @@ import { type Plugin, createServer } from 'vite'
 import { expect, it, onTestFinished } from 'vitest'
 import { WebSocket } from 'ws'
 
-import { foldkit } from '../src/index.ts'
+import { foldkit } from '../src/index.vibe'
 import { boundPort } from './boundPort.ts'
 import {
   RELAY_PATH,

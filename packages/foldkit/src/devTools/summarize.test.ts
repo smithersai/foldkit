@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatPathNotFound, resolvePath, summarizeValue } from './summarize.js'
+import {
+  formatPathNotFound,
+  resolvePath,
+  summarizeValue,
+} from './summarize.vibe'
 
 describe('resolvePath', () => {
   const model = {
