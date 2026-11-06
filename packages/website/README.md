@@ -88,3 +88,6 @@ completion Message. Other failures, defects and interruption keep their channels
 
 Generated schema fixtures keep their fields `readonly`, matching the original
 `Schema.Struct` data and declaration contracts.
+
+The deferred-resource-lookup mutant uses supported native catch syntax. Its
+runtime getter trace rejects delayed acquisition rather than a parser error.
