@@ -1,7 +1,7 @@
 import vibelang from 'vibelang/knip'
 
 // Knip reads .vibe files through VibeLang's compiler. The declaration
-// sidecars vibelang writes beside them, x.d.vibe.ts, are its output.
+// sidecars vibelang writes beside them, x.d.vibe.ts, are gitignored output.
 const config: { ignore?: string | string[]; [key: string]: unknown } = {
   $schema: 'https://unpkg.com/knip@6/schema.json',
   workspaces: {
@@ -126,5 +126,4 @@ const config: { ignore?: string | string[]; [key: string]: unknown } = {
 export default {
   ...config,
   compilers: { vibe: vibelang },
-  ignore: [...[config.ignore ?? []].flat(), '**/*.d.vibe.ts'],
 }

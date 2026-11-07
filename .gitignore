@@ -20,3 +20,6 @@ test-results/
 # Build output written by the vite-plugin build tests
 dist-test
 .vibelang-toolchain/
+
+# Declaration sidecars that vibelang writes beside each .vibe module
+*.d.vibe.ts

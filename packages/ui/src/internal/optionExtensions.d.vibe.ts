@@ -1,5 +1,0 @@
-import { Option } from 'effect';
-export declare const when: {
-    <A>(value: A): (condition: boolean) => Option.Option<A>;
-    <A>(condition: boolean, value: A): Option.Option<A>;
-};
