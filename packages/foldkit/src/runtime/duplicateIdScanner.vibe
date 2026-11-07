@@ -16,6 +16,6 @@ export type DuplicateIdScanner = Readonly<{
  *  `import.meta.hot`, so the scanner and its DOM scan tree-shake out of
  *  production builds. */
 // NOTE: The scan, its warning and its timer are platform code, so they live
-// unchanged in duplicateIdScanner.platform.ts (VIP-33); this keeps the API.
+// unchanged in duplicateIdScanner.platform.ts; this keeps the API.
 export const createDuplicateIdScanner: () => DuplicateIdScanner =
   createDuplicateIdScannerRaw

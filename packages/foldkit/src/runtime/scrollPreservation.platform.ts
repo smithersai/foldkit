@@ -1,5 +1,5 @@
 // sessionStorage and the window scroll offset are platform code that a .vibe module does not use
-// directly (VIP-33); the preservation API is synchronous (it runs inside Vite's beforeFullReload
+// directly; the preservation API is synchronous (it runs inside Vite's beforeFullReload
 // handler), so the raw calls live here unchanged.
 
 export const writeSessionItem = (key: string, value: string): void => {

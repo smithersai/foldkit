@@ -1,4 +1,4 @@
-// VIP-33: "Platform access only through injected Effect services".
+// Platform access goes only through injected Effect services.
 // Effect 4.1.1 File.Info: "`dev`, `ino`, `rdev`, `nlink`, and `blocks` are `bigint` values".
 // The original trust probe compares exact (dev, ino) tuples before and after canonicalization.
 import { Effect, Option } from 'effect'

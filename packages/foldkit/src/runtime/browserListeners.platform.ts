@@ -1,7 +1,7 @@
-// NOTE: raw DOM access for browserListeners.vibe (VIP-33): VibeLang code
+// NOTE: raw DOM access for browserListeners.vibe: VibeLang code
 // reaches the platform through Effect services, and Effect has none for the
 // window and document event targets, the current location or the element
-// predicate yet (foldkit-30, foldkit-50, foldkit-64), so these calls stay here
+// predicate yet, so these calls stay here
 // unchanged. The listeners are synchronous callbacks, so no service could
 // serve them anyway.
 

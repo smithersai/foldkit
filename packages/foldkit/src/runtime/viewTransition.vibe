@@ -85,7 +85,7 @@ export type StartViewTransition = (
  *  running browser only supports the callback form the types are dropped and
  *  the transition still runs untyped. */
 // NOTE: The raw feature detection and the two ways of starting a transition
-// read the DOM API, so they live in viewTransition.platform.ts (VIP-33).
+// read the DOM API, so they live in viewTransition.platform.ts.
 export const __resolveStartViewTransition = (): Option<StartViewTransition> => {
   if (!hasStartViewTransition()) {
     return Option.none()

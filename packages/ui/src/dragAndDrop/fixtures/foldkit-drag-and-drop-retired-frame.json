@@ -1,5 +1,4 @@
 {
-  "inbox": [23, 61, 66],
   "rule": "Accepted details 261/262 retire onNextFrame; frame programs are cold and interruption cancels the pending registration.",
   "seed": 620261,
   "runs": 100,

@@ -1,4 +1,4 @@
-// Raw browser operations retained while foldkit-30 lacks an injected Document API.
+// Raw browser operations retained while Effect has no injected Document API.
 export const createCanvas = (gridSize: number, scale: number) => {
   const canvas = document.createElement('canvas')
   canvas.width = gridSize * scale

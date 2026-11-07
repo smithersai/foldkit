@@ -1,5 +1,5 @@
 // The DOM scan, console.warn and the coalescing timer are platform code that a .vibe module does
-// not use directly (VIP-33); the scanner is a synchronous dev-only API the renderer calls between
+// not use directly; the scanner is a synchronous dev-only API the renderer calls between
 // frames, so the raw code lives here unchanged.
 
 import type { DuplicateIdScanner } from './duplicateIdScanner.vibe'

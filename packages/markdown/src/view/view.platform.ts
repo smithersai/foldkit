@@ -1,4 +1,4 @@
-// console.warn is platform code, which a .vibe module does not use directly (VIP-33); these two
+// console.warn is platform code, which a .vibe module does not use directly; these two
 // once-per-name warnings are the raw calls, unchanged, so view.vibe keeps the rendering logic.
 
 // NOTE: Warns once per island name for the lifetime of the process, not per

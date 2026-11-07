@@ -1,5 +1,5 @@
 // document.startViewTransition and the ViewTransition constructor are platform code that a .vibe
-// module does not use directly (VIP-33), and Effect has no service for them, so the raw calls live
+// module does not use directly, and Effect has no service for them, so the raw calls live
 // here unchanged. The feature decision itself is VibeLang in viewTransition.vibe.
 import type { ViewTransitionHandle } from './viewTransition.vibe'
 

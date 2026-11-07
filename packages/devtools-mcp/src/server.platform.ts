@@ -1,4 +1,4 @@
-// A non-consuming stdin-close observer is missing (foldkit-158).
+// A non-consuming stdin-close observer is missing.
 // The native caller owns Effect resume and interruption cleanup;
 // the transport remains the sole stdin consumer.
 export const observeStdinClose = (

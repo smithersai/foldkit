@@ -1,5 +1,5 @@
 // requestAnimationFrame and its high-resolution timestamps are platform code that a .vibe module
-// does not use directly (VIP-33), and Effect has no service for the browser's animation callbacks,
+// does not use directly, and Effect has no service for the browser's animation callbacks,
 // so the frame loop lives here unchanged.
 
 /** Starts a `requestAnimationFrame` loop that reports the inter-frame delta in

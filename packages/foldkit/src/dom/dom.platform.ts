@@ -1,5 +1,5 @@
 // The document reads and writes that dialog, focus and scroll management need
-// are platform code that a .vibe module does not use directly (VIP-33), and
+// are platform code that a .vibe module does not use directly, and
 // Effect has no service for the DOM, so the raw calls live here. The behavior
 // itself is VibeLang in domBehavior.vibe.
 

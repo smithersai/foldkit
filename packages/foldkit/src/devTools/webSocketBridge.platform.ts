@@ -1,7 +1,7 @@
-// NOTE: raw platform access for webSocketBridge.vibe (VIP-33): VibeLang code
+// NOTE: raw platform access for webSocketBridge.vibe: VibeLang code
 // reaches the platform through Effect services, and Effect has none for the
 // console warning, the page's location and title or the window event target
-// yet (foldkit-50), so these calls stay here unchanged.
+// yet, so these calls stay here unchanged.
 
 /** @throws {never} */
 export const warnDevTools = (message: string, error: unknown): void => {

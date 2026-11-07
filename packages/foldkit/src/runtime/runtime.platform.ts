@@ -1,7 +1,7 @@
-// NOTE: raw platform access for runtime.vibe (VIP-33): development-only
+// NOTE: raw platform access for runtime.vibe: development-only
 // behavior reads Vite's HMR context, the reduced-motion media query, the
 // current location and the microtask queue, which no Effect service covers
-// yet (foldkit-25, foldkit-128, foldkit-129), so these reads stay here
+// yet, so these reads stay here
 // unchanged.
 
 export const hot = import.meta.hot

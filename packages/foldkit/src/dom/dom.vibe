@@ -14,7 +14,7 @@ import { unlockScroll } from './scrollLock.vibe'
 
 // NOTE: The dialog machinery, focus management and scrolling are plain
 // VibeLang in domBehavior.vibe, over the document reads and writes of
-// dom.platform.ts (VIP-33); this module keeps the public Effect API and
+// dom.platform.ts; this module keeps the public Effect API and
 // reaches them through hatches.
 
 const queryHTMLElement = effect (

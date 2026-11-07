@@ -53,7 +53,7 @@ export const loadSettings: Settings!! = effect {
 }
 
 // NetAddress parses bare addresses; Node's scoped-literal predicate is retained
-// only for zone-bearing inputs (foldkit-58).
+// only for zone-bearing inputs.
 const urlHost = (host: string): string => {
   const isIPv6Address = host.includes('%')
     ? isScopedIPv6(host)

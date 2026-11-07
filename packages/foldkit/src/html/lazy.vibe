@@ -21,7 +21,7 @@ import {
 // NOTE: kept as Effect's `Data.TaggedEnum` rather than a `data` declaration:
 // a native data declaration gives the constructor the type's doc comment,
 // where this API documents the constructor separately as @internal
-// (foldkit-16).
+// .
 /** Why a lazy call ran its view instead of reusing the cached result. */
 export type LazyMissReason = Data.TaggedEnum<{
   NoCachedEntry: {}

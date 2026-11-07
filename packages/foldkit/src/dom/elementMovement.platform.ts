@@ -1,4 +1,4 @@
-// The DOM observation is platform code that a .vibe module does not use directly (VIP-33), and
+// The DOM observation is platform code that a .vibe module does not use directly, and
 // Effect has no service for ResizeObserver or element geometry, so the raw code lives here unchanged.
 
 const rectToPosition = (rect: DOMRect): string => `${rect.x},${rect.y}`

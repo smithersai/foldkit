@@ -1,5 +1,5 @@
 // The document element's style, the touchmove listener and the iOS detection are platform code
-// that a .vibe module does not use directly (VIP-33), and Effect has no DOM service, so the raw
+// that a .vibe module does not use directly, and Effect has no DOM service, so the raw
 // code lives here unchanged.
 const scrollLockState = {
   count: 0,

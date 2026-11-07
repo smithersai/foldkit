@@ -1,7 +1,6 @@
-// NOTE: raw DOM access for inert.vibe (VIP-33): VibeLang code reaches the
+// NOTE: raw DOM access for inert.vibe: VibeLang code reaches the
 // platform through Effect services, and Effect has none for element lookup,
-// the document body or the HTML element predicate yet (foldkit-30,
-// foldkit-64), so these calls stay here unchanged.
+// the document body or the HTML element predicate yet, so these calls stay here unchanged.
 
 export const queryElement = (selector: string): Element | null =>
   document.querySelector(selector)

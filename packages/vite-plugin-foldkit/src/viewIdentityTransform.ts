@@ -125,7 +125,7 @@ const isNamedValueNode = (node: AstNode): node is NamedValueNode =>
 
 // NOTE: Vitest hoists `vi.hoisted(...)` and `vi.mock(...)` above every import of
 // the test module and runs their callbacks first, so a function branded inside one
-// would call the brand helper before its import is initialized (foldkit-101). Those
+// would call the brand helper before its import is initialized. Those
 // callbacks stay as written; only `vi` bound by an import of `vitest` counts, under
 // its local name, through a namespace import, or not at all when shadowed.
 const VITEST_MODULE = 'vitest'

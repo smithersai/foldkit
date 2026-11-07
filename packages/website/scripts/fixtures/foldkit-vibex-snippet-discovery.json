@@ -1,5 +1,4 @@
 {
-  "spec": "VIP-39: .vibex combines native syntax and JSX; declaration sidecars are .d.vibex.ts. Display discovery must retain native identity and verbatim source.",
   "cases": [
     {
       "name": "Effect",

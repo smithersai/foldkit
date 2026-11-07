@@ -1,4 +1,4 @@
-// NOTE: raw platform access for messageQueue.vibe (VIP-33): the drain budget
+// NOTE: raw platform access for messageQueue.vibe: the drain budget
 // reads the high-resolution clock and defers to a MessageChannel task, which
 // no Effect service covers yet, so these calls stay here unchanged.
 

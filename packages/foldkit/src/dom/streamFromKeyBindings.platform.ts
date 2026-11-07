@@ -1,5 +1,5 @@
 // Timers, the default document and window, and the user agent are platform code that a .vibe module
-// does not use directly (VIP-33); the key-binding listener installs synchronously, so the raw calls
+// does not use directly; the key-binding listener installs synchronously, so the raw calls
 // live here unchanged.
 
 export type TimerHandle = ReturnType<typeof setTimeout>

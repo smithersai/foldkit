@@ -62,7 +62,7 @@ export type PlaywrightBrowserType = Readonly<{
   launch: (options: { executablePath?: string }) => Promise<PlaywrightBrowser>
 }>
 
-// foldkit-106: createRequire has no Effect service; the module-relative
+// CreateRequire has no Effect service; the module-relative
 // require of the examples-e2e Playwright stays native.
 export const loadChromium = (manifestPath: string): PlaywrightBrowserType => {
   const requireFromE2e = createRequire(manifestPath)
@@ -71,7 +71,7 @@ export const loadChromium = (manifestPath: string): PlaywrightBrowserType => {
   return playwright.chromium
 }
 
-// foldkit-106: the gate exits the host itself after stopping the generated
+// The gate exits the host itself after stopping the generated
 // servers on SIGINT and SIGTERM, and on a failed run, without running the
 // program's finalizers, as the original did. Effect has no service for the
 // host's exit, so the one call stays native.

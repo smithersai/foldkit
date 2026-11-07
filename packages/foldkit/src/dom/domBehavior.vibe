@@ -25,7 +25,7 @@ import { makeOutsideIsolation } from './inert.js'
 // The dialog stack, its modal isolation, focus trapping, return focus and
 // scrolling: the behavior behind dom.vibe's Commands. The document reads and
 // writes it needs come from dom.platform.ts and domPredicates.platform.ts
-// (VIP-33); dom.vibe runs these plain functions through hatches.
+// ; dom.vibe runs these plain functions through hatches.
 
 export type ShowDialogOptions = Readonly<{
   focusSelector?: string

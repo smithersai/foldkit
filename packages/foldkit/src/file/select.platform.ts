@@ -1,5 +1,5 @@
 // The hidden file input and its events are platform code that a .vibe module does not use
-// directly (VIP-33), and Effect has no service for the file picker, so the raw code lives here
+// directly, and Effect has no service for the file picker, so the raw code lives here
 // unchanged.
 
 import type { File } from './file.vibe'

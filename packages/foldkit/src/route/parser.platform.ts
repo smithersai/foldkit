@@ -1,6 +1,6 @@
-// NOTE: raw platform access for parser.vibe (VIP-33): the development-only
+// NOTE: raw platform access for parser.vibe: the development-only
 // warning reads Vite's HMR flag and writes to the console, which no Effect
-// service covers yet (foldkit-128), so it stays here unchanged.
+// service covers yet, so it stays here unchanged.
 
 /** @throws {never} */
 export const warnIfNotSingleSegment = (

@@ -1,8 +1,6 @@
 {
   "key": "foldkit:scoped-fork-program-operands",
-  "inbox": ["foldkit-130", "foldkit-131"],
   "oracle": "Program construction is cold. Scheduled model updates coalesce until the quiet-window deadline; flush consumes the latest pending value, cancel drops it, and scope closure interrupts the timer without a callback. Compare every prefix of generated event sequences with an independent synchronous model.",
-  "source": "VIP-1, VIP-17; preserveScheduler public contract",
   "seed": 413943,
   "runs": 100,
   "delayMillis": 5,

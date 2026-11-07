@@ -1,7 +1,6 @@
-// NOTE: raw platform access for renderer.vibe (VIP-33): the render frame is
+// NOTE: raw platform access for renderer.vibe: the render frame is
 // scheduled with requestAnimationFrame and the duplicate-id scan runs under
-// Vite's HMR flag, which no Effect service covers yet (foldkit-47,
-// foldkit-128), so these calls stay here unchanged.
+// Vite's HMR flag, which no Effect service covers yet, so these calls stay here unchanged.
 
 export const isHot = !!import.meta.hot
 

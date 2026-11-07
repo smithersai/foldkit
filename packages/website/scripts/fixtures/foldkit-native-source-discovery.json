@@ -1,4 +1,3 @@
 {
-  "issue": "foldkit-22",
   "cases": [["main"], ["nested/main", "nested/library"], ["a", "x/y/z"]]
 }

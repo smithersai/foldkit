@@ -1,5 +1,4 @@
 {
-  "issue": "foldkit-58 and foldkit-134",
   "hosts": [
     "localhost",
     "::1",
