@@ -1,5 +1,0 @@
-{
-  "seed": 192055,
-  "runs": 200,
-  "pattern": "ResourceNotAvailable sleeps before native completion; other channels pass through"
-}

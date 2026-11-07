@@ -1,8 +1,0 @@
-interface Api { readonly Api: unique symbol }
-type ApiShape = {
-  readonly createTodo: (text: string) => import('effect/Effect').Effect<void>
-}
-declare const Api: import('effect/Context').Service<Api, ApiShape> & {
-  readonly Default: import('effect/Layer').Layer<Api>
-}
-declare const runtime: import('effect/reactivity/Atom').AtomRuntime<Api>

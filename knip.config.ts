@@ -65,6 +65,7 @@ const config: { ignore?: string | string[]; [key: string]: unknown } = {
         'src/main.vibe',
         'src/entry.server.vibe',
         'vite.scripts.config.ts',
+        'scripts/runPrerender.ts',
         'src/**/*.test.ts',
         'scripts/**/*.test.ts',
         'scripts/fixtures/foldkit-playground-launcher-environment.mjs',

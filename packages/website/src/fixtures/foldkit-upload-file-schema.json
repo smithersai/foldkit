@@ -1,7 +1,0 @@
-{
-  "files": ["commandInterruptKey", "commandInterruptible"],
-  "before": "Schema.instanceOf(File)",
-  "after": "File.File",
-  "seed": 88036,
-  "runs": 200
-}

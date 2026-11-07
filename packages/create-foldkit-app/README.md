@@ -63,6 +63,3 @@ The starter examples apply to `spa` rendering. The `ssg` and `ssr` modes scaffol
 ## License
 
 MIT
-
-Package installation uses VibeLang internally. Interrupting an installation sends
-the child its default termination signal and does not wait for an exit event.

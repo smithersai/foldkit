@@ -1,7 +1,0 @@
-{
-  "file": "routingQueryParams",
-  "before": "console.log(searchUrl)",
-  "after": "Effect.runSync(Console.log(searchUrl))",
-  "seed": 88041,
-  "runs": 200
-}

@@ -1,6 +1,0 @@
-{
-  "repo": "foldkit",
-  "pattern": "written callback return parentheses in keyboard and anchor helpers",
-  "typescript": "export const keyToIndex = (): ((key: string) => number) => (key: string): number => key.length\nexport const anchorValue = (): ((enabled: boolean) => string) => (enabled: boolean): string => enabled ? 'on' : 'off'\n",
-  "native": "export const keyToIndex = (): ((key: string) => number) => (key: string): infer _ => key.length\nexport const anchorValue = (): ((enabled: boolean) => string) => (enabled: boolean): infer _ => enabled ? 'on' : 'off'\n"
-}

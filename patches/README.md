@@ -43,14 +43,6 @@ re-export, its raw declaration, the real Knip CLI and 1,000 generated
 resolver cases with nested Unicode paths, ordinary alternatives and
 compiler registration controls.
 
-The UI keeps its original `.js` references to retained TypeScript
-modules. The compiler preserves written non-native paths under the
-accepted declaration spelling policy (decided detail 263).
-`scripts/native-written-returns.test.mjs` checks the minimized Foldkit
-callback contract and a batch of 250 generated callback shapes against
-stock TypeScript, with single-threaded raw declaration comparisons before
-and after formatting.
-
 ## `vite@8.3.1`
 
 Vite can report that a server is closed while its dependency optimizer still

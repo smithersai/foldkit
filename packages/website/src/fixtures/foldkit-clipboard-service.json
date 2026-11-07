@@ -1,7 +1,0 @@
-{
-  "files": ["src/main.vibe", "src/snippetCopy/update.vibe"],
-  "before": "try Clipboard.writeString(text)",
-  "after": "const clipboard = try Clipboard.Clipboard; try clipboard.writeString(text)",
-  "seed": 187034,
-  "runs": 150
-}

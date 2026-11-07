@@ -1,7 +1,0 @@
-{
-  "seed": 195053,
-  "runs": 200,
-  "producer": "src/page/home/demoTab.vibe",
-  "before": "const isActive = (tab: Tab): infer _ => (active: Tab): boolean => active === tab",
-  "after": "const isActive = (tab: Tab) => (active: Tab): boolean => active === tab"
-}

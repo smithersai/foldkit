@@ -51,7 +51,3 @@ See the [DevTools documentation](https://foldkit.dev/core/devtools) for the full
 ## License
 
 MIT
-
-The overlay uses VibeLang internally. Copying a payload preserves the displayed
-JSON format and returns the existing failure Message when serialization or
-clipboard access fails. Browser access uses the standard platform services.

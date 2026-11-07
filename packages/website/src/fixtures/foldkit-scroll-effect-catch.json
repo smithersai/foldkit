@@ -1,7 +1,0 @@
-{
-  "source": "src/main.vibe",
-  "before": "try scrolling catch () => undefined",
-  "outcomes": ["success", "failure", "defect", "interruption"],
-  "seed": 186035,
-  "runs": 80
-}

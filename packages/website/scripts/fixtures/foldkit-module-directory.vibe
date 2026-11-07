@@ -1,8 +1,0 @@
-import * as Path from 'effect/Path'
-
-// VIP-33/detail 90: acquire Path, run fromFileUrl, then call dirname.
-export effect function directoryFromModuleUrl(moduleUrl: URL) {
-  const paths = try Path.Path
-  const moduleFile = try Effect.orDie(paths.fromFileUrl(moduleUrl))
-  return paths.dirname(moduleFile)
-}

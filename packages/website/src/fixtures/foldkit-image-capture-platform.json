@@ -1,6 +1,0 @@
-{
-  "seed": 193045,
-  "runs": 200,
-  "source": "managedResourcesCommand",
-  "operation": "ImageCapture"
-}
