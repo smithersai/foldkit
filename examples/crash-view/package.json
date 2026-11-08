@@ -13,7 +13,7 @@
     "@foldkit/ui": "workspace:*",
     "effect": "4.1.1",
     "foldkit": "workspace:*",
-    "vibelang-runtime": "0.0.13"
+    "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.13.tgz"
   },
   "devDependencies": {
     "@foldkit/devtools": "workspace:*",
@@ -22,8 +22,8 @@
     "happy-dom": "^20.14.5",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
-    "vibelang": "0.0.13",
-    "vibelang-vite": "0.0.13",
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.13.tgz",
+    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.13.tgz",
     "vite": "^8.3.1",
     "vitest": "^5.0.2"
   }

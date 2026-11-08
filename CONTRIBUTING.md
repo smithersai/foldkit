@@ -8,6 +8,8 @@ For code style, read [`AGENTS.md`](./AGENTS.md). It is the reference for naming,
 
 Foldkit is a pnpm workspace.
 
+The migration branch uses VibeLang `0.0.13` release tarballs until that version is available on npm. Before installing, put the compiler, runtime, Vite integration, unplugin and native platform tarballs referenced by `pnpm-lock.yaml` in the gitignored `.vibelang-toolchain/` directory. Before npm publication, installation also needs a temporary local registry serving the unchanged native platform tarballs. Keep registry configuration local to the workspace. Package publication requires replacing these `file:` dependencies with npm versions first.
+
 ```sh
 pnpm install
 ```

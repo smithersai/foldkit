@@ -35,7 +35,7 @@
     "ws": "^8.21.3",
     "@jridgewell/trace-mapping": "^0.3.31",
     "@jridgewell/remapping": "^2.3.5",
-    "vibelang-runtime": "0.0.13"
+    "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.13.tgz"
   },
   "devDependencies": {
     "@types/node": "26.4.0",
@@ -50,8 +50,8 @@
     "vite-host": "npm:vite@8.2.1",
     "vitest": "^4.1.11",
     "fast-check": "^4.10.2",
-    "vibelang": "0.0.13",
-    "vibelang-vite": "0.0.13"
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.13.tgz",
+    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.13.tgz"
   },
   "keywords": [
     "vite",

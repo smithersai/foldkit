@@ -14,12 +14,12 @@
     "@effect/platform-node": "4.1.1",
     "@typing-game/shared": "workspace:*",
     "effect": "4.1.1",
-    "vibelang-runtime": "0.0.13"
+    "vibelang-runtime": "file:../../../.vibelang-toolchain/vibelang-runtime-0.0.13.tgz"
   },
   "devDependencies": {
     "@types/node": "26.4.0",
     "typescript": "^7.0.2",
-    "vibelang": "0.0.13",
+    "vibelang": "file:../../../.vibelang-toolchain/vibelang-0.0.13.tgz",
     "fast-check": "^4.10.2"
   }
 }

@@ -22,3 +22,4 @@ dist-test
 
 # Declaration sidecars that vibelang writes beside each .vibe module
 *.d.vibe.ts
+.vibelang-toolchain/

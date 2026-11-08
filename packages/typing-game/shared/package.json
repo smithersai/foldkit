@@ -12,10 +12,10 @@
   },
   "dependencies": {
     "effect": "4.1.1",
-    "vibelang-runtime": "0.0.13"
+    "vibelang-runtime": "file:../../../.vibelang-toolchain/vibelang-runtime-0.0.13.tgz"
   },
   "devDependencies": {
     "typescript": "^7.0.2",
-    "vibelang": "0.0.13"
+    "vibelang": "file:../../../.vibelang-toolchain/vibelang-0.0.13.tgz"
   }
 }
