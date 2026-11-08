@@ -33,7 +33,7 @@ export {
   type ClickedButton,
   type IgnoredMouseClick,
   type SuppressedSpaceScroll,
-} from './index.js'
+} from './index.vibe'
 
 export type {
   ActivationTrigger,
@@ -42,6 +42,6 @@ export type {
   ItemConfig,
   GroupHeading,
   Bundle,
-} from './index.js'
+} from './index.vibe'
 
 export type { AnchorConfig } from '../anchor/index.js'

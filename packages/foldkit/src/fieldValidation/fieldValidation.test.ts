@@ -19,7 +19,7 @@ import {
   match,
   validate,
   validateAll,
-} from './fieldValidation.js'
+} from './fieldValidation.vibe'
 import {
   type Rule,
   email,
@@ -36,7 +36,7 @@ import {
   resolveMessage,
   startsWith,
   url,
-} from './rule.js'
+} from './rule.vibe'
 
 describe('state constructors', () => {
   it('build tagged instances for each state', () => {

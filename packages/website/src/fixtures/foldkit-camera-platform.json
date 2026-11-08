@@ -1,0 +1,6 @@
+{
+  "source": "managedResources",
+  "operation": "getUserMedia",
+  "seed": 193042,
+  "runs": 200
+}

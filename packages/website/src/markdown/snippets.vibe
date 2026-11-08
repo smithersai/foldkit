@@ -1,0 +1,63 @@
+import { highlightedByPath, rawByPath } from './snippets.globs.ts'
+import { Array as Arr, String as Str, pipe } from 'effect'
+import cssSnippets from 'virtual:css-snippets'
+
+// SNIPPETS
+
+/**
+ * One compiled snippet: `raw` is the verbatim source for the copy button,
+ * `highlighted` is the build-time Shiki HTML rendered through `h.InnerHTML`.
+ */
+export type Snippet = Readonly<{
+  raw: string
+  highlighted: string
+  language: string
+}>
+
+type SnippetEntry = readonly [string, Snippet]
+
+const snippetName = (path: string): Option<string> =>
+  Arr.last(Str.split(path, '/')).map(
+    Str.replace(/\.(?:vibe|vibex|ts|tsx|elm|json|html|sh|txt)$/, ''),
+  )
+
+const snippetLanguage = (path: string): string => match (path) {
+  when let value and if (value.endsWith('.vibe') || value.endsWith('.vibex')):
+    'vibe';
+  when let value and if (value.endsWith('.tsx')): 'tsx';
+  when let value and if (value.endsWith('.ts')): 'typescript';
+  when let value and if (value.endsWith('.elm')): 'elm';
+  when let value and if (value.endsWith('.json')): 'json';
+  when let value and if (value.endsWith('.html')): 'html';
+  when let value and if (value.endsWith('.sh')): 'bash';
+  when let value and if (value.endsWith('.txt')): 'text';
+  default: 'text';
+}
+
+// NOTE: CSS snippets arrive through a virtual module rather than the glob
+// above. Vite claims every `.css` id for its own pipeline regardless of the
+// query, so a `?highlighted` CSS file gets parsed as stylesheet source and
+// breaks the bundle. Highlighting them at config time and handing over a plain
+// record sidesteps the pipeline entirely.
+const registry: globalThis.Record<string, Snippet> = pipe(
+  Record.toEntries(rawByPath),
+  Arr.filterMap(([path, raw]) =>
+    pipe(
+      Option.all([snippetName(path), Record.get(highlightedByPath, path)]),
+      Option.map(([name, highlighted]): SnippetEntry => [
+        name,
+        { raw, highlighted, language: snippetLanguage(path) },
+      ]),
+      Result.fromOption(() => undefined),
+    )
+  ),
+  Record.fromEntries,
+  (existing) => ({ ...existing, ...cssSnippets }),
+)
+
+/**
+ * Looks up a compiled snippet by its file basename, for example
+ * `"counterCommands"` for `src/snippet/counterCommands.ts`.
+ */
+export const lookupSnippet = (name: string): Option<Snippet> =>
+  Record.get(registry, name)

@@ -3,8 +3,8 @@ import type { Html, HtmlBuilder } from 'foldkit/html'
 
 import { Checkbox, Fieldset, Input, Textarea } from '@foldkit/ui'
 
-import { Message as UiMessage } from '../message'
-import type { UiModel } from '../model'
+import { Message as UiMessage } from '../message.vibe'
+import type { UiModel } from '../model.vibe'
 
 const FIELDSET_CHECKBOX_DEMO_ID = 'fieldset-checkbox-demo'
 const FIELDSET_DISABLED_CHECKBOX_ID = 'fieldset-disabled-checkbox'

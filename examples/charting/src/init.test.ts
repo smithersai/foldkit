@@ -1,8 +1,8 @@
 import { Array } from 'effect'
 import { expect, test } from 'vitest'
 
-import { FetchTelemetry } from './command'
-import { init } from './init'
+import { FetchTelemetry } from './command.vibe'
+import { init } from './init.vibe'
 
 test('seeds loading state and queues a telemetry fetch', () => {
   const init_ = init()

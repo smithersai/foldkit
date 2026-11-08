@@ -2,8 +2,8 @@ import { Array, Option, Schema } from 'effect'
 import { inertHtml as ih } from 'foldkit/html'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { parseMarkdown } from '../vite/vite.js'
-import { defaultViews, islandsFor, view } from './view.js'
+import { parseMarkdown } from '../vite/vite.vibe'
+import { defaultViews, islandsFor, view } from './view.vibe'
 
 type TestVNode = Readonly<{
   sel?: string | undefined

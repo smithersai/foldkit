@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { selectionSubmodelFactoryAtModuleScope } from '../../src/rules/selection-submodel-factory-at-module-scope.ts'
+import { selectionSubmodelFactoryAtModuleScope } from '../../src/rules/selection-submodel-factory-at-module-scope.vibe'
 
 const callWithCallee = (
   callee: unknown,

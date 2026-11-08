@@ -3,13 +3,13 @@ import { Html, inertHtml as ih } from 'foldkit/html'
 import * as Markdown from '@foldkit/markdown'
 
 import { type CodeBlock } from '../component'
-import { type RenderHeadingLink } from '../prose'
+import { type RenderHeadingLink } from '../prose.vibe'
 import { type TableOfContentsEntry } from '../tableOfContentsEntry'
-import { type DemoLabels, collectDemoLabels } from './demoLabel'
-import { docIslands } from './islands'
-import { type Slots } from './slots'
-import { type HeadingIds, collectHeadings } from './tableOfContents'
-import { docViews } from './views'
+import { type DemoLabels, collectDemoLabels } from './demoLabel.vibe'
+import { docIslands } from './islands.vibe'
+import { type Slots } from './slots.vibe'
+import { type HeadingIds, collectHeadings } from './tableOfContents.vibe'
+import { docViews } from './views.vibe'
 
 const renderDocument = (
   document: Markdown.MarkdownDocument,

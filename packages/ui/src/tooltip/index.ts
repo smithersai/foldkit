@@ -1,4 +1,4 @@
-export { Message, OutMessage } from './message.js'
+export { Message, OutMessage } from './message.vibe'
 export type {
   BlurredTrigger,
   EnteredTrigger,
@@ -8,5 +8,5 @@ export type {
   PressedEscape,
   PressedPointerOnTrigger,
   Shown,
-} from './message.js'
-export * from './tooltip.js'
+} from './message.vibe'
+export * from './tooltip.vibe'

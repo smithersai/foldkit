@@ -1,0 +1,124 @@
+import { Array as Arr, String as Str } from 'effect'
+import { type Update } from 'foldkit'
+import { modifyFields } from 'foldkit/struct'
+
+import { optionWhen } from '../../../optionWhen.vibe'
+import { RoomsClient } from '../../../rpc.vibe'
+import { FocusRoomIdInput, FocusUsernameInput, JoinRoom } from '../command.vibe'
+import { Message, OutMessage } from '../message.vibe'
+import { HomeStep, Model } from '../model.vibe'
+import { handleKeyPressed } from './handleKeyPressed.vibe'
+
+export type UpdateReturn = Update.ReturnWithOutMessage<
+  Model,
+  Message,
+  OutMessage,
+  RoomsClient
+>
+
+export const update = (model: Model, message: Message) =>
+  Message.match<UpdateReturn>(message, {
+    CompletedFocusUsernameInput: () => ({ model }),
+
+    CompletedFocusRoomIdInput: () => ({ model }),
+
+    SubmittedUsernameForm: () =>
+      match (model.homeStep) {
+        when { _tag: 'EnterUsername', let username }: do {
+          const nextModel = Str.isNonEmpty(username)
+            ? modifyFields(model, {
+              homeStep: () =>
+                HomeStep.SelectAction({
+                  username,
+                  selectedAction: 'CreateRoom',
+                }),
+            })
+            : model
+          const result = { model: nextModel }
+          result
+        };
+        default: ({ model });
+      },
+
+    PressedKey: (message) => handleKeyPressed(model)(message),
+
+    ChangedUsername: ({ value }) => match (model.homeStep) {
+      when { _tag: 'EnterUsername' }: ({
+        model: modifyFields(model, {
+          homeStep: () => HomeStep.EnterUsername({ username: value }),
+          formError: () => Option.none(),
+        }),
+      });
+      default: ({ model });
+    },
+
+    BlurredUsernameInput: () => ({
+      model,
+      commands: [FocusUsernameInput()],
+    }),
+
+    BlurredRoomIdInput: () => ({
+      model,
+      commands: [FocusRoomIdInput()],
+    }),
+
+    ChangedRoomId: ({ value }) => match (model.homeStep) {
+      when { _tag: 'EnterRoomId', let username }: ({
+        model: modifyFields(model, {
+          homeStep: () =>
+            HomeStep.EnterRoomId({
+              username,
+              roomId: value,
+            }),
+          formError: () => Option.none(),
+        }),
+      });
+      default: ({ model });
+    },
+
+    SubmittedJoinRoomForm: () =>
+      match (model.homeStep) {
+        when { _tag: 'EnterRoomId', let username, let roomId }:
+          roomId === 'exit'
+            ? {
+              model: modifyFields(model, {
+                homeStep: () =>
+                  HomeStep.SelectAction({
+                    username,
+                    selectedAction: 'JoinRoom',
+                  }),
+              }),
+            }
+            : do {
+              const maybeJoin = optionWhen(
+                Str.isNonEmpty(roomId),
+                () => JoinRoom({ username, roomId }),
+              )
+              const result = { model, commands: Arr.fromOption(maybeJoin) }
+              result
+            };
+        default: ({ model });
+      },
+
+    SucceededCreateRoom: ({ roomId, player }) => ({
+      model,
+      outMessage: OutMessage.CreatedRoom({ roomId, player }),
+    }),
+
+    SucceededJoinRoom: ({ roomId, player }) => ({
+      model,
+      outMessage: OutMessage.JoinedRoom({ roomId, player }),
+    }),
+
+    FailedCreateRoom: ({ error }) => ({
+      model: modifyFields(model, {
+        formError: () => Option.some(error),
+      }),
+    }),
+
+    FailedJoinRoom: ({ error }) => ({
+      model: modifyFields(model, {
+        formError: () => Option.some(error),
+      }),
+    }),
+  })

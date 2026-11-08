@@ -1,0 +1,28 @@
+import { Runtime } from 'foldkit'
+
+import { Message, Model, crashView, init, update, view } from './main.vibe'
+import { getRootContainer } from './rootContainer.ts'
+
+const application = Runtime.makeApplication({
+  Model,
+  init,
+  update: (model: Model, message: Message) => update(model, message),
+  view,
+  // Remove me to see the default crash view
+  crash: {
+    view: crashView,
+    report: ({ error, model, message }): void => {
+      Effect.runSync(Console.log('Crash report:', {
+        error,
+        model,
+        message: message.getOrUndefined(),
+      }))
+    },
+  },
+  container: getRootContainer(),
+  devTools: {
+    Message,
+  },
+})
+
+Runtime.run(application)

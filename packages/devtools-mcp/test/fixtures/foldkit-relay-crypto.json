@@ -1,0 +1,17 @@
+{
+  "seed": 413964,
+  "runs": 500,
+  "cases": [
+    {
+      "token": "0000000000000000000000000000000000000000000000000000000000000000",
+      "role": "client",
+      "challenge": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "token": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "role": "server",
+      "challenge": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ],
+  "byteCounts": [0, 1, 2, 31, 32, 33, 64]
+}

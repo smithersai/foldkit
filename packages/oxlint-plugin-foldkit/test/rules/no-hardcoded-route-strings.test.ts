@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { noHardcodedRouteStrings } from '../../src/rules/no-hardcoded-route-strings.ts'
+import { noHardcodedRouteStrings } from '../../src/rules/no-hardcoded-route-strings.vibe'
 
 const templateLiteral = (cookedHead: string | null) => ({
   type: 'TemplateLiteral',

@@ -2,10 +2,10 @@ import { Context, Option } from 'effect'
 import { describe, expect, it } from 'vitest'
 
 import { beginRender, createBoundaryRegistry } from './html/boundary.js'
-import { __htmlBuilder } from './html/index.js'
-import { clearRuntime, setRuntime } from './html/runtimeSingleton.js'
+import { __htmlBuilder } from './html/index.vibe'
+import { clearRuntime, setRuntime } from './html/runtimeSingleton.vibe'
 import { h } from './snabbdom/index.js'
-import { type VNode, __patchVNode } from './vdom.js'
+import { type VNode, __patchVNode } from './vdom.vibe'
 
 const spanCountsIn = (root: Node | undefined): ReadonlyArray<number> => {
   if (!(root instanceof Element)) {

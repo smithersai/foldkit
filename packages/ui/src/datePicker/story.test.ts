@@ -5,8 +5,8 @@ import { expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import * as UiCalendar from '../calendar/index.js'
-import * as Popover from '../popover/index.js'
+import * as UiCalendar from '../calendar/index.vibe'
+import * as Popover from '../popover/index.vibe'
 import {
   Message,
   OutMessage,
@@ -21,7 +21,7 @@ import {
   reflectMinDate,
   selectDate,
   update,
-} from './index.js'
+} from './index.vibe'
 
 const today = Calendar.make(2026, 4, 13)
 

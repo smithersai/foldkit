@@ -14,10 +14,10 @@ import { describe, test } from 'vitest'
 
 import { Tabs } from '@foldkit/ui'
 
-import { completeModel, initialModel } from './main.fixture'
-import { Submission } from './model'
-import { update } from './update'
-import { view } from './view/view'
+import { completeModel, initialModel } from './main.fixture.vibe'
+import { Submission } from './model.vibe'
+import { update } from './update.vibe'
+import { view } from './view/view.vibe'
 
 const resolveFocusTab = Command.resolve(
   Tabs.FocusTab,

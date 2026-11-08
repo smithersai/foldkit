@@ -1,0 +1,55 @@
+diff --git a/index.js b/index.js
+index d76b4644c3572a5744b93c08f630264762f8ece2..d24dd92becea45e998756edc7f438809c204c6d2 100644
+--- a/index.js
++++ b/index.js
+@@ -33,9 +33,37 @@ const defaultLookups = {
+   '.svelte': sfcLookup,
+   '.ts': tsLookup,
+   '.tsx': tsLookup,
++  '.vibe': tsLookup,
++  '.vibex': tsLookup,
+   '.vue': sfcLookup
+ };
+ 
++// VibeLang modules: a dependency written as ./module.vibe (or without an
++// extension) resolves to the .vibe/.vibex source, and a declaration sidecar
++// (module.d.vibe.ts) resolves back to the source beside it, so the graph
++// follows the implementation rather than its emitted types.
++const VIBE_EXTENSIONS = ['.vibe', '.vibex'];
++
++function vibeSource(result) {
++  const match = /^(.*)\.d\.(vibe|vibex)\.ts$/.exec(result);
++  if (!match) return result;
++  const source = `${match[1]}.${match[2]}`;
++  return fs.existsSync(source) ? source : result;
++}
++
++function vibeLookup(dependency, filename) {
++  if (!dependency || !isRelativePath(dependency)) return '';
++  resolve ||= require('resolve');
++  try {
++    return resolve.sync(dependency, {
++      basedir: path.dirname(filename),
++      extensions: [...VIBE_EXTENSIONS, '.ts', '.tsx', '.d.ts', '.js', '.jsx', '.mjs', '.cjs', '.json']
++    });
++  } catch {
++    return '';
++  }
++}
++
+ /**
+  * @param {Object} options
+  * @param {string} options.partial The dependency being looked up
+@@ -355,6 +383,12 @@ function tsLookup({ dependency, filename, directory, webpackConfig, tsConfig, ts
+     }
+   }
+ 
++  if (!result) {
++    result = vibeLookup(dependency, filename);
++  }
++
++  result = vibeSource(result);
++
+   debug(`result: ${result}`);
+   return result ? path.resolve(result) : '';
+ }

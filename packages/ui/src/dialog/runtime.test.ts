@@ -4,7 +4,7 @@ import * as Runtime from 'foldkit/runtime'
 import { modifyFields } from 'foldkit/struct'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { Message, Model, boot, update, view } from './index.js'
+import { Message, Model, boot, update, view } from './index.vibe'
 
 const dialogId = 'preserved-dialog'
 

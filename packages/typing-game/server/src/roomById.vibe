@@ -1,0 +1,26 @@
+import * as Shared from '@typing-game/shared'
+
+export const getById = effect (roomById: Shared.RoomById, id: string) => match (HashMap.get(roomById, id)) {
+  when Option.Some(let room): room;
+  when Option.None: throw new Shared.RoomNotFoundError({ roomId: id });
+}
+
+export const updateRoom = (
+  roomByIdRef: SubscriptionRef<Shared.RoomById>,
+  roomId: string,
+) =>
+effect (f: (room: Shared.Room) => Shared.Room) =>
+  try SubscriptionRef.updateEffect(roomByIdRef, effect roomById => {
+    const room = try getById(roomById, roomId)
+    const updatedRoom = f(room)
+    return HashMap.set(roomById, roomId, updatedRoom)
+  })
+
+export const updateRoomStatus = (
+  roomByIdRef: SubscriptionRef<Shared.RoomById>,
+  roomId: string,
+) =>
+effect (status: Shared.GameStatus) =>
+  try updateRoom(roomByIdRef, roomId)(
+    Struct.evolve({ status: () => status }),
+  )

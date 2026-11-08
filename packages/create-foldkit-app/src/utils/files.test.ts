@@ -5,7 +5,7 @@ import { expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import { applyPackageManager } from './files.js'
+import { applyPackageManager } from './files.vibe'
 
 const templatePath = (relativePath: string): string =>
   fileURLToPath(new URL(`../../templates/${relativePath}`, import.meta.url))

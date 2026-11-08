@@ -58,6 +58,8 @@ View-function identity and stable keys keep that lifecycle attached to the right
 
 Portal-to-body is a small example. When an overlay enters the DOM, its Mount moves the live element to `document.body` so it can escape clipping ancestors. When the element unmounts, the paired release removes it.
 
+Get the page through `Experimental.Document.Document` and provide `ExperimentalBrowserDocument.layer` at the native boundary. Release removes the same element on unmount.
+
 ::Snippet{name="mountPortalToBody" label="Portal-to-body"}
 
 #### Mount Work Requirements

@@ -1,0 +1,11 @@
+export schema Direction = 'Up' | 'Down' | 'Left' | 'Right'
+
+export const opposite = (direction: Direction): Direction => match (direction) {
+  when 'Up': 'Down';
+  when 'Down': 'Up';
+  when 'Left': 'Right';
+  when 'Right': 'Left';
+}
+
+export const isOpposite = (a: Direction, b: Direction): boolean =>
+  opposite(a) === b

@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { gotWrapperCarriesOnlyRouting } from '../../src/rules/got-wrapper-carries-only-routing.ts'
+import { gotWrapperCarriesOnlyRouting } from '../../src/rules/got-wrapper-carries-only-routing.vibe'
 
 const message = (name: string, fields: unknown = Testing.objectExpr([])) => ({
   key: name,

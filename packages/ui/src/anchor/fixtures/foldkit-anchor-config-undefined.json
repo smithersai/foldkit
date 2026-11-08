@@ -1,0 +1,58 @@
+[
+  {
+    "value": {},
+    "presentUndefined": ["placement"]
+  },
+  {
+    "value": {},
+    "presentUndefined": ["gap"]
+  },
+  {
+    "value": {},
+    "presentUndefined": ["offset"]
+  },
+  {
+    "value": {},
+    "presentUndefined": ["padding"]
+  },
+  {
+    "value": {},
+    "presentUndefined": ["portal"]
+  },
+  {
+    "value": {},
+    "presentUndefined": ["isPlacementLocked"]
+  },
+  {
+    "value": {},
+    "presentUndefined": [
+      "placement",
+      "gap",
+      "offset",
+      "padding",
+      "portal",
+      "isPlacementLocked"
+    ]
+  },
+  {
+    "value": {
+      "padding": {}
+    },
+    "presentUndefined": []
+  },
+  {
+    "value": {
+      "padding": {
+        "top": null
+      }
+    },
+    "presentUndefined": []
+  },
+  {
+    "value": {
+      "gap": "invalid",
+      "portal": 0
+    },
+    "presentUndefined": []
+  }
+]

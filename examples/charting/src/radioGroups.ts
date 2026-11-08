@@ -1,6 +1,6 @@
 import { RadioGroup } from '@foldkit/ui'
 
-import type { ChartMode, PackageId, Period } from './domain'
+import type { ChartMode, PackageId, Period } from './domain.vibe'
 
 export const CHART_MODE_RADIO_GROUP_ID = 'chart-mode'
 export const PACKAGE_RADIO_GROUP_ID = 'package'

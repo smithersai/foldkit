@@ -9,7 +9,7 @@ export {
   make,
   toDateLocal,
   unsafeMake,
-} from './calendarDate.js'
+} from './calendarDate.vibe'
 
 export {
   addDays,
@@ -20,7 +20,7 @@ export {
   subtractDays,
   subtractMonths,
   subtractYears,
-} from './arithmetic.js'
+} from './arithmetic.vibe'
 
 export {
   between,
@@ -34,7 +34,7 @@ export {
   max,
   min,
   Order,
-} from './comparison.js'
+} from './comparison.vibe'
 
 export {
   DayOfWeek,
@@ -43,9 +43,9 @@ export {
   firstOfMonth,
   lastOfMonth,
   startOfWeek,
-} from './info.js'
+} from './info.vibe'
 
-export { today } from './today.js'
+export { today } from './today.vibe'
 
 export {
   DateFormat,
@@ -58,4 +58,4 @@ export {
   formatShort,
   LocaleConfig,
   MonthYearFormat,
-} from './locale.js'
+} from './locale.vibe'

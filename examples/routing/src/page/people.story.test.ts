@@ -9,7 +9,7 @@ import {
   SearchResults,
   searchPeople,
   update,
-} from './people'
+} from './people.vibe'
 
 const givenLoaded = (searchInput: string) =>
   given(

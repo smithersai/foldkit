@@ -7,7 +7,7 @@ export {
   EventPropagation,
   inertHtml,
   TextDirection,
-} from './index.js'
+} from './index.vibe'
 
 export type {
   Attribute,
@@ -18,4 +18,4 @@ export type {
   KeyboardModifiers,
   TagName,
   TextareaAttribute,
-} from './index.js'
+} from './index.vibe'

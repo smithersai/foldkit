@@ -6,15 +6,15 @@ import {
   __createBoundaryRegistry as createHtmlBoundaryRegistry,
   __htmlBuilder as htmlBuilderFor,
   __setRuntime as setHtmlRuntime,
-} from '../html/index.js'
-import type { Document, Html, HtmlBuilder } from '../html/index.js'
+} from '../html/index.vibe'
+import type { Document, Html, HtmlBuilder } from '../html/index.vibe'
 import {
   LazyMissReason,
   type LazyResolution,
   observeLazyResolutions,
-} from '../html/lazy.js'
-import { MountTracker } from '../mount/index.js'
-import { Dispatch } from '../runtime/dispatch.js'
+} from '../html/lazy.vibe'
+import { MountTracker } from '../mount/index.vibe'
+import { Dispatch } from '../runtime/dispatch.vibe'
 
 type LazyMiss = Readonly<{
   slotId: number

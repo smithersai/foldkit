@@ -5,7 +5,7 @@ import { describe, test } from 'vitest'
 
 import { Listbox } from '@foldkit/ui'
 
-import { AppRoute, type Model, Sorting, update, view } from './main'
+import { AppRoute, type Model, Sorting, update, view } from './main.vibe'
 
 const browseModel: Model = {
   route: AppRoute.Browse({

@@ -1,7 +1,7 @@
 import { pipe } from 'effect'
 import { describe, expect, it } from 'vitest'
 
-import { make } from './calendarDate.js'
+import { make } from './calendarDate.vibe'
 import {
   Equivalence,
   Order,
@@ -14,7 +14,7 @@ import {
   isEqual,
   max,
   min,
-} from './comparison.js'
+} from './comparison.vibe'
 
 describe('isEqual', () => {
   it('returns true for identical dates', () => {

@@ -6,7 +6,7 @@ import {
   preservedScrollStorageKey,
   restorePreservedScrollPosition,
   takePreservedScrollPosition,
-} from './scrollPreservation.js'
+} from './scrollPreservation.vibe'
 
 const RUNTIME_ID = 'app'
 

@@ -1,8 +1,8 @@
 import { type Update } from 'foldkit'
 import { modifyFields } from 'foldkit/struct'
 
-import { Message } from './message'
-import { type Model } from './model'
+import { Message } from './message.vibe'
+import { type Model } from './model.vibe'
 
 export const update = (model: Model, message: Message) =>
   Message.match<Update.Return<Model, Message>>(message, {

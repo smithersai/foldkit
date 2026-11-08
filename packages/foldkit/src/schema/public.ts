@@ -1,2 +1,2 @@
-export { defineTaggedUnion, taggedStruct } from './index.js'
-export type { CallableTaggedStruct, TaggedUnion } from './index.js'
+export { defineTaggedUnion, taggedStruct } from './index.vibe'
+export type { CallableTaggedStruct, TaggedUnion } from './index.vibe'

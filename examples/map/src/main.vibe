@@ -1,0 +1,804 @@
+import clsx from 'clsx'
+import { Array as Arr, String as Str } from 'effect'
+import { Command, Mount, Runtime, Update } from 'foldkit'
+import * as Dom from 'foldkit/dom'
+import type { Document, Html } from 'foldkit/html'
+import { HtmlBuilder } from 'foldkit/html'
+import { defineMessageUnion } from 'foldkit/message'
+import { defineTaggedUnion } from 'foldkit/schema'
+import { modifyFields } from 'foldkit/struct'
+import type { Map as MapInstance } from 'maplibre-gl'
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
+
+import { Geolocation as BrowserGeolocation } from '@effect/platform-browser'
+import { Button, Input } from '@foldkit/ui'
+import {
+  asHtmlElement,
+  createMarkerButton,
+  geolocationIsUnavailable,
+  isElement,
+  isHtmlElement,
+  lockBodyScroll,
+  registerMapListeners,
+  unlockBodyScroll,
+} from './mapPlatform.ts'
+
+import { Location, featuredLocations } from './locations.vibe'
+import { getMap, removeMap, setMap } from './mapHost.vibe'
+
+// CONSTANT
+
+const INITIAL_MAP_ZOOM = 1
+const SELECTED_LOCATION_ZOOM = 12
+const USER_LOCATION_ZOOM = 13
+const GEOLOCATION_TIMEOUT_MS = 10_000
+
+// MODEL
+
+schema Bounds {
+  readonly west: number
+  readonly south: number
+  readonly east: number
+  readonly north: number
+}
+
+schema LngLat { readonly lng: number; readonly lat: number }
+
+export const GeolocateState = defineTaggedUnion({
+  Idle: {},
+  Locating: {},
+  Failed: { reason: Schema.String },
+})
+export type GeolocateState = typeof GeolocateState.Type
+
+export const Model = Schema.Struct({
+  locations: Schema.Array(Location),
+  searchQuery: Schema.String,
+  maybeMapHostId: Schema.Option(Schema.String),
+  maybeMapError: Schema.Option(Schema.String),
+  maybeBounds: Schema.Option(Bounds),
+  maybeSelectedLocationId: Schema.Option(Schema.String),
+  maybeUserLocation: Schema.Option(LngLat),
+  geolocateState: GeolocateState,
+})
+export type Model = typeof Model.Type
+
+// MESSAGE
+
+export const Message = defineMessageUnion({
+  SucceededMountMap: { hostId: Schema.String },
+  FailedMountMap: { reason: Schema.String },
+  MovedMap: { bounds: Bounds },
+  ClickedMarker: { locationId: Schema.String },
+  ClickedLocation: { locationId: Schema.String },
+  UpdatedSearchQuery: { value: Schema.String },
+  ClickedFindMe: {},
+  DismissedGeolocate: {},
+  SucceededGeolocate: {
+    lng: Schema.Number,
+    lat: Schema.Number,
+  },
+  FailedGeolocate: { reason: Schema.String },
+  SucceededFlyTo: {},
+  FailedFlyTo: { reason: Schema.String },
+  CompletedFocusSearchInput: {},
+  CompletedLockBodyScroll: {},
+  CompletedUnlockBodyScroll: {},
+})
+
+export type Message = typeof Message.Type
+
+type MountMapMessage =
+  | typeof Message.SucceededMountMap.Type
+  | typeof Message.FailedMountMap.Type
+  | typeof Message.MovedMap.Type
+  | typeof Message.ClickedMarker.Type
+
+// COMMAND
+
+export const FlyTo = Command.define('FlyTo', {
+  args: {
+    maybeHostId: Schema.Option(Schema.String),
+    lng: Schema.Number,
+    lat: Schema.Number,
+    zoom: Schema.Number,
+  },
+  messages: [Message.SucceededFlyTo, Message.FailedFlyTo],
+  execute: (
+    { maybeHostId, lng, lat, zoom },
+  ): ReturnType<typeof Message.SucceededFlyTo | typeof Message.FailedFlyTo>!! => {
+    if (maybeHostId is Option.None) {
+      const message = Message.FailedFlyTo({
+        reason: 'FlyTo dispatched before the map mounted.',
+      })
+      return effect {
+        return message
+      }
+    }
+    const hostId = maybeHostId.value
+    const maybeMap = getMap(hostId)
+    if (maybeMap is Option.None) {
+      const message = Message.FailedFlyTo({
+        reason: `Could not find a live map for hostId ${hostId}.`,
+      })
+      return effect {
+        return message
+      }
+    }
+    const map = maybeMap.value
+    return effect {
+      // sync executes this callback as plain TypeScript against MapLibre.
+      return try sync(
+        (map, lng, lat, zoom, Message) => {
+          map.flyTo({ center: [lng, lat], zoom, essential: true })
+          return Message.SucceededFlyTo()
+        },
+        map,
+        lng,
+        lat,
+        zoom,
+        Message,
+      )
+    }
+  },
+})
+
+const geolocationFailureMessage = (
+  error: BrowserGeolocation.GeolocationError,
+): string => {
+  const cause = error.reason.cause
+  if (typeof cause === 'object' && cause !== null && 'message' in cause) {
+    const message = cause.message
+    if (typeof message === 'string') return message
+  }
+  return error.message
+}
+
+export const Geolocate = Command.define('Geolocate', {
+  messages: [Message.SucceededGeolocate, Message.FailedGeolocate],
+  execute: effect {
+    if (try sync(geolocationIsUnavailable)) {
+      return Message.FailedGeolocate({
+        reason: 'Geolocation is not available in this browser context.',
+      })
+    }
+    provide BrowserGeolocation.layer {
+      return (effect {
+        const geolocation = try BrowserGeolocation.Geolocation
+        const position = try geolocation.getCurrentPosition({
+          enableHighAccuracy: false,
+          timeout: GEOLOCATION_TIMEOUT_MS,
+        })
+        return Message.SucceededGeolocate({
+          lng: position.coords.longitude,
+          lat: position.coords.latitude,
+        })
+      }) catch (error) =>
+        Message.FailedGeolocate({ reason: geolocationFailureMessage(error) })
+    }
+  },
+})
+
+const SEARCH_INPUT_ID = 'map-search-input'
+
+export const FocusSearchInput = Command.define('FocusSearchInput', {
+  messages: [Message.CompletedFocusSearchInput],
+  execute: do {
+    const selector = `#${SEARCH_INPUT_ID}`
+    const completed = Message.CompletedFocusSearchInput()
+    effect {
+      Dom.focus(selector) catch () => undefined
+      return completed
+    }
+  },
+})
+
+export const LockBodyScroll = Command.define('LockBodyScroll', {
+  messages: [Message.CompletedLockBodyScroll],
+  execute: effect {
+    try sync(lockBodyScroll)
+    return Message.CompletedLockBodyScroll()
+  },
+})
+
+export const UnlockBodyScroll = Command.define('UnlockBodyScroll', {
+  messages: [Message.CompletedUnlockBodyScroll],
+  execute: effect {
+    try sync(unlockBodyScroll)
+    return Message.CompletedUnlockBodyScroll()
+  },
+})
+
+// UPDATE
+
+const findLocation = (
+  model: Model,
+  locationId: string,
+): Option<Location> =>
+  Arr.findFirst(model.locations, ({ id }) => Equal.equals(id, locationId))
+
+export const update = (model: Model, message: Message) =>
+  Message.match<Update.Return<Model, Message>>(message, {
+    SucceededMountMap: ({ hostId }) => ({
+      model: modifyFields(model, { maybeMapHostId: () => Option.some(hostId) }),
+    }),
+
+    FailedMountMap: ({ reason }) => ({
+      model: modifyFields(model, { maybeMapError: () => Option.some(reason) }),
+    }),
+
+    MovedMap: ({ bounds }) => ({
+      model: modifyFields(model, { maybeBounds: () => Option.some(bounds) }),
+    }),
+
+    ClickedMarker: ({ locationId }) => ({
+      model: modifyFields(model, {
+        maybeSelectedLocationId: () => Option.some(locationId),
+      }),
+    }),
+
+    ClickedLocation: (
+      { locationId },
+    ) =>
+      match (findLocation(model, locationId)) {
+        when Option.None: ({ model });
+        when Option.Some(let matchedOptionValue): do {
+          const { lng, lat } = matchedOptionValue
+          ;({
+            model: modifyFields(model, {
+              maybeSelectedLocationId: () => Option.some(locationId),
+            }),
+            commands: [
+              FlyTo({
+                maybeHostId: model.maybeMapHostId,
+                lng,
+                lat,
+                zoom: SELECTED_LOCATION_ZOOM,
+              }),
+            ],
+          })
+        };
+      },
+
+    UpdatedSearchQuery: ({ value }) => ({
+      model: modifyFields(model, { searchQuery: () => value }),
+    }),
+
+    ClickedFindMe: () => ({
+      model: modifyFields(model, {
+        geolocateState: () => GeolocateState.Locating(),
+      }),
+      commands: [LockBodyScroll(), Geolocate()],
+    }),
+
+    DismissedGeolocate: () => ({
+      model: modifyFields(model, {
+        geolocateState: () => GeolocateState.Idle(),
+      }),
+      commands: [UnlockBodyScroll()],
+    }),
+
+    SucceededGeolocate: ({ lng, lat }) => ({
+      model: modifyFields(model, {
+        maybeUserLocation: () => Option.some({ lng, lat }),
+        geolocateState: () => GeolocateState.Idle(),
+      }),
+      commands: [
+        UnlockBodyScroll(),
+        FlyTo({
+          maybeHostId: model.maybeMapHostId,
+          lng: lng,
+          lat: lat,
+          zoom: USER_LOCATION_ZOOM,
+        }),
+      ],
+    }),
+
+    FailedGeolocate: ({ reason }) => ({
+      model: modifyFields(model, {
+        geolocateState: () => GeolocateState.Failed({ reason }),
+      }),
+    }),
+
+    SucceededFlyTo: () => ({ model }),
+    FailedFlyTo: () => ({ model }),
+    CompletedFocusSearchInput: () => ({ model }),
+    CompletedLockBodyScroll: () => ({ model }),
+    CompletedUnlockBodyScroll: () => ({ model }),
+  })
+
+// INIT
+
+export const init: Runtime.ApplicationInit<Model, Message> = () => ({
+  model: {
+    locations: featuredLocations,
+    searchQuery: '',
+    maybeMapHostId: Option.none(),
+    maybeMapError: Option.none(),
+    maybeBounds: Option.none(),
+    maybeSelectedLocationId: Option.none(),
+    maybeUserLocation: Option.none(),
+    geolocateState: GeolocateState.Idle(),
+  },
+  commands: [FocusSearchInput()],
+})
+
+// MAP MOUNT
+
+const toMapMountError = (error: unknown): Error =>
+  error instanceof Error ? error : new Error(`Failed to mount map: ${error}`)
+
+const addLocationMarkers = effect (
+  map: MapInstance,
+  maplibre: typeof import('maplibre-gl'),
+): void!Error => {
+  // Effect.try executes its first argument as plain TypeScript against MapLibre.
+  try Effect.try({
+    try: () =>
+      Arr.forEach(featuredLocations, ({ id, lng, lat }) => {
+        const markerElement = createMarkerButton()
+        markerElement.setAttribute('data-location-id', id)
+        markerElement.setAttribute('aria-label', `Marker: ${id}`)
+        markerElement.className = markerStyle
+        new maplibre.Marker({ element: markerElement })
+          .setLngLat([lng, lat])
+          .addTo(map)
+      }),
+    catch: toMapMountError,
+  })
+}
+
+const listenToMapMovesAndMarkerClicks = effect (
+  map: MapInstance,
+  queue: Queue.Enqueue<MountMapMessage>,
+): {
+  container: HTMLElement
+  onMoveEnd: () => void
+  onContainerClick: (event: MouseEvent) => void
+}!Error!Scope => {
+  // Effect.try executes this MapLibre/DOM callback registration as plain TypeScript.
+  return try Effect.acquireRelease(
+    Effect.try({
+      try: () => {
+        const container = map.getContainer()
+        const onMoveEnd = () => {
+          Queue.offerUnsafe(
+            queue,
+            Message.MovedMap({ bounds: boundsFromMap(map) }),
+          )
+        }
+        const onContainerClick = (event: MouseEvent) => {
+          const target = event.target
+          if (!isElement(target)) {
+            return
+          }
+          const marker = target.closest('[data-location-id]')
+          if (!isHtmlElement(marker)) {
+            return
+          }
+          const locationId = marker.dataset['locationId']
+          if (locationId !== undefined) {
+            Queue.offerUnsafe(queue, Message.ClickedMarker({ locationId }))
+          }
+        }
+
+        return registerMapListeners(map, container, onMoveEnd, onContainerClick)
+      },
+      catch: toMapMountError,
+    }),
+    ({ container, onMoveEnd, onContainerClick }): void!! =>
+      effect {
+        // sync executes this teardown callback as plain TypeScript.
+        try sync(
+          (map, onMoveEnd, container, onContainerClick) => {
+            map.off('moveend', onMoveEnd)
+            container.removeEventListener('click', onContainerClick)
+          },
+          map,
+          onMoveEnd,
+          container,
+          onContainerClick,
+        )
+      },
+  )
+}
+
+const mountMap = (
+  element: Element,
+  hostId: string,
+): Stream<MountMapMessage, never, never> =>
+  Stream.callback<MountMapMessage>(effect (queue) => {
+    return (effect {
+      const host = try sync(asHtmlElement, element)
+      if (host === null) {
+        Queue.offerUnsafe(
+          queue,
+          Message.FailedMountMap({ reason: 'Map host is not an HTMLElement.' }),
+        )
+        return try Effect.never
+      }
+      const mapResource = try Effect.acquireRelease(
+        effect {
+          const maplibre = try Effect.tryPromise(() => import('maplibre-gl'))
+          // Effect.try executes the MapLibre constructor callback as plain TypeScript.
+          const map = try Effect.try({
+            try: () => {
+              maplibre.setWorkerUrl(maplibreWorkerUrl)
+              return new maplibre.Map({
+                container: host,
+                style: 'https://demotiles.maplibre.org/style.json',
+                center: [0, 20],
+                zoom: INITIAL_MAP_ZOOM,
+              })
+            },
+            catch: toMapMountError,
+          })
+          return { map, maplibre }
+        },
+        ({ map }): void!! =>
+          effect {
+            try sync((hostId, map) => removeMap(hostId, map), hostId, map)
+          },
+        { interruptible: true },
+      )
+      const { map, maplibre } = mapResource
+      try addLocationMarkers(map, maplibre)
+      setMap(hostId, map)
+      try listenToMapMovesAndMarkerClicks(map, queue)
+      Queue.offerUnsafe(queue, Message.SucceededMountMap({ hostId }))
+      Queue.offerUnsafe(queue, Message.MovedMap({ bounds: boundsFromMap(map) }))
+      return try Effect.never
+    }) catch effect (error) => {
+      return Queue.offerUnsafe(
+        queue,
+        Message.FailedMountMap({ reason: toMapMountError(error).message }),
+      )
+    }
+  })
+
+export const MountMap = Mount.defineStream('MountMap', {
+  args: { hostId: Schema.String },
+  messages: [
+    Message.SucceededMountMap,
+    Message.FailedMountMap,
+    Message.MovedMap,
+    Message.ClickedMarker,
+  ],
+  execute: ({ element, hostId }) => mountMap(element, hostId),
+})
+
+const boundsFromMap = (map: MapInstance): Bounds => {
+  const bounds = map.getBounds()
+  return {
+    west: bounds.getWest(),
+    south: bounds.getSouth(),
+    east: bounds.getEast(),
+    north: bounds.getNorth(),
+  }
+}
+
+// VIEW
+
+const HOST_ID = 'map-host-1'
+
+const filterLocations = (
+  locations: ReadonlyArray<Location>,
+  query: string,
+): ReadonlyArray<Location> => {
+  const trimmed = query.trim().toLowerCase()
+  if (Str.isEmpty(trimmed)) {
+    return locations
+  } else {
+    return Arr.filter(
+      locations,
+      location =>
+        location.name.toLowerCase().includes(trimmed)
+        || location.region.toLowerCase().includes(trimmed),
+    )
+  }
+}
+
+export const view = (model: Model, h: HtmlBuilder<Message>): Document => ({
+  title: 'Foldkit Map',
+  body: h.div(
+    [h.Class('h-screen w-screen flex bg-slate-100 text-slate-900')],
+    [
+      sidebarView(model, h),
+      mapPaneView(model, h),
+      geolocateOverlayView(model.geolocateState, h),
+    ],
+  ),
+})
+
+const sidebarView = (model: Model, h: HtmlBuilder<Message>): Html => {
+  const visible = filterLocations(model.locations, model.searchQuery)
+  return h.aside(
+    [
+      h.Class(
+        'w-80 shrink-0 border-r border-slate-200 bg-white flex flex-col h-full',
+      ),
+    ],
+    [
+      h.header(
+        [h.Class('px-5 py-4 border-b border-slate-200')],
+        [
+          h.h1(
+            [h.Class('text-lg font-semibold tracking-tight')],
+            ['Foldkit Map'],
+          ),
+          h.p(
+            [h.Class('text-xs text-slate-500 mt-1')],
+            ['Pan, zoom, and click a marker.'],
+          ),
+        ],
+      ),
+      h.div(
+        [h.Class('px-5 py-3 border-b border-slate-200')],
+        [
+          Input.view(
+            {
+              id: SEARCH_INPUT_ID,
+              type: 'search',
+              value: model.searchQuery,
+              placeholder: 'Filter locations',
+              onInput: value => Message.UpdatedSearchQuery({ value }),
+              toView: attributes =>
+                h.input([
+                  ...attributes.input,
+                  h.AriaLabel('Filter locations'),
+                  h.Class(
+                    'w-full px-3 py-2 text-sm rounded-md border border-slate-300 outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200',
+                  ),
+                ]),
+            },
+            h,
+          ),
+        ],
+      ),
+      h.ul(
+        [h.Class('flex-1 overflow-y-auto'), h.AriaLabel('Locations')],
+        Arr.match(visible, {
+          onEmpty: () => [emptySidebarView(model.searchQuery, h)],
+          onNonEmpty: Arr.map(location =>
+            locationListItemView(model.maybeSelectedLocationId)(location, h)
+          ),
+        }),
+      ),
+      footerView(model, h),
+    ],
+  )
+}
+
+const emptySidebarView = (searchQuery: string, h: HtmlBuilder<Message>): Html =>
+  h.li(
+    [h.Class('px-5 py-6 text-sm text-slate-500')],
+    [
+      Str.isEmpty(searchQuery.trim())
+        ? 'No locations available.'
+        : `No locations match "${searchQuery.trim()}".`,
+    ],
+  )
+
+const locationListItemView =
+  (maybeSelectedId: Option<string>) =>
+  (location: Location, h: HtmlBuilder<Message>): Html => {
+    const isSelected = Option.exists(maybeSelectedId, Equal.equals(location.id))
+    return h.li(
+      [],
+      [
+        Button.view(
+          {
+            onClick: Message.ClickedLocation({ locationId: location.id }),
+            toView: attributes =>
+              h.button(
+                [
+                  ...attributes.button,
+                  h.AriaPressed(isSelected ? 'true' : 'false'),
+                  h.Class(
+                    clsx(
+                      'w-full text-left px-5 py-3 cursor-pointer border-l-2',
+                      isSelected
+                        ? 'bg-slate-100 border-slate-900'
+                        : 'hover:bg-slate-100 border-transparent',
+                    ),
+                  ),
+                ],
+                [
+                  h.div([h.Class('text-sm font-medium')], [location.name]),
+                  h.div(
+                    [h.Class('text-xs text-slate-500 mt-0.5')],
+                    [location.region],
+                  ),
+                ],
+              ),
+          },
+          h,
+        ),
+      ],
+    )
+  }
+
+const footerView = (model: Model, h: HtmlBuilder<Message>): Html => {
+  const isLocating = model.geolocateState._tag === 'Locating'
+  return h.div(
+    [h.Class('border-t border-slate-200 px-5 py-3 space-y-2')],
+    [
+      Button.view(
+        {
+          onClick: Message.ClickedFindMe(),
+          isDisabled: isLocating,
+          toView: attributes =>
+            h.button(
+              [
+                ...attributes.button,
+                h.Class(
+                  'w-full px-3 py-2 text-sm font-medium rounded-md bg-slate-900 text-white hover:bg-slate-800 data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed',
+                ),
+              ],
+              [isLocating ? 'Locating…' : 'Find my location'],
+            ),
+        },
+        h,
+      ),
+      match (model.maybeUserLocation) {
+        when Option.None: (h.empty);
+        when Option.Some(let matchedOptionValue): do {
+          const { lng, lat } = matchedOptionValue
+          h.p(
+            [h.Class('text-xs text-slate-500')],
+            [`You are near ${lat.toFixed(3)}, ${lng.toFixed(3)}.`],
+          )
+        };
+      },
+    ],
+  )
+}
+
+const mapPaneView = (model: Model, h: HtmlBuilder<Message>): Html =>
+  h.main(
+    [h.Class('flex-1 relative')],
+    [
+      h.div([
+        h.Class('h-full w-full'),
+        h.AriaLabel('Map'),
+        h.OnMount(MountMap({ hostId: HOST_ID })),
+      ]),
+      mapErrorBannerView(model.maybeMapError, h),
+      boundsBadgeView(model.maybeBounds, h),
+    ],
+  )
+
+const mapErrorBannerView = (
+  maybeReason: Option<string>,
+  h: HtmlBuilder<Message>,
+): Html => match (maybeReason) {
+  when Option.None: (h.empty);
+  when Option.Some(let reason): (h.div(
+    [
+      h.AriaLabel('Map failed to load'),
+      h.Class(
+        'absolute top-3 left-1/2 -translate-x-1/2 max-w-md bg-rose-50 border border-rose-200 text-rose-900 rounded-md shadow-sm px-4 py-3 text-sm',
+      ),
+    ],
+    [
+      h.div([h.Class('font-semibold mb-0.5')], ['Could not load the map.']),
+      h.div([h.Class('text-xs text-rose-700')], [reason]),
+    ],
+  ));
+}
+
+const boundsBadgeView = (
+  maybeBounds: Option<Bounds>,
+  h: HtmlBuilder<Message>,
+): Html => match (maybeBounds) {
+  when Option.None: (h.empty);
+  when Option.Some(let bounds): (h.div(
+    [
+      h.Class(
+        'absolute bottom-3 right-3 bg-white/90 backdrop-blur-sm rounded-md shadow-sm px-3 py-2 text-xs font-mono text-slate-700 border border-slate-200',
+      ),
+    ],
+    [
+      h.div([], [`N ${bounds.north.toFixed(2)}`]),
+      h.div([], [`S ${bounds.south.toFixed(2)}`]),
+      h.div([], [`E ${bounds.east.toFixed(2)}`]),
+      h.div([], [`W ${bounds.west.toFixed(2)}`]),
+    ],
+  ));
+}
+
+const geolocateOverlayView = (
+  state: GeolocateState,
+  h: HtmlBuilder<Message>,
+): Html =>
+  GeolocateState.match(state, {
+    Idle: () => h.empty,
+    Locating: () =>
+      geolocateOverlayShellView(geolocateLocatingContentView(h), h),
+    Failed: ({ reason }) =>
+      geolocateOverlayShellView(geolocateFailedContentView(reason, h), h),
+  })
+
+const geolocateOverlayShellView = (
+  content: Html,
+  h: HtmlBuilder<Message>,
+): Html =>
+  h.div(
+    [
+      h.Class(
+        'fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40',
+      ),
+      h.AriaLabel('Geolocation'),
+    ],
+    [content],
+  )
+
+const geolocateLocatingContentView = (h: HtmlBuilder<Message>): Html =>
+  h.article(
+    [
+      h.Class(
+        'bg-white rounded-lg shadow-lg max-w-sm w-full mx-4 px-6 py-5 text-center',
+      ),
+    ],
+    [
+      h.h2([h.Class('text-base font-semibold mb-1')], ['Locating you…']),
+      h.p(
+        [h.Class('text-sm text-slate-500')],
+        ['Asking your browser for permission to use your location.'],
+      ),
+      spinnerView(h),
+    ],
+  )
+
+const geolocateFailedContentView = (
+  reason: string,
+  h: HtmlBuilder<Message>,
+): Html =>
+  h.article(
+    [
+      h.Class(
+        'bg-white rounded-lg shadow-lg max-w-sm w-full mx-4 px-6 py-5 text-center',
+      ),
+    ],
+    [
+      h.h2(
+        [h.Class('text-base font-semibold mb-1 text-rose-700')],
+        ['Could not locate you'],
+      ),
+      h.p([h.Class('text-sm text-slate-600')], [reason]),
+      Button.view(
+        {
+          onClick: Message.DismissedGeolocate(),
+          toView: attributes =>
+            h.button(
+              [
+                ...attributes.button,
+                h.Class(
+                  'mt-4 px-4 py-2 text-sm font-medium rounded-md bg-slate-900 text-white hover:bg-slate-800',
+                ),
+              ],
+              ['Dismiss'],
+            ),
+        },
+        h,
+      ),
+    ],
+  )
+
+const spinnerView = (h: HtmlBuilder<Message>): Html =>
+  h.div(
+    [h.Class('flex justify-center mt-4')],
+    [
+      h.span([
+        h.Class(
+          'inline-block w-6 h-6 border-2 border-slate-300 border-t-slate-900 rounded-full motion-safe:animate-spin',
+        ),
+        h.AriaLabel('Loading'),
+      ]),
+    ],
+  )
+
+// STYLE
+
+const markerStyle =
+  'block w-3.5 h-3.5 rounded-full bg-rose-500 ring-2 ring-white shadow cursor-pointer hover:bg-rose-600 transition'

@@ -1,0 +1,215 @@
+import {
+  Effect,
+  Array as EffectArray,
+  String as EffectString,
+  FileSystem,
+  Path,
+  PlatformError,
+  Record,
+  pipe,
+} from 'effect'
+import { type Scaffold } from '../rendering.vibe'
+import {
+  type PackageManager,
+  devCommand,
+  installCommand,
+  runScriptCommand,
+} from './packages.vibe'
+
+type FilePath = string
+type FileContent = string
+type FileContentByPath = Readonly<globalThis.Record<FilePath, FileContent>>
+
+const templatePath = effect (path: Path.Path): string!! => {
+  return path.fromFileUrl(new URL(import.meta.url)) catch effect (cause) => {
+    return try die(cause)
+  }
+}
+
+const getTemplateRoot = effect {
+  const fs = try FileSystem.FileSystem
+  const path = try Path.Path
+  const currentDir = path.dirname(try templatePath(path))
+  const bundledRoot = path.resolve(currentDir, '..', 'templates')
+  return (try fs.exists(bundledRoot))
+    ? bundledRoot
+    : path.resolve(currentDir, '..', '..', 'templates')
+}
+
+const getTemplateFiles = effect (templateDir: string) => {
+  const fs = try FileSystem.FileSystem
+  const path = try Path.Path
+  const readFiles = effect (
+    dir: string,
+    relativeDir: string,
+  ): ReadonlyArray<readonly [string, string]>!PlatformError.PlatformError => {
+    const entries = try fs.readDirectory(dir)
+    const nested = try Effect.forEach(entries, effect (entry) => {
+      const fullPath = path.join(dir, entry)
+      const relativePath = path.join(relativeDir, entry)
+      const stat = try fs.stat(fullPath)
+      return match (stat.type) {
+        when 'Directory': try readFiles(fullPath, relativePath);
+        when 'File': do {
+          const content = try fs.readFileString(fullPath)
+          const result: ReadonlyArray<readonly [string, string]> = [[
+            relativePath,
+            content,
+          ]]
+          result
+        };
+        default: [];
+      }
+    }, { concurrency: 'unbounded' })
+    return EffectArray.flatten(nested)
+  }
+  return Record.fromEntries(try readFiles(templateDir, ''))
+}
+
+const getBaseFiles = effect {
+  const path = try Path.Path
+  const templateRoot = try getTemplateRoot
+  return try getTemplateFiles(path.join(templateRoot, 'base'))
+}
+
+const getPackageManagerFiles = effect (packageManager: PackageManager) => {
+  const fs = try FileSystem.FileSystem
+  const path = try Path.Path
+  const templateRoot = try getTemplateRoot
+  const templateDir = path.join(
+    templateRoot,
+    'package-managers',
+    packageManager,
+  )
+  return (try fs.exists(templateDir)) ? try getTemplateFiles(templateDir) : {}
+}
+
+const createFiles = effect (projectPath: string, files: FileContentByPath) => {
+  const fs = try FileSystem.FileSystem
+  const path = try Path.Path
+  try Effect.forEach(Record.toEntries(files), effect ([filePath, content]) => {
+    const targetPath = match (filePath) {
+      when 'gitignore': '.gitignore';
+      when 'ignore': '.ignore';
+      default: filePath;
+    }
+    const fullPath = path.join(projectPath, targetPath)
+    const dirPath = path.dirname(fullPath)
+    try fs.makeDirectory(dirPath, { recursive: true })
+    try fs.writeFileString(fullPath, content)
+  }, { concurrency: 'unbounded' })
+}
+
+const createBaseFiles = effect (projectPath: string) => {
+  const fs = try FileSystem.FileSystem
+  try fs.makeDirectory(projectPath, { recursive: true })
+  try createFiles(projectPath, try getBaseFiles)
+}
+
+const createPackageManagerFiles = effect (
+  projectPath: string,
+  packageManager: PackageManager,
+) => {
+  try createFiles(projectPath, try getPackageManagerFiles(packageManager))
+}
+
+type OverlayDirectory = 'ssg' | 'ssr'
+const overlayRenderingFiles = effect (
+  projectPath: string,
+  directory: OverlayDirectory,
+) => {
+  const fs = try FileSystem.FileSystem
+  const path = try Path.Path
+  const templateRoot = try getTemplateRoot
+  const renderingFiles = try getTemplateFiles(
+    path.join(templateRoot, 'rendering', directory),
+  )
+  try createFiles(projectPath, renderingFiles)
+  try fs.remove(path.join(projectPath, 'index.html'))
+}
+
+const createRenderingFiles = effect (
+  projectPath: string,
+  scaffold: Scaffold,
+) => {
+  return match (scaffold) {
+    when { _tag: "Spa" }: undefined;
+    when { _tag: "Ssg" }: try overlayRenderingFiles(projectPath, 'ssg');
+    when { _tag: "Ssr" }: try overlayRenderingFiles(projectPath, 'ssr');
+  }
+}
+
+export const createProject = effect (
+  name: string,
+  projectPath: string,
+  scaffold: Scaffold,
+  packageManager: PackageManager,
+) => {
+  try createBaseFiles(projectPath)
+  try createRenderingFiles(projectPath, scaffold)
+  try modifyBaseFiles(projectPath, name, packageManager)
+  try createPackageManagerFiles(projectPath, packageManager)
+  match (scaffold) {
+    when { _tag: "Spa", let example }: try createExampleFiles(
+      projectPath,
+      example,
+    );
+    when { _tag: "Ssg" }: undefined;
+    when { _tag: "Ssr" }: undefined;
+  }
+}
+
+export const applyPackageManager = (
+  readme: string,
+  packageManager: PackageManager,
+): string =>
+  pipe(
+    readme,
+    EffectString.replaceAll(
+      '{{installCommand}}',
+      installCommand(packageManager),
+    ),
+    EffectString.replaceAll('{{devCommand}}', devCommand(packageManager)),
+    EffectString.replaceAll(
+      '{{buildCommand}}',
+      runScriptCommand(packageManager, 'build'),
+    ),
+    EffectString.replaceAll(
+      '{{previewCommand}}',
+      runScriptCommand(packageManager, 'preview'),
+    ),
+    EffectString.replaceAll(
+      '{{startCommand}}',
+      runScriptCommand(packageManager, 'start'),
+    ),
+  )
+
+const modifyBaseFiles = effect (
+  projectPath: string,
+  name: string,
+  packageManager: PackageManager,
+) => {
+  const fs = try FileSystem.FileSystem
+  const path = try Path.Path
+  const packageJsonPath = path.join(projectPath, 'package.json')
+  const packageJson = try fs.readFileString(packageJsonPath)
+  try fs.writeFileString(
+    packageJsonPath,
+    EffectString.replace('{{name}}', name)(packageJson),
+  )
+  const readmePath = path.join(projectPath, 'README.md')
+  const readme = try fs.readFileString(readmePath)
+  try fs.writeFileString(
+    readmePath,
+    applyPackageManager(readme, packageManager),
+  )
+}
+
+const createExampleFiles = effect (projectPath: string, example: string) => {
+  const path = try Path.Path
+  const templateRoot = try getTemplateRoot
+  const files = try getTemplateFiles(
+    path.join(templateRoot, 'examples', example, 'src'),
+  )
+  try createFiles(path.join(projectPath, 'src'), files)
+}

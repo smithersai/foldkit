@@ -5,7 +5,7 @@ import { expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import * as Animation from '../animation/index.js'
+import * as Animation from '../animation/index.vibe'
 import {
   Message,
   SwipeState,
@@ -13,7 +13,7 @@ import {
   WaitForSwipeSettled,
   make,
   test as toastTest,
-} from './index.js'
+} from './index.vibe'
 
 const TestPayload = Schema.Struct({ body: Schema.String })
 type TestPayload = typeof TestPayload.Type

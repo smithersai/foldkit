@@ -26,33 +26,34 @@
   "overrides": [
     {
       "files": [
-        "packages/foldkit/src/command/index.ts",
-        "packages/foldkit/src/html/index.ts",
-        "packages/foldkit/src/route/parser.ts",
-        "packages/foldkit/src/runtime/hydrationHandoff.ts",
-        "packages/foldkit/src/runtime/managedResourceFibers.ts"
+        "packages/foldkit/src/command/index.vibe",
+        "packages/foldkit/src/html/index.vibe",
+        "packages/foldkit/src/route/parser.vibe",
+        "packages/foldkit/src/runtime/hydrationHandoff.vibe",
+        "packages/foldkit/src/runtime/hydrationHandoff.platform.ts",
+        "packages/foldkit/src/runtime/managedResourceFibers.vibe"
       ],
       "rules": {
         "effecttsgo/any-unknown-in-error-context": "off"
       }
     },
     {
-      "files": ["packages/foldkit/src/runtime/resourceProvider.ts"],
+      "files": ["packages/foldkit/src/runtime/resourceProvider.vibe"],
       "rules": {
         "effecttsgo/unsafe-effect-type-assertion": "off"
       }
     },
     {
-      "files": ["examples/ssr/scripts/serve.ts", "packages/node/src/node.ts"],
+      "files": ["examples/ssr/scripts/serve.vibe", "packages/node/src/node.ts"],
       "rules": {
         "effecttsgo/return-effect-in-gen": "off"
       }
     },
     {
       "files": [
-        "packages/foldkit/src/devTools/webSocketBridge.ts",
-        "packages/foldkit/src/runtime/runtime.ts",
-        "packages/foldkit/src/experimental/server/server.ts"
+        "packages/foldkit/src/devTools/webSocketBridge.vibe",
+        "packages/foldkit/src/runtime/runtime.vibe",
+        "packages/foldkit/src/experimental/server/server.vibe"
       ],
       "rules": {
         "effecttsgo/schema-sync-in-effect": "off"
@@ -89,6 +90,7 @@
   "ignorePatterns": [
     "packages/create-foldkit-app/templates/",
     "packages/oxlint-plugin-foldkit/test/integration/fixtures/",
-    "packages/website/src/snippet/"
+    "packages/website/src/snippet/",
+    "**/dist/**"
   ]
 }

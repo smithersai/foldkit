@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { lazyViewStableReferences } from '../../src/rules/lazy-view-stable-references.ts'
+import { lazyViewStableReferences } from '../../src/rules/lazy-view-stable-references.vibe'
 
 const parenthesized = (expression: unknown) => ({
   type: 'ParenthesizedExpression',

@@ -1,1 +1,1 @@
-export * from './machine.js'
+export * from './machine.vibe'

@@ -32,6 +32,8 @@ Foldkit's differ tracks two independent kinds of identity: user keys, which matc
 
 This plugin supplies that identity. At build time, in dev and production alike, it wraps every function return in your application modules with a branding call that stamps returned vnodes with the function's id (module path plus function name), set-if-absent. The identity is nothing else: it ships in the client bundle, so anything derived from the module's contents would be a published check against those contents. Identity therefore attaches at view-function boundaries, and any branching syntax behaves the same: if/else, ternaries, Effect Match, switch statements, and pattern-matching libraries are all equivalent, because identity belongs to the function that produced the subtree, not to the branch that selected it.
 
+VibeLang modules are branded after the native compiler transforms them. A `.vibe` source keeps the corresponding `.ts` path in its view identity, so migrating a module preserves its existing owner. Generated `.d.vibe.ts` declaration sidecars are excluded.
+
 Foldkit core modules are never instrumented, and functions that never return vnodes are wrapped inertly. Builds without this plugin fall back to positional matching plus keys, where branch points need hand-written keys.
 
 ## State-preserving live reload

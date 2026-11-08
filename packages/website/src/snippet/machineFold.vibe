@@ -1,0 +1,39 @@
+import { Update } from 'foldkit'
+import { Machine } from 'foldkit/experimental'
+import { modifyFields } from 'foldkit/struct'
+
+import {
+  CheckoutState,
+  Message,
+  checkoutMachine,
+} from './machineDefinition.vibe'
+
+export schema Model {
+  readonly checkout: CheckoutState
+  readonly isHelpOpen: boolean
+}
+
+export const initialModel = Model.make({
+  checkout: checkoutMachine.initial,
+  isHelpOpen: false,
+})
+
+export const foldCheckout = Machine.fold({
+  machine: checkoutMachine,
+  read: (model: Model) => Option.some(model.checkout),
+  write: (model, nextCheckout) =>
+    modifyFields(model, { checkout: () => nextCheckout }),
+})
+
+export const update = (
+  model: Model,
+  message: Message,
+): Update.Return<Model, Message> => match (message) {
+  when { _tag: 'ToggledHelp', let isOpen }: ({
+    model: modifyFields(model, { isHelpOpen: () => isOpen }),
+  });
+  when { _tag: 'SelectedEdition' }: foldCheckout(model, message);
+  when { _tag: 'ClickedContinue' }: foldCheckout(model, message);
+  when { _tag: 'ClickedBack' }: foldCheckout(model, message);
+  when { _tag: 'ClickedCancel' }: foldCheckout(model, message);
+}

@@ -21,7 +21,7 @@ import {
   SaveTodos,
   update,
   view,
-} from './main'
+} from './main.vibe'
 
 const emptyModel: Model = {
   todos: [],

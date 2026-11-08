@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { SITE_URL } from '../src/route'
+import { SITE_URL } from '../src/route.vibe'
 import {
   type LlmsFullEntry,
   type LlmsIndexEntry,
@@ -9,7 +9,7 @@ import {
   extractMarkdownFromRenderedDocument,
   shouldExportMarkdown,
   urlPathToMarkdownPath,
-} from './markdown'
+} from './markdown.vibe'
 
 const setBody = (html: string): void => {
   document.body.innerHTML = `<div data-pagefind-body>${html}</div>`

@@ -10,7 +10,7 @@ Resources are the kitchen equipment that stays available all night. Every dish c
 
 ### Building Shared Resources
 
-Define a service with [Context.Service](https://effect.website/docs/requirements-management/services/), then pass its Layer through the runtime’s `resources` config. The runtime builds that Layer once, the first time it is needed: during startup when a fresh Flags Effect resolves or Subscriptions begin, otherwise when the first Command runs. It shares the built services for the runtime’s lifetime and releases them at teardown. Commands access a service by yielding its tag.
+Declare `service ApiClientService`, build its implementation with `Layer.effect(ApiClientService, makeApiClient)`, and pass the resulting `ApiClientLive` Layer through the runtime’s `resources` config. The runtime builds that Layer once, the first time it is needed: during startup when a fresh Flags Effect resolves or Subscriptions begin, otherwise when the first Command runs. It shares the built services for the runtime’s lifetime and releases them at teardown. Commands access the service with `try ApiClientService`.
 
 ::Snippet{name="resources" label="Shared API client service"}
 

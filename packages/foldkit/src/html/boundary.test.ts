@@ -14,7 +14,7 @@ import {
   resolveBoundaryDispatchThunk,
   resolveMountBoundaryDispatch,
 } from './boundary.js'
-import type { DispatchSync } from './runtimeSingleton.js'
+import type { DispatchSync } from './runtimeSingleton.vibe'
 
 describe('boundary chain traversal', () => {
   it('applies every ancestor from inner to outer for each routing mode', () => {

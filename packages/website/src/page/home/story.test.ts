@@ -4,8 +4,8 @@ import { describe, expect, test } from 'vitest'
 import { Tabs } from '@foldkit/ui'
 
 import { init } from './init'
-import { Message } from './message'
-import { update } from './update'
+import { Message } from './message.vibe'
+import { update } from './update.vibe'
 
 describe('home', () => {
   test('selecting a demo tab preserves both demo Models', () => {

@@ -9,7 +9,7 @@ import {
   captureProcessOutput,
   installDependencies,
   startDevServer,
-} from './playgroundWebContainer'
+} from './playgroundWebContainer.vibe'
 
 const makeProcess = (
   exit: Promise<number>,

@@ -1,3 +1,4 @@
+import vibelang from 'vibelang-vite'
 import { type Plugin } from 'vite'
 import { defineConfig } from 'vitest/config'
 
@@ -6,9 +7,9 @@ import { markdown } from '@foldkit/markdown/vite'
 import {
   counterDemoCodePlugin,
   notePlayerDemoCodePlugin,
-} from './scripts/demoCodePlugin'
-import { islandAttributes } from './src/markdown/islandAttributes'
-import { PostFrontmatter } from './src/page/blog/frontmatter'
+} from './scripts/demoCodePlugin.ts'
+import { islandAttributes } from './src/markdown/islandAttributes.vibe'
+import { PostFrontmatter } from './src/page/blog/frontmatter.vibe'
 
 const RESOLVED_TEST_MODULE_PREFIX = '\0website-test:'
 
@@ -61,6 +62,7 @@ const virtualModulesTestPlugin = (): Plugin => ({
 
 export default defineConfig({
   plugins: [
+    vibelang(),
     virtualModulesTestPlugin(),
     markdown({ islands: islandAttributes, frontmatter: PostFrontmatter }),
     counterDemoCodePlugin(),

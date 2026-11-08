@@ -1,0 +1,68 @@
+import { ExperimentalNodeHttpServer } from 'vibelang-runtime/experimental/platform-node'
+
+import { NodeCrypto, NodeRuntime } from '@effect/platform-node'
+import * as Shared from '@typing-game/shared'
+
+import {
+  createRoom,
+  getRoomById,
+  joinRoom,
+  startGame,
+  subscribeToRoom,
+  updatePlayerProgress,
+} from './handler/index.ts'
+import {
+  PendingCleanupPlayerIdsStore,
+  PendingCleanupPlayerIdsStoreLive,
+  ProgressByGamePlayerStore,
+  ProgressByGamePlayerStoreLive,
+  RoomByIdStore,
+  RoomByIdStoreLive,
+} from './store.vibe'
+
+const RoomLive = Shared.RoomRpcs.toLayer(
+  effect {
+    const roomByIdRef = try RoomByIdStore
+    const progressByGamePlayerRef = try ProgressByGamePlayerStore
+    const pendingCleanupPlayerIdsRef = try PendingCleanupPlayerIdsStore
+
+    return {
+      createRoom: createRoom(roomByIdRef),
+      joinRoom: joinRoom(roomByIdRef),
+      getRoomById: getRoomById(roomByIdRef),
+      subscribeToRoom: subscribeToRoom(
+        roomByIdRef,
+        progressByGamePlayerRef,
+        pendingCleanupPlayerIdsRef,
+      ),
+      startGame: startGame(roomByIdRef, progressByGamePlayerRef),
+      updatePlayerProgress: updatePlayerProgress(progressByGamePlayerRef),
+    }
+  },
+)
+
+const RpcAppLayer = RpcServer.layerHttp({
+  group: Shared.RoomRpcs,
+  path: '/rpc',
+  protocol: 'http',
+}).pipe(
+  Layer.provide(RoomLive),
+  Layer.provide(RpcSerialization.layerNdjson),
+  Layer.provide(RoomByIdStoreLive),
+  Layer.provide(ProgressByGamePlayerStoreLive),
+  Layer.provide(PendingCleanupPlayerIdsStoreLive),
+  Layer.provide(NodeCrypto.layerSecureRandom),
+)
+
+const serveHttp = HttpServer.serve(HttpMiddleware.cors())
+const HttpAppLive = Layer.unwrap(effect {
+  const httpApp = try HttpRouter.toHttpEffect(RpcAppLayer)
+  return serveHttp(httpApp)
+})
+
+const Main = HttpAppLive.pipe(
+  HttpServer.withLogAddress,
+  Layer.provide(ExperimentalNodeHttpServer.layer({ port: 3001 })),
+)
+
+NodeRuntime.runMain(Layer.launch(Main))

@@ -4,7 +4,7 @@ import { defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
 import * as Update from 'foldkit/update'
 
-import * as Dialog from '../../dialog/index.js'
+import * as Dialog from '../../dialog/index.vibe'
 
 // MODEL
 

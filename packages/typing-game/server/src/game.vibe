@@ -1,0 +1,24 @@
+import * as Shared from '@typing-game/shared'
+
+export const COUNTDOWN_SECONDS = 3
+export const PLAYING_SECONDS = 30
+export const CHARS_PER_WORD = 5
+export const ROOM_UPDATE_THROTTLE_MS = 100
+
+const getReady = Shared.GetReady.make({})
+const finished = Shared.Finished.make({})
+
+effect function* gameStatuses() {
+  yield getReady
+  for (let secondsLeft = COUNTDOWN_SECONDS; secondsLeft >= 1; secondsLeft--) {
+    yield Shared.Countdown.make({ secondsLeft })
+  }
+  for (let secondsLeft = PLAYING_SECONDS; secondsLeft >= 1; secondsLeft--) {
+    yield Shared.Playing.make({ secondsLeft })
+  }
+  yield finished
+}
+
+export const gameSequence: Stream<Shared.GameStatus> = gameStatuses().pipe(
+  Stream.schedule(Schedule.fixed(Duration.seconds(1))),
+)

@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { preferCallableMessageConstructor } from '../../src/rules/prefer-callable-message-constructor.ts'
+import { preferCallableMessageConstructor } from '../../src/rules/prefer-callable-message-constructor.vibe'
 
 const messageTypeAnnotation = {
   type: 'TSTypeAnnotation',

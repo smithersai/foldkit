@@ -1,6 +1,6 @@
 import { Html, HtmlBuilder } from 'foldkit/html'
 
-import { Session } from '../../../domain/session'
+import { Session } from '../../../domain/session.vibe'
 import type { Message } from '../message'
 
 export const view = (session: Session, h: HtmlBuilder<Message>): Html =>

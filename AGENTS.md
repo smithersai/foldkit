@@ -234,6 +234,10 @@ A gate you just wrote is not evidence until you have watched it fail. Break the 
 - Fix the class, not the reported instance. Four review rounds found the same defect class with different instances because each round patched the examples it was handed. When a finding names three cases, enumerate the whole set before writing the fix.
 - Separate what shipped from what you broke. A defect in the published release, one caught in the release candidate, and one an agent introduced and removed on the branch are three different signals. Reporting them as one number overstates the risk in the released code.
 
+## Effect Lint
+
+Run `pnpm lint:effect` from the repository root to check the configured Effect rules. The helper derives native project configurations from `.oxlintrc.effect.json`, including per-file exceptions and ignored paths. It promotes configured warnings to errors so warnings fail the lint gate, and rejects selected native sources outside the linted projects.
+
 ## Workspace Setup Errors Are Not Pre-Existing
 
 If `pnpm typecheck`, `pnpm lint`, `pnpm build`, or the pre-push hook surfaces errors like `Cannot find module 'foldkit'`, `Cannot find module 'foldkit/html'`, or unexpected `Property X does not exist` against an Effect API, the workspace itself is out of sync. These are not pre-existing branch failures. Run `bash scripts/cloud-session-setup.sh` to reconcile. The SessionStart hook runs this automatically in Claude Code cloud sessions. Locally it is a no-op, because the install and rebuild race with `pnpm dev:libs`.
@@ -306,3 +310,15 @@ Explain a thing the way you would say it out loud to another person. You write a
 The test is whether you would say the sentence to a colleague at a whiteboard. If you would not, it is jargon or hedging, and the version you would say is the one to write. That catches word choice too: "three rules govern the value" is stiffer than anything anyone says out loud, where it would be "three things have to be true". Idioms fail from the other side, since "has the most miles" reads fine and does not survive translation.
 
 Write "For example:" when a colon introduces illustrations rather than the complete set. A bare colon reads as an exhaustive enumeration, so a reader takes three illustrations for the only three cases that exist. Use the bare colon when the list really is exhaustive, which is what makes the distinction worth keeping. Applies to docs, TSDoc, changesets, commit messages, and website copy.
+
+<!-- vibelang agents: start. `npx vibelang agents init` writes this section; rerun it to update. -->
+
+## VibeLang
+
+`.vibe` files are VibeLang: Effect programs in TypeScript syntax. Load the `vibelang` skill (`.agents/skills/vibelang/SKILL.md`) before you write or review one.
+
+- After you edit `.vibe` files, run `npx vibelang agents check <file>...`. It applies `vibelang --fix` and prints each diagnostic left; fix every error before you finish. Claude Code runs it for you after each edit and shows you the result.
+- `npx vibelang --noEmit` checks the whole project. Each `EKxxxx` diagnostic says how to fix it.
+- `npx vibelang lint` runs the built-in Effect type-aware rules on `.vibe` files using the repository’s Oxlint configuration; pass `-c <config>` for a non-default config. Run it before finishing a change.
+
+<!-- vibelang agents: end -->

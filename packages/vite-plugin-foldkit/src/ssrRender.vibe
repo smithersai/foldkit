@@ -1,0 +1,162 @@
+import * as Server from 'foldkit/experimental/server'
+import * as NodeFileSystem from '@effect/platform-node/NodeFileSystem'
+import * as NodePath from '@effect/platform-node/NodePath'
+import type { IncomingHttpHeaders } from 'node:http'
+import type { Connect, ViteDevServer } from 'vite'
+
+import type { FoldkitSsrOptions } from './ssr.vibe'
+import { toWebRequest } from './ssrRender.platform.ts'
+
+// The page renderer: the one program of the dev host. The Connect middleware
+// that calls it is plain Node callback code and lives in ssrPlugin.ts, as the
+// plugin's throwing hooks do.
+const isEntryModule = (
+  loadedModule: unknown,
+): loadedModule is Server.EntryModule =>
+  Predicate.isObject(loadedModule)
+  && Predicate.hasProperty(loadedModule, 'renderPage')
+  && Predicate.isFunction(loadedModule.renderPage)
+
+// The request's header fields as name/value pairs, one pair per repeated
+// value, the shape `Headers.append` takes.
+const requestHeaderEntries = (
+  headers: IncomingHttpHeaders,
+): ReadonlyArray<readonly [name: string, value: string]> =>
+  Object.entries(headers).flatMap(([name, value]) => {
+    if (Predicate.isString(value)) {
+      return [[name, value] as const]
+    }
+    if (Array.isArray(value)) {
+      return value.map((item) => [name, item] as const)
+    }
+    return []
+  })
+
+const renderRequest = effect (
+  server: ViteDevServer,
+  options: FoldkitSsrOptions,
+  nodeRequest: Connect.IncomingMessage,
+  requestUrl: string,
+): globalThis.Response!!(FileSystem.FileSystem | Path) => {
+  const { pathname, search } = new URL(requestUrl)
+  const route = `${pathname}${search}`
+
+  // sync's first argument is plain TypeScript, not VibeLang.
+  const loadedModule = try sync(
+    async (server: ViteDevServer, serverEntry: string) =>
+      server.ssrLoadModule(serverEntry),
+    server,
+    options.serverEntry,
+  )
+
+  if (!isEntryModule(loadedModule)) {
+    return try die(
+      new Error(
+        `[foldkit] '${options.serverEntry}' does not export a renderPage function, so the dev server cannot render pages.`,
+      ),
+    )
+  }
+
+  const result = try sync(
+    async (entry: Server.EntryModule, request: globalThis.Request) =>
+      entry.renderPage(request),
+    loadedModule,
+    toWebRequest(
+      requestUrl,
+      nodeRequest,
+      requestHeaderEntries(nodeRequest.headers),
+    ),
+  )
+
+  if (result._tag === 'Responded') {
+    return result.response
+  }
+
+  if (options.clientEntry !== undefined) {
+    if (
+      !('renderDocument' in loadedModule)
+      || !Predicate.isFunction(loadedModule.renderDocument)
+    ) {
+      return try die(
+        new Error(
+          `[foldkit] '${options.serverEntry}' must export renderDocument(application, assets) when clientEntry is configured.`,
+        ),
+      )
+    }
+
+    const assets = Server.DocumentAssets.make({
+      entryScript: options.clientEntry,
+      stylesheets: [],
+      modulePreloads: [],
+    })
+    const renderDocument = loadedModule.renderDocument
+    const document = try Effect.orDie(
+      Effect.try({
+        try: () =>
+          Reflect.apply(renderDocument, loadedModule, [
+            result.application,
+            assets,
+          ]),
+        catch: cause => cause,
+      }),
+    )
+    const transformed = try sync(
+      async (
+        server: ViteDevServer,
+        pathname: string,
+        document: string,
+        route: string,
+      ) => server.transformIndexHtml(pathname, document, route),
+      server,
+      pathname,
+      document,
+      route,
+    )
+
+    return Server.toResponse(() => transformed, result)
+  }
+
+  const fileSystem = try FileSystem.FileSystem
+  const path = try Path.Path
+  // An unreadable template is a defect, as it was for the raw read.
+  const rawTemplate = try Effect.orDie(
+    fileSystem.readFileString(path.resolve(server.config.root, 'index.html')),
+  )
+
+  // NOTE: Vite resolves template-relative URLs against the first argument;
+  // the template-based host's index lives at the root for nested page requests.
+  const template = try sync(
+    async (server: ViteDevServer, rawTemplate: string, route: string) =>
+      server.transformIndexHtml('/index.html', rawTemplate, route),
+    server,
+    rawTemplate,
+    route,
+  )
+
+  return Server.toResponse(
+    template,
+    result,
+    options.containerId === undefined
+      ? {}
+      : { containerId: options.containerId },
+  )
+}
+
+const renderServices = Layer.mergeAll(NodeFileSystem.layer, NodePath.layer)
+
+/**
+ * Renders one application-owned request with the Node platform services the
+ * renderer needs. The middleware runs it with `Effect.runPromise`.
+ *
+ * @internal
+ */
+export const renderPage = effect (
+  server: ViteDevServer,
+  options: FoldkitSsrOptions,
+  nodeRequest: Connect.IncomingMessage,
+  requestUrl: string,
+): globalThis.Response!! => {
+  provide renderServices {
+    return try renderRequest(server, options, nodeRequest, requestUrl)
+  }
+}

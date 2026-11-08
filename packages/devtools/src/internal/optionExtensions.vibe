@@ -1,0 +1,10 @@
+import { Function as EffectFunction, Option } from 'effect'
+
+export const when: {
+  <A>(value: A): (condition: boolean) => Option.Option<A>
+  <A>(condition: boolean, value: A): Option.Option<A>
+} = EffectFunction.dual(
+  2,
+  <A>(condition: boolean, value: A): Option.Option<A> =>
+    Option.liftPredicate(value, (): boolean => condition),
+)

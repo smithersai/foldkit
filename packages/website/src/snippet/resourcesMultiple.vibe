@@ -1,0 +1,24 @@
+import { ExperimentalBrowserDocument } from 'vibelang-runtime/experimental/platform-browser'
+import { Runtime } from 'foldkit'
+import { Model } from './model'
+
+const application = Runtime.makeApplication({
+  Model,
+  init,
+  update,
+  view,
+  container: Effect.runSync(effect {
+    provide ExperimentalBrowserDocument.layer {
+      const page = try (try Experimental.Document.Document).current
+      return try Effect.orDie(Effect.try({
+        try: () => page.getElementById('root'),
+        catch: error => error,
+      }))
+    }
+  }),
+  resources: Layer.mergeAll(
+    ApiClientLive,
+    AnalyticsService.Default,
+    ComputeWorkerService.Default,
+  ),
+})

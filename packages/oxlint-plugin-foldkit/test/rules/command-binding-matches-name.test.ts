@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { commandBindingMatchesName } from '../../src/rules/command-binding-matches-name.ts'
+import { commandBindingMatchesName } from '../../src/rules/command-binding-matches-name.vibe'
 
 const variableDeclarator = (name: string, init: unknown) => ({
   type: 'VariableDeclarator',

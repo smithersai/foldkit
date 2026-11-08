@@ -4,18 +4,18 @@ import { expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import type { Document } from '../../html/index.js'
-import type { Html } from '../../html/index.js'
-import { __htmlBuilder, customElement } from '../../html/index.js'
+import type { Document } from '../../html/index.vibe'
+import type { Html } from '../../html/index.vibe'
+import { __htmlBuilder, customElement } from '../../html/index.vibe'
 import type { RoutingApplicationConfigWithFlags } from '../../runtime/index.js'
 import type * as Update from '../../update/index.js'
-import type { Url } from '../../url/index.js'
-import type { VNode } from '../../vdom.js'
+import type { Url } from '../../url/index.vibe'
+import type { VNode } from '../../vdom.vibe'
 import {
   FOLDKIT_APP_ATTRIBUTE,
   FOLDKIT_FLAGS_ATTRIBUTE,
   renderToString as renderToStringWithOptions,
-} from './server.js'
+} from './server.vibe'
 
 const h = __htmlBuilder<never>()
 const unrestrictedTextarea = customElement<never>()('textarea')

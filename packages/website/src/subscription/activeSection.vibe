@@ -1,0 +1,282 @@
+import {
+  disconnectIntersectionObserver,
+  makeIntersectionObserver,
+  observeIntersectionTarget,
+} from './activeSection.platform.ts'
+import { elementWithId } from '../browserDocument.ts'
+import { Array as Arr } from 'effect'
+import { AsyncData, Render, Subscription } from 'foldkit'
+
+import { Message } from '../message.vibe'
+import { type Model } from '../model.vibe'
+import {
+  About,
+  AiMcp,
+  AiOverview,
+  AiSkills,
+  ApiReference,
+  AsyncData as AsyncDataPage,
+  BestPractices,
+  ComingFromReact,
+  ComingFromTanStackQuery,
+  Contact,
+  ContentApi,
+  Core,
+  EffectAtomComparison,
+  ElmComparison,
+  FieldValidation,
+  GetStarted,
+  Patterns,
+  Performance,
+  Privacy,
+  ProjectOrganization,
+  ReactComparison,
+  Roadmap,
+  Routing,
+  Testing,
+  TestingScene,
+  TestingStory,
+  ToolingLinting,
+  TypingTerminal,
+  Ui,
+  WhyFoldkit,
+} from '../page/index.ts'
+
+export const subscriptions = Subscription.make<Model, Message>()((
+  entry,
+) => ({
+  activeSection: entry(
+    {
+      pageId: Schema.String,
+      sections: Schema.Array(Schema.String),
+    },
+    {
+      modelToDependencies: (model) => {
+        const currentPageTableOfContents = match (model.route) {
+          when { _tag: "WhyFoldkit" }: WhyFoldkit.tableOfContents;
+          when { _tag: "Performance" }: Performance.tableOfContents;
+          when { _tag: "GetStarted" }: GetStarted.tableOfContents;
+          when { _tag: "Roadmap" }: Roadmap.tableOfContents;
+          when { _tag: "ComingFromReact" }: ComingFromReact.tableOfContents;
+          when { _tag: "ComingFromTanStackQuery" }:
+            ComingFromTanStackQuery.tableOfContents;
+          when { _tag: "ReactComparison" }: ReactComparison.tableOfContents;
+          when { _tag: "EffectAtomComparison" }:
+            EffectAtomComparison.tableOfContents;
+          when { _tag: "ElmComparison" }: ElmComparison.tableOfContents;
+          when { _tag: "RoutingAndNavigation" }: Routing.tableOfContents;
+          when { _tag: "FieldValidation" }: FieldValidation.tableOfContents;
+          when { _tag: "Testing" }: Testing.tableOfContents;
+          when { _tag: "BestPracticesSideEffects" }:
+            BestPractices.SideEffectsAndPurity.tableOfContents;
+          when { _tag: "BestPracticesMessages" }:
+            BestPractices.Messages.tableOfContents;
+          when { _tag: "BestPracticesKeying" }:
+            BestPractices.Keying.tableOfContents;
+          when { _tag: "BestPracticesImmutability" }:
+            BestPractices.Immutability.tableOfContents;
+          when { _tag: "ProjectOrganization" }:
+            ProjectOrganization.tableOfContents;
+          when { _tag: "ToolingLinting" }: ToolingLinting.tableOfContents;
+          when { _tag: "ApiModule" }: do {
+            const { moduleSlug } = model.route
+            match (AsyncData.getData(model.apiReference.apiData)) {
+              when { _tag: "None" }: [];
+              when { _tag: "Some", value: let data }: ApiReference
+                .resolveModule(data.parsedApi, moduleSlug)
+                .match({
+                  onNone: () => [],
+                  onSome: ApiReference.toModuleTableOfContents,
+                });
+            }
+          };
+          when { _tag: "CoreArchitecture" }: Core.Architecture.tableOfContents;
+          when { _tag: "CoreCounterExample" }:
+            Core.CounterExample.tableOfContents;
+          when { _tag: "CoreModel" }: Core.CoreModel.tableOfContents;
+          when { _tag: "CoreMessages" }: Core.Messages.tableOfContents;
+          when { _tag: "CoreUpdate" }: Core.CoreUpdate.tableOfContents;
+          when { _tag: "CoreView" }: Core.CoreView.tableOfContents;
+          when { _tag: "TestingStory" }: TestingStory.tableOfContents;
+          when { _tag: "TestingScene" }: TestingScene.tableOfContents;
+          when { _tag: "CoreCommands" }: Core.Commands.tableOfContents;
+          when { _tag: "CoreMount" }: Core.Mount.tableOfContents;
+          when { _tag: "CoreCustomElement" }:
+            Core.CustomElement.tableOfContents;
+          when { _tag: "CoreSubscriptions" }:
+            Core.Subscriptions.tableOfContents;
+          when { _tag: "CoreInitAndFlags" }: Core.InitAndFlags.tableOfContents;
+          when { _tag: "CoreDom" }: Core.CoreDom.tableOfContents;
+          when { _tag: "CoreRender" }: Core.CoreRender.tableOfContents;
+          when { _tag: "CoreFile" }: Core.CoreFile.tableOfContents;
+          when { _tag: "CoreHttp" }: Core.CoreHttp.tableOfContents;
+          when { _tag: "CoreQuery" }: Core.CoreQuery.tableOfContents;
+          when { _tag: "CoreCanvas" }: Core.CoreCanvas.tableOfContents;
+          when { _tag: "CoreRuntime" }: Core.Runtime.tableOfContents;
+          when { _tag: "CoreServerRendering" }:
+            Core.CoreServerRendering.tableOfContents;
+          when { _tag: "CoreResources" }: Core.Resources.tableOfContents;
+          when { _tag: "CoreManagedResources" }:
+            Core.ManagedResources.tableOfContents;
+          when { _tag: "CoreCrashView" }: Core.CrashView.tableOfContents;
+          when { _tag: "CoreViewTransitions" }:
+            Core.ViewTransitions.tableOfContents;
+          when { _tag: "CoreSlowWarnings" }: Core.Slow.tableOfContents;
+          when { _tag: "CoreFreezeModel" }: Core.FreezeModel.tableOfContents;
+          when { _tag: "CorePreserveScroll" }:
+            Core.PreserveScroll.tableOfContents;
+          when { _tag: "CoreDevTools" }: Core.DevTools.tableOfContents;
+          when { _tag: "CoreSubmodel" }: Core.SubmodelPage.tableOfContents;
+          when { _tag: "CoreMachine" }: Core.Machine.tableOfContents;
+          when { _tag: "AsyncData" }: AsyncDataPage.tableOfContents;
+          when { _tag: "PatternsAntiPatterns" }:
+            Patterns.AntiPatterns.tableOfContents;
+          when { _tag: "PatternsInformingSubmodels" }:
+            Patterns.InformingSubmodels.tableOfContents;
+          when { _tag: "PatternsSubscriptionOrganization" }:
+            Patterns.SubscriptionOrganization.tableOfContents;
+          when { _tag: "CoreViewMemoization" }:
+            Core.ViewMemoization.tableOfContents;
+          when { _tag: "CoreEmbedding" }: Core.Embedding.tableOfContents;
+          when { _tag: "UiButton" }: Ui.ButtonPage.tableOfContents;
+          when { _tag: "UiInput" }: Ui.InputPage.tableOfContents;
+          when { _tag: "UiTextarea" }: Ui.TextareaPage.tableOfContents;
+          when { _tag: "UiCalendar" }: Ui.CalendarPage.tableOfContents;
+          when { _tag: "UiDatePicker" }: Ui.DatePickerPage.tableOfContents;
+          when { _tag: "UiCheckbox" }: Ui.CheckboxPage.tableOfContents;
+          when { _tag: "UiRadioGroup" }: Ui.RadioGroupPage.tableOfContents;
+          when { _tag: "UiSlider" }: Ui.SliderPage.tableOfContents;
+          when { _tag: "UiMeter" }: Ui.MeterPage.tableOfContents;
+          when { _tag: "UiProgress" }: Ui.ProgressPage.tableOfContents;
+          when { _tag: "UiSwitch" }: Ui.SwitchPage.tableOfContents;
+          when { _tag: "UiListbox" }: Ui.ListboxPage.tableOfContents;
+          when { _tag: "UiCombobox" }: Ui.ComboboxPage.tableOfContents;
+          when { _tag: "UiDialog" }: Ui.DialogPage.tableOfContents;
+          when { _tag: "UiMenu" }: Ui.MenuPage.tableOfContents;
+          when { _tag: "UiPopover" }: Ui.PopoverPage.tableOfContents;
+          when { _tag: "UiDisclosure" }: Ui.DisclosurePage.tableOfContents;
+          when { _tag: "UiTabs" }: Ui.TabsPage.tableOfContents;
+          when { _tag: "UiNav" }: Ui.NavPage.tableOfContents;
+          when { _tag: "UiFieldset" }: Ui.FieldsetPage.tableOfContents;
+          when { _tag: "UiSelect" }: Ui.SelectPage.tableOfContents;
+          when { _tag: "UiDragAndDrop" }: Ui.DragAndDropPage.tableOfContents;
+          when { _tag: "UiFileDrop" }: Ui.FileDropPage.tableOfContents;
+          when { _tag: "UiToast" }: Ui.ToastPage.tableOfContents;
+          when { _tag: "UiTooltip" }: Ui.TooltipPage.tableOfContents;
+          when { _tag: "UiAnimation" }: Ui.AnimationPage.tableOfContents;
+          when { _tag: "UiAnchor" }: Ui.AnchorPage.tableOfContents;
+          when { _tag: "UiHoverIntent" }: Ui.HoverIntentPage.tableOfContents;
+          when { _tag: "UiVirtualList" }: Ui.VirtualListPage.tableOfContents;
+          when { _tag: "UiOverview" }: Ui.OverviewPage.tableOfContents;
+          when { _tag: "UiSelectionSubmodels" }:
+            Ui.SelectionSubmodelsPage.tableOfContents;
+          when { _tag: "AiOverview" }: AiOverview.tableOfContents;
+          when { _tag: "AiSkills" }: AiSkills.tableOfContents;
+          when { _tag: "AiMcp" }: AiMcp.tableOfContents;
+          when { _tag: "ContentApi" }: ContentApi.tableOfContents;
+          when { _tag: "About" }: About.tableOfContents;
+          when { _tag: "Contact" }: Contact.tableOfContents;
+          when { _tag: "Privacy" }: Privacy.tableOfContents;
+          when { _tag: "TypingTerminal" }: TypingTerminal.tableOfContents;
+          when { _tag: 'Home' }: [];
+          when { _tag: 'Newsletter' }: [];
+          when { _tag: 'Blog' }: [];
+          when { _tag: 'BlogPost' }: [];
+          when { _tag: 'Playground' }: [];
+          when { _tag: 'NotFound' }: [];
+          when { _tag: 'Examples' }: [];
+          when { _tag: 'ExampleDetail' }: [];
+        }
+
+        return {
+          pageId: model.route._tag,
+          sections: Arr.map(
+            currentPageTableOfContents,
+            ({ id }) => id,
+          ),
+        }
+      },
+      dependenciesToStream: ({ sections }) =>
+        Stream.callback<typeof Message.ChangedActiveSection.Type>((
+          queue,
+        ): never!never!Scope =>
+          effect {
+            if (!Arr.isReadonlyArrayNonEmpty(sections)) {
+              return try Effect.never
+            }
+
+            try Render.afterCommit
+
+            try Effect.acquireRelease(
+              effect {
+                const visibleSections = MutableRef.make(HashSet.empty<string>())
+                const observer = try Effect.orDie(Effect.try({
+                  try: () =>
+                    makeIntersectionObserver(
+                      entries => {
+                        Arr.forEach(
+                          entries,
+                          ({ isIntersecting, target: { id } }) => {
+                            if (isIntersecting) {
+                              MutableRef.update(
+                                visibleSections,
+                                HashSet.add(id),
+                              )
+                            } else {
+                              MutableRef.update(
+                                visibleSections,
+                                HashSet.remove(id),
+                              )
+                            }
+                          },
+                        )
+
+                        const activeSectionId = Arr.findFirst(
+                          sections,
+                          sectionId =>
+                            HashSet.has(
+                              MutableRef.get(visibleSections),
+                              sectionId,
+                            ),
+                        )
+
+                        match (activeSectionId) {
+                          when Option.None: undefined;
+                          when Option.Some(let sectionId): do {
+                            Queue.offerUnsafe(
+                              queue,
+                              Message.ChangedActiveSection({ sectionId }),
+                            )
+                            undefined
+                          };
+                        }
+                      },
+                      { rootMargin: '-100px 0px -80% 0px' },
+                    ),
+                  catch: error => error,
+                }))
+                for (const sectionId of sections) {
+                  const target = try Effect.orDie(Effect.try({
+                    try: () => elementWithId(sectionId),
+                    catch: error => error,
+                  }))
+                  if (target === null) continue
+                  try Effect.orDie(Effect.try({
+                    try: () => observeIntersectionTarget(observer, target),
+                    catch: error => error,
+                  }))
+                }
+                return observer
+              },
+              observer =>
+                Effect.orDie(Effect.try({
+                  try: () => disconnectIntersectionObserver(observer),
+                  catch: error => error,
+                })),
+            )
+            return try Effect.never
+          }
+        ),
+    },
+  ),
+}))

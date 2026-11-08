@@ -1,0 +1,36 @@
+import * as Shared from '@typing-game/shared'
+
+import { ROOM_ID_WORDS } from '../constants.ts'
+import * as Room from '../room.vibe'
+
+export const createRoom =
+  (roomByIdRef: SubscriptionRef<Shared.RoomById>) =>
+  effect (payload: Rpc.Payload<typeof Shared.createRoomRpc>) => {
+    const roomId = try Room.generateUniqueId(ROOM_ID_WORDS)
+    const playerId = try (try SecureRandom.SecureRandom).uuidV4()
+
+    const player: Shared.Player = {
+      id: playerId,
+      username: payload.username,
+    }
+
+    const createdAt = try Clock.currentTimeMillis
+
+    const newRoom: Shared.Room = {
+      id: roomId,
+      players: [player],
+      hostId: playerId,
+      status: Shared.Waiting.make({}),
+      maybeGame: Option.none(),
+      maybeScoreboard: Option.none(),
+      createdAt,
+      usedGameTexts: [],
+    }
+
+    try SubscriptionRef.update(
+      roomByIdRef,
+      (roomById) => HashMap.set(roomById, newRoom.id, newRoom),
+    )
+
+    return { player, room: newRoom }
+  }

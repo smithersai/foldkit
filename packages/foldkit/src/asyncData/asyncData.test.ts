@@ -1,8 +1,8 @@
 import { HashMap, Option, Result, Schema, pipe } from 'effect'
 import { describe, expect, expectTypeOf, it } from 'vitest'
 
-import { taggedStruct } from '../schema/index.js'
-import * as AsyncData from './asyncData.js'
+import { taggedStruct } from '../schema/index.vibe'
+import * as AsyncData from './asyncData.vibe'
 
 type State = AsyncData.AsyncData<number, string>
 

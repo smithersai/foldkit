@@ -13,30 +13,33 @@ import {
 } from 'effect'
 import { dual } from 'effect/Function'
 
-import { kebabToPascal } from '../customElement/index.js'
-import type { CustomElementSpec, EventSchema } from '../customElement/index.js'
+import { kebabToPascal } from '../customElement/index.vibe'
+import type {
+  CustomElementSpec,
+  EventSchema,
+} from '../customElement/index.vibe'
 import { serializedStylePropertyName } from '../domReflection.js'
 import type { File } from '../file/index.js'
-import type { FoldkitMountMarker } from '../html/index.js'
+import type { FoldkitMountMarker } from '../html/index.vibe'
 import {
   FOLDKIT_MOUNT_KEY,
   FileHandlerSymbol,
   __clearRuntime as clearHtmlRuntime,
   __htmlBuilder as htmlBuilderFor,
   __setRuntime as setHtmlRuntime,
-} from '../html/index.js'
+} from '../html/index.vibe'
 import type {
   Document,
   Html,
   HtmlBuilder,
   KeyboardModifiers,
-} from '../html/index.js'
+} from '../html/index.vibe'
 import type { Entry as ManagedResourceEntry } from '../managedResource/index.js'
-import { MountTracker } from '../mount/index.js'
-import type { MountDefinition } from '../mount/index.js'
-import { Dispatch } from '../runtime/dispatch.js'
+import { MountTracker } from '../mount/index.vibe'
+import type { MountDefinition } from '../mount/index.vibe'
+import { Dispatch } from '../runtime/dispatch.vibe'
 import { tagNameFromSelector } from '../tagName.js'
-import type { VNode } from '../vdom.js'
+import type { VNode } from '../vdom.vibe'
 import type {
   AnyCommand,
   AnyCommandInstance,

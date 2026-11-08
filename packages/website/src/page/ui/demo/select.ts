@@ -3,8 +3,8 @@ import type { HtmlBuilder } from 'foldkit/html'
 import { Select } from '@foldkit/ui'
 
 import { Icon } from '../../../icon'
-import { Message } from '../message'
-import type { Model } from '../model'
+import { Message } from '../message.vibe'
+import type { Model } from '../model.vibe'
 
 // DEMO CONTENT
 

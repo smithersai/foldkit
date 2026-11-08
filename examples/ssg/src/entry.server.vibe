@@ -1,0 +1,15 @@
+import { Server } from 'foldkit/experimental'
+
+import { init, view } from './main.vibe'
+
+export const renderDocument = Server.renderDocument
+
+export const prerenderPaths: ReadonlyArray<string> = ['/', '/about']
+
+export const renderPage = (request: Request): Promise<Server.EntryResult> =>
+  Effect.runPromise(
+    Server.renderToString(
+      { routing: {}, init, view },
+      { url: request.url },
+    ) |> Effect.map(%, Server.Rendered),
+  )

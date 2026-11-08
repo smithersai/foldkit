@@ -1,1 +1,1 @@
-export { afterCommit, afterPaint } from './render.js'
+export { afterCommit, afterPaint } from './render.vibe'

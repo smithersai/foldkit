@@ -12,10 +12,10 @@ import { Dialog, Listbox } from '@foldkit/ui'
 import { createEmptyGrid as createReactGrid } from '../../../comparisons/pixel-art-react/src/grid'
 import { reducer } from '../../../comparisons/pixel-art-react/src/reducer'
 import type { State } from '../../../comparisons/pixel-art-react/src/types'
-import { createEmptyGrid as createFoldkitGrid } from './grid'
-import { Message } from './message'
-import type { Model } from './model'
-import { update } from './update'
+import { createEmptyGrid as createFoldkitGrid } from './grid.vibe'
+import { Message } from './message.vibe'
+import type { Model } from './model.vibe'
+import { update } from './update.vibe'
 
 const GRID_SIZE = 16
 const ITERATIONS = 10_000

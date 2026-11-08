@@ -1,0 +1,1376 @@
+import { NodeSocketServer } from '@effect/platform-node'
+import { Array as Arr } from 'effect'
+import { FetchHttpClient, HttpClient, HttpClientRequest } from 'effect/http'
+import type { HttpMethod } from 'effect/http/HttpMethod'
+import * as PlatformError from 'effect/PlatformError'
+import { ChildProcess, ChildProcessSpawner } from 'effect/process'
+import { ExperimentalNodeServices } from 'vibelang-runtime/experimental/platform-node'
+
+import {
+  type PlaywrightBrowser,
+  type PlaywrightPage,
+  type PlaywrightRoute,
+  exitProcess,
+  loadChromium,
+} from './check-scaffold-server-rendering.platform.mts'
+import {
+  type PackedScaffoldPackage,
+  selectScaffoldTarballs,
+} from './scaffold-dependencies.ts'
+
+// A freshly generated SSR and SSG application, built through the command its
+// own README documents, with every Foldkit dependency installed from the
+// tarballs in this release snapshot.
+//
+// The scaffold's build is where the build id contract is either kept or lost.
+// Hydration needs the client build and the server build of one run to carry the
+// same id, and a hydratable render with none fails outright, so a generated
+// project has to satisfy a requirement its author has not read about yet. This
+// gate asserts the generated project does: it builds, the served or generated
+// page carries an id, the client bundle carries the same one, Chromium adopts
+// the server DOM, and the generated application responds to interaction.
+//
+// Checking the template files says nothing about this. Only running the
+// generated project's own build command does.
+
+const CLI_DIR = 'packages/create-foldkit-app'
+let REPO_ROOT = ''
+let PATH_DELIMITER = ':'
+
+type ScaffoldPackage = Readonly<{
+  directory: string
+  name: string
+}>
+
+const SCAFFOLD_PACKAGES: ReadonlyArray<ScaffoldPackage> = [
+  { directory: 'packages/foldkit', name: 'foldkit' },
+  { directory: 'packages/node', name: '@foldkit/node' },
+  { directory: 'packages/ui', name: '@foldkit/ui' },
+  { directory: 'packages/devtools', name: '@foldkit/devtools' },
+  {
+    directory: 'packages/vite-plugin-foldkit',
+    name: '@foldkit/vite-plugin',
+  },
+  { directory: 'packages/devtools-mcp', name: '@foldkit/devtools-mcp' },
+  {
+    directory: 'packages/oxlint-plugin-foldkit',
+    name: '@foldkit/oxlint-plugin',
+  },
+]
+
+const DEPENDENCY_MANIFESTS_DIRECTORY_ENV =
+  'CREATE_FOLDKIT_APP_DEPENDENCY_MANIFESTS_DIRECTORY'
+const EXACT_VERSION = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/
+
+const SSR_PORT = 5312
+const SSG_PORT = 5313
+const BUILD_ID_ATTRIBUTE = /data-foldkit-build="([^"]*)"/
+const EXPECTED_ALLOW = 'GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS'
+const HOST_OUTPUT_LIMIT = 16_000
+const HOST_READY_ATTEMPTS = 60
+const HOST_REQUEST_TIMEOUT_MS = 5_000
+const HOST_STOP_TIMEOUT_MS = 3_000
+const HYDRATION_TIMEOUT_MS = 10_000
+const SIGNAL_POLL_MS = 50
+
+let isSkipBuild = false
+
+error ScaffoldCheckError {
+  message: string
+}
+
+const log = effect (message: string) => {
+  try Console.log(`[scaffold-ssr] ${message}`)
+}
+
+const assertScaffold = effect (condition: boolean, message: string) => {
+  if (!condition) {
+    throw new ScaffoldCheckError({ message })
+  }
+}
+
+// A failure that crossed a Promise or a platform service arrives wrapped. The
+// original error is what the diagnostics name.
+const unwrapForeignFailure = (error: unknown): unknown =>
+  Cause.isUnknownError(error)
+    ? unwrapForeignFailure(error.cause)
+    : PlatformError.isPlatformError(error) && error.cause !== undefined
+    ? unwrapForeignFailure(error.cause)
+    : error
+
+const decodeUtf8 = effect (bytes: Uint8Array): string!! => {
+  return try Effect.orDie(Effect.try({
+    try: () => new TextDecoder('utf-8', { ignoreBOM: true }).decode(bytes),
+    catch: cause => cause,
+  }))
+}
+
+const readUtf8 = effect (path: string) => {
+  const fileSystem = try FileSystem.FileSystem
+  return try decodeUtf8(try fileSystem.readFile(path))
+}
+
+const collectText = effect (
+  stream: Stream.Stream<Uint8Array, PlatformError.PlatformError>,
+) => {
+  const decoder = new TextDecoder('utf-8', { ignoreBOM: true })
+  let text = ''
+  for try (const chunk of stream) {
+    text = `${text}${try Effect.orDie(
+      Effect.try({
+        try: () => decoder.decode(chunk, { stream: true }),
+        catch: cause => cause,
+      }),
+    )}`
+  }
+  return `${text}${try Effect.orDie(
+    Effect.try({ try: () => decoder.decode(), catch: cause => cause }),
+  )}`
+}
+
+type RunOptions = Readonly<{
+  cwd?: string
+  env?: Readonly<Record<string, string>>
+  inherit?: boolean
+  timeoutMs?: number
+}>
+
+type CliReleaseManifest = Readonly<{
+  packages: Readonly<Record<string, string>>
+}>
+
+type RunResult = Readonly<{
+  stdout: string
+  stderr: string
+  status: number | null
+}>
+
+// A command run to completion, as spawnSync ran it: the child's standard
+// input is a pipe that ends at once, its output is collected as UTF-8, and a
+// command that outlives the budget is stopped and reports no status.
+const run = effect (
+  command: string,
+  args: ReadonlyArray<string>,
+  options: RunOptions = {},
+) => {
+  const spawner = try ChildProcessSpawner.ChildProcessSpawner
+  let stdout = ''
+  let stderr = ''
+  const completed = try Effect.timeoutOption(
+    Effect.scoped(effect {
+      const child = try spawner.spawn(
+        ChildProcess.make(command, args, {
+          cwd: options.cwd,
+          env: options.env,
+          extendEnv: true,
+          stdin: options.inherit
+            ? 'inherit'
+            : { stream: Stream.empty, endOnDone: true },
+          stdout: options.inherit ? 'inherit' : 'pipe',
+          stderr: options.inherit ? 'inherit' : 'pipe',
+        }),
+      )
+      if (!options.inherit) {
+        const [out, err] = try.all [
+          collectText(child.stdout),
+          collectText(child.stderr),
+        ]
+        stdout = out
+        stderr = err
+      }
+      const exited = try exit(child.exitCode)
+      return Exit.isSuccess(exited) ? exited.value : null
+    }),
+    options.timeoutMs ?? 300_000,
+  )
+  const result: RunResult = {
+    stdout,
+    stderr,
+    status: match (completed) {
+      when Option.Some(let status): status;
+      when Option.None: null;
+    },
+  }
+  return result
+}
+
+const runRequired = effect (
+  label: string,
+  command: string,
+  args: ReadonlyArray<string>,
+  options: RunOptions = {},
+) => {
+  try log(label)
+  const result = try run(command, args, options)
+  if (result.status !== 0) {
+    const output = `${result.stdout}${result.stderr}`.trim()
+    throw new ScaffoldCheckError({
+      message: `${label} failed${output === '' ? '' : `:\n${output}`}`,
+    })
+  }
+  return result
+}
+
+type RunningHost = Readonly<{
+  process: ChildProcessSpawner.ChildProcessHandle
+  port: number
+  output: () => string
+}>
+
+const activeHosts = new Set<RunningHost>()
+
+const isPortFree = effect (port: number) => {
+  const bound = try exit(
+    Effect.scoped(NodeSocketServer.make({ port, host: '127.0.0.1' })),
+  )
+  return bound is Exit.Success
+}
+
+const assertPortIsFree = effect (port: number) => {
+  if (!(try isPortFree(port))) {
+    throw new ScaffoldCheckError({
+      message:
+        `port ${String(port)} is already in use. A host left by an earlier run `
+        + 'would answer this gate instead of the generated project.',
+    })
+  }
+}
+
+const waitForPortToClose = effect (port: number) => {
+  for (let attempt = 0; attempt < 30; attempt++) {
+    if (try isPortFree(port)) {
+      return
+    }
+    try sleep(100)
+  }
+  throw new ScaffoldCheckError({
+    message: `the generated host did not release port ${String(port)}`,
+  })
+}
+
+// The host runs in its own process group so a stop reaches the servers npm
+// starts. Its output is kept for the diagnostics, bounded to the last part.
+const startHost = effect (
+  command: string,
+  args: ReadonlyArray<string>,
+  projectDir: string,
+  port: number,
+  env: Readonly<Record<string, string>> = {},
+) => {
+  const spawner = try ChildProcessSpawner.ChildProcessSpawner
+  const hostProcess = try Experimental.Process.Process
+  const platform = try hostProcess.platform
+  const child = try spawner.spawn(
+    ChildProcess.make(command, args, {
+      cwd: projectDir,
+      detached: true,
+      env,
+      extendEnv: true,
+      shell: platform === 'win32',
+      stdin: 'ignore',
+      stdout: 'pipe',
+      stderr: 'pipe',
+    }),
+  )
+  let output = ''
+  const capture = effect (
+    stream: Stream.Stream<Uint8Array, PlatformError.PlatformError>,
+  ) => {
+    const decoder = new TextDecoder('utf-8', { ignoreBOM: true })
+    for try (const chunk of stream) {
+      output = `${output}${try Effect.orDie(
+        Effect.try({
+          try: () => decoder.decode(chunk, { stream: true }),
+          catch: cause => cause,
+        }),
+      )}`.slice(
+        -HOST_OUTPUT_LIMIT,
+      )
+    }
+  }
+  try Effect.forkScoped(capture(child.stdout))
+  try Effect.forkScoped(capture(child.stderr))
+  const runningHost: RunningHost = {
+    process: child,
+    port,
+    output: (): string => output,
+  }
+  activeHosts.add(runningHost)
+  return runningHost
+}
+
+const waitForExit = effect (
+  host: ChildProcessSpawner.ChildProcessHandle,
+  timeoutMs: number,
+) => {
+  // A host ended by a signal reports no exit code, which is also an exit.
+  const exited = try exit(Effect.timeoutOption(host.exitCode, timeoutMs))
+  return match (exited) {
+    when Exit.Success(let completed): Option.isSome(completed);
+    when Exit.Failure: true;
+  }
+}
+
+const terminateHost = effect (
+  host: ChildProcessSpawner.ChildProcessHandle,
+  isForce: boolean,
+) => {
+  const hostProcess = try Experimental.Process.Process
+  if ((try hostProcess.platform) === 'win32') {
+    try run('taskkill', [
+      '/PID',
+      String(host.pid),
+      '/T',
+      ...(isForce ? ['/F'] : []),
+    ])
+    return
+  }
+  // The spawner signals the detached host's whole process group.
+  host.kill({ killSignal: isForce ? 'SIGKILL' : 'SIGTERM' }) catch () =>
+    undefined
+}
+
+const stopHostOnce = effect (host: RunningHost) => {
+  try terminateHost(host.process, false)
+  const didExit = try waitForExit(host.process, HOST_STOP_TIMEOUT_MS)
+  const isPortStillOpen = !(try isPortFree(host.port))
+  if (!didExit || isPortStillOpen) {
+    try terminateHost(host.process, true)
+    try waitForExit(host.process, HOST_STOP_TIMEOUT_MS)
+  }
+  try waitForPortToClose(host.port)
+}
+
+// A host is stopped once; a second caller joins the stop in progress.
+const stoppingHosts = new Map<RunningHost, ReturnType<typeof stopHostOnce>>()
+
+const stopHost = effect (host: RunningHost) => {
+  const existing = stoppingHosts.get(host)
+  if (existing !== undefined) {
+    return try existing
+  }
+  const stopping = try Effect.cached(stopHostOnce(host))
+  stoppingHosts.set(host, stopping)
+  const stopOutcome = try Effect.onExit(
+    exit(effect {
+      try stopping
+    }),
+    effect () => {
+      activeHosts.delete(host)
+    },
+  )
+  try stopOutcome
+}
+
+// SIGINT and SIGTERM stop every generated host, then end the process with the
+// signal's exit status, before any other work finishes: the gate's own cleanup
+// stays with the normal paths, as it did when the host handled the signals.
+const stopForSignal = effect (signal: 'SIGINT' | 'SIGTERM') => {
+  for concurrent (const host of [...activeHosts]) {
+    try exit(stopHost(host))
+  }
+  try sync(
+    (code: number) => exitProcess(code),
+    signal === 'SIGINT' ? 130 : 143,
+  )
+}
+
+const watchSignals = effect (
+  received: Option.Option<'SIGINT' | 'SIGTERM'>!!,
+) => {
+  while (true) {
+    const signal = try received
+    if (signal is Option.Some(let name)) {
+      try stopForSignal(name)
+    }
+    try sleep(SIGNAL_POLL_MS)
+  }
+}
+
+const fetchServedPage = effect (
+  host: RunningHost,
+  origin: string,
+  path = '/',
+) => {
+  const url = `${origin}${path}`
+  const client = try HttpClient.HttpClient
+  for (let attempt = 0; attempt < HOST_READY_ATTEMPTS; attempt++) {
+    if (!(try host.process.isRunning)) {
+      throw new ScaffoldCheckError({
+        message:
+          `the generated host exited before serving ${url}:\n${host.output()}`,
+      })
+    }
+    const outcome = try exit(
+      timeout(
+        Effect.scoped(effect {
+          const response = try client.execute(HttpClientRequest.get(url))
+          try assertScaffold(
+            response.status === 200,
+            `the generated host answered ${response.status} for ${url}`,
+          )
+          return try response.text
+        }),
+        1_000,
+      ),
+    )
+    if (outcome is Exit.Success) {
+      return outcome.value
+    }
+    const failure = Cause.squash(outcome.cause)
+    if (failure instanceof ScaffoldCheckError) {
+      throw failure
+    }
+    try sleep(250)
+  }
+  throw new ScaffoldCheckError({
+    message:
+      `the generated host never accepted a connection at ${url}:\n${host.output()}`,
+  })
+}
+
+type RawAnswer = Readonly<{
+  status: number
+  body: string
+  headers: Readonly<Record<string, string | undefined>>
+}>
+
+const askRaw = effect (
+  origin: string,
+  path: string,
+  method: HttpMethod,
+  headers: Readonly<Record<string, string>> = {},
+) => {
+  const client = try HttpClient.HttpClient
+  return try timeout(
+    Effect.scoped(effect {
+      const response = try client.execute(
+        HttpClientRequest.make(method)(`${origin}${path}`, { headers }),
+      )
+      const body = try response.text
+      const responseHeaders: Record<string, string | undefined> = {}
+      for (const [name, value] of Object.entries(response.headers)) {
+        responseHeaders[name] = typeof value === 'string' ? value : undefined
+      }
+      const answer: RawAnswer = {
+        status: response.status,
+        body,
+        headers: responseHeaders,
+      }
+      return answer
+    }),
+    HOST_REQUEST_TIMEOUT_MS,
+  )
+}
+
+type HydratedPage = Readonly<{
+  page: PlaywrightPage
+  diagnostics: globalThis.Array<string>
+}>
+
+type AdoptionReading = Readonly<{
+  rootWasCaptured: boolean
+  sentinelWasCaptured: boolean
+  rootContainsCurrentSentinel: boolean
+  rootIsConnected: boolean
+  sentinelIsSame: boolean
+  buildMarkerIsRemoved: boolean
+  bodyIsContained: boolean
+}>
+
+const openHydratedPage = effect (
+  browser: PlaywrightBrowser,
+  url: string,
+  sentinelExpression: string,
+  label: string,
+) => {
+  const page = try Effect.tryPromise(() => browser.newPage())
+  const diagnostics: globalThis.Array<string> = []
+  try Effect.try(() => {
+    page.on(
+      'pageerror',
+      error => diagnostics.push(`page error: ${error.message}`),
+    )
+    page.on('console', message => {
+      if (message.type() === 'error') {
+        diagnostics.push(`console error: ${message.text()}`)
+      }
+    })
+  })
+
+  return effect {
+    const probeServedIdentity = async (
+      route: PlaywrightRoute,
+    ): Promise<void> => {
+      const response = await route.fetch()
+      const html = await response.text()
+      if (!html.includes('</body>')) {
+        throw new ScaffoldCheckError({
+          message:
+            `${label} has no closing body for the parser-time identity probe`,
+        })
+      }
+      const probe = '<script>'
+        + "window.__foldkitServedRoot=document.querySelector('[data-foldkit-app]');"
+        + `window.__foldkitServedSentinel=${sentinelExpression};`
+        + '</script>'
+      await route.fulfill({
+        response,
+        body: html.replace('</body>', `${probe}</body>`),
+      })
+    }
+    try Effect.tryPromise(() => page.route(url, probeServedIdentity))
+
+    const response = try Effect.tryPromise(() =>
+      page.goto(url, { waitUntil: 'domcontentloaded' })
+    )
+    const status = try Effect.try(() => response?.status())
+    try assertScaffold(
+      status === 200,
+      `${label} navigation answered ${String(status)}`,
+    )
+    const hydrated = try exit(
+      Effect.tryPromise(() =>
+        page.waitForFunction(
+          "window.__foldkitServedRoot instanceof Element && !window.__foldkitServedRoot.hasAttribute('data-foldkit-build')",
+          undefined,
+          { timeout: HYDRATION_TIMEOUT_MS },
+        )
+      ),
+    )
+    if (hydrated is Exit.Failure) {
+      const error = unwrapForeignFailure(Cause.squash(hydrated.cause))
+      const state = try Effect.tryPromise(() =>
+        page.evaluate<unknown>(`(() => {
+        const root = window.__foldkitServedRoot
+        return {
+          bodyInert: document.body.inert,
+          bodyRefused: document.body.hasAttribute('data-foldkit-refused'),
+          buildId: root?.getAttribute('data-foldkit-build'),
+          rootConnected: root?.isConnected,
+        }
+      })()`)
+      )
+      throw new ScaffoldCheckError({
+        message: `${label} did not finish hydration: ${
+          JSON.stringify({
+            state,
+            diagnostics,
+            error: error instanceof Error ? error.message : String(error),
+          })
+        }`,
+      })
+    }
+
+    const reading = try Effect.tryPromise(() =>
+      page.evaluate<AdoptionReading>(`(() => {
+      const root = window.__foldkitServedRoot
+      const sentinel = ${sentinelExpression}
+      return {
+        rootWasCaptured: window.__foldkitServedRoot instanceof Element,
+        sentinelWasCaptured:
+          window.__foldkitServedSentinel instanceof Element,
+        rootContainsCurrentSentinel:
+          root instanceof Element &&
+          sentinel instanceof Element &&
+          root.contains(sentinel),
+        rootIsConnected: window.__foldkitServedRoot?.isConnected === true,
+        sentinelIsSame:
+          window.__foldkitServedSentinel === sentinel,
+        buildMarkerIsRemoved:
+          root instanceof Element && !root.hasAttribute('data-foldkit-build'),
+        bodyIsContained:
+          document.body.inert ||
+          document.body.hasAttribute('data-foldkit-refused') ||
+          document.body.getAttribute('aria-hidden') === 'true',
+      }
+    })()`)
+    )
+    try assertScaffold(
+      reading.rootWasCaptured && reading.sentinelWasCaptured,
+      `${label} did not expose its parser-created root and sentinel node`,
+    )
+    try assertScaffold(
+      reading.rootContainsCurrentSentinel
+        && reading.rootIsConnected
+        && reading.sentinelIsSame,
+      `${label} rebuilt instead of adopting its parser-created DOM: `
+        + JSON.stringify(reading),
+    )
+    try assertScaffold(
+      reading.buildMarkerIsRemoved && !reading.bodyIsContained,
+      `${label} did not complete hydration normally: ${
+        JSON.stringify(reading)
+      }`,
+    )
+    const opened: HydratedPage = { page, diagnostics }
+    return opened
+  } catch effect (error) => {
+    try Effect.tryPromise(() => page.close())
+    throw error
+  }
+}
+
+const assertNoBrowserDiagnostics = effect (
+  label: string,
+  diagnostics: ReadonlyArray<string>,
+) => {
+  try assertScaffold(
+    Arr.isReadonlyArrayEmpty(diagnostics),
+    `${label} emitted browser errors:\n${diagnostics.join('\n')}`,
+  )
+}
+
+type PackOutput = ReadonlyArray<Readonly<{ filename?: string }>>
+
+const packPackage = effect (label: string, packageDir: string) => {
+  const path = try Path.Path
+  const result = try runRequired(label, 'npm', ['pack', '--json'], {
+    cwd: path.join(REPO_ROOT, packageDir),
+  })
+  const output: PackOutput = try Effect.try(() => JSON.parse(result.stdout))
+  const filename = output[0]?.filename
+  if (filename === undefined) {
+    throw new ScaffoldCheckError({
+      message: `${label} did not return a tarball filename`,
+    })
+  }
+  return path.join(REPO_ROOT, packageDir, filename)
+}
+
+const buildIdIn = (html: string): string => {
+  const match = BUILD_ID_ATTRIBUTE.exec(html)
+  return match?.[1] ?? ''
+}
+
+const clientBundleCarries = effect (clientDir: string, buildId: string) => {
+  const fileSystem = try FileSystem.FileSystem
+  const path = try Path.Path
+  const assets = path.join(clientDir, 'assets')
+  for (const name of try fileSystem.readDirectory(assets)) {
+    if (path.extname(name) !== '.js') {
+      continue
+    }
+    if ((try readUtf8(path.join(assets, name))).includes(buildId)) {
+      return true
+    }
+  }
+  return false
+}
+
+const assertBuildIdReachesBothSides = effect (
+  label: string,
+  html: string,
+  clientDir: string,
+) => {
+  const buildId = buildIdIn(html)
+  try assertScaffold(
+    buildId !== '',
+    `${label} carries no build id on its root. A generated project has to `
+      + 'reach a hydratable build through its own build command, without its '
+      + 'author having to discover the requirement first.',
+  )
+  try assertScaffold(
+    try clientBundleCarries(clientDir, buildId),
+    `${label} carries build id "${buildId}", which no client bundle shares. `
+      + 'Hydration would rebuild every page of the deployment that just shipped.',
+  )
+  try log(
+    `${label}: build id ${buildId} reaches the page and the client bundle`,
+  )
+  return buildId
+}
+
+type Tarballs = Readonly<{
+  cli: string
+  packages: ReadonlyArray<PackedScaffoldPackage>
+}>
+
+type DependencyMap = Readonly<Record<string, string>>
+
+type PackageManifest = Readonly<{
+  dependencies?: DependencyMap
+  devDependencies?: DependencyMap
+  peerDependencies?: DependencyMap
+}>
+
+const readJson = effect <T>(path: string) => {
+  const text = try readUtf8(path)
+  const parsed: T = try Effect.try(() => JSON.parse(text))
+  return parsed
+}
+
+const readManifest = effect (path: string) =>
+  try readJson<PackageManifest>(path)
+
+const prepareDependencyManifests = effect (workspaceDir: string) => {
+  const fileSystem = try FileSystem.FileSystem
+  const path = try Path.Path
+  const manifestDirectory = path.join(workspaceDir, 'dependency-manifests')
+
+  for (const rendering of ['ssr', 'ssg'] as const) {
+    const source = try readManifest(
+      path.join(REPO_ROOT, 'examples', rendering, 'package.json'),
+    )
+    const effectSpec = source.dependencies?.['effect']
+
+    try assertScaffold(
+      effectSpec !== undefined && EXACT_VERSION.test(effectSpec),
+      `the ${rendering.toUpperCase()} example must pin effect to one exact `
+        + 'version so the scaffold gate can distinguish its local manifest',
+    )
+
+    const manifest = {
+      ...source,
+      dependencies: { ...source.dependencies, effect: `=${effectSpec}` },
+    }
+
+    const directory = path.join(manifestDirectory, rendering)
+    try fileSystem.makeDirectory(directory, { recursive: true })
+    try fileSystem.writeFileString(
+      path.join(directory, 'package.json'),
+      `${JSON.stringify(manifest, null, 2)}\n`,
+    )
+  }
+
+  return manifestDirectory
+}
+
+type PackageManagerShim = Readonly<{
+  directory: string
+  marker: string
+}>
+
+const preparePackageManagerShim = effect (
+  workspaceDir: string,
+  projectName: string,
+) => {
+  const fileSystem = try FileSystem.FileSystem
+  const path = try Path.Path
+  const directory = path.join(
+    workspaceDir,
+    'package-manager-shims',
+    projectName,
+  )
+  const marker = path.join(directory, 'attempted-install')
+  const source = `const { writeFileSync } = require('node:fs')
+
+if (process.argv.length !== 3 || process.argv[2] !== 'install') {
+  console.error('Expected exactly one install command')
+  process.exit(1)
+}
+
+writeFileSync(${JSON.stringify(marker)}, '')
+`
+
+  try fileSystem.makeDirectory(directory, { recursive: true })
+  try fileSystem.writeFileString(path.join(directory, 'npm-shim.cjs'), source)
+  try fileSystem.writeFileString(
+    path.join(directory, 'npm'),
+    `#!/usr/bin/env node\n${source}`,
+  )
+  try fileSystem.writeFileString(
+    path.join(directory, 'npm.cmd'),
+    '@node "%~dp0\\npm-shim.cjs" %*\r\n',
+  )
+  try fileSystem.chmod(path.join(directory, 'npm'), 0o755)
+
+  const shim: PackageManagerShim = { directory, marker }
+  return shim
+}
+
+const assertGeneratedDependencySpecs = effect (
+  rendering: 'ssr' | 'ssg',
+  projectDir: string,
+  manifestDirectory: string,
+  cliReleaseManifest: CliReleaseManifest,
+) => {
+  const path = try Path.Path
+  const source = try readManifest(
+    path.join(manifestDirectory, rendering, 'package.json'),
+  )
+  const generated = try readManifest(path.join(projectDir, 'package.json'))
+
+  for (const field of ['dependencies', 'devDependencies'] as const) {
+    const generatedDependencies = generated[field] ?? {}
+
+    for (const [name, spec] of Object.entries(source[field] ?? {})) {
+      const expected = spec.includes('workspace:')
+        ? cliReleaseManifest.packages[name]
+        : spec
+
+      try assertScaffold(
+        expected !== undefined && generatedDependencies[name] === expected,
+        `the generated ${rendering.toUpperCase()} ${field} resolved ${name} `
+          + `to ${JSON.stringify(generatedDependencies[name])}, but the local `
+          + `release inputs require ${
+            JSON.stringify(expected)
+          }. The packed CLI `
+          + 'did not read its immutable dependency inputs.',
+      )
+    }
+  }
+
+  try log(
+    `The generated ${rendering.toUpperCase()} dependency specs match the checkout-derived manifest`,
+  )
+}
+
+const generateProject = effect (
+  workspaceDir: string,
+  rendering: 'ssr' | 'ssg',
+  tarballs: Tarballs,
+  manifestDirectory: string,
+) => {
+  const fileSystem = try FileSystem.FileSystem
+  const path = try Path.Path
+  const projectName = `my-${rendering}-app`
+  const environmentPath = match (try Config.option(Config.String('PATH'))) {
+    when Option.Some(let value): value;
+    when Option.None: undefined;
+  }
+  if (environmentPath === undefined) {
+    throw new ScaffoldCheckError({
+      message: 'the scaffold gate cannot prepare npm without PATH',
+    })
+  }
+  const packageManagerShim = try preparePackageManagerShim(
+    workspaceDir,
+    projectName,
+  )
+  const cliReleaseManifest = try readJson<CliReleaseManifest>(
+    path.join(
+      workspaceDir,
+      'node_modules/create-foldkit-app/dist/templates/release.json',
+    ),
+  )
+
+  try runRequired(
+    `Generating a ${rendering.toUpperCase()} project...`,
+    'node',
+    [
+      path.join(workspaceDir, 'node_modules/.bin/create-foldkit-app'),
+      '--name',
+      projectName,
+      '--rendering',
+      rendering,
+      '--package-manager',
+      'npm',
+    ],
+    {
+      cwd: workspaceDir,
+      env: {
+        [DEPENDENCY_MANIFESTS_DIRECTORY_ENV]: manifestDirectory,
+        PATH:
+          `${packageManagerShim.directory}${PATH_DELIMITER}${environmentPath}`,
+      },
+    },
+  )
+
+  const projectDir = path.join(workspaceDir, projectName)
+  try assertScaffold(
+    try fileSystem.exists(packageManagerShim.marker),
+    `the packed CLI did not ask npm to install the generated ${rendering.toUpperCase()} dependencies`,
+  )
+  try assertGeneratedDependencySpecs(
+    rendering,
+    projectDir,
+    manifestDirectory,
+    cliReleaseManifest,
+  )
+
+  const projectManifest = try readManifest(
+    path.join(projectDir, 'package.json'),
+  )
+  const projectTarballs = try Effect.try(() =>
+    selectScaffoldTarballs(
+      projectManifest,
+      tarballs.packages,
+      Object.keys(cliReleaseManifest.packages),
+    )
+  )
+
+  // NOTE: the packed CLI records exact versions that do not exist in npm until
+  // its Version Packages PR merges. Generation uses the shim above to prove it
+  // reaches installation without asking the registry for packages that cannot
+  // be published yet. Install its declared local packages and their local
+  // peers from the release snapshot. Adding unrelated packages changes npm's
+  // dependency placement and can introduce incompatible transitive versions.
+  // `--legacy-peer-deps` is needed only because the plugin's peer floor names a
+  // version `changeset version` has not produced yet; `check-peer-floors.ts`
+  // asserts that floor separately. The selection includes local peers because
+  // this flag suppresses npm's automatic peer installation.
+  try runRequired(
+    `Installing this workspace's packages into the ${rendering.toUpperCase()} project...`,
+    'npm',
+    [
+      'install',
+      '--no-audit',
+      '--no-fund',
+      '--no-save',
+      '--legacy-peer-deps',
+      ...projectTarballs,
+    ],
+    { cwd: projectDir },
+  )
+
+  try runRequired(
+    `Building the ${rendering.toUpperCase()} project through its documented build command...`,
+    'npm',
+    ['run', 'build'],
+    { cwd: projectDir, inherit: true },
+  )
+
+  return projectDir
+}
+
+const assertRejectsRelativeManifestDirectory = effect (workspaceDir: string) => {
+  const path = try Path.Path
+  const result = try run(
+    'node',
+    [
+      path.join(workspaceDir, 'node_modules/.bin/create-foldkit-app'),
+      '--name',
+      'invalid-manifest-source',
+      '--rendering',
+      'ssr',
+      '--package-manager',
+      'npm',
+    ],
+    {
+      cwd: workspaceDir,
+      env: { [DEPENDENCY_MANIFESTS_DIRECTORY_ENV]: 'relative/examples' },
+    },
+  )
+  const output = `${result.stdout}${result.stderr}`
+  try assertScaffold(
+    result.status !== 0 && output.includes('must be an absolute path'),
+    'the packed CLI accepted a relative dependency manifest directory or '
+      + `failed without the expected diagnostic:\n${output}`,
+  )
+  try log('The packed CLI refuses a relative dependency manifest directory')
+}
+
+const assertGeneratedHostPolicies = effect (origin: string) => {
+  const offOrigin = try askRaw(origin, '//evil.example/page', 'GET')
+  try assertScaffold(
+    offOrigin.status === 400,
+    `the generated SSR host answered an off-origin request target with `
+      + `${String(offOrigin.status)} instead of 400`,
+  )
+
+  const missingAsset = try askRaw(
+    origin,
+    '/assets/not-a-real-bundle.js',
+    'GET',
+    {
+      accept: '*/*',
+    },
+  )
+  try assertScaffold(
+    missingAsset.status === 404
+      && !missingAsset.body.includes('data-foldkit-app'),
+    'the generated SSR host answered a missing JavaScript asset with '
+      + `${String(missingAsset.status)} or an application shell`,
+  )
+
+  const options = try askRaw(origin, '/', 'OPTIONS', {
+    origin: 'https://browser.example',
+    'access-control-request-method': 'POST',
+  })
+  try assertScaffold(
+    options.status === 204
+      && options.body === ''
+      && options.headers['allow'] === EXPECTED_ALLOW,
+    'the generated SSR host did not forward OPTIONS to its entry: '
+      + JSON.stringify(options),
+  )
+  try log(
+    'The generated SSR host refuses off-origin targets and missing assets, and forwards OPTIONS',
+  )
+}
+
+const checkSsrInBrowser = effect (
+  browser: PlaywrightBrowser,
+  origin: string,
+) => {
+  const hydrated = try openHydratedPage(
+    browser,
+    `${origin}/deep/route`,
+    "document.querySelectorAll('button')[1]",
+    'The generated SSR application',
+  )
+  const hydrationOutcome = try Effect.onExit(
+    exit(effect {
+      const initialCount = try Effect.tryPromise(() =>
+        hydrated.page.locator('#count').textContent()
+      )
+      const provenance = try Effect.tryPromise(() =>
+        hydrated.page.locator('#provenance').textContent()
+      )
+      try assertScaffold(
+        initialCount === '0'
+          && provenance?.includes('Rendered on the Server') === true,
+        'the generated SSR deep route did not preserve its server-rendered state',
+      )
+      try Effect.tryPromise(() =>
+        hydrated.page.getByRole('button', { name: '+' }).click()
+      )
+      try Effect.tryPromise(() =>
+        hydrated.page.waitForFunction(
+          "document.querySelector('#count')?.textContent === '1' && document.title === 'Count 1'",
+          undefined,
+          { timeout: HYDRATION_TIMEOUT_MS },
+        )
+      )
+      try assertNoBrowserDiagnostics(
+        'The generated SSR application',
+        hydrated.diagnostics,
+      )
+    }),
+    effect () => {
+      try Effect.tryPromise(() => hydrated.page.close())
+    },
+  )
+  try hydrationOutcome
+  try log(
+    'The generated SSR application hydrates in place and responds to input',
+  )
+}
+
+const checkSsgInBrowser = effect (
+  browser: PlaywrightBrowser,
+  origin: string,
+) => {
+  const home = try openHydratedPage(
+    browser,
+    `${origin}/`,
+    "document.querySelector('button')",
+    'The generated SSG home page',
+  )
+  const homeOutcome = try Effect.onExit(
+    exit(effect {
+      try Effect.tryPromise(() =>
+        home.page.getByRole('button', { name: 'Count: 0' }).click()
+      )
+      try Effect.tryPromise(() =>
+        home.page.waitForFunction(
+          "document.querySelector('button')?.textContent === 'Count: 1'",
+          undefined,
+          { timeout: HYDRATION_TIMEOUT_MS },
+        )
+      )
+      try Effect.tryPromise(() =>
+        home.page.getByRole('link', { name: 'About' }).click()
+      )
+      try Effect.tryPromise(() =>
+        home.page.waitForFunction(
+          "document.title === 'About | Foldkit App' && document.querySelector('#page-title')?.textContent === 'Statically generated about page'",
+          undefined,
+          { timeout: HYDRATION_TIMEOUT_MS },
+        )
+      )
+      const currentUrl = try Effect.try(() => home.page.url())
+      try assertScaffold(
+        new URL(currentUrl).pathname === '/about',
+        `the generated SSG application navigated to ${currentUrl} instead of /about`,
+      )
+      try Effect.tryPromise(() =>
+        home.page.getByRole('link', { name: 'Home' }).click()
+      )
+      try Effect.tryPromise(() =>
+        home.page.waitForFunction(
+          "document.title === 'Home | Foldkit App' && document.querySelector('button')?.textContent === 'Count: 1'",
+          undefined,
+          { timeout: HYDRATION_TIMEOUT_MS },
+        )
+      )
+      try assertNoBrowserDiagnostics(
+        'The generated SSG home page',
+        home.diagnostics,
+      )
+    }),
+    effect () => {
+      try Effect.tryPromise(() => home.page.close())
+    },
+  )
+  try homeOutcome
+
+  const about = try openHydratedPage(
+    browser,
+    `${origin}/about/`,
+    "document.querySelector('#page-title')",
+    'The generated SSG about page',
+  )
+  const aboutOutcome = try Effect.onExit(
+    exit(effect {
+      const title = try Effect.tryPromise(() =>
+        about.page.locator('#page-title').textContent()
+      )
+      try assertScaffold(
+        title === 'Statically generated about page',
+        'the generated SSG about file did not render its own route',
+      )
+      try assertNoBrowserDiagnostics(
+        'The generated SSG about page',
+        about.diagnostics,
+      )
+    }),
+    effect () => {
+      try Effect.tryPromise(() => about.page.close())
+    },
+  )
+  try aboutOutcome
+  try log(
+    'The generated SSG pages hydrate in place and preserve state across navigation',
+  )
+}
+
+const checkSsr = effect (
+  workspaceDir: string,
+  tarballs: Tarballs,
+  manifestDirectory: string,
+  browser: PlaywrightBrowser,
+) => {
+  const path = try Path.Path
+  const projectDir = try generateProject(
+    workspaceDir,
+    'ssr',
+    tarballs,
+    manifestDirectory,
+  )
+
+  const origin = `http://127.0.0.1:${String(SSR_PORT)}`
+  const host = try startHost('npm', ['run', 'start'], projectDir, SSR_PORT, {
+    PORT: String(SSR_PORT),
+    ORIGIN: origin,
+  })
+  const serverOutcome = try Effect.onExit(
+    exit(effect {
+      const html = try fetchServedPage(host, origin)
+      try assertBuildIdReachesBothSides(
+        'The generated SSR host',
+        html,
+        path.join(projectDir, 'dist/client'),
+      )
+      try assertGeneratedHostPolicies(origin)
+      try checkSsrInBrowser(browser, origin)
+    }),
+    effect () => {
+      try stopHost(host)
+    },
+  )
+  try serverOutcome
+}
+
+const checkSsg = effect (
+  workspaceDir: string,
+  tarballs: Tarballs,
+  manifestDirectory: string,
+  browser: PlaywrightBrowser,
+) => {
+  const path = try Path.Path
+  const projectDir = try generateProject(
+    workspaceDir,
+    'ssg',
+    tarballs,
+    manifestDirectory,
+  )
+  const clientDir = path.join(projectDir, 'dist/client')
+
+  const home = try readUtf8(path.join(clientDir, 'index.html'))
+  const homeBuildId = try assertBuildIdReachesBothSides(
+    'The generated SSG home page',
+    home,
+    clientDir,
+  )
+
+  const about = try readUtf8(path.join(clientDir, 'about/index.html'))
+  const aboutBuildId = try assertBuildIdReachesBothSides(
+    'The generated SSG about page',
+    about,
+    clientDir,
+  )
+
+  try assertScaffold(
+    homeBuildId === aboutBuildId,
+    `two pages of one build carry different ids ("${homeBuildId}" and `
+      + `"${aboutBuildId}"), so the prerender step did not run under the id the `
+      + 'client build was given.',
+  )
+
+  const origin = `http://127.0.0.1:${String(SSG_PORT)}`
+  const host = try startHost(
+    'npm',
+    [
+      'run',
+      'preview',
+      '--',
+      '--host',
+      '127.0.0.1',
+      '--port',
+      String(SSG_PORT),
+      '--strictPort',
+    ],
+    projectDir,
+    SSG_PORT,
+  )
+  const previewOutcome = try Effect.onExit(
+    exit(effect {
+      try fetchServedPage(host, origin)
+      try checkSsgInBrowser(browser, origin)
+    }),
+    effect () => {
+      try stopHost(host)
+    },
+  )
+  try previewOutcome
+}
+
+const main = effect () => {
+  const fileSystem = try FileSystem.FileSystem
+  const path = try Path.Path
+  const stdio = try Stdio.Stdio
+  const hostProcess = try Experimental.Process.Process
+  REPO_ROOT = path.resolve()
+  PATH_DELIMITER = (try hostProcess.platform) === 'win32' ? ';' : ':'
+  isSkipBuild = (try stdio.args).includes('--skip-build')
+
+  const tarballPaths: globalThis.Array<string> = []
+  const workspaceDir = try fileSystem.makeTempDirectory({
+    prefix: 'foldkit-scaffold-ssr-',
+  })
+  try log(`Workspace: ${workspaceDir}`)
+
+  const workspaceOutcome = try Effect.onExit(
+    exit(effect {
+      try assertPortIsFree(SSR_PORT)
+      try assertPortIsFree(SSG_PORT)
+      const manifestDirectory = try prepareDependencyManifests(workspaceDir)
+
+      if (!isSkipBuild) {
+        const buildFilters = SCAFFOLD_PACKAGES.flatMap(({ name }) => [
+          '--filter',
+          name,
+        ])
+
+        try runRequired(
+          'Building the packages the generated projects install...',
+          'pnpm',
+          ['--filter', 'create-foldkit-app', ...buildFilters, 'build'],
+          { inherit: true },
+        )
+      }
+
+      const cli = try packPackage('Packing create-foldkit-app...', CLI_DIR)
+      const packages: globalThis.Array<PackedScaffoldPackage> = []
+      for (const { directory, name } of SCAFFOLD_PACKAGES) {
+        const manifest = try readManifest(
+          path.join(REPO_ROOT, directory, 'package.json'),
+        )
+        packages.push({
+          name,
+          tarballPath: try packPackage(`Packing ${name}...`, directory),
+          peerDependencies: Object.keys(manifest.peerDependencies ?? {}),
+        })
+      }
+      const tarballs: Tarballs = { cli, packages }
+      tarballPaths.push(
+        tarballs.cli,
+        ...tarballs.packages.map(({ tarballPath }) => tarballPath),
+      )
+
+      try runRequired('Preparing the generation workspace...', 'npm', [
+        'init',
+        '-y',
+      ], {
+        cwd: workspaceDir,
+      })
+      try runRequired(
+        'Installing the packed CLI...',
+        'npm',
+        ['install', '--no-audit', '--no-fund', tarballs.cli],
+        { cwd: workspaceDir },
+      )
+
+      try assertRejectsRelativeManifestDirectory(workspaceDir)
+      const manifestPath = path.join(
+        REPO_ROOT,
+        'packages/examples-e2e/package.json',
+      )
+      const chromium = try Effect.try(() => loadChromium(manifestPath))
+      const executablePath = match (try Config.option(
+          Config.String('PLAYWRIGHT_CHROMIUM_EXECUTABLE'),
+        )) {
+        when Option.Some(let value): value;
+        when Option.None: undefined;
+      }
+      const browser = try Effect.tryPromise(() =>
+        chromium.launch(executablePath === undefined ? {} : { executablePath })
+      )
+      const browserOutcome = try Effect.onExit(
+        exit(effect {
+          try checkSsr(workspaceDir, tarballs, manifestDirectory, browser)
+          try checkSsg(workspaceDir, tarballs, manifestDirectory, browser)
+        }),
+        effect () => {
+          try Effect.tryPromise(() => browser.close())
+        },
+      )
+      try browserOutcome
+    }),
+    effect () => {
+      try log('Cleaning up...')
+      try fileSystem.remove(workspaceDir, { recursive: true, force: true })
+      for (const tarball of tarballPaths) {
+        try fileSystem.remove(tarball, { force: true })
+      }
+    },
+  )
+  try workspaceOutcome
+
+  try log('PASS')
+}
+
+const messageFor = (error: unknown): string => {
+  const cause = unwrapForeignFailure(error)
+  if (cause instanceof ScaffoldCheckError) {
+    return cause.message
+  }
+  if (cause instanceof Error) {
+    return cause.stack ?? cause.message
+  }
+  return String(cause)
+}
+
+// The signals are the gate's own (above), so the runner leaves the program
+// fiber alone and only turns a failed run into the host's exit status.
+const runMain = Runtime.makeRunMain(({ fiber, teardown }): void => {
+  fiber.addObserver((result): void => {
+    teardown(result, (code: number): void => {
+      if (code !== 0) {
+        exitProcess(code)
+      }
+    })
+  })
+})
+
+const program = effect {
+  provide Layer.mergeAll(ExperimentalNodeServices.layer, FetchHttpClient.layer) {
+    try Effect.scoped(effect {
+      // The observer is in place before main starts, as the host's were.
+      const hostProcess = try Experimental.Process.Process
+      const received = try hostProcess.observeSignals(['SIGINT', 'SIGTERM'])
+      fork watchSignals(received)
+      const outcome = try exit(main())
+      if (outcome is Exit.Failure) {
+        try Console.error(
+          `[scaffold-ssr] FAIL: ${messageFor(Cause.squash(outcome.cause))}`,
+        )
+        try Effect.failCause(outcome.cause)
+      }
+    })
+  }
+}
+
+runMain(program, { disableErrorReporting: true })

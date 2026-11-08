@@ -1,0 +1,943 @@
+import { BrowserStream } from '@effect/platform-browser'
+import {
+  ExperimentalBrowserAnimations,
+  ExperimentalBrowserDocument,
+  ExperimentalBrowserWindow,
+} from 'vibelang-runtime/experimental/platform-browser'
+import { Array, pipe } from 'effect'
+import * as Command from 'foldkit/command'
+import * as Dom from 'foldkit/dom'
+import { type Attribute, type HtmlBuilder, inertHtml as ih } from 'foldkit/html'
+import { defineMessageUnion } from 'foldkit/message'
+import { defineTaggedUnion } from 'foldkit/schema'
+import { modifyFields } from 'foldkit/struct'
+import * as Subscription from 'foldkit/subscription'
+import * as Update from 'foldkit/update'
+
+import { documentDragStyles } from '../internal/documentDragStyles.vibe'
+import { attributeSelector } from '../internal/selectors.ts'
+
+const DEFAULT_AUTO_SCROLL_EDGE_PIXELS = 40
+const DEFAULT_AUTO_SCROLL_MAX_SPEED = 15
+
+const autoScroll = (browserWindow: Window, clientY: number): void => {
+  const viewportHeight = browserWindow.innerHeight
+  const distanceFromTop = clientY
+  const distanceFromBottom = viewportHeight - clientY
+
+  if (distanceFromTop < DEFAULT_AUTO_SCROLL_EDGE_PIXELS) {
+    const speed = DEFAULT_AUTO_SCROLL_MAX_SPEED
+      * (1 - distanceFromTop / DEFAULT_AUTO_SCROLL_EDGE_PIXELS)
+    browserWindow.scrollBy(0, -speed)
+  } else if (distanceFromBottom < DEFAULT_AUTO_SCROLL_EDGE_PIXELS) {
+    const speed = DEFAULT_AUTO_SCROLL_MAX_SPEED
+      * (1 - distanceFromBottom / DEFAULT_AUTO_SCROLL_EDGE_PIXELS)
+    browserWindow.scrollBy(0, speed)
+  }
+}
+
+// MODEL
+
+const Orientation = Schema.Literals(['Horizontal', 'Vertical'])
+
+const ScreenPoint = Schema.Struct({
+  screenX: Schema.Number,
+  screenY: Schema.Number,
+})
+
+const ClientPoint = Schema.Struct({
+  clientX: Schema.Number,
+  clientY: Schema.Number,
+})
+
+const DropTarget = Schema.Struct({
+  containerId: Schema.String,
+  index: Schema.Number,
+})
+
+/** Schema for the current pointer or keyboard drag phase. */
+export const DragState = defineTaggedUnion({
+  Idle: {},
+  Pending: {
+    itemId: Schema.String,
+    containerId: Schema.String,
+    index: Schema.Number,
+    origin: ScreenPoint,
+  },
+  Dragging: {
+    itemId: Schema.String,
+    sourceContainerId: Schema.String,
+    sourceIndex: Schema.Number,
+    origin: ScreenPoint,
+    current: ClientPoint,
+    maybeDropTarget: Schema.Option(DropTarget),
+  },
+  KeyboardDragging: {
+    itemId: Schema.String,
+    sourceContainerId: Schema.String,
+    sourceIndex: Schema.Number,
+    targetContainerId: Schema.String,
+    targetIndex: Schema.Number,
+  },
+})
+/** Current pointer or keyboard drag phase. */
+export type DragState = typeof DragState.Type
+
+/** Schema for the drag-and-drop component's state, tracking its unique ID, orientation, and current drag phase. */
+export schema Model {
+  readonly id: string
+  readonly orientation: Orientation
+  readonly activationThreshold: number
+  readonly dragState: DragState
+}
+
+// MESSAGE
+
+/** Union of all messages the drag-and-drop component can produce. */
+export const Message = defineMessageUnion({
+  PressedDraggable: {
+    itemId: Schema.String,
+    containerId: Schema.String,
+    index: Schema.Number,
+    screenX: Schema.Number,
+    screenY: Schema.Number,
+  },
+  MovedPointer: {
+    screenX: Schema.Number,
+    screenY: Schema.Number,
+    clientX: Schema.Number,
+    clientY: Schema.Number,
+    maybeDropTarget: Schema.Option(DropTarget),
+  },
+  ReleasedPointer: {},
+  CancelledDrag: {},
+  ActivatedKeyboardDrag: {
+    itemId: Schema.String,
+    containerId: Schema.String,
+    index: Schema.Number,
+  },
+  CompletedResolveKeyboardMove: {
+    targetContainerId: Schema.String,
+    targetIndex: Schema.Number,
+  },
+  ConfirmedKeyboardDrop: {},
+  PressedArrowKey: {
+    direction: Schema.Literals([
+      'Up',
+      'Down',
+      'Left',
+      'Right',
+      'NextContainer',
+      'PreviousContainer',
+    ]),
+  },
+  AdvancedAutoScrollFrame: {},
+  CompletedFocusItem: {},
+})
+
+export type Message = typeof Message.Type
+
+// OUT MESSAGE
+
+/** Union of all out-messages the drag-and-drop component can emit to its parent. */
+export const OutMessage = defineMessageUnion({
+  Reordered: {
+    itemId: Schema.String,
+    fromContainerId: Schema.String,
+    fromIndex: Schema.Number,
+    toContainerId: Schema.String,
+    toIndex: Schema.Number,
+  },
+  Cancelled: {},
+})
+export type OutMessage = typeof OutMessage.Type
+
+// INIT
+
+/** Configuration for creating a drag-and-drop model with `init`. */
+const DEFAULT_ACTIVATION_THRESHOLD_PIXELS = 5
+
+export type InitConfig = Readonly<{
+  id: string
+  orientation?: 'Horizontal' | 'Vertical'
+  activationThreshold?: number
+}>
+
+/** Creates an initial drag-and-drop model. Starts idle with Vertical orientation and a 5px activation threshold by default. */
+export const init = (config: InitConfig): Model => ({
+  id: config.id,
+  orientation: config.orientation ?? 'Vertical',
+  activationThreshold: config.activationThreshold
+    ?? DEFAULT_ACTIVATION_THRESHOLD_PIXELS,
+  dragState: DragState.Idle(),
+})
+
+// COMMAND
+
+type Direction = (typeof Message.PressedArrowKey.Type)['direction']
+
+/** Focuses a draggable item by ID after a keyboard move, drop, or cancel. */
+export const FocusItem = Command.define('FocusItem', {
+  args: { itemId: Schema.String },
+  messages: [Message.CompletedFocusItem],
+  execute: effect ({ itemId }) => {
+    const selector = try Effect.sync(() =>
+      attributeSelector('data-draggable-id', itemId)
+    )
+    Dom.focus(selector) catch () => undefined
+    return Message.CompletedFocusItem()
+  },
+})
+
+const resolveWithinContainer = (
+  hostDocument: Document,
+  config: Readonly<{
+    itemId: string
+    containerId: string
+    currentIndex: number
+    isForward: boolean
+  }>,
+): typeof Message.CompletedResolveKeyboardMove.Type => {
+  const container = hostDocument.querySelector(
+    attributeSelector('data-droppable-id', config.containerId),
+  )
+  if (!container) {
+    return Message.CompletedResolveKeyboardMove({
+      targetContainerId: config.containerId,
+      targetIndex: config.currentIndex,
+    })
+  }
+
+  const itemCount = pipe(
+    container.querySelectorAll<HTMLElement>('[data-sortable-id]'),
+    Array.fromIterable,
+    Array.filter(({ dataset }) => dataset['sortableId'] !== config.itemId),
+    Array.length,
+  )
+
+  const nextIndex = config.isForward
+    ? Math.min(config.currentIndex + 1, itemCount)
+    : Math.max(config.currentIndex - 1, 0)
+
+  return Message.CompletedResolveKeyboardMove({
+    targetContainerId: config.containerId,
+    targetIndex: nextIndex,
+  })
+}
+
+const resolveBetweenContainers = (
+  hostDocument: Document,
+  config: Readonly<{
+    currentContainerId: string
+    isForward: boolean
+  }>,
+): typeof Message.CompletedResolveKeyboardMove.Type => {
+  const allContainers = Array.fromIterable(
+    hostDocument.querySelectorAll<HTMLElement>('[data-droppable-id]'),
+  )
+  const currentContainerIndex = pipe(
+    allContainers,
+    Array.findFirstIndex(
+      ({ dataset }) => dataset['droppableId'] === config.currentContainerId,
+    ),
+    Option.getOrElse(() => 0),
+  )
+
+  const nextContainerIndex = config.isForward
+    ? Math.min(currentContainerIndex + 1, allContainers.length - 1)
+    : Math.max(currentContainerIndex - 1, 0)
+
+  const nextContainerId =
+    allContainers[nextContainerIndex]?.dataset['droppableId']
+      ?? config.currentContainerId
+
+  return Message.CompletedResolveKeyboardMove({
+    targetContainerId: nextContainerId,
+    targetIndex: 0,
+  })
+}
+
+const resolveKeyboardMoveTarget = effect (
+  config: Readonly<{
+    itemId: string
+    currentContainerId: string
+    currentIndex: number
+    direction: Direction
+  }>,
+): typeof Message.CompletedResolveKeyboardMove.Type!! => {
+  provide ExperimentalBrowserDocument.layer {
+    const documentService = try Experimental.Document.Document
+    const hostDocument = try documentService.current
+    return try Effect.sync(() => match (config.direction) {
+      when 'Down' or 'Right': resolveWithinContainer(hostDocument, {
+        itemId: config.itemId,
+        containerId: config.currentContainerId,
+        currentIndex: config.currentIndex,
+        isForward: true,
+      });
+      when 'Up' or 'Left': resolveWithinContainer(hostDocument, {
+        itemId: config.itemId,
+        containerId: config.currentContainerId,
+        currentIndex: config.currentIndex,
+        isForward: false,
+      });
+      when 'NextContainer': resolveBetweenContainers(hostDocument, {
+        currentContainerId: config.currentContainerId,
+        isForward: true,
+      });
+      when 'PreviousContainer': resolveBetweenContainers(hostDocument, {
+        currentContainerId: config.currentContainerId,
+        isForward: false,
+      });
+    })
+  }
+}
+
+/** Resolves the next keyboard drag position by querying the DOM for adjacent sortable items and containers. */
+export const ResolveKeyboardMove = Command.define('ResolveKeyboardMove', {
+  args: {
+    itemId: Schema.String,
+    currentContainerId: Schema.String,
+    currentIndex: Schema.Number,
+    direction: Schema.Literals([
+      'Up',
+      'Down',
+      'Left',
+      'Right',
+      'NextContainer',
+      'PreviousContainer',
+    ]),
+  },
+  messages: [Message.CompletedResolveKeyboardMove],
+  execute: resolveKeyboardMoveTarget,
+})
+
+// UPDATE
+
+type UpdateReturn = Update.ReturnWithOutMessage<Model, Message, OutMessage>
+
+/** Processes a drag-and-drop Message and returns the next Model, optional
+ *  Commands, and an optional OutMessage for the parent. */
+export const update = (model: Model, message: Message) =>
+  Message.match<UpdateReturn>(message, {
+    PressedDraggable: (
+      { itemId, containerId, index, screenX, screenY },
+    ) => ({
+      model: modifyFields(model, {
+        dragState: () =>
+          DragState.Pending({
+            itemId,
+            containerId,
+            index,
+            origin: { screenX, screenY },
+          }),
+      }),
+    }),
+
+    MovedPointer: (
+      { screenX, screenY, clientX, clientY, maybeDropTarget },
+    ) =>
+      do {
+        const nativeMatchInput27 = model.dragState
+        const nativeMatchResult27: UpdateReturn = match (nativeMatchInput27) {
+          when ({ _tag: 'Pending' }) and let nativeMatched27_1:
+            ((pending: typeof nativeMatched27_1): UpdateReturn => {
+              const deltaX = screenX - pending.origin.screenX
+              const deltaY = screenY - pending.origin.screenY
+              const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+
+              if (distance < model.activationThreshold) {
+                return { model }
+              }
+
+              return {
+                model: modifyFields(model, {
+                  dragState: () =>
+                    DragState.Dragging({
+                      itemId: pending.itemId,
+                      sourceContainerId: pending.containerId,
+                      sourceIndex: pending.index,
+                      origin: pending.origin,
+                      current: { clientX, clientY },
+                      maybeDropTarget,
+                    }),
+                }),
+              }
+            })(nativeMatched27_1);
+          when ({ _tag: 'Dragging' }) and let nativeMatched27_2:
+            ((dragging: typeof nativeMatched27_2): UpdateReturn => ({
+              model: modifyFields(model, {
+                dragState: () =>
+                  DragState.Dragging({
+                    ...dragging,
+                    current: { clientX, clientY },
+                    maybeDropTarget,
+                  }),
+              }),
+            }))(nativeMatched27_2);
+          default: ({ model });
+        }
+        nativeMatchResult27
+      },
+
+    ReleasedPointer: () => match (model.dragState) {
+      when { _tag: 'Pending' }: ({
+        model: modifyFields(model, {
+          dragState: () => DragState.Idle(),
+        }),
+      });
+      when { _tag: 'Dragging' } and let dragging: match (dragging.maybeDropTarget) {
+        when Option.None: ({
+          model: modifyFields(model, {
+            dragState: () => DragState.Idle(),
+          }),
+          outMessage: OutMessage.Cancelled(),
+        });
+        when Option.Some(let dropTarget): ({
+          model: modifyFields(model, {
+            dragState: () => DragState.Idle(),
+          }),
+          outMessage: OutMessage.Reordered({
+            itemId: dragging.itemId,
+            fromContainerId: dragging.sourceContainerId,
+            fromIndex: dragging.sourceIndex,
+            toContainerId: dropTarget.containerId,
+            toIndex: dropTarget.index,
+          }),
+        });
+      };
+      default: ({ model });
+    },
+
+    CancelledDrag: () => {
+      const maybeFocusCommand = Option.liftPredicate(
+        model.dragState,
+        (
+          dragState,
+        ): dragState is {
+          readonly _tag: 'KeyboardDragging'
+          readonly itemId: string
+          readonly sourceContainerId: string
+          readonly sourceIndex: number
+          readonly targetContainerId: string
+          readonly targetIndex: number
+        } => dragState._tag === 'KeyboardDragging',
+      )
+        .map(({ itemId }) => FocusItem({ itemId }))
+
+      const maybeOutMessage = Option.liftPredicate(
+        model.dragState._tag,
+        (_tag): _tag is 'Dragging' | 'KeyboardDragging' =>
+          _tag === 'Dragging' || _tag === 'KeyboardDragging',
+      )
+        .map(() => OutMessage.Cancelled())
+
+      const dragCancellation: Update.Return<Model, Message> = {
+        model: modifyFields(model, {
+          dragState: () => DragState.Idle(),
+        }),
+        commands: Option.toArray(maybeFocusCommand),
+      }
+      return pipe(
+        dragCancellation,
+        Update.withOutMessage(Option.getOrUndefined(maybeOutMessage)),
+      )
+    },
+
+    ActivatedKeyboardDrag: ({ itemId, containerId, index }) => ({
+      model: modifyFields(model, {
+        dragState: () =>
+          DragState.KeyboardDragging({
+            itemId,
+            sourceContainerId: containerId,
+            sourceIndex: index,
+            targetContainerId: containerId,
+            targetIndex: index,
+          }),
+      }),
+    }),
+
+    CompletedResolveKeyboardMove: (
+      { targetContainerId, targetIndex },
+    ) =>
+      do {
+        const nativeMatchInput26 = model.dragState
+        const nativeMatchResult26: UpdateReturn = match (nativeMatchInput26) {
+          when ({ _tag: 'KeyboardDragging' }) and let nativeMatched26_1:
+            ((keyboardDragging: typeof nativeMatched26_1): UpdateReturn => ({
+              model: modifyFields(model, {
+                dragState: () =>
+                  DragState.KeyboardDragging({
+                    ...keyboardDragging,
+                    targetContainerId,
+                    targetIndex,
+                  }),
+              }),
+              commands: [FocusItem({ itemId: keyboardDragging.itemId })],
+            }))(nativeMatched26_1);
+          default: ({ model });
+        }
+        nativeMatchResult26
+      },
+
+    ConfirmedKeyboardDrop: () =>
+      do {
+        const nativeMatchInput25 = model.dragState
+        const nativeMatchResult25: UpdateReturn = match (nativeMatchInput25) {
+          when ({ _tag: 'KeyboardDragging' }) and let nativeMatched25_1:
+            ((keyboardDragging: typeof nativeMatched25_1): UpdateReturn => ({
+              model: modifyFields(model, {
+                dragState: () => DragState.Idle(),
+              }),
+              commands: [FocusItem({ itemId: keyboardDragging.itemId })],
+              outMessage: OutMessage.Reordered({
+                itemId: keyboardDragging.itemId,
+                fromContainerId: keyboardDragging.sourceContainerId,
+                fromIndex: keyboardDragging.sourceIndex,
+                toContainerId: keyboardDragging.targetContainerId,
+                toIndex: keyboardDragging.targetIndex,
+              }),
+            }))(nativeMatched25_1);
+          default: ({ model });
+        }
+        nativeMatchResult25
+      },
+
+    PressedArrowKey: ({ direction }) => match (model.dragState) {
+      when { _tag: 'KeyboardDragging' } and let keyboardDragging: ({
+        model,
+        commands: [
+          ResolveKeyboardMove({
+            itemId: keyboardDragging.itemId,
+            currentContainerId: keyboardDragging.targetContainerId,
+            currentIndex: keyboardDragging.targetIndex,
+            direction,
+          }),
+        ],
+      });
+      default: ({ model });
+    },
+
+    AdvancedAutoScrollFrame: () => ({ model }),
+
+    CompletedFocusItem: () => ({ model }),
+  })
+
+// SUBSCRIPTION
+
+const DragActivity = Schema.Literals(['Idle', 'Active'])
+const PointerDragActivity = Schema.Literals(['Idle', 'Active'])
+const KeyboardDragActivity = Schema.Literals(['Idle', 'Active'])
+
+const resolveDropTarget = (
+  hostDocument: Document,
+  clientX: number,
+  clientY: number,
+  orientation: typeof Orientation.Type,
+): Option<typeof DropTarget.Type> => {
+  const maybeContainer = pipe(
+    hostDocument.elementsFromPoint(clientX, clientY),
+    Array.fromIterable,
+    Array.findFirst((element) => element.hasAttribute('data-droppable-id')),
+  )
+
+  return Option.flatMap(maybeContainer, (container) => {
+    const containerId = container.getAttribute('data-droppable-id')
+    if (!containerId) {
+      return Option.none()
+    }
+
+    const sortableItems = Array.fromIterable(
+      container.querySelectorAll<HTMLElement>('[data-sortable-id]'),
+    )
+
+    const insertionIndex = pipe(
+      sortableItems,
+      Array.findFirstIndex((item) => {
+        const rect = item.getBoundingClientRect()
+        return match (orientation) {
+          when 'Vertical': clientY < rect.top + rect.height / 2;
+          when 'Horizontal': clientX < rect.left + rect.width / 2;
+        }
+      }),
+      Option.getOrElse(() => sortableItems.length),
+    )
+
+    return Option.some({ containerId, index: insertionIndex })
+  })
+}
+
+const pointerDragActivityFromModel = (
+  model: Model,
+): typeof PointerDragActivity.Type => match (model.dragState) {
+  when { _tag: 'Pending' or 'Dragging' }: 'Active';
+  default: 'Idle';
+}
+
+const dragActivityFromModel = (model: Model): typeof DragActivity.Type => match (model.dragState) {
+  when { _tag: 'Idle' }: 'Idle';
+  default: 'Active';
+}
+
+const keyboardDragActivityFromModel = (
+  model: Model,
+): typeof KeyboardDragActivity.Type => match (model.dragState) {
+  when { _tag: 'KeyboardDragging' }: 'Active';
+  default: 'Idle';
+}
+
+/** Document-level subscriptions for pointer and keyboard events during drag operations. */
+export const subscriptions = Subscription.make<Model, Message>()((
+  entry,
+) => ({
+  documentPointer: entry(
+    {
+      dragActivity: PointerDragActivity,
+      orientation: Orientation,
+    },
+    {
+      modelToDependencies: (model) => ({
+        dragActivity: pointerDragActivityFromModel(model),
+        orientation: model.orientation,
+      }),
+      dependenciesToStream: ({ dragActivity, orientation }) => {
+        const pointerEvents = Stream.merge(
+          BrowserStream.fromEventListenerDocument('pointermove').pipe(
+            Stream.mapEffect(effect event => {
+              provide ExperimentalBrowserDocument.layer {
+                const documentService = try Experimental.Document.Document
+                const hostDocument = try documentService.current
+                return try Effect.sync(() =>
+                  Message.MovedPointer({
+                    screenX: event.screenX,
+                    screenY: event.screenY,
+                    clientX: event.clientX,
+                    clientY: event.clientY,
+                    maybeDropTarget: resolveDropTarget(
+                      hostDocument,
+                      event.clientX,
+                      event.clientY,
+                      orientation,
+                    ),
+                  })
+                )
+              }
+            }),
+          ),
+          BrowserStream.fromEventListenerDocument('pointerup').pipe(
+            Stream.map(() => Message.ReleasedPointer()),
+          ),
+        )
+
+        return Stream.when(
+          Stream.merge(pointerEvents, documentDragStyles),
+          Effect.sync(() => dragActivity === 'Active'),
+        )
+      },
+    },
+  ),
+
+  documentEscape: entry(
+    { dragActivity: DragActivity },
+    {
+      modelToDependencies: (model) => ({
+        dragActivity: dragActivityFromModel(model),
+      }),
+      dependenciesToStream: ({ dragActivity }) =>
+        Stream.when(
+          BrowserStream.fromEventListenerDocument('keydown').pipe(
+            Stream.filter(({ key }) => key === 'Escape'),
+            Stream.map(() => Message.CancelledDrag()),
+          ),
+          Effect.sync(() => dragActivity === 'Active'),
+        ),
+    },
+  ),
+
+  documentKeyboard: entry(
+    { dragActivity: KeyboardDragActivity },
+    {
+      modelToDependencies: (model) => ({
+        dragActivity: keyboardDragActivityFromModel(model),
+      }),
+      dependenciesToStream: ({ dragActivity }) =>
+        Stream.unwrap(effect {
+          provide ExperimentalBrowserDocument.layer {
+            const documentService = try Experimental.Document.Document
+            const hostDocument = try documentService.current
+            return Stream.when(
+              Dom.streamFromEventFilterMapPreventDefault({
+                target: hostDocument,
+                type: 'keydown',
+                filterMapEvent: (event) => {
+                  // NOTE: the draggable's OnKeyDownPreventDefault calls preventDefault on
+                  // the Space that activates keyboard drag. Skip it here so the same
+                  // keypress doesn't also confirm the drop in the same tick.
+                  if (event.defaultPrevented) {
+                    return Option.none()
+                  }
+                  return match (event.key) {
+                    when 'Tab': Option.some(
+                      Message.PressedArrowKey({
+                        direction: event.shiftKey
+                          ? 'PreviousContainer'
+                          : 'NextContainer',
+                      }),
+                    );
+                    when (' ') or 'Enter': Option.some(
+                      Message.ConfirmedKeyboardDrop(),
+                    );
+                    when let key: Option.map(
+                      arrowKeyToDirection(key),
+                      (direction) => Message.PressedArrowKey({ direction }),
+                    );
+                  }
+                },
+              }),
+              Effect.sync(() => dragActivity === 'Active'),
+            )
+          }
+        }),
+    },
+  ),
+
+  autoScroll: entry(
+    {
+      isDragging: Schema.Boolean,
+      clientY: Schema.Number,
+    },
+    {
+      modelToDependencies: (model) => ({
+        isDragging: model.dragState._tag === 'Dragging',
+        clientY: model.dragState._tag === 'Dragging'
+          ? model.dragState.current.clientY
+          : 0,
+      }),
+      keepAliveEquivalence: Equivalence.Struct({
+        isDragging: Equivalence.Boolean,
+      }),
+      dependenciesToStream: ({ isDragging }, readDependencies) =>
+        Stream.when(
+          Stream.callback<typeof Message.AdvancedAutoScrollFrame.Type>(
+            effect (queue) => {
+              provide Layer.mergeAll(ExperimentalBrowserAnimations.layer, ExperimentalBrowserWindow.layer) {
+                const windowService = try Experimental.Window.Window
+                const browserWindow = try windowService.current
+                const animations = try Experimental.Animations.Animations
+                while (true) {
+                  try animations.nextFrame
+                  try Effect.sync(() => {
+                    autoScroll(browserWindow, readDependencies().clientY)
+                    Queue.offerUnsafe(
+                      queue,
+                      Message.AdvancedAutoScrollFrame(),
+                    )
+                  })
+                }
+              }
+            },
+          ),
+          Effect.sync(() => isDragging),
+        ),
+    },
+  ),
+}))
+
+// VIEW
+
+const LEFT_MOUSE_BUTTON = 0
+
+const arrowKeyToDirection = (key: string): Option<Direction> =>
+  do {
+    const nativeMatchInput24 = key
+    const nativeMatchResult24: Option<Direction> = match (nativeMatchInput24) {
+      when 'ArrowUp': Option.some('Up');
+      when 'ArrowDown': Option.some('Down');
+      when 'ArrowLeft': Option.some('Left');
+      when 'ArrowRight': Option.some('Right');
+      default: Option.none();
+    }
+    nativeMatchResult24
+  }
+
+// NOTE: DragAndDrop has no `view` function and is not embedded via
+// `h.submodel`. It's a behavior+helpers component: the consumer renders
+// their own elements (cards, columns) and attaches the attribute bundles
+// returned by `draggable`, `droppable`, and `sortable` below. Only
+// `draggable` carries Messages, so only it is parameterized over the
+// consumer's `ParentMessage`, and threading `toParentMessage` is the
+// consumer's responsibility. `droppable` and `sortable` are data attributes
+// with no handlers, so they return `Attribute<never>`, which flows into any
+// Message universe.
+
+/** Messages the draggable view helper can dispatch. */
+export type DraggableMessage =
+  | typeof Message.PressedDraggable.Type
+  | typeof Message.ActivatedKeyboardDrag.Type
+
+/** Configuration for creating draggable attributes with `draggable`. */
+export type DraggableConfig<ParentMessage> = Readonly<{
+  model: Model
+  toParentMessage: (message: DraggableMessage) => ParentMessage
+  itemId: string
+  containerId: string
+  index: number
+}>
+
+/** Returns attributes the parent attaches to a draggable element. Handles pointer-down, keyboard activation, and ARIA. */
+export const draggable = <ParentMessage>(
+  config: DraggableConfig<ParentMessage>,
+  h: HtmlBuilder<ParentMessage>,
+): ReadonlyArray<Attribute<ParentMessage>> => {
+  const isKeyboardDragActivationKey = (key: string): boolean =>
+    key === ' ' || key === 'Enter'
+
+  const handleKeyDown = (key: string): Option<ParentMessage> => {
+    if (
+      isKeyboardDragActivationKey(key)
+      && config.model.dragState._tag === 'Idle'
+    ) {
+      return Option.some(
+        config.toParentMessage(
+          Message.ActivatedKeyboardDrag({
+            itemId: config.itemId,
+            containerId: config.containerId,
+            index: config.index,
+          }),
+        ),
+      )
+    }
+
+    return Option.none()
+  }
+
+  return [
+    h.DataAttribute('draggable-id', config.itemId),
+    h.DataAttribute('sortable-id', config.itemId),
+    h.Role('option'),
+    h.AriaRoleDescription('draggable'),
+    h.Tabindex(0),
+    h.OnPointerDown(
+      (
+        _pointerType: string,
+        button: number,
+        screenX: number,
+        screenY: number,
+      ) =>
+        do {
+          const nativeOptionInput0 = button
+          const nativeOptionStage0_0_0 = Equal.equals(LEFT_MOUSE_BUTTON)
+          const nativeOptionStage0_1_0 = () =>
+            config.toParentMessage(
+              Message.PressedDraggable({
+                itemId: config.itemId,
+                containerId: config.containerId,
+                index: config.index,
+                screenX,
+                screenY,
+              }),
+            )
+          const result = Option.liftPredicate(
+            nativeOptionInput0,
+            nativeOptionStage0_0_0,
+          ).map(nativeOptionStage0_1_0)
+          result
+        },
+    ),
+    h.OnKeyDownPreventDefault(handleKeyDown),
+    h.Style({
+      'touch-action': 'none',
+      'user-select': 'none',
+      '-webkit-user-select': 'none',
+    }),
+  ]
+}
+
+/** Returns attributes the parent attaches to a droppable container element.
+ *  Handler-free, so the bundle is built with `inertHtml` and spreads into
+ *  any Message universe's attribute array. */
+export const droppable = (
+  containerId: string,
+  label?: string,
+): ReadonlyArray<Attribute<never>> => [
+  ih.DataAttribute('droppable-id', containerId),
+  ih.Role('listbox'),
+  ...(label ? [ih.AriaLabel(label)] : []),
+]
+
+/** Returns attributes the parent attaches to a sortable item element.
+ *  Typically combined with `draggable`. Handler-free, so the bundle is built
+ *  with `inertHtml` and spreads into any Message universe's attribute
+ *  array. */
+export const sortable = (itemId: string): ReadonlyArray<Attribute<never>> => [
+  ih.DataAttribute('sortable-id', itemId),
+]
+
+const ghostTransform = (clientX: number, clientY: number): string =>
+  `translate3d(${String(clientX)}px, ${String(clientY)}px, 0)`
+
+/** Returns positioning styles for the ghost element, or None when not dragging with a pointer. */
+export const ghostStyle = (
+  model: Model,
+): Option<Record<string, string>> =>
+  do {
+    const nativeMatchInput23 = model.dragState
+    const nativeMatchResult23 = match (nativeMatchInput23) {
+      when ({ _tag: 'Dragging' }) and let nativeMatched23_0: Option.some(
+        ((dragging: typeof nativeMatched23_0) => ({
+          position: 'fixed',
+          top: '0',
+          left: '0',
+          transform: ghostTransform(
+            dragging.current.clientX,
+            dragging.current.clientY,
+          ),
+          'pointer-events': 'none',
+          'z-index': '9999',
+        }))(nativeMatched23_0),
+      );
+      default: Option.none();
+    }
+    nativeMatchResult23
+  }
+
+/** Returns true when the component is actively dragging (pointer or keyboard). */
+export const isDragging = ({ dragState: { _tag } }: Model): boolean =>
+  _tag === 'Dragging' || _tag === 'KeyboardDragging'
+
+/** Returns the ID of the item currently being dragged or pending, if any. */
+export const maybeDraggedItemId = (model: Model): Option<string> =>
+  do {
+    const nativeMatchInput22 = model.dragState
+    const nativeMatchResult22 = match (nativeMatchInput22) {
+      when ({ _tag: 'Pending' }) and let nativeMatched22_0: Option.some(
+        ((pending: typeof nativeMatched22_0) => pending.itemId)(
+          nativeMatched22_0,
+        ),
+      );
+      when ({ _tag: 'Dragging' }) and let nativeMatched22_1: Option.some(
+        ((dragging: typeof nativeMatched22_1) => dragging.itemId)(
+          nativeMatched22_1,
+        ),
+      );
+      when ({ _tag: 'KeyboardDragging' }) and let nativeMatched22_2: Option
+        .some(
+          ((keyboardDragging: typeof nativeMatched22_2) =>
+            keyboardDragging.itemId)(nativeMatched22_2),
+        );
+      default: Option.none();
+    }
+    nativeMatchResult22
+  }
+
+/** Returns the current drop target, if any. Populated during pointer drag (from collision detection) and keyboard drag (from resolved position). */
+export const maybeDropTarget = (
+  model: Model,
+): Option<typeof DropTarget.Type> => match (model.dragState) {
+  when { _tag: 'Dragging' } and let dragging: dragging.maybeDropTarget;
+  when { _tag: 'KeyboardDragging' } and let keyboardDragging: Option.some({
+    containerId: keyboardDragging.targetContainerId,
+    index: keyboardDragging.targetIndex,
+  });
+  default: Option.none();
+}

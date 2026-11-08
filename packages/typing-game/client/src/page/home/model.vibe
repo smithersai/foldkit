@@ -1,0 +1,33 @@
+import { defineTaggedUnion } from 'foldkit/schema'
+
+export schema HomeAction = 'CreateRoom' | 'JoinRoom' | 'ChangeUsername'
+
+export const HOME_ACTIONS: ReadonlyArray<HomeAction> = [
+  'CreateRoom',
+  'JoinRoom',
+  'ChangeUsername',
+] as const
+
+export const homeActionToLabel = (u: HomeAction) => match (u) {
+  when 'CreateRoom': 'Create room';
+  when 'JoinRoom': 'Join room';
+  when 'ChangeUsername': 'Change username';
+}
+
+export const HomeStep = defineTaggedUnion({
+  EnterUsername: { username: Schema.String },
+  SelectAction: { username: Schema.String, selectedAction: HomeAction },
+  EnterRoomId: { username: Schema.String, roomId: Schema.String },
+})
+export type HomeStep = typeof HomeStep.Type
+
+export const Model = Schema.Struct({
+  homeStep: HomeStep,
+  formError: Schema.Option(Schema.String),
+})
+export type Model = typeof Model.Type
+
+export const capturesKeyboard = (model: Model): boolean => match (model.homeStep) {
+  when { _tag: 'SelectAction' }: true;
+  default: false;
+}

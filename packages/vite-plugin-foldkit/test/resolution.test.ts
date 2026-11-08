@@ -29,8 +29,8 @@ import {
 } from 'vite'
 import { describe, expect, it, onTestFinished } from 'vitest'
 
-import { crawlFoldkitPackages } from '../src/foldkitPackages.ts'
-import { foldkit } from '../src/index.ts'
+import { crawlFoldkitPackages } from '../src/foldkitPackages.vibe'
+import { foldkit } from '../src/index.vibe'
 import { readForcedEffectEntries } from './forcedEffectEntries.ts'
 
 type Files = Readonly<globalThis.Record<string, string>>
@@ -39,7 +39,7 @@ type DependencyFields = Readonly<
 >
 
 const PLUGIN_ROOT = resolve(import.meta.dirname, '..')
-const PLUGIN_SOURCE = resolve(PLUGIN_ROOT, 'src/index.ts')
+const PLUGIN_SOURCE = resolve(PLUGIN_ROOT, 'src/index.vibe')
 const CHILD_PROCESS_TEST_TIMEOUT_MS = 20_000
 
 const writeFiles = async (root: string, files: Files): Promise<void> => {

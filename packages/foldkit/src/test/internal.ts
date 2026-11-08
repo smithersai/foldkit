@@ -4,9 +4,12 @@ import type { Effect } from 'effect'
 import {
   type CommandDefinition,
   CommandDefinitionTypeId,
-} from '../command/index.js'
+} from '../command/index.vibe'
 import type * as Interruptible from '../command/interruptible/index.js'
-import { type MountDefinition, MountDefinitionTypeId } from '../mount/index.js'
+import {
+  type MountDefinition,
+  MountDefinitionTypeId,
+} from '../mount/index.vibe'
 
 /** A Command in a test simulation. Carries `name` and optionally the `args`
  *  the runtime captured at construction. Instance matchers (Command values

@@ -1,0 +1,20 @@
+{
+  "cases": [
+    {
+      "name": "Effect",
+      "source": "export const sample = effect { return <div>{\"<&>\"}</div> }\n"
+    },
+    {
+      "name": "State.with.dots",
+      "source": "export const sample = effect { return <div>{\"line\\nnext\"}</div> }\n"
+    },
+    {
+      "name": "汉字-native",
+      "source": "export const sample = effect { return <div>{\"汉字🙂\"}</div> }\n"
+    },
+    {
+      "name": "literal-quotes",
+      "source": "export const sample = effect { return <div>{\"quote\\\"slash\\\\\"}</div> }\n"
+    }
+  ]
+}

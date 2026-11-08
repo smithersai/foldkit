@@ -8,7 +8,7 @@ import {
   Message,
   type Model,
   update,
-} from './main'
+} from './main.vibe'
 
 const idleModel: Model = {
   elapsedMs: 0,

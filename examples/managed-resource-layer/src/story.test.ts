@@ -3,7 +3,7 @@ import { Command, given, message, model, story } from 'foldkit/story'
 import { modifyFields } from 'foldkit/struct'
 import { describe, expect, test } from 'vitest'
 
-import { Compute, EngineState, Message, type Model, update } from './main'
+import { Compute, EngineState, Message, type Model, update } from './main.vibe'
 
 const offModel: Model = {
   engine: EngineState.Off(),

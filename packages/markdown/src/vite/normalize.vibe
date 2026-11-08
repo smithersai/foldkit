@@ -1,0 +1,432 @@
+import type {
+  ListItem as MdastListItem,
+  TableCell as MdastTableCell,
+  TableRow as MdastTableRow,
+  PhrasingContent,
+  Root,
+  RootContent,
+} from 'mdast'
+import type {} from 'mdast-util-directive'
+import type { Position } from 'unist'
+
+import {
+  Alignment,
+  Block,
+  Blockquote,
+  CodeBlock,
+  Emphasis,
+  HardBreak,
+  Heading,
+  Image,
+  Inline,
+  InlineCode,
+  Island,
+  Link,
+  List,
+  ListItem,
+  MarkdownDocument,
+  Paragraph,
+  Strikethrough,
+  Strong,
+  Table,
+  TableCell,
+  TableRow,
+  Text,
+  ThematicBreak,
+} from '../ast/index.js'
+import type { IslandDefinition, IslandDefinitions } from '../island/index.js'
+import { type InvalidFields, checkFields } from './validateFields.vibe'
+
+/**
+ * Options for {@link normalizeRoot}. `islands`, when provided, maps each
+ * allowed directive name to the schema for its attributes; unknown names,
+ * unknown attributes, and attribute values outside the schema all fail with
+ * an error naming the offender.
+ */
+export type NormalizeOptions = Readonly<{
+  islands?: IslandDefinitions | undefined
+}>
+
+/** A node outside the markdown vocabulary, or a URL with an executable scheme. */
+export error UnsupportedMarkdown { message: string }
+
+/** A directive naming an island the options do not declare. */
+export error UnknownIsland { message: string }
+
+/** Every way a document can fall outside the vocabulary. */
+export type NormalizeError = UnsupportedMarkdown | UnknownIsland | InvalidFields
+
+type PositionedNode = Readonly<{
+  type: string
+  position?: Position | undefined
+}>
+
+type DirectiveNode = Readonly<{
+  name: string
+  attributes?:
+    | Readonly<globalThis.Record<string, string | null | undefined>>
+    | null
+    | undefined
+  position?: Position | undefined
+}>
+
+const UNSUPPORTED_GUIDANCE: Readonly<globalThis.Record<string, string>> = {
+  html:
+    'Raw HTML is not part of the markdown vocabulary. Use an island directive to render custom views.',
+  textDirective:
+    'Inline directives are not supported. Use a leaf directive (`::Name`) on its own line, or a container directive (`:::Name`).',
+  linkReference:
+    'Reference-style links are not supported. Use an inline link (`[text](url)`).',
+  imageReference:
+    'Reference-style images are not supported. Use an inline image (`![alt](url)`).',
+  definition:
+    'Reference-style link definitions are not supported. Use inline links (`[text](url)`).',
+  footnoteReference: 'Footnotes are not supported.',
+  footnoteDefinition: 'Footnotes are not supported.',
+  yaml:
+    'Frontmatter is not supported without a `frontmatter` schema in the markdown plugin options. Pass one to enable it, or keep document metadata in application code.',
+  'leaf directive label':
+    'Leaf directive labels (`::Name[label]`) are not supported. Pass information through attributes (`::Name{label="..."}`) instead.',
+}
+
+const sourceLocation = (
+  node: Readonly<{ position?: Position | undefined }>,
+): string => {
+  const line = node.position?.start.line
+  if (line === undefined) {
+    return ''
+  } else {
+    return ` (line ${line})`
+  }
+}
+
+const unsupported = effect (node: PositionedNode): never!UnsupportedMarkdown => {
+  const guidance = UNSUPPORTED_GUIDANCE[node.type]
+    ?? 'It is outside the @foldkit/markdown vocabulary.'
+  throw new UnsupportedMarkdown({
+    message: `Unsupported markdown node "${node.type}"${
+      sourceLocation(node)
+    }. ${guidance}`,
+  })
+}
+
+const normalizeAttributes = (
+  attributes:
+    | Readonly<globalThis.Record<string, string | null | undefined>>
+    | null
+    | undefined,
+): globalThis.Record<string, string> =>
+  Object.fromEntries(
+    Object.entries(attributes ?? {}).map(([name, value]) => [
+      name,
+      value ?? '',
+    ]),
+  )
+
+const URL_SCHEME_PATTERN = /^[a-zA-Z][a-zA-Z0-9+.-]*:/
+const SAFE_URL_SCHEME_PATTERN = /^(?:https?|mailto|tel):/i
+
+// NOTE: The scheme check runs against the URL with ASCII control characters
+// and spaces stripped, because browsers strip them too, so `java\tscript:`
+// would otherwise smuggle an executable scheme past a plain prefix test.
+const toSafeUrl = effect (
+  node: Readonly<{ position?: Position | undefined }>,
+  url: string,
+): string!UnsupportedMarkdown => {
+  const compactUrl = url.replace(/[\u0000- ]/g, '')
+  if (
+    URL_SCHEME_PATTERN.test(compactUrl)
+    && !SAFE_URL_SCHEME_PATTERN.test(compactUrl)
+  ) {
+    throw new UnsupportedMarkdown({
+      message: `Unsupported URL scheme in "${url}"${sourceLocation(node)}. `
+        + 'Link and image URLs may be relative, or use the http:, https:, mailto:, or tel: schemes.',
+    })
+  }
+  return url
+}
+
+effect function toInline(node: PhrasingContent): Inline!UnsupportedMarkdown {
+  return match (node) {
+    when { type: 'text', let value }: try Effect.orDie(
+      Effect.try({ try: () => Text({ value }), catch: cause => cause }),
+    );
+    when { type: 'inlineCode', let value }: try Effect.orDie(
+      Effect.try({ try: () => InlineCode({ value }), catch: cause => cause }),
+    );
+    when { type: 'break' }: try Effect.orDie(
+      Effect.try({ try: () => HardBreak(), catch: cause => cause }),
+    );
+    when { type: 'emphasis', let children }: do {
+      const fields = {
+        content: try forEach(children, (child) => toInline(child)),
+      }
+      try Effect.orDie(
+        Effect.try({ try: () => Emphasis(fields), catch: cause => cause }),
+      )
+    };
+    when { type: 'strong', let children }: do {
+      const fields = {
+        content: try forEach(children, (child) => toInline(child)),
+      }
+      try Effect.orDie(
+        Effect.try({ try: () => Strong(fields), catch: cause => cause }),
+      )
+    };
+    when { type: 'delete', let children }: do {
+      const fields = {
+        content: try forEach(children, (child) => toInline(child)),
+      }
+      try Effect.orDie(
+        Effect.try({ try: () => Strikethrough(fields), catch: cause => cause }),
+      )
+    };
+    when { type: 'link', let url, let title, let children }: do {
+      const fields = {
+        url: try toSafeUrl(node, url),
+        maybeTitle: Option.fromNullishOr(title),
+        content: try forEach(children, (child) => toInline(child)),
+      }
+      try Effect.orDie(
+        Effect.try({ try: () => Link(fields), catch: cause => cause }),
+      )
+    };
+    when { type: 'image', let url, let alt, let title }: do {
+      const fields = {
+        url: try toSafeUrl(node, url),
+        alt: alt ?? '',
+        maybeTitle: Option.fromNullishOr(title),
+      }
+      try Effect.orDie(
+        Effect.try({ try: () => Image(fields), catch: cause => cause }),
+      )
+    };
+    default: try unsupported(node);
+  }
+}
+
+const toAlignment = (align: 'left' | 'right' | 'center' | null): Alignment => match (align) {
+  when 'left': 'Left';
+  when 'center': 'Center';
+  when 'right': 'Right';
+  default: 'None';
+}
+
+effect function toTableCell(
+  cell: MdastTableCell,
+): TableCell!UnsupportedMarkdown {
+  return do {
+    const fields = {
+      content: try forEach(cell.children, (child) => toInline(child)),
+    }
+    try Effect.orDie(
+      Effect.try({ try: () => TableCell(fields), catch: cause => cause }),
+    )
+  }
+}
+
+effect function toTableRow(row: MdastTableRow): TableRow!UnsupportedMarkdown {
+  return do {
+    const fields = {
+      cells: try forEach(row.children, (cell) => toTableCell(cell)),
+    }
+    try Effect.orDie(
+      Effect.try({ try: () => TableRow(fields), catch: cause => cause }),
+    )
+  }
+}
+
+effect function toTable(
+  node: Readonly<{
+    children: ReadonlyArray<MdastTableRow>
+    align?: ReadonlyArray<'left' | 'right' | 'center' | null> | null | undefined
+    position?: Position | undefined
+  }>,
+): Table!UnsupportedMarkdown {
+  const rows = try forEach(node.children, (row) => toTableRow(row))
+  if (Effect.Array.isArrayNonEmpty(rows)) {
+    return try Effect.orDie(Effect.try({
+      try: () =>
+        Table({
+          alignments: (node.align ?? []).map(toAlignment),
+          headerRow: Effect.Array.headNonEmpty(rows),
+          bodyRows: Effect.Array.tailNonEmpty(rows),
+        }),
+      catch: cause => cause,
+    }))
+  }
+  return try unsupported({ type: 'table', position: node.position })
+}
+
+effect function validateIslandAttributes(
+  directive: DirectiveNode,
+  attributesSchema: IslandDefinition,
+  attributes: Readonly<globalThis.Record<string, string>>,
+): void!InvalidFields {
+  try checkFields({
+    schema: attributesSchema,
+    values: attributes,
+    memberNounPlural: 'attributes',
+    unknownField: (attributeName, allowedDescription) =>
+      `Unknown attribute "${attributeName}" for island "${directive.name}"${
+        sourceLocation(directive)
+      }. `
+      + allowedDescription,
+    invalidValues: (detail) =>
+      `Invalid attributes for island "${directive.name}"${
+        sourceLocation(directive)
+      }. ${detail}`,
+  })
+}
+
+effect function toIsland(
+  directive: DirectiveNode,
+  blocks: ReadonlyArray<Block>,
+  options: NormalizeOptions,
+): Island!(UnknownIsland | InvalidFields) {
+  const attributes = normalizeAttributes(directive.attributes)
+  const { islands } = options
+
+  if (islands !== undefined) {
+    match (Effect.Record.get(islands, directive.name)) {
+      when Option.Some(let attributesSchema): try validateIslandAttributes(
+        directive,
+        attributesSchema,
+        attributes,
+      );
+      when Option.None: throw new UnknownIsland({
+        message:
+          `Unknown island "${directive.name}"${sourceLocation(directive)}. `
+          + `Allowed islands: ${Object.keys(islands).join(', ')}.`,
+      });
+    }
+  }
+
+  return try Effect.orDie(
+    Effect.try({
+      try: () => Island({ name: directive.name, attributes, blocks }),
+      catch: cause => cause,
+    }),
+  )
+}
+
+effect function toListItem(
+  node: MdastListItem,
+  options: NormalizeOptions,
+): ListItem!NormalizeError {
+  if (node.checked === null || node.checked === undefined) {
+    return do {
+      const fields = {
+        blocks: try forEach(node.children, (child) => toBlock(child, options)),
+      }
+      try Effect.orDie(
+        Effect.try({ try: () => ListItem(fields), catch: cause => cause }),
+      )
+    }
+  }
+  return try unsupported({ type: 'task list item', position: node.position })
+}
+
+effect function toBlock(
+  node: RootContent,
+  options: NormalizeOptions,
+): Block!NormalizeError {
+  return match (node) {
+    when { type: 'heading', let depth, let children }: do {
+      const fields = {
+        level: depth,
+        content: try forEach(children, (child) => toInline(child)),
+      }
+      try Effect.orDie(
+        Effect.try({ try: () => Heading(fields), catch: cause => cause }),
+      )
+    };
+    when { type: 'paragraph', let children }: do {
+      const fields = {
+        content: try forEach(children, (child) => toInline(child)),
+      }
+      try Effect.orDie(
+        Effect.try({ try: () => Paragraph(fields), catch: cause => cause }),
+      )
+    };
+    when { type: 'code', let lang, let meta, let value }: try Effect.orDie(
+      Effect.try({
+        try: () =>
+          CodeBlock({
+            maybeLanguage: Option.fromNullishOr(lang),
+            maybeMeta: Option.fromNullishOr(meta),
+            value,
+          }),
+        catch: cause => cause,
+      }),
+    );
+    when { type: 'list', let ordered, let start, let children, let position }:
+      do {
+        const items = try forEach(
+          children,
+          (item) => toListItem(item, options),
+        )
+        Effect.Array.isArrayNonEmpty(items)
+          ? try Effect.orDie(Effect.try({
+            try: () =>
+              List({
+                isOrdered: ordered === true,
+                maybeStartNumber: Option.fromNullishOr(start),
+                items,
+              }),
+            catch: cause => cause,
+          }))
+          : try unsupported({ type: 'list', position })
+      };
+    when { type: 'blockquote', let children }: do {
+      const fields = {
+        blocks: try forEach(children, (child) => toBlock(child, options)),
+      }
+      try Effect.orDie(
+        Effect.try({ try: () => Blockquote(fields), catch: cause => cause }),
+      )
+    };
+    when { type: 'thematicBreak' }: try Effect.orDie(
+      Effect.try({ try: () => ThematicBreak(), catch: cause => cause }),
+    );
+    when { type: 'table', let children, let align, let position }: try toTable(
+      {
+        children,
+        align,
+        position,
+      },
+    );
+    when { type: 'leafDirective', let name, let attributes, let children, let position }:
+      Effect.Array.isArrayEmpty(children)
+        ? try toIsland({ name, attributes, position }, [], options)
+        : try unsupported({ type: 'leaf directive label', position });
+    when { type: 'containerDirective', let name, let attributes, let children, let position }:
+      try toIsland(
+        { name, attributes, position },
+        try forEach(children, (child) => toBlock(child, options)),
+        options,
+      );
+    default: try unsupported(node);
+  }
+}
+
+/**
+ * The converter as a program: a typed {@link MarkdownDocument}, or a
+ * `NormalizeError` for the first node outside the vocabulary.
+ * {@link normalizeRoot} runs it for plain callers.
+ */
+export const normalize = effect (
+  root: Root,
+  options: NormalizeOptions,
+): MarkdownDocument!NormalizeError => ({
+  blocks: try forEach(root.children, (child) => toBlock(child, options)),
+})
+
+/**
+ * Converts a parsed mdast tree into a typed {@link MarkdownDocument}.
+ * Throws on any node outside the markdown vocabulary.
+ */
+export const normalizeRoot = (
+  root: Root,
+  options: NormalizeOptions = {},
+): MarkdownDocument => runSync(normalize(root, options))

@@ -4,8 +4,8 @@ import { expect, vi } from 'vitest'
 import { describe, it } from '@effect/vitest'
 
 import { DEVTOOLS_HOST_ID } from '../devTools/host.js'
-import { RenderCommit, createCommitNotifier } from '../render/commit.js'
-import { DialogRuntime } from './dialogRuntime.js'
+import { RenderCommit, createCommitNotifier } from '../render/commit.vibe'
+import { DialogRuntime } from './dialogRuntime.vibe'
 import {
   ElementNotFound,
   closeDialog,

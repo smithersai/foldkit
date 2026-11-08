@@ -25,6 +25,6 @@ export {
   AcquireResources,
   CloseDialog,
   ReleaseDialogResources,
-} from './index.js'
+} from './index.vibe'
 
-export type { InitConfig, ViewInputs, RenderInfo } from './index.js'
+export type { InitConfig, ViewInputs, RenderInfo } from './index.vibe'

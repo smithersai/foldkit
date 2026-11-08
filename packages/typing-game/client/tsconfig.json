@@ -1,11 +1,17 @@
 {
   "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
+    "rewriteRelativeImportExtensions": true,
     "lib": ["ES2022", "DOM"],
     "moduleResolution": "bundler",
     "isolatedModules": true,
-    "noEmit": true
+    "noEmit": true,
+    "rootDir": "src"
   },
   "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ]
 }

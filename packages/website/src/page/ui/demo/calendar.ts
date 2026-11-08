@@ -2,9 +2,9 @@ import type { HtmlBuilder } from 'foldkit/html'
 
 import { Calendar } from '@foldkit/ui'
 
-import { Message } from '../message'
-import type { Model } from '../model'
-import { calendarView } from './calendarView'
+import { Message } from '../message.vibe'
+import type { Model } from '../model.vibe'
+import { calendarView } from './calendarView.vibe'
 
 // DEMO CONTENT
 

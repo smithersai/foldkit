@@ -1,0 +1,28 @@
+import { ExperimentalBrowserDocument } from 'vibelang-runtime/experimental/platform-browser'
+import { Command, Render } from 'foldkit'
+
+const MeasurePanel = Command.define('MeasurePanel', {
+  messages: [MeasuredPanel],
+  execute: effect {
+    provide ExperimentalBrowserDocument.layer {
+      try Render.afterCommit
+      const documentService = try Experimental.Document.Document
+      const page = try documentService.current
+      const width = try Effect.sync(() => {
+        const element = page.getElementById('panel')
+        return documentService.isHTMLElement(element)
+          ? element.getBoundingClientRect().width
+          : 0
+      })
+      return MeasuredPanel({ width })
+    }
+  },
+})
+
+const StartTransition = Command.define('StartTransition', {
+  messages: [StartedTransition],
+  execute: effect {
+    try Render.afterPaint
+    return StartedTransition()
+  },
+})

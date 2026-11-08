@@ -1,3 +1,3 @@
-export { view } from './index.js'
+export { view } from './index.vibe'
 
-export type { ViewConfig, ButtonAttributes } from './index.js'
+export type { ViewConfig, ButtonAttributes } from './index.vibe'

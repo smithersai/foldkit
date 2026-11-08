@@ -11,8 +11,8 @@ import { describe, expect, expectTypeOf, it, vi } from 'vitest'
 
 import * as Command from '../../command/public.js'
 import * as ManagedResource from '../../managedResource/public.js'
-import { defineMessageUnion, defineTaggedUnion } from '../../schema/index.js'
-import { modifyFields } from '../../struct/index.js'
+import { defineMessageUnion, defineTaggedUnion } from '../../schema/index.vibe'
+import { modifyFields } from '../../struct/index.vibe'
 import * as Subscription from '../../subscription/public.js'
 import * as Update from '../../update/index.js'
 import {
@@ -27,7 +27,7 @@ import {
   otherwise,
   to,
   when,
-} from './machine.js'
+} from './machine.vibe'
 
 // REMOTE DATA
 

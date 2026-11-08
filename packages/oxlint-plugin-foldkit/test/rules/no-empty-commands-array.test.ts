@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it, vi } from 'vitest'
 
-import { noEmptyCommandsArray } from '../../src/rules/no-empty-commands-array.ts'
+import { noEmptyCommandsArray } from '../../src/rules/no-empty-commands-array.vibe'
 
 const arrayExpression = (elements: ReadonlyArray<unknown> = []) => ({
   type: 'ArrayExpression',

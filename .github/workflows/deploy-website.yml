@@ -20,6 +20,7 @@ on:
       - 'packages/vite-plugin-foldkit/**'
       - 'examples/**'
       - 'scripts/build-examples.ts'
+      - 'scripts/build-examples.vibe'
       - 'scripts/check-playground-ssg-build.ts'
       - 'scripts/check-published-versions.ts'
       - 'scripts/coherent-release.mjs'

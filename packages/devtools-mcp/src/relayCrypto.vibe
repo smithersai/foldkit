@@ -1,0 +1,35 @@
+import { NodeCrypto } from '@effect/platform-node'
+
+export const computeRelayProof = (
+  token: string,
+  role: 'client' | 'server',
+  challenge: string,
+): string =>
+  runSync(effect {
+    provide NodeCrypto.layer {
+      const mac = try Mac.Mac
+      const key = try Mac.key(Mac.hmacSha256, new TextEncoder().encode(token))
+      const proof = try mac.sign(
+        key,
+        new TextEncoder().encode(`${role}:${challenge}`),
+      )
+      return Hex.encode(proof)
+    }
+  })
+
+export const createRelayChallenge = (bytes: number): string =>
+  runSync(effect {
+    provide NodeCrypto.layer {
+      const random = try SecureRandom.SecureRandom
+      return Hex.encode(try random.randomBytes(bytes))
+    }
+  })
+
+export const matchesRelayProof = (
+  expectedHex: string,
+  presentedHex: string,
+): boolean => match ([Hex.decode(expectedHex), Hex.decode(presentedHex)]) {
+  when [Result.Success(let expected), Result.Success(let presented)]: Mac
+    .timingSafeEqual(expected, presented);
+  default: false;
+}

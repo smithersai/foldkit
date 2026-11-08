@@ -1,9 +1,9 @@
 import { type HtmlBuilder } from 'foldkit/html'
 
 import { type CodeBlock } from '../component'
-import { type Message } from './message'
-import { type Model } from './model'
-import { view } from './view'
+import { type Message } from './message.vibe'
+import { type Model } from './model.vibe'
+import { view } from './view.vibe'
 
 export const renderer =
   <ParentMessage>(

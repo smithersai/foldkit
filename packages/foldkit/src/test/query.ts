@@ -14,8 +14,8 @@ import {
 import { dual } from 'effect/Function'
 
 import { StringExt } from '../effectExtensions/index.js'
-import { modifyFields } from '../struct/index.js'
-import type { VNode } from '../vdom.js'
+import { modifyFields } from '../struct/index.vibe'
+import type { VNode } from '../vdom.vibe'
 
 // SELECTOR PARSING
 

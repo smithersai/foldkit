@@ -4,7 +4,7 @@ import { expect } from 'vitest'
 import { describe, it } from '@effect/vitest'
 
 import { defineMessageUnion } from '../message/index.js'
-import { MountTracker } from '../mount/index.js'
+import { MountTracker } from '../mount/index.vibe'
 import { propsModule } from '../propsModule.js'
 import { Dispatch } from '../runtime/index.js'
 import {
@@ -16,13 +16,13 @@ import {
   styleModule,
   toVNode,
 } from '../snabbdom/index.js'
-import type { VNode } from '../vdom.js'
+import type { VNode } from '../vdom.vibe'
 import {
   DEVTOOLS_HOST_ID,
   __htmlBuilder,
   __clearRuntime as clearHtmlRuntime,
   __setRuntime as setHtmlRuntime,
-} from './index.js'
+} from './index.vibe'
 
 const patch = init([
   attributesModule,

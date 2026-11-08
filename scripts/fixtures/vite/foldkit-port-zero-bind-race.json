@@ -1,0 +1,13 @@
+{
+  "repository": "foldkit/foldkit",
+  "pattern": "Vite malformedUpgrade.test.ts: automatic dev-server port is stolen between probe and bind",
+  "seed": 413919,
+  "maxBindAttempts": 3,
+  "scenarios": [
+    { "collisions": 0, "strictPort": false },
+    { "collisions": 1, "strictPort": false },
+    { "collisions": 1, "strictPort": true },
+    { "collisions": 2, "strictPort": false },
+    { "collisions": 2, "strictPort": true }
+  ]
+}

@@ -1,6 +1,6 @@
-export { Model, SearchState } from './model'
-export { Message } from './message'
-export { PagefindService } from './pagefind'
+export { Model, SearchState } from './model.vibe'
+export { Message } from './message.vibe'
+export { PagefindService, pagefindLive } from './pagefind.vibe'
 export { init } from './init'
 export {
   FocusSearchInput,
@@ -8,5 +8,5 @@ export {
   informRouteChanged,
   open,
   update,
-} from './update'
-export { view } from './view'
+} from './update.vibe'
+export { view } from './view.vibe'

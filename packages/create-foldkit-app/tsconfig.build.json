@@ -1,8 +1,10 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "rewriteRelativeImportExtensions": true,
     "noEmit": false,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "rootDir": "./src"
   },
   "exclude": ["src/**/*.test.ts"]
 }

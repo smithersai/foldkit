@@ -7,16 +7,17 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit",
-    "format": "oxfmt",
+    "typecheck": "vibelang --noEmit",
+    "format": "(oxfmt) && vibelang-format --write",
     "test": "vitest run"
   },
   "dependencies": {
-    "@effect/platform-browser": "4.0.0",
+    "@effect/platform-browser": "4.1.1",
     "@typing-game/shared": "workspace:*",
     "clsx": "^2.1.1",
-    "effect": "4.0.0",
-    "foldkit": "workspace:*"
+    "effect": "4.1.1",
+    "foldkit": "workspace:*",
+    "vibelang-runtime": "file:../../../.vibelang-toolchain/vibelang-runtime-0.0.13.tgz"
   },
   "devDependencies": {
     "@foldkit/devtools": "workspace:*",
@@ -26,6 +27,8 @@
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "^8.3.1",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.11",
+    "vibelang": "file:../../../.vibelang-toolchain/vibelang-0.0.13.tgz",
+    "vibelang-vite": "file:../../../.vibelang-toolchain/vibelang-vite-0.0.13.tgz"
   }
 }

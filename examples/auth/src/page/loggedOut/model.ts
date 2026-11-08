@@ -1,7 +1,7 @@
 import { taggedStruct } from 'foldkit/schema'
 
-import { LoggedOutRoute } from '../../route'
-import * as Login from './page/login'
+import { LoggedOutRoute } from '../../route.vibe'
+import * as Login from './page/login.vibe'
 
 // MODEL
 

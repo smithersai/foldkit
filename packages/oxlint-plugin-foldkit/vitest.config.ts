@@ -1,3 +1,4 @@
+import vibelang from 'vibelang-vite'
 import { configDefaults, defineConfig } from 'vitest/config'
 
 // The integration fixtures under test/integration/fixtures are source files
@@ -5,6 +6,7 @@ import { configDefaults, defineConfig } from 'vitest/config'
 // so Vitest never tries to run a fixture (some are named *.test.ts to satisfy
 // a rule's file gate).
 export default defineConfig({
+  plugins: [vibelang()],
   test: {
     exclude: [...configDefaults.exclude, 'test/integration/fixtures/**'],
   },

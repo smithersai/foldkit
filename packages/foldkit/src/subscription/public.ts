@@ -1,4 +1,4 @@
-export { aggregate, lift, make, persistentEntry } from './subscription.js'
+export { aggregate, lift, make, persistentEntry } from './subscription.vibe'
 
 export type {
   EntryGates,
@@ -6,8 +6,8 @@ export type {
   GatedDependencies,
   Subscription,
   Subscriptions,
-} from './subscription.js'
+} from './subscription.vibe'
 
-export { animationFrameEntry } from './animationFrame.js'
+export { animationFrameEntry } from './animationFrame.vibe'
 
-export type { AnimationFrameConfig } from './animationFrame.js'
+export type { AnimationFrameConfig } from './animationFrame.vibe'
