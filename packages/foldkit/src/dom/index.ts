@@ -17,8 +17,8 @@ export { lockScroll, unlockScroll } from './scrollLock.vibe'
 export {
   streamFromEvent,
   streamFromEventFilterMap,
-  streamFromEventFilterMapPreventDefault,
 } from './streamFromEvent.vibe'
+export { streamFromEventFilterMapPreventDefault } from './streamFromEventPreventDefault.js'
 export type {
   StreamFromEventConfig,
   StreamFromEventFilterMapConfig,

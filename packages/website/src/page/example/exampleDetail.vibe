@@ -78,22 +78,26 @@ const isExampleUrlMessageFromIframe = (
   && event.data.type === BRIDGE_MESSAGE_TYPE
   && typeof event.data.url === 'string'
 
-const observeExampleUrlMessages = (element: Element) => {
-  if (!isHtmlIframeElement(element)) {
-    return Stream.empty
-  }
+const observeExampleUrlMessages = (element: Element) =>
+  Stream.unwrap(effect {
+    const iframe = try Effect.sync(() =>
+      isHtmlIframeElement(element) ? element : undefined
+    )
+    if (iframe === undefined) {
+      return Stream.empty
+    }
 
-  return Dom.streamFromEventFilterMap({
-    target: () => browserWindow(),
-    type: 'message',
-    filterMapEvent: (event) => {
-      if (!isExampleUrlMessageFromIframe(event, element)) {
-        return Option.none()
-      }
-      return Option.some(Message.ChangedExampleUrl({ url: event.data.url }))
-    },
+    return Dom.streamFromEventFilterMap({
+      target: () => browserWindow(),
+      type: 'message',
+      filterMapEvent: (event) => {
+        if (!isExampleUrlMessageFromIframe(event, iframe)) {
+          return Option.none()
+        }
+        return Option.some(Message.ChangedExampleUrl({ url: event.data.url }))
+      },
+    })
   })
-}
 
 const ObserveExampleUrlMessages = Mount.defineStream(
   'ObserveExampleUrlMessages',

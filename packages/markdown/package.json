@@ -43,7 +43,7 @@
     "remark-gfm": "^4.0.1",
     "remark-parse": "^11.0.0",
     "unified": "^11.0.5",
-    "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-4a7e790005b5.tgz"
+    "vibelang-runtime": "0.0.13"
   },
   "devDependencies": {
     "@types/mdast": "^4.0.4",
@@ -56,8 +56,8 @@
     "typescript": "^7.0.2",
     "vite": "^8.3.1",
     "vitest": "^4.1.11",
-    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-6a4c55d7d3ae.tgz",
-    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a43d2b04075f.tgz"
+    "vibelang": "0.0.13",
+    "vibelang-vite": "0.0.13"
   },
   "keywords": [
     "foldkit",

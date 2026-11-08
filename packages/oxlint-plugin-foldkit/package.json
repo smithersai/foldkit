@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "effect-oxlint": "0.3.4",
-    "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-4a7e790005b5.tgz"
+    "vibelang-runtime": "0.0.13"
   },
   "devDependencies": {
     "@types/node": "26.4.0",
@@ -33,9 +33,9 @@
     "rolldown": "^1.2.11",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "vitest": "^4.1.11",
-    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-6a4c55d7d3ae.tgz",
-    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a43d2b04075f.tgz",
-    "vibelang-unplugin": "file:../../.vibelang-toolchain/vibelang-unplugin-0.0.11-45a3600458c6.tgz",
+    "vibelang": "0.0.13",
+    "vibelang-vite": "0.0.13",
+    "vibelang-unplugin": "0.0.13",
     "fast-check": "^4.10.2"
   },
   "files": [

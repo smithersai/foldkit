@@ -71,8 +71,13 @@ it('prebundles Console imports emitted by the native compiler', () => {
       }),
     )
     const compile = spawnSync(
-      join(workspace, 'node_modules/vibelang/native/vibelang'),
-      ['--singleThreaded', '-p', join(root, 'tsconfig.json')],
+      process.execPath,
+      [
+        join(workspace, 'node_modules/vibelang/bin/vibelang'),
+        '--singleThreaded',
+        '-p',
+        join(root, 'tsconfig.json'),
+      ],
       { cwd: root, encoding: 'utf8' },
     )
     expect(compile.status, compile.stdout + compile.stderr).toBe(0)

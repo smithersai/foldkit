@@ -11,7 +11,7 @@
     "@effect/platform-browser": "4.1.1",
     "effect": "4.1.1",
     "foldkit": "workspace:*",
-    "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.11-4a7e790005b5.tgz"
+    "vibelang-runtime": "0.0.13"
   },
   "devDependencies": {
     "@foldkit/vite-plugin": "workspace:*",
@@ -19,7 +19,7 @@
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "^8.3.1",
-    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.11-6a4c55d7d3ae.tgz",
-    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.11-a43d2b04075f.tgz"
+    "vibelang": "0.0.13",
+    "vibelang-vite": "0.0.13"
   }
 }

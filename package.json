@@ -120,8 +120,8 @@
     "simple-git-hooks": "^2.14.0",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "typescript-eslint": "^8.69.0",
-    "vibelang": "file:./.vibelang-toolchain/vibelang-0.0.11-6a4c55d7d3ae.tgz",
-    "vibelang-runtime": "file:./.vibelang-toolchain/vibelang-runtime-0.0.11-4a7e790005b5.tgz",
+    "vibelang": "0.0.13",
+    "vibelang-runtime": "0.0.13",
     "vite": "^8.3.1"
   },
   "simple-git-hooks": {

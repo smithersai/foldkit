@@ -101,13 +101,10 @@ const tabPanelId = (id: string, index: number): string => `${id}-panel-${index}`
 export const FocusTab = Command.define('FocusTab', {
   args: { id: Schema.String, index: Schema.Number },
   messages: [Message.CompletedFocusTab],
-  execute: ({ id, index }) => {
-    const nativeCommandArg16_0 = idSelector(tabId(id, index))
-    const nativeCommandCompletion16 = Message.CompletedFocusTab()
-    return effect {
-      Dom.focus(nativeCommandArg16_0) catch () => undefined
-      return nativeCommandCompletion16
-    }
+  execute: effect ({ id, index }) => {
+    const selector = try Effect.sync(() => idSelector(tabId(id, index)))
+    Dom.focus(selector) catch () => undefined
+    return Message.CompletedFocusTab()
   },
 })
 

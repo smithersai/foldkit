@@ -180,13 +180,12 @@ type Direction = (typeof Message.PressedArrowKey.Type)['direction']
 export const FocusItem = Command.define('FocusItem', {
   args: { itemId: Schema.String },
   messages: [Message.CompletedFocusItem],
-  execute: ({ itemId }) => {
-    const nativeCommandArg38_0 = attributeSelector('data-draggable-id', itemId)
-    const nativeCommandCompletion38 = Message.CompletedFocusItem()
-    return effect {
-      Dom.focus(nativeCommandArg38_0) catch () => undefined
-      return nativeCommandCompletion38
-    }
+  execute: effect ({ itemId }) => {
+    const selector = try Effect.sync(() =>
+      attributeSelector('data-draggable-id', itemId)
+    )
+    Dom.focus(selector) catch () => undefined
+    return Message.CompletedFocusItem()
   },
 })
 

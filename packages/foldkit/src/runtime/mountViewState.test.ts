@@ -365,6 +365,12 @@ describe('Mount view-state awareness', () => {
     const subscriptionMessages = await Effect.runPromise(
       PubSub.unbounded<Message>(),
     )
+    const startedAt = performance.now()
+    const timings: globalThis.Array<{ stage: string; elapsedMs: number }> = []
+    const recordTiming = (stage: string) => {
+      timings.push({ stage, elapsedMs: performance.now() - startedAt })
+    }
+    recordTiming('created PubSub')
     const subscriptions = Subscription.make<Model, Message>()(() => ({
       testMessages: Subscription.persistentEntry(
         Stream.fromPubSub(subscriptionMessages),
@@ -378,6 +384,7 @@ describe('Mount view-state awareness', () => {
       execute: () =>
         Stream.callback<typeof ChildMessage.CompletedChildMount.Type>(queue =>
           Effect.sync(() => {
+            recordTiming('acquired Mount')
             emitters.push(() =>
               Queue.offerUnsafe(queue, ChildMessage.CompletedChildMount()),
             )
@@ -402,6 +409,7 @@ describe('Mount view-state awareness', () => {
       Model,
       init: () => ({ model: initialModel(true) }),
       update: (model, message) => {
+        recordTiming(`processed ${message._tag}`)
         processedMessages.push(message)
         return update(model, message)
       },
@@ -439,11 +447,20 @@ describe('Mount view-state awareness', () => {
       })
       const store = requireDevToolsStore(maybeStore)
 
+      recordTiming('initial Mount ready')
       clickButton('hide')
       await vi.waitFor(() => {
         expect(document.querySelector('#editor')).toBeNull()
       })
-      PubSub.publishUnsafe(subscriptionMessages, Message.Ticked())
+      recordTiming('editor hidden')
+      recordTiming(
+        `publishing Ticked with ${subscriptionMessages.subscribers.size} waiting subscribers`,
+      )
+      const wasTickPublished = PubSub.publishUnsafe(
+        subscriptionMessages,
+        Message.Ticked(),
+      )
+      recordTiming(`published Ticked: ${wasTickPublished}`)
       await vi.waitFor(() => {
         expect(processedMessages).toContainEqual(Message.Ticked())
       })
@@ -469,6 +486,14 @@ describe('Mount view-state awareness', () => {
       expect(processedMessages).not.toContainEqual(
         Message.GotChildMountResult({ ownerId: 0 }),
       )
+    } catch (error) {
+      console.error('Mount acquisition failure timings', {
+        timings,
+        processedMessages,
+        emitterCount: emitters.length,
+        waitingSubscribers: subscriptionMessages.subscribers.size,
+      })
+      throw error
     } finally {
       await Effect.runPromise(Fiber.interrupt(runtimeFiber))
     }

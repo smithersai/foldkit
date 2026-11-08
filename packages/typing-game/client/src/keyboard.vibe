@@ -5,9 +5,12 @@ import { getDocument } from './keyboardPlatform.ts'
 export const capturedKeyDownStream = <Message>(
   toMessage: (key: string) => Message,
 ): Stream<Message> =>
-  Dom.streamFromEventFilterMapPreventDefault({
-    target: getDocument(),
-    type: 'keydown',
-    filterMapEvent: (keyboardEvent) =>
-      Option.some(toMessage(keyboardEvent.key)),
+  Stream.unwrap(effect {
+    const target = try Effect.sync(() => getDocument())
+    return Dom.streamFromEventFilterMapPreventDefault({
+      target,
+      type: 'keydown',
+      filterMapEvent: (keyboardEvent) =>
+        Option.some(toMessage(keyboardEvent.key)),
+    })
   })

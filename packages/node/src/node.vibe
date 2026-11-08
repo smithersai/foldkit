@@ -360,10 +360,12 @@ const makeHandler = (options: ServeOptions, port: number) =>
     const app = try loadFetchHandler(paths.fetchHandlerPath)
     const staticFiles = try confinedStaticFiles(paths.clientDirectory)
 
-    return HttpServerRequest.HttpServerRequest.use(request => {
-      const requestUrl = Server.resolveRequestUrl(request.url, origin)
+    return HttpServerRequest.HttpServerRequest.use(effect (request) => {
+      const requestUrl = try Effect.sync(() =>
+        Server.resolveRequestUrl(request.url, origin)
+      )
       if (requestUrl === undefined) {
-        return Effect.succeed(HttpServerResponse.empty({ status: 400 }))
+        return HttpServerResponse.empty({ status: 400 })
       }
 
       const resolved = new URL(requestUrl)
@@ -378,18 +380,22 @@ const makeHandler = (options: ServeOptions, port: number) =>
 
       const response = match (fetchRequest.method) {
         when 'GET' or 'HEAD': staticRequest === undefined
-            || Server.resolvesToIndexHtml(staticRequest.url)
+            || (try Effect.sync(() =>
+              Server.resolvesToIndexHtml(staticRequest.url)
+            ))
           ? fetchResponse(app, fetchRequest, requestUrl)
           : staticFiles.pipe(
             Effect.catchIf(isRouteNotFound, () =>
               fetchResponse(app, fetchRequest, requestUrl)),
           );
-        default: Server.isHostSettledMethod(fetchRequest.method)
+        default: (try Effect.sync(() =>
+            Server.isHostSettledMethod(fetchRequest.method)
+          ))
           ? Effect.succeed(hostSettledResponse())
           : fetchResponse(app, fetchRequest, requestUrl);
       }
 
-      return Effect.provideService(
+      return try Effect.provideService(
         response,
         HttpServerRequest.HttpServerRequest,
         staticRequest ?? fetchRequest,

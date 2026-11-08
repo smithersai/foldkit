@@ -11,8 +11,8 @@ import {
   buildExampleFileMap,
 } from './playgroundFilesPlugin.vibe'
 
-const compilerReference = 'file:../../.vibelang-toolchain/compiler-fixture.tgz'
-const viteReference = 'file:../../.vibelang-toolchain/vite-fixture.tgz'
+const compilerReference = '0.0.13'
+const viteReference = '0.0.13'
 const baseOptions = { strict: true }
 const nativeSource = 'export const sample = effect { return 1 }\n'
 const segment = fc

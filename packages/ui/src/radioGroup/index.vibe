@@ -96,13 +96,10 @@ const descriptionId = (id: string, index: number): string =>
 export const FocusOption = Command.define('FocusOption', {
   args: { id: Schema.String, index: Schema.Number },
   messages: [Message.CompletedFocusOption],
-  execute: ({ id, index }) => {
-    const nativeCommandArg28_0 = idSelector(optionId(id, index))
-    const nativeCommandCompletion28 = Message.CompletedFocusOption()
-    return effect {
-      Dom.focus(nativeCommandArg28_0) catch () => undefined
-      return nativeCommandCompletion28
-    }
+  execute: effect ({ id, index }) => {
+    const selector = try Effect.sync(() => idSelector(optionId(id, index)))
+    Dom.focus(selector) catch () => undefined
+    return Message.CompletedFocusOption()
   },
 })
 

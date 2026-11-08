@@ -71,7 +71,7 @@ export const setRuntime = (
  *  and registry, but uses a different boundary. Used by `h.submodel` to
  *  enter a child Submodel's wrapping context. Must be paired with
  *  {@link clearRuntime}. */
-export const pushBoundary: (boundaryId: BoundaryId) => void = plainPushBoundary
+export const pushBoundary = plainPushBoundary
 
 /** Pushes a fully-specified frame, ignoring whatever is currently on the
  *  stack. Used by `h.submodel`'s slot-callback wrapping so the wrapped
@@ -97,7 +97,7 @@ export const pushFrame = (frame: Frame): void => {
  *  Throws when called on an empty stack. That signals an unmatched
  *  push/pop pair somewhere upstream and would silently corrupt later
  *  renders if it slid by. */
-export const clearRuntime: () => void = plainClearRuntime
+export const clearRuntime = plainClearRuntime
 
 /** Returns the current dispatcher. For frames in the root boundary, this
  *  is the runtime's actual dispatch; for nested Submodel boundaries, this
@@ -187,10 +187,7 @@ export const requireRuntimeContext = (): Context.Context<never> => {
 /** Returns the current frame's boundary registry and boundary id. Used by
  *  `h.submodel` to register wrapping descriptors and compute child
  *  boundary ids. Throws when called outside of a runtime frame. */
-export const requireBoundary: () => Readonly<{
-  registry: BoundaryRegistry
-  boundaryId: BoundaryId
-}> = plainRequireBoundary
+export const requireBoundary = plainRequireBoundary
 
 /** Returns the full current frame, used by `h.submodel` to snapshot the
  *  parent's context before pushing a child boundary. The snapshot is
@@ -198,4 +195,4 @@ export const requireBoundary: () => Readonly<{
  *  full frame via {@link pushFrame} when invoked, instead of inheriting
  *  from whatever happens to be on the stack at invocation time. Throws
  *  when called outside of a runtime frame. */
-export const getCurrentFrame: () => Frame = plainGetCurrentFrame
+export const getCurrentFrame = plainGetCurrentFrame

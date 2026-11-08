@@ -17,5 +17,4 @@ export type DuplicateIdScanner = Readonly<{
  *  production builds. */
 // NOTE: The scan, its warning and its timer are platform code, so they live
 // unchanged in duplicateIdScanner.platform.ts; this keeps the API.
-export const createDuplicateIdScanner: () => DuplicateIdScanner =
-  createDuplicateIdScannerRaw
+export const createDuplicateIdScanner = createDuplicateIdScannerRaw
