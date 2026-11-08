@@ -234,6 +234,10 @@ A gate you just wrote is not evidence until you have watched it fail. Break the 
 - Fix the class, not the reported instance. Four review rounds found the same defect class with different instances because each round patched the examples it was handed. When a finding names three cases, enumerate the whole set before writing the fix.
 - Separate what shipped from what you broke. A defect in the published release, one caught in the release candidate, and one an agent introduced and removed on the branch are three different signals. Reporting them as one number overstates the risk in the released code.
 
+## Effect Lint
+
+Run `pnpm lint:effect` from the repository root to check the configured Effect rules. The helper derives native project configurations from `.oxlintrc.effect.json`, including per-file exceptions and ignored paths. It promotes configured warnings to errors so warnings fail the lint gate, and rejects selected native sources outside the linted projects.
+
 ## Workspace Setup Errors Are Not Pre-Existing
 
 If `pnpm typecheck`, `pnpm lint`, `pnpm build`, or the pre-push hook surfaces errors like `Cannot find module 'foldkit'`, `Cannot find module 'foldkit/html'`, or unexpected `Property X does not exist` against an Effect API, the workspace itself is out of sync. These are not pre-existing branch failures. Run `bash scripts/cloud-session-setup.sh` to reconcile. The SessionStart hook runs this automatically in Claude Code cloud sessions. Locally it is a no-op, because the install and rebuild race with `pnpm dev:libs`.

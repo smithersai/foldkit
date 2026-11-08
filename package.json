@@ -13,7 +13,7 @@
     "lint": "pnpm build:packages && pnpm --filter @typing-game/shared build && pnpm lint:ci",
     "lint:ci": "pnpm sidecars && (oxlint --disable-nested-config && pnpm lint:applications && pnpm lint:effect) && eslint --config .vibelang/eslint.config.mjs \"**/*.vibe\" --no-error-on-unmatched-pattern",
     "lint:applications": "(oxlint --config .oxlintrc.app.json --disable-nested-config examples packages/website/src packages/typing-game/client/src) && eslint --config .vibelang/eslint.app.config.mjs examples packages/website/src packages/typing-game/client/src --no-error-on-unmatched-pattern",
-    "lint:effect": "pnpm --filter @typing-game/server build && (effect-tsgo patch --no-typescript --oxlint && oxlint --config .oxlintrc.effect.json --disable-nested-config --deny-warnings packages examples scripts && vibelang lint -c .oxlintrc.effect.json --deny-warnings packages examples scripts) && eslint --config .vibelang/eslint.effect.config.mjs packages examples scripts --no-error-on-unmatched-pattern",
+    "lint:effect": "pnpm --filter @typing-game/server build && (effect-tsgo patch --no-typescript --oxlint && oxlint --config .oxlintrc.effect.json --disable-nested-config --deny-warnings packages examples scripts && node scripts/run-vibe-effect-lint.mjs) && eslint --config .vibelang/eslint.effect.config.mjs packages examples scripts --no-error-on-unmatched-pattern",
     "check:dead-code": "NODE_OPTIONS=\"${NODE_OPTIONS:+$NODE_OPTIONS }--import=vibelang/register\" knip --no-progress --include files,dependencies,unlisted,unresolved,binaries,duplicates,catalog --treat-config-hints-as-errors",
     "check:effect-prebundle": "node scripts/check-effect-prebundle.ts",
     "check:ui-subpath-exports": "node scripts/check-ui-subpath-exports.ts",

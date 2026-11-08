@@ -63,6 +63,10 @@ If a typecheck reports something like `Cannot find module 'foldkit'`, the librar
 
 `pnpm check:dead-code` preloads `vibelang/register` so tool configurations can import `.vibe` modules. It preserves inherited `NODE_OPTIONS`, including any existing Node preload hooks.
 
+`pnpm lint:effect` reads `.oxlintrc.effect.json` for both source forms. Its native pass writes temporary project configurations for `vibelang lint -p`, retaining rule selection, per-file exceptions and ignored paths. Configured warnings become errors in that pass so warnings fail the lint gate. It also checks that every selected `.vibe` source belongs to a linted project.
+
+When upgrading VibeLang, update the release version and source URL in `scripts/generate-vibelang-effect-lint-catalog.mjs`, then run `node scripts/generate-vibelang-effect-lint-catalog.mjs`. The resulting `.vibelang/effect-lint-codes.json` pins the imported rule names; the lint helper rejects a different compiler version.
+
 Beyond the usual lint, typecheck, and test steps, the suite enforces a few repository-specific rules that are easy to trip over:
 
 | Check                              | Rule                                                                                                                                                               |

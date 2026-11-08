@@ -568,7 +568,7 @@ describe('resources', () => {
         view: documentView,
         container,
       })
-      // @ts-expect-error ResourceService is absent from `resources`
+      // @ts-expect-error ResourceService is absent; @effect-diagnostics-next-line missingEffectContext:off
       run(applicationWithoutResources, { flags: flagsNeedingResource })
 
       const application = makeApplication({

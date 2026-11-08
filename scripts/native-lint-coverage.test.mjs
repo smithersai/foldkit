@@ -14,7 +14,7 @@ import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const compiler = join(root, 'node_modules/vibelang/bin/vibelang')
+const runner = join(root, 'scripts/run-vibe-effect-lint.mjs')
 const config = join(root, '.oxlintrc.effect.json')
 
 const fixture = () => {
@@ -47,7 +47,15 @@ const fixture = () => {
 const lint = directory => {
   const result = spawnSync(
     process.execPath,
-    [compiler, 'lint', '-c', config, '--deny-warnings', '.'],
+    [
+      runner,
+      '--config',
+      config,
+      '--project',
+      join(directory, 'tsconfig.json'),
+      '--path',
+      '.',
+    ],
     {
       cwd: directory,
       env: { ...process.env, GOMAXPROCS: '1' },
@@ -67,7 +75,7 @@ test('native lint excludes generated templates after a package build', () => {
     const result = lint(directory)
     assert.equal(result.status, 0, result.output)
     assert.doesNotMatch(result.output, /not linted/)
-    assert.match(result.output, /in 1 \.vibe file/)
+    assert.match(result.output, /checked 1 \.vibe file/)
   } finally {
     rmSync(directory, { recursive: true, force: true })
   }
@@ -95,7 +103,7 @@ test('generated native output is excluded across nested and Unicode module paths
           const result = lint(directory)
           assert.equal(result.status, 0, result.output)
           assert.doesNotMatch(result.output, /not linted/)
-          assert.match(result.output, /in 1 \.vibe file/)
+          assert.match(result.output, /checked 1 \.vibe file/)
         },
       ),
       { seed: 53132, numRuns: 30 },
