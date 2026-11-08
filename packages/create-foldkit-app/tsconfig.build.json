@@ -6,8 +6,5 @@
     "outDir": "./dist",
     "rootDir": "./src"
   },
-  "exclude": ["src/**/*.test.ts"],
-  "vibelang": {
-    "trustedPackages": ["chalk"]
-  }
+  "exclude": ["src/**/*.test.ts"]
 }

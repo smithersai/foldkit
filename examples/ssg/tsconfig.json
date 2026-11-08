@@ -13,8 +13,5 @@
     "scripts/**/*.vibe",
     "vite.config.vibe"
   ],
-  "exclude": ["node_modules", "dist", "../../packages/foldkit/src"],
-  "vibelang": {
-    "trustedPackages": ["foldkit", "foldkit/*"]
-  }
+  "exclude": ["node_modules", "dist", "../../packages/foldkit/src"]
 }

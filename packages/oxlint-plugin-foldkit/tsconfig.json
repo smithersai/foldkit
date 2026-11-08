@@ -12,8 +12,5 @@
     "outDir": "dist/native"
   },
   "include": ["src", "test"],
-  "exclude": ["test/integration/fixtures"],
-  "vibelang": {
-    "trustedPackages": ["effect-oxlint", "@oxlint/plugins"]
-  }
+  "exclude": ["test/integration/fixtures"]
 }

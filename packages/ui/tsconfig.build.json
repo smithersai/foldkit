@@ -11,9 +11,6 @@
     "inlineSources": true
   },
   "exclude": ["src/**/*.test.ts"],
-  "vibelang": {
-    "trustedPackages": ["foldkit"]
-  },
   "vibe": {
     "severities": {
       "EK4842": "off"

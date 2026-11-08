@@ -8,8 +8,5 @@
     "types": ["node"],
     "noEmit": true
   },
-  "include": ["src"],
-  "vibelang": {
-    "trustedPackages": ["chalk"]
-  }
+  "include": ["src"]
 }

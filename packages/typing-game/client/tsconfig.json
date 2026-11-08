@@ -13,8 +13,5 @@
     {
       "path": "./tsconfig.node.json"
     }
-  ],
-  "vibelang": {
-    "trustedPackages": ["foldkit"]
-  }
+  ]
 }

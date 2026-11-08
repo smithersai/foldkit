@@ -2,8 +2,5 @@
   "compilerOptions": {
     "rewriteRelativeImportExtensions": true
   },
-  "extends": "./tsconfig.base.json",
-  "vibelang": {
-    "trustedPackages": ["foldkit", "unified"]
-  }
+  "extends": "./tsconfig.base.json"
 }

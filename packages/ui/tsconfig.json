@@ -3,9 +3,6 @@
     "rewriteRelativeImportExtensions": true
   },
   "extends": "./tsconfig.base.json",
-  "vibelang": {
-    "trustedPackages": ["foldkit"]
-  },
   "vibe": {
     "severities": {
       "EK4842": "off"

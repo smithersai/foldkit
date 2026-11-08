@@ -17,8 +17,5 @@
     "e2e/**/*",
     ".source-collector-*.vibe"
   ],
-  "exclude": ["src/snippet/**/*"],
-  "vibelang": {
-    "trustedPackages": ["foldkit", "@foldkit/*"]
-  }
+  "exclude": ["src/snippet/**/*"]
 }
