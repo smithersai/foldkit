@@ -365,6 +365,7 @@ describe('Mount view-state awareness', () => {
     const subscriptionMessages = await Effect.runPromise(
       PubSub.unbounded<Message>(),
     )
+    const subscriptionReady = await Effect.runPromise(Deferred.make<void>())
     const startedAt = performance.now()
     const timings: globalThis.Array<{ stage: string; elapsedMs: number }> = []
     const recordTiming = (stage: string) => {
@@ -373,7 +374,14 @@ describe('Mount view-state awareness', () => {
     recordTiming('created PubSub')
     const subscriptions = Subscription.make<Model, Message>()(() => ({
       testMessages: Subscription.persistentEntry(
-        Stream.fromPubSub(subscriptionMessages),
+        Stream.unwrap(
+          Effect.gen(function* () {
+            const subscription = yield* PubSub.subscribe(subscriptionMessages)
+            recordTiming('acquired PubSub subscription')
+            yield* Deferred.succeed(subscriptionReady, undefined)
+            return Stream.fromEffectRepeat(PubSub.take(subscription))
+          }),
+        ),
       ),
     }))
     const processedMessages: globalThis.Array<Message> = []
@@ -447,7 +455,12 @@ describe('Mount view-state awareness', () => {
       })
       const store = requireDevToolsStore(maybeStore)
 
-      recordTiming('initial Mount ready')
+      await vi.waitFor(async () => {
+        expect(
+          await Effect.runPromise(Deferred.isDone(subscriptionReady)),
+        ).toBe(true)
+      })
+      recordTiming('initial Mount and subscription ready')
       clickButton('hide')
       await vi.waitFor(() => {
         expect(document.querySelector('#editor')).toBeNull()
