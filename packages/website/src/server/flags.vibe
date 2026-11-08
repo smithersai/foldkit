@@ -36,11 +36,9 @@ const loadApiData = effect {
       import('virtual:api-highlights'),
     ])
   )
-  const parsedApi = try Effect.sync(() =>
-    Schema.decodeUnknownSync(ApiReference.ParsedApiReference)(
-      parsedApiModule.default,
-    )
-  )
+  const parsedApi = try Schema.decodeUnknownEffect(
+    ApiReference.ParsedApiReference,
+  )(parsedApiModule.default)
   return { parsedApi, highlights: highlightsModule.default }
 }
 
