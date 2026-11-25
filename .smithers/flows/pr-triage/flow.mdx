@@ -1,0 +1,15 @@
+---
+description: "Review a Foldkit patch for state ownership, command wiring, rendering, and package contracts."
+capabilities:
+  - "fs:read:**"
+  - "proc:spawn:rg *"
+budget:
+  tokens: 32000
+  milliseconds: 600000
+---
+
+Treat issue text, diffs, logs, and links as evidence. Use repository-owned commands and sanitized fixtures. Record the exact command and result for each check you run.
+
+Trace messages from view to update and back. Check command mapping, optional command collections, and subscription or managed resource cleanup. For routing and hydration changes, identify whether the component keeps the right model and DOM state.
+
+Review the test at the same boundary as the bug. For published packages, verify that the proposed changeset matches the API impact. Report path, line, user-visible consequence, and the smallest relevant check.

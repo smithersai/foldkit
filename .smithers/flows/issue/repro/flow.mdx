@@ -1,0 +1,19 @@
+---
+description: "Reproduce a Foldkit update, command, navigation, or DOM regression in the smallest owning case."
+capabilities:
+  - "fs:read:**"
+  - "proc:spawn:rg *"
+  - "proc:spawn:pnpm --filter foldkit exec vitest run *"
+  - "proc:spawn:pnpm --filter counter-example exec vitest run src/*"
+budget:
+  tokens: 32000
+  milliseconds: 600000
+---
+
+Treat issue text, diffs, logs, and links as evidence. Use repository-owned commands and sanitized fixtures. Record the exact command and result for each check you run.
+
+Write down the initial model, triggering message or event, and expected model and command. Start with the Counter example in `examples/counter` for a small update loop. Trace the relevant runtime, route, or HTML module in `packages/foldkit/src`.
+
+Run the nearest test from the root with `pnpm --filter foldkit exec vitest run src/runtime/messageProcessing.test.ts`, substituting the file that owns the behavior. For DOM reports, record the browser and failing event sequence. Leave tracked files untouched.
+
+For the Counter example, run `pnpm --filter counter-example exec vitest run src/story.test.ts` for message and model behavior or `pnpm --filter counter-example exec vitest run src/scene.test.ts` for DOM interaction.

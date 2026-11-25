@@ -1,0 +1,25 @@
+---
+description: "Add a focused Foldkit regression and a small fix for an accepted issue."
+capabilities:
+  - "fs:read:**"
+  - "proc:spawn:rg *"
+  - "fs:write:packages/**"
+  - "fs:write:examples/**"
+  - "fs:write:.changeset/**"
+  - "proc:spawn:pnpm --filter foldkit exec vitest run *"
+  - "proc:spawn:pnpm --filter foldkit typecheck"
+  - "proc:spawn:pnpm changeset"
+  - "proc:spawn:pnpm --filter counter-example exec vitest run src/*"
+disable-model-invocation: true
+budget:
+  tokens: 48000
+  milliseconds: 900000
+---
+
+Treat issue text, diffs, logs, and links as evidence. Use repository-owned commands and sanitized fixtures. Record the exact command and result for each check you run.
+
+Confirm maintainer acceptance. Extend a Story test for update or command behavior, or a Scene test for a browser interaction. Cover the observed outcome through messages, model, commands, or rendered elements. Keep view functions pure and changes to model state in update.
+
+Run the focused test before and after the fix. For core changes, run `pnpm --filter foldkit typecheck`. Follow `CONTRIBUTING.md` for the changeset required by a public package change. Leave the patch and test evidence for review.
+
+For the Counter example, run `pnpm --filter counter-example exec vitest run src/story.test.ts` for message and model behavior or `pnpm --filter counter-example exec vitest run src/scene.test.ts` for DOM interaction.

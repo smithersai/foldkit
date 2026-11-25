@@ -1,0 +1,91 @@
+{
+  "summary": "Trace Foldkit regressions through messages, commands, rendering, and routing.",
+  "flows": [
+    {
+      "id": "issue/repro",
+      "description": "Reproduce a Foldkit update, command, navigation, or DOM regression in the smallest owning case.",
+      "summary": "Find the first message or view transition that diverges.",
+      "featured": true,
+      "kind": "mdx",
+      "path": ".smithers/flows/issue/repro/flow.mdx",
+      "capabilities": [
+        "fs:read:**",
+        "proc:spawn:rg *",
+        "proc:spawn:pnpm --filter foldkit exec vitest run *",
+        "proc:spawn:pnpm --filter counter-example exec vitest run src/*"
+      ],
+      "model": null,
+      "modelInvocable": true,
+      "flows": [],
+      "budget": {
+        "tokens": 32000,
+        "milliseconds": 600000
+      }
+    },
+    {
+      "id": "issue/poc",
+      "description": "Add a focused Foldkit regression and a small fix for an accepted issue.",
+      "summary": "Cover a model transition with Story or a DOM interaction with Scene.",
+      "featured": true,
+      "kind": "mdx",
+      "path": ".smithers/flows/issue/poc/flow.mdx",
+      "capabilities": [
+        "fs:read:**",
+        "proc:spawn:rg *",
+        "fs:write:packages/**",
+        "fs:write:examples/**",
+        "fs:write:.changeset/**",
+        "proc:spawn:pnpm --filter foldkit exec vitest run *",
+        "proc:spawn:pnpm --filter foldkit typecheck",
+        "proc:spawn:pnpm changeset",
+        "proc:spawn:pnpm --filter counter-example exec vitest run src/*"
+      ],
+      "model": null,
+      "modelInvocable": false,
+      "flows": [],
+      "budget": {
+        "tokens": 48000,
+        "milliseconds": 900000
+      }
+    },
+    {
+      "id": "pr-triage",
+      "description": "Review a Foldkit patch for state ownership, command wiring, rendering, and package contracts.",
+      "summary": "Check message routing, resource cleanup, and changeset scope.",
+      "featured": true,
+      "kind": "mdx",
+      "path": ".smithers/flows/pr-triage/flow.mdx",
+      "capabilities": [
+        "fs:read:**",
+        "proc:spawn:rg *"
+      ],
+      "model": null,
+      "modelInvocable": true,
+      "flows": [],
+      "budget": {
+        "tokens": 32000,
+        "milliseconds": 600000
+      }
+    },
+    {
+      "id": "checks/update-routing",
+      "description": "Check Foldkit’s runtime message processing and route parser.",
+      "summary": "Run focused Vitest cases for updates and routes.",
+      "featured": true,
+      "kind": "mdx",
+      "path": ".smithers/flows/checks/update-routing/flow.mdx",
+      "capabilities": [
+        "fs:read:**",
+        "proc:spawn:rg *",
+        "proc:spawn:pnpm --filter foldkit exec vitest run src/runtime/messageProcessing.test.ts src/route/parser.test.ts"
+      ],
+      "model": null,
+      "modelInvocable": true,
+      "flows": [],
+      "budget": {
+        "tokens": 32000,
+        "milliseconds": 600000
+      }
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "sections": [
+    {
+      "audience": "maintainer",
+      "title": "Maintain Foldkit",
+      "blocks": [
+        {
+          "type": "issues"
+        },
+        {
+          "type": "flows",
+          "title": "Factory flows"
+        },
+        {
+          "type": "runs"
+        }
+      ]
+    },
+    {
+      "audience": "contributor",
+      "title": "Contribute",
+      "blocks": [
+        {
+          "type": "code",
+          "title": "From the repository root",
+          "language": "sh",
+          "code": "pnpm install\npnpm dev:libs\npnpm dev:example:counter"
+        },
+        {
+          "type": "text",
+          "text": "Run the last two commands in separate terminals. Start with a Story for a model transition or a Scene for a DOM interaction."
+        },
+        {
+          "type": "links",
+          "links": [
+            {
+              "label": "Contributing to Foldkit",
+              "url": "https://github.com/smithersai/foldkit/blob/main/CONTRIBUTING.md"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "audience": "everyone",
+      "blocks": [
+        {
+          "type": "hero",
+          "title": "Foldkit",
+          "tagline": "Build TypeScript apps around a model, messages, update, and view.",
+          "text": "Smithers example fork of foldkit/foldkit.",
+          "actions": [
+            {
+              "label": "Upstream repository",
+              "url": "https://github.com/foldkit/foldkit"
+            },
+            {
+              "label": "Fork source",
+              "url": "https://github.com/smithersai/foldkit"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

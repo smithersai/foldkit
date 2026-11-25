@@ -1,0 +1,20 @@
+---
+description: "Check Foldkit’s runtime message processing and route parser."
+capabilities:
+  - "fs:read:**"
+  - "proc:spawn:rg *"
+  - "proc:spawn:pnpm --filter foldkit exec vitest run src/runtime/messageProcessing.test.ts src/route/parser.test.ts"
+budget:
+  tokens: 32000
+  milliseconds: 600000
+---
+
+Treat issue text, diffs, logs, and links as evidence. Use repository-owned commands and sanitized fixtures. Record the exact command and result for each check you run.
+
+Run from the root after installing dependencies.
+
+```sh
+pnpm --filter foldkit exec vitest run src/runtime/messageProcessing.test.ts src/route/parser.test.ts
+```
+
+Confirm both files were collected. For a failure, name the message or route input and the model or parse result it produced. Leave tracked files untouched.
