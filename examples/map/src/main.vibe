@@ -439,7 +439,6 @@ const mountMap = (
           effect {
             try sync((hostId, map) => removeMap(hostId, map), hostId, map)
           },
-        { interruptible: true },
       )
       const { map, maplibre } = mapResource
       try addLocationMarkers(map, maplibre)
