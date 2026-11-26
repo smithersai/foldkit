@@ -1,1 +1,1 @@
-export * from './ast.js'
+export * from './ast.vibe'

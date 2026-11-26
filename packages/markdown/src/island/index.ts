@@ -1,1 +1,1 @@
-export * from './island.js'
+export * from './island.vibe'

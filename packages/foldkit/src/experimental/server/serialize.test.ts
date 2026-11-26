@@ -3,7 +3,7 @@ import { afterEach, beforeEach, expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import * as CustomElement from '../../customElement/index.js'
+import * as CustomElement from '../../customElement/index.vibe'
 import {
   type BoundaryRegistry,
   beginRender,
@@ -14,8 +14,8 @@ import {
   Prop,
   __htmlBuilder,
   customElement,
-} from '../../html/index.js'
-import { clearRuntime, setRuntime } from '../../html/runtimeSingleton.js'
+} from '../../html/index.vibe'
+import { clearRuntime, setRuntime } from '../../html/runtimeSingleton.vibe'
 import {
   HYDRATION_IDENTITY_ATTRIBUTE,
   HYDRATION_KEY_ATTRIBUTE,
@@ -26,8 +26,8 @@ import { defineMessageUnion } from '../../message/index.js'
 import { markTrustedInnerHtml } from '../../propertyProvenance.js'
 import { h as snabbdomH } from '../../snabbdom/index.js'
 import type { VNode } from '../../snabbdom/vnode.js'
-import { __patchVNode } from '../../vdom.js'
-import { serializeHtml } from './serialize.js'
+import { __patchVNode } from '../../vdom.vibe'
+import { serializeHtml } from './serialize.vibe'
 
 const Message = defineMessageUnion({
   ClickedButton: {},

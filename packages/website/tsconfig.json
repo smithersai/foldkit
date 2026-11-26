@@ -4,16 +4,18 @@
     "moduleResolution": "bundler",
     "isolatedModules": true,
     "noEmit": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true
   },
   "include": [
     "src/**/*",
-    "vite.config.ts",
+    "vite.config.vibe",
     "vite.scripts.config.ts",
     "vitest.config.ts",
     "playwright.config.ts",
     "scripts/**/*",
-    "e2e/**/*"
+    "e2e/**/*",
+    ".source-collector-*.vibe"
   ],
   "exclude": ["src/snippet/**/*"]
 }

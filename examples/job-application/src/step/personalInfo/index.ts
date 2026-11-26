@@ -7,5 +7,5 @@ export {
   hasErrors,
   isComplete,
   revealErrors,
-} from './personalInfo'
-export { view } from './view'
+} from './personalInfo.vibe'
+export { view } from './view.vibe'

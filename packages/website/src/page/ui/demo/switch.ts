@@ -2,7 +2,7 @@ import type { HtmlBuilder } from 'foldkit/html'
 
 import { Switch } from '@foldkit/ui'
 
-import { Message } from '../message'
+import { Message } from '../message.vibe'
 
 export const SWITCH_DEMO_ID = 'switch-demo'
 

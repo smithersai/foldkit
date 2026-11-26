@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { wrapChildOutputInGotMessage } from '../../src/rules/wrap-child-output-in-got-message.ts'
+import { wrapChildOutputInGotMessage } from '../../src/rules/wrap-child-output-in-got-message.vibe'
 
 const messageParameter = () => [Testing.id('message')]
 

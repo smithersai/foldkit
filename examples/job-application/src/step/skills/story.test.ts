@@ -3,7 +3,7 @@ import { Command, given, message, model, story } from 'foldkit/story'
 import { describe, expect, test } from 'vitest'
 
 import * as Entry from './entry'
-import { GenerateEntryId, Message, init, update } from './skills'
+import { GenerateEntryId, Message, init, update } from './skills.vibe'
 
 const givenInitial = given(init('skills-entry-1'))
 

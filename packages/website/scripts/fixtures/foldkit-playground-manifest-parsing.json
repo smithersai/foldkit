@@ -1,0 +1,6 @@
+{
+  "invalid": ["{", "{\"dependencies\":", "{\"compilerOptions\":"],
+  "packageSeed": 187033,
+  "parserSeed": 187034,
+  "tsconfigSeed": 187035
+}

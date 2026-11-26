@@ -1,0 +1,85 @@
+diff --git a/dist/shared/parse-WKtEKiA6.mjs b/dist/shared/parse-WKtEKiA6.mjs
+index f150a73012196dea5bde6378bec49927f1cdd828..2745171d20e366d31d046e9fe5c80390db6ed880 100644
+--- a/dist/shared/parse-WKtEKiA6.mjs
++++ b/dist/shared/parse-WKtEKiA6.mjs
+@@ -1,4 +1,64 @@
+ import { n as __toESM, t as require_binding } from "./binding-BY0qR5iS.mjs";
++import { spawnSync } from "node:child_process";
++import { existsSync } from "node:fs";
++import { createRequire } from "node:module";
++import path from "node:path";
++import { fileURLToPath } from "node:url";
++//#region VibeLang modules
++// A VibeLang module (.vibe, .vibex) has no oxc parser. Its ESTree comes from
++// the VibeLang compiler (`vibelang --estree`, the tree its ESLint parser
++// reads), which carries typescript-estree's node shapes, so a caller that
++// walks the program reads it unchanged.
++const VIBELANG_EXTENSION = /\.vibex?$/;
++function vibelangCompiler() {
++	if (process.env.VIBELANG_BINARY) return path.resolve(process.env.VIBELANG_BINARY);
++	const require = createRequire(import.meta.url);
++	const here = path.dirname(fileURLToPath(import.meta.url));
++	const manifest = require.resolve("vibelang/package.json", { paths: [process.cwd(), here] });
++	const packageDir = path.dirname(manifest);
++	const executable = process.platform === "win32" ? "vibelang.exe" : "vibelang";
++	const local = path.join(packageDir, "native", executable);
++	if (existsSync(local)) return local;
++	const target = `${process.platform}-${process.arch}`;
++	const name = process.platform === "win32" ? `@vibelang/cli-${target}` : `vibelang-${target}`;
++	const platform = require.resolve(`${name}/package.json`, { paths: [packageDir] });
++	return path.join(path.dirname(platform), "bin", executable);
++}
++function parseVibeLang(filename, sourceText) {
++	const result = spawnSync(vibelangCompiler(), ["--estree", filename], {
++		input: sourceText,
++		encoding: "utf8",
++		maxBuffer: 1024 * 1024 * 1024
++	});
++	if (result.error) throw new Error(`vibelang --estree: ${result.error.message}`);
++	if (result.status !== 0) throw new Error(`vibelang --estree failed on ${filename}: ${String(result.stderr).trim()}`);
++	const { ast, error } = JSON.parse(result.stdout);
++	return {
++		program: ast ?? {
++			type: "Program",
++			body: [],
++			sourceType: "module",
++			start: 0,
++			end: 0
++		},
++		module: {
++			hasModuleSyntax: true,
++			staticImports: [],
++			staticExports: [],
++			dynamicImports: [],
++			importMetas: []
++		},
++		comments: [],
++		errors: error ? [{
++			severity: "Error",
++			message: error.message,
++			labels: [],
++			helpMessage: void 0,
++			codeframe: void 0
++		}] : []
++	};
++}
++//#endregion
+ //#region ../../node_modules/.pnpm/oxc-parser@0.151.0/node_modules/oxc-parser/src-js/wrap.js
+ var import_binding = /* @__PURE__ */ __toESM(require_binding(), 1);
+ function wrap(result) {
+@@ -53,6 +113,7 @@ function applyFix(program, fixPath) {
+ * @category Utilities
+ */
+ async function parse(filename, sourceText, options) {
++	if (VIBELANG_EXTENSION.test(filename) && options?.lang === void 0) return parseVibeLang(filename, sourceText);
+ 	return wrap(await (0, import_binding.parse)(filename, sourceText, options));
+ }
+ /**
+@@ -68,6 +129,7 @@ async function parse(filename, sourceText, options) {
+ * @category Utilities
+ */
+ function parseSync(filename, sourceText, options) {
++	if (VIBELANG_EXTENSION.test(filename) && options?.lang === void 0) return parseVibeLang(filename, sourceText);
+ 	return wrap((0, import_binding.parseSync)(filename, sourceText, options));
+ }
+ //#endregion

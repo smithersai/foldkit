@@ -23,10 +23,10 @@ export {
   type CompletedWaitForSwipeSettled,
   WaitBeforeDismissal,
   WaitForSwipeSettled,
-} from './index.js'
+} from './index.vibe'
 
 export * as test from './test.js'
 
-export type { EntryHandlers } from './index.js'
-export type { InitConfig, ShowInput, SwipeToDismissConfig } from './index.js'
+export type { EntryHandlers } from './index.vibe'
+export type { InitConfig, ShowInput, SwipeToDismissConfig } from './index.vibe'
 export type { DrainEntryInput } from './test.js'

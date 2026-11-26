@@ -18,16 +18,21 @@
     "typescript/no-explicit-any": "error",
     "typescript/consistent-type-assertions": [
       "error",
-      { "assertionStyle": "never" }
+      {
+        "assertionStyle": "never"
+      }
     ],
     "sort-imports": [
       "error",
-      { "ignoreDeclarationSort": true, "ignoreCase": false }
+      {
+        "ignoreDeclarationSort": true,
+        "ignoreCase": false
+      }
     ]
   },
   "overrides": [
     {
-      "files": ["examples/slow-warnings/src/main.ts"],
+      "files": ["examples/slow-warnings/src/main.vibe"],
       "rules": {
         "foldkit/no-impure-call-at-decision-time": "off"
       }
@@ -35,6 +40,7 @@
   ],
   "ignorePatterns": [
     "**/*.d.ts",
+    "**/*.d.vibe.ts",
     "**/vite.config.ts",
     "**/*.config.js",
     "**/*.config.mjs",

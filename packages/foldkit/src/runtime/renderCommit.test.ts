@@ -1,13 +1,13 @@
 import { Effect, Fiber, Schema } from 'effect'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import * as Command from '../command/index.js'
-import { __htmlBuilder } from '../html/index.js'
+import * as Command from '../command/index.vibe'
+import { __htmlBuilder } from '../html/index.vibe'
 import { defineMessageUnion } from '../message/index.js'
-import { RenderCommit, createCommitNotifier } from '../render/commit.js'
-import { afterCommit } from '../render/render.js'
+import { RenderCommit, createCommitNotifier } from '../render/commit.vibe'
+import { afterCommit } from '../render/render.vibe'
 import type * as Update from '../update/index.js'
-import { makeElement } from './makeElement.js'
+import { makeElement } from './makeElement.vibe'
 
 describe('afterCommit', () => {
   it('resumes on a commit that lands after it registered', async () => {

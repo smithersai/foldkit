@@ -6,8 +6,8 @@ import {
   markdown,
   parseMarkdown,
   parseMarkdownWithFrontmatter,
-} from './vite.js'
-import type { MarkdownPluginOptions } from './vite.js'
+} from './vite.vibe'
+import type { MarkdownPluginOptions } from './vite.vibe'
 
 const lines = (...sourceLines: ReadonlyArray<string>): string =>
   sourceLines.join('\n')

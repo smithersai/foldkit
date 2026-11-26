@@ -1,8 +1,8 @@
 import { expect, given, role, scene, text } from 'foldkit/scene'
 import { describe, test } from 'vitest'
 
-import { init, update } from './attachments'
-import { view } from './view'
+import { init, update } from './attachments.vibe'
+import { view } from './view.vibe'
 
 describe('attachments', () => {
   test('renders the resume and additional-files drop zones', () => {

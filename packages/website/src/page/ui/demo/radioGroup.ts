@@ -2,8 +2,8 @@ import type { HtmlBuilder } from 'foldkit/html'
 
 import { RadioGroup } from '@foldkit/ui'
 
-import { Message } from '../message'
-import { type Model, type Plan } from '../model'
+import { Message } from '../message.vibe'
+import { type Model, type Plan } from '../model.vibe'
 
 export const PlanRadioGroup = RadioGroup.create<Plan>()
 

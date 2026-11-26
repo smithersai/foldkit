@@ -1,3 +1,3 @@
-export * as DatePicker from './datePicker'
-export * as Field from './field'
+export * as DatePicker from './datePicker.vibe'
+export * as Field from './field.vibe'
 export * as Icon from './icon'

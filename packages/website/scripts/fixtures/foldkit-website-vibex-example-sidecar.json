@@ -1,0 +1,16 @@
+{
+  "files": [
+    "src/main.vibex",
+    "src/main.d.vibex.ts",
+    "src/view.vibe",
+    "src/view.d.vibe.ts",
+    "src/original.ts",
+    "src/original.d.ts"
+  ],
+  "visible": [
+    "src/main.vibex",
+    "src/view.vibe",
+    "src/original.ts",
+    "src/original.d.ts"
+  ]
+}

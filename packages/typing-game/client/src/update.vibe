@@ -1,0 +1,134 @@
+import { Command, Update, Url } from 'foldkit'
+import { UrlRequest, load, pushUrl } from 'foldkit/navigation'
+import { modifyFields } from 'foldkit/struct'
+
+import * as Shared from '@typing-game/shared'
+
+import { NavigateToRoom } from './command.vibe'
+import { Message } from './message.ts'
+import { Model } from './model.vibe'
+import { Home, Room } from './page/index.ts'
+import { urlToAppRoute } from './route.vibe'
+import { RoomsClient } from './rpc.vibe'
+
+const NavigateInternal = Command.define('NavigateInternal', {
+  args: { url: Schema.String },
+  messages: [Message.CompletedNavigateInternal],
+  execute: effect ({ url }) => {
+    const completed = Message.CompletedNavigateInternal()
+    try pushUrl(url)
+    return completed
+  },
+})
+
+const LoadExternal = Command.define('LoadExternal', {
+  args: { href: Schema.String },
+  messages: [Message.CompletedLoadExternal],
+  execute: effect ({ href }) => {
+    const completed = Message.CompletedLoadExternal()
+    try load(href)
+    return completed
+  },
+})
+
+export type UpdateReturn<Model, Message> = Update.Return<
+  Model,
+  Message,
+  RoomsClient
+>
+
+type UpdateStep = Update.Step<Model, Message, RoomsClient>
+
+const readHome = (model: Model): Option<Home.Model.Model> =>
+  Option.some(model.home)
+
+const writeHome = (model: Model, nextHome: Home.Model.Model): Model =>
+  modifyFields(model, { home: () => nextHome })
+
+const toGotHomeMessage = (message: Home.Message): Message =>
+  Message.GotHomeMessage({ message })
+
+const readRoom = (model: Model): Option<Room.Model.Model> =>
+  Option.some(model.room)
+
+const writeRoom = (model: Model, nextRoom: Room.Model.Model): Model =>
+  modifyFields(model, { room: () => nextRoom })
+
+const toGotRoomMessage = (message: Room.Message): Message =>
+  Message.GotRoomMessage({ message })
+
+const navigateToRoom = (roomId: string): UpdateStep => (model) => ({
+  model,
+  commands: [NavigateToRoom({ roomId })],
+})
+
+const enterJoinedRoom = (roomId: string, player: Shared.Player): UpdateStep =>
+  Update.combine([
+    navigateToRoom(roomId),
+    Update.foldChild({
+      update: (
+        roomModel: Room.Model.Model,
+        joinedPlayer: Shared.Player,
+      ) => Room.informJoined(roomModel, joinedPlayer, { roomId }),
+      read: readRoom,
+      write: writeRoom,
+      toParentMessage: toGotRoomMessage,
+    })(player),
+  ])
+
+const foldHomeOutMessage = (outMessage: Home.OutMessage): UpdateStep =>
+  Home.OutMessage.match<UpdateStep>(outMessage, {
+    CreatedRoom: ({ roomId, player }) => enterJoinedRoom(roomId, player),
+    JoinedRoom: ({ roomId, player }) => enterJoinedRoom(roomId, player),
+  })
+
+const foldHomeMessage = Update.foldChild({
+  update: Home.update,
+  read: readHome,
+  write: writeHome,
+  toParentMessage: toGotHomeMessage,
+  foldOutMessage: foldHomeOutMessage,
+})
+
+const foldRoomMessage = (roomId: string) =>
+  Update.foldChild({
+    update: (roomModel: Room.Model.Model, message: Room.Message) =>
+      Room.update(roomModel, message, { roomId }),
+    read: readRoom,
+    write: writeRoom,
+    toParentMessage: toGotRoomMessage,
+  })
+
+export const update = (model: Model, message: Message) =>
+  Message.match<UpdateReturn<Model, Message>>(message, {
+    ClickedLink: ({ request }) =>
+      UrlRequest.match<UpdateReturn<Model, Message>>(request, {
+        Internal: ({ url }) => ({
+          model,
+          commands: [NavigateInternal({ url: Url.toString(url) })],
+        }),
+        External: ({ href }) => ({
+          model,
+          commands: [LoadExternal({ href })],
+        }),
+      }),
+
+    ChangedUrl: ({ url }) => ({
+      model: modifyFields(model, {
+        route: () => urlToAppRoute(url),
+      }),
+    }),
+
+    GotHomeMessage: ({ message }) => foldHomeMessage(model, message),
+
+    GotRoomMessage: ({ message }) => match (model.route) {
+      when { _tag: 'Room', let roomId }: foldRoomMessage(roomId)(
+        model,
+        message,
+      );
+      default: ({ model });
+    },
+    CompletedNavigateInternal: () => ({ model }),
+    CompletedLoadExternal: () => ({ model }),
+    CompletedNavigateToRoom: () => ({ model }),
+  })

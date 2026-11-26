@@ -1,7 +1,7 @@
 import { Option } from 'effect'
 import { describe, expect, test } from 'vitest'
 
-import { findActiveSectionKey } from './docsNav'
+import { findActiveSectionKey } from './docsNav.vibe'
 
 describe('findActiveSectionKey', () => {
   test.each([

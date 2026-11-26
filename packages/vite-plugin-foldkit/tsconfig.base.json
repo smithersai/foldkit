@@ -3,7 +3,10 @@
   "compilerOptions": {
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "rootDir": "src"
+    "rootDir": "src",
+    "rewriteRelativeImportExtensions": true,
+    "customConditions": ["vibelang-source"]
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/relayRegistryTrust.ts"]
 }

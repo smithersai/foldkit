@@ -3,7 +3,14 @@ import { Scene } from 'foldkit'
 import { fromString } from 'foldkit/url'
 import { describe, expect, test } from 'vitest'
 
-import { AppRoute, Message, Model, update, view, viewTransition } from './main'
+import {
+  AppRoute,
+  Message,
+  Model,
+  update,
+  view,
+  viewTransition,
+} from './main.vibe'
 
 const gallery = Model.make({ route: AppRoute.Gallery(), filterText: '' })
 const artworkDetail = (artworkId: number) =>

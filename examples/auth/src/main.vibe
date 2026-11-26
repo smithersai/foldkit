@@ -1,0 +1,70 @@
+import { Runtime, type Update } from 'foldkit'
+import { Url } from 'foldkit/url'
+
+import { BrowserKeyValueStore } from '@effect/platform-browser'
+
+import { SESSION_STORAGE_KEY } from './constant.ts'
+import { Session, SessionJsonString } from './domain/session.vibe'
+import { Message } from './message.vibe'
+import { LoggedIn, LoggedOut, Model } from './model.vibe'
+import { AppRoute, urlToAppRoute } from './route.vibe'
+import { RedirectToDashboard, RedirectToLogin } from './update.vibe'
+
+// FLAGS
+
+export const Flags = Schema.Struct({
+  maybeSession: Schema.Option(Session),
+})
+
+export const flags: Flags!! = effect {
+  provide BrowserKeyValueStore.layerLocalStorage {
+    return (effect {
+      const store = try KeyValueStore.KeyValueStore
+      const stored = try store.get(SESSION_STORAGE_KEY)
+      const sessionJson = try Effect.fromOption(Option.fromNullishOr(stored))
+      const decodeSession = Schema.decodeEffect(SessionJsonString)
+      const session = try decodeSession(sessionJson)
+      return Flags.make({ maybeSession: Option.some(session) })
+    }) catch () => Flags.make({ maybeSession: Option.none() })
+  }
+}
+
+export type Flags = typeof Flags.Type
+
+// INIT
+
+type InitReturn = Update.Return<Model, Message>
+
+export const init: Runtime.RoutingApplicationInit<Model, Message, Flags> = (
+  flags: Flags,
+  url: Url,
+): InitReturn => {
+  const route = urlToAppRoute(url)
+
+  return match (flags.maybeSession) {
+    when Option.None: match (route) {
+      when { _tag: 'Home' } and let allowed:
+        ({ model: LoggedOut.init(allowed) });
+      when { _tag: 'Login' } and let allowed:
+        ({ model: LoggedOut.init(allowed) });
+      when { _tag: 'NotFound' } and let allowed:
+        ({ model: LoggedOut.init(allowed) });
+      default: ({
+        model: LoggedOut.init(AppRoute.Login()),
+        commands: [RedirectToLogin()],
+      });
+    };
+    when Option.Some(let session): match (route) {
+      when { _tag: 'Dashboard' } and let allowed:
+        ({ model: LoggedIn.init(allowed, session) });
+      when { _tag: 'Settings' } and let allowed:
+        ({ model: LoggedIn.init(allowed, session) });
+      when { _tag: 'NotFound' } and let allowed:
+        ({ model: LoggedIn.init(allowed, session) });
+      default: ({
+        model: LoggedIn.init(AppRoute.Dashboard(), session),
+        commands: [RedirectToDashboard()],
+      });
+    };
+  }
+}

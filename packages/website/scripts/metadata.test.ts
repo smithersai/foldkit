@@ -1,11 +1,11 @@
 import { Array, Option } from 'effect'
 import { describe, expect, it } from 'vitest'
 
-import { BLOG_SECTION } from '../src/page/blog/meta'
-import { findBySlug } from '../src/page/example/meta'
-import { AppRoute } from '../src/route'
-import { blogPosts } from './blogPosts'
-import { routeToMetadata } from './metadata'
+import { BLOG_SECTION } from '../src/page/blog/meta.vibe'
+import { findBySlug } from '../src/page/example/meta.vibe'
+import { AppRoute } from '../src/route.vibe'
+import { blogPosts } from './blogPosts.vibe'
+import { routeToMetadata } from './metadata.vibe'
 
 const resolveApiModuleName = (slug: string) => slug
 

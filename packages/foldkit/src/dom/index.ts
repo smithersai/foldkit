@@ -1,4 +1,4 @@
-export { ElementNotFound } from './error.js'
+export { ElementNotFound } from './error.vibe'
 export {
   advanceFocus,
   clickElement,
@@ -9,29 +9,29 @@ export {
   scrollIntoViewAfterPaint,
   scrollIntoViewIfNotVisible,
   showDialog,
-} from './dom.js'
-export type { FocusDirection } from './dom.js'
-export { detectElementMovement } from './elementMovement.js'
-export { inertOthers, restoreInert } from './inert.js'
-export { lockScroll, unlockScroll } from './scrollLock.js'
+} from './dom.vibe'
+export type { FocusDirection } from './dom.vibe'
+export { detectElementMovement } from './elementMovement.vibe'
+export { inertOthers, restoreInert } from './inert.vibe'
+export { lockScroll, unlockScroll } from './scrollLock.vibe'
 export {
   streamFromEvent,
   streamFromEventFilterMap,
-  streamFromEventFilterMapPreventDefault,
-} from './streamFromEvent.js'
+} from './streamFromEvent.vibe'
+export { streamFromEventFilterMapPreventDefault } from './streamFromEventPreventDefault.js'
 export type {
   StreamFromEventConfig,
   StreamFromEventFilterMapConfig,
   StreamFromEventFilterMapPreventDefaultConfig,
   TypedEventTarget,
-} from './streamFromEvent.js'
-export { streamFromKeyBindings } from './streamFromKeyBindings.js'
+} from './streamFromEvent.vibe'
+export { streamFromKeyBindings } from './streamFromKeyBindings.vibe'
 export type {
   KeyBinding,
   KeySequence,
   StreamFromKeyBindingsConfig,
   WhileTyping,
-} from './streamFromKeyBindings.js'
-export { streamFromMediaQuery } from './streamFromMediaQuery.js'
-export type { StreamFromMediaQueryConfig } from './streamFromMediaQuery.js'
-export { waitForAnimationSettled } from './waitForAnimation.js'
+} from './streamFromKeyBindings.vibe'
+export { streamFromMediaQuery } from './streamFromMediaQuery.vibe'
+export type { StreamFromMediaQueryConfig } from './streamFromMediaQuery.vibe'
+export { waitForAnimationSettled } from './waitForAnimation.vibe'

@@ -16,25 +16,31 @@
   },
   "scripts": {
     "clean": "rimraf dist recommended.json all.json *.tsbuildinfo",
-    "build": "pnpm run clean && rolldown -c rolldown.config.ts && tsc -b tsconfig.build.json && node scripts/generate-presets.mjs",
+    "build": "pnpm run clean && vibelang -p tsconfig.build.json --emitDeclarationOnly false --declaration false --declarationMap false --composite false --incremental false --rootDir . --outDir dist/native && rolldown -c rolldown.config.ts && vibelang -b tsconfig.build.json && node scripts/generate-presets.mjs",
     "test": "pnpm run typecheck:real-oxlint-fixtures && vitest run",
     "typecheck:real-oxlint-fixtures": "node scripts/typecheck-real-oxlint-fixtures.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "vibelang --noEmit"
   },
   "dependencies": {
-    "effect-oxlint": "^0.3.4 || ^0.4.0"
+    "effect-oxlint": "0.3.4",
+    "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.13.tgz"
   },
   "devDependencies": {
     "@types/node": "26.4.0",
     "@typescript/native": "npm:typescript@^7.0.2",
-    "effect": "4.0.0",
+    "effect": "4.1.1",
     "rimraf": "^6.1.3",
     "rolldown": "^1.2.11",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.11",
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.13.tgz",
+    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.13.tgz",
+    "vibelang-unplugin": "file:../../.vibelang-toolchain/vibelang-unplugin-0.0.13.tgz",
+    "fast-check": "^4.10.2"
   },
   "files": [
     "dist",
+    "!dist/native",
     "recommended.json",
     "all.json"
   ],
@@ -56,5 +62,11 @@
   },
   "engines": {
     "node": ">=20.19.0 || >=22.12.0"
+  },
+  "imports": {
+    "#native/rules/*": {
+      "types": "./src/rules/*.vibe",
+      "default": "./dist/native/src/rules/*.js"
+    }
   }
 }

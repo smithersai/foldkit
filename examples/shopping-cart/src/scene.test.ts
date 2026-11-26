@@ -4,9 +4,9 @@ import { modifyFields } from 'foldkit/struct'
 import { describe, test } from 'vitest'
 
 import { products } from './data/products'
-import { type Model, update, view } from './main'
+import { type Model, update, view } from './main.vibe'
 import { Products } from './page'
-import { AppRoute } from './route'
+import { AppRoute } from './route.vibe'
 
 const apple = { id: '1', name: 'Apple', price: 1.5 }
 const banana = { id: '2', name: 'Banana', price: 0.75 }

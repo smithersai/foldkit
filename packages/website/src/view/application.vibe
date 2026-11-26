@@ -1,0 +1,112 @@
+import { type Document, type HtmlBuilder } from 'foldkit/html'
+
+import { Shared } from '../component/index.ts'
+import { Deployment } from '../deployment.vibe'
+import { Docs, Marketing } from '../layout/index.ts'
+import { Message } from '../message.vibe'
+import { type Model } from '../model.vibe'
+import { Home, Newsletter, Playground } from '../page/index.ts'
+import { routeToCanonicalUrl } from '../route.vibe'
+import { routeTitle } from '../routeTitle.vibe'
+import * as SnippetCopy from '../snippetCopy/index.ts'
+import * as SnippetDisclosure from '../snippetDisclosure/index.ts'
+import * as Blog from './blog.vibe'
+
+const homeView = (
+  model: Model,
+  homeModel: Home.Model,
+  h: HtmlBuilder<Message>,
+) => {
+  const renderCopyButton = SnippetCopy.renderer(
+    model.snippetCopy,
+    (message) => Message.GotSnippetCopyMessage({ message }),
+    h,
+  )
+  const content = h.submodel({
+    slotId: 'home',
+    model: homeModel,
+    view: Home.view,
+    viewInputs: {
+      renderCopyButton,
+      renderSnippet: SnippetDisclosure.renderer(
+        model.snippetDisclosure,
+        (message) => Message.GotSnippetDisclosureMessage({ message }),
+        renderCopyButton,
+        h,
+      ),
+      isNarrowViewport: model.isNarrowViewport,
+      maybeGitHubStarCount: model.maybeGitHubStarCount,
+      resolvedTheme: model.resolvedTheme,
+      isBrowserEnvironmentLoaded: Option.isSome(model.maybeThemePreference),
+      newsletterEmail: model.newsletterEmail,
+    },
+    toParentMessage: (message) => Message.GotHomeMessage({ message }),
+  })
+
+  return Marketing.view(
+    model,
+    {
+      content,
+      mainClassName: 'flex-1 pt-[var(--header-height)]',
+      isPagefindBody: true,
+    },
+    h,
+  )
+}
+
+const newsletterView = (model: Model, h: HtmlBuilder<Message>) =>
+  Marketing.view(
+    model,
+    {
+      content: Newsletter.content(
+        model.newsletterEmail,
+        (value) => Message.UpdatedNewsletterEmail({ value }),
+        h,
+      ),
+      mainClassName:
+        'flex-1 flex items-center justify-center px-6 pb-20 pt-[calc(var(--header-height)+5rem)] md:px-12 lg:px-20',
+      isPagefindBody: false,
+    },
+    h,
+  )
+
+export const view = (model: Model, h: HtmlBuilder<Message>): Document => {
+  const body = match (model.route) {
+    when { _tag: 'Home' }: match (model.maybeHome) {
+      when { _tag: "None" }: h.empty;
+      when { _tag: "Some", value: let homeModel }: homeView(
+        model,
+        homeModel,
+        h,
+      );
+    };
+    when { _tag: 'Newsletter' }: newsletterView(model, h);
+    when { _tag: 'Blog' or 'BlogPost' } and let route: Blog.view(
+      model,
+      route,
+      h,
+    );
+    when { _tag: 'Playground' }: match (model.playground) {
+      when { _tag: "None" }: h.empty;
+      when { _tag: "Some", value: let playgroundModel }: h.submodel({
+        slotId: `playground-${playgroundModel.slug}`,
+        model: playgroundModel,
+        view: Playground.view,
+        viewInputs: {
+          maybeIsPlaygroundSupported: model.maybeIsPlaygroundSupported,
+        },
+        toParentMessage: (message) => Message.GotPlaygroundMessage({ message }),
+      });
+    };
+    when let route: Docs.view(model, route, h);
+  }
+
+  return {
+    title: routeTitle(model.route, model.apiReference.apiData),
+    canonical: routeToCanonicalUrl(model.route),
+    body: Deployment.match(model.deployment, {
+      Production: () => body,
+      Canary: ({ commit }) => h.div([], [body, Shared.canaryBanner(commit)]),
+    }),
+  }
+}

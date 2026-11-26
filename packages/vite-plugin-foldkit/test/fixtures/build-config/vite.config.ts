@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 
-import { foldkit } from '../../../src/index.ts'
+import { foldkit } from '../../../src/index.vibe'
 
 export default defineConfig({
   logLevel: 'silent',

@@ -3,7 +3,7 @@ import type { HtmlBuilder } from 'foldkit/html'
 import { Tooltip } from '@foldkit/ui'
 import type { AnchorConfig } from '@foldkit/ui/tooltip'
 
-import { Message } from '../message'
+import { Message } from '../message.vibe'
 
 // DEMO CONTENT
 

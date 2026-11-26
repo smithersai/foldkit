@@ -1,0 +1,68 @@
+import { Dom, Subscription } from 'foldkit'
+import { BrowserStream } from '@effect/platform-browser'
+import { keyboardTarget } from './keyboardTarget.ts'
+
+import { Message } from './message.vibe'
+import type { Model } from './model.vibe'
+
+const toUndoRedoMessage = (event: KeyboardEvent): Option<Message> => {
+  const isCtrlOrMeta = event.ctrlKey || event.metaKey
+  if (!isCtrlOrMeta) {
+    return Option.none()
+  }
+
+  return match (event.key.toLowerCase()) {
+    when 'z': Option.some(
+      event.shiftKey ? Message.ClickedRedo() : Message.ClickedUndo(),
+    );
+    when 'y': Option.some(Message.ClickedRedo());
+    default: Option.none();
+  }
+}
+
+const toToolMessage = (event: KeyboardEvent): Option<Message> => {
+  if (event.ctrlKey || event.metaKey) {
+    return Option.none()
+  }
+
+  return match (event.key.toLowerCase()) {
+    when 'b': Option.some(Message.SelectedTool({ tool: 'Brush' }));
+    when 'f': Option.some(Message.SelectedTool({ tool: 'Fill' }));
+    when 'e': Option.some(Message.SelectedTool({ tool: 'Eraser' }));
+    default: Option.none();
+  }
+}
+
+export const subscriptions = Subscription.make<Model, Message>()(entry => ({
+  undoRedoKeys: Subscription.persistentEntry(
+    Dom.streamFromEventFilterMapPreventDefault({
+      target: keyboardTarget(),
+      type: 'keydown',
+      filterMapEvent: toUndoRedoMessage,
+    }),
+  ),
+
+  toolKeys: Subscription.persistentEntry(
+    Dom.streamFromEventFilterMap({
+      target: keyboardTarget(),
+      type: 'keydown',
+      filterMapEvent: toToolMessage,
+    }),
+  ),
+
+  mouseRelease: entry(
+    { isDrawing: Schema.Boolean },
+    {
+      modelToDependencies: model => ({ isDrawing: model.isDrawing }),
+      dependenciesToStream: ({ isDrawing }) =>
+        Stream.when(
+          BrowserStream.fromEventListenerDocument('mouseup').pipe(
+            Stream.map(() => Message.ReleasedMouse()),
+          ),
+          effect {
+            return isDrawing
+          },
+        ),
+    },
+  ),
+}))

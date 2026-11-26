@@ -5,7 +5,7 @@ import { resolve } from 'node:path'
 import { createServer } from 'vite'
 import { expect, it, onTestFinished, vi } from 'vitest'
 
-import { foldkit } from '../src/index.ts'
+import { foldkit } from '../src/index.vibe'
 import { boundPort } from './boundPort.ts'
 import { POLL_TIMEOUT } from './relayFixtures.ts'
 

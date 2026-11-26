@@ -1,3 +1,3 @@
-export { view, descriptionId } from './index.js'
+export { view, descriptionId } from './index.vibe'
 
-export type { ViewConfig, InputAttributes } from './index.js'
+export type { ViewConfig, InputAttributes } from './index.vibe'

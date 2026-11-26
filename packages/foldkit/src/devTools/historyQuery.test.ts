@@ -12,13 +12,13 @@ import {
   pageMatchingEntries,
   pathOrder,
   readSummarizedValueAt,
-} from './historyQuery.js'
+} from './historyQuery.vibe'
 import {
   type HistoryEntry,
   INIT_INDEX,
   type StoreState,
   latestEntryIndex,
-} from './store.js'
+} from './store.vibe'
 
 const makeEntry = (
   tag: string,

@@ -3,6 +3,7 @@ import { Command, given, message, model, story } from 'foldkit/story'
 import { modifyFields } from 'foldkit/struct'
 import { expect, test } from 'vitest'
 
+import { eiffelTower, initialModel, mountedModel } from './main.fixture.vibe'
 import {
   FlyTo,
   Geolocate,
@@ -11,8 +12,7 @@ import {
   Message,
   UnlockBodyScroll,
   update,
-} from './main'
-import { eiffelTower, initialModel, mountedModel } from './main.fixture'
+} from './main.vibe'
 
 test('mounting the map records the host id in the Model', () => {
   story(

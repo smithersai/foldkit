@@ -2,7 +2,7 @@ import { Html, HtmlBuilder } from 'foldkit/html'
 
 import { Button } from '@foldkit/ui'
 
-import { Session } from '../../../domain/session'
+import { Session } from '../../../domain/session.vibe'
 import { Message } from '../message'
 
 // VIEW

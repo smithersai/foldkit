@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it, vi } from 'vitest'
 
-import { noEmptyToParentOutMessage } from '../../src/rules/no-empty-to-parent-out-message.ts'
+import { noEmptyToParentOutMessage } from '../../src/rules/no-empty-to-parent-out-message.vibe'
 
 const property = ({
   key = Testing.id('toParentOutMessage'),

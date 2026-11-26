@@ -1,7 +1,7 @@
 import { inertHtml as ih } from 'foldkit/html'
 import { describe, expect, test } from 'vitest'
 
-import { type Slots, renderFaqSection, resolveDemo } from './slots'
+import { type Slots, renderFaqSection, resolveDemo } from './slots.vibe'
 
 const stubRenderCopyButton = () => ih.empty
 const stubRenderSnippet = () => ih.empty

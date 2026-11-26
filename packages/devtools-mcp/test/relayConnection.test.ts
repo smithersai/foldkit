@@ -15,9 +15,9 @@ import { join } from 'node:path'
 import { expect, it, onTestFinished, vi } from 'vitest'
 import { WebSocket, WebSocketServer } from 'ws'
 
-import { makeRelayClient } from '../src/relayClient.ts'
-import type { RelayTarget } from '../src/relayLocation.ts'
-import { buildTools } from '../src/tools.ts'
+import { makeRelayClient } from '../src/relayClient.vibe'
+import type { RelayTarget } from '../src/relayLocation.vibe'
+import { buildTools } from '../src/tools.vibe'
 import { boundPort } from './boundPort.ts'
 import {
   NOT_CONNECTED,

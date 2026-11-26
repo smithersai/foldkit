@@ -6,4 +6,4 @@ export {
   load,
   openUrl,
   UrlRequest,
-} from './index.js'
+} from './index.vibe'

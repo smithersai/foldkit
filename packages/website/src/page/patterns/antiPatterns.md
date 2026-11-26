@@ -65,7 +65,7 @@ Cache a derived Model value only after profiling shows that deriving it is expen
 
 ### Divergent Type and Schema
 
-Suppose a handwritten TypeScript type says that `session` contains a user, while the Model Schema accepts any value in that field. TypeScript lets update and view read `userId`, but the decoder can produce a value with no `userId` at all.
+Suppose a handwritten TypeScript type says that `session` contains a user, while the Model Schema accepts any value in that field. TypeScript lets update and view read `userId`, but the decoder can produce a value with no `userId` at all. The `schema ModelSchema` declaration accepts `unknown` for `session`; the separate `Model` type does not constrain it.
 
 ::Snippet{name="antiPatternModelSchemaBad" label="❌ The type promises more than the Schema checks" class="mb-4"}
 
@@ -103,13 +103,15 @@ Imagine a chat screen that needs a `WebSocket` only while the visitor is in a ro
 
 ### Runtime-Owned Resource Lifetimes
 
-Storing the socket in the Model does not give it a Runtime-controlled lifetime. The live connection cannot be recreated from the Model Schema after a development reload, and update would still be responsible for opening and closing it. Keep the room and connection status in the Model, and let a ManagedResource own the `WebSocket` itself.
+Storing the socket in the Model does not give it a Runtime-controlled lifetime. The live connection cannot be recreated from the Model Schema after a development reload, and update would still be responsible for opening and closing it. Keep the room and connection status in the Model, and let a ManagedResource own the `WebSocket` itself. The `RoomRequirements` schema declares the room identifier needed to acquire it.
 
 ::Snippet{name="antiPatternLiveHandleBad" label="❌ A module variable owns the WebSocket" class="mb-4"}
 
+Construct the socket through `Socket.WebSocketConstructor` and provide `Socket.layerWebSocketConstructorGlobal`. The managed resource closes the handle explicitly.
+
 ::Snippet{name="antiPatternLiveHandleGood" label="✅ A ManagedResource owns the WebSocket lifetime"}
 
-ManagedResource fits when Commands or Subscriptions need the typed handle. In this example, `acquire` returns the Effect that creates the socket, and `release` returns the Effect that closes it when the room requirements disappear. The Runtime performs both Effects. When the Runtime performs `SendChatMessage`, that Command's Effect retrieves the live `ChatSocket`. When the socket only produces an event stream, a Subscription can own the connection directly.
+ManagedResource fits when Commands or Subscriptions need the typed handle. In this example, `acquire` returns the Effect that creates the socket, and `release` returns the Effect that closes it when the room requirements disappear. The Runtime performs both Effects. `execute` captures `ChatSocket.get` as a program, then returns a cold `effect` block. When the Runtime performs `SendChatMessage`, that block retrieves the live socket, sends the text and maps an expected failure to a failure Message. When the socket only produces an event stream, a Subscription can own the connection directly.
 
 ### Choose by Cause and Lifetime
 

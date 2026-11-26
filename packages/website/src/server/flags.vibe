@@ -1,0 +1,98 @@
+import { Calendar } from 'foldkit'
+import { fromString as urlFromString } from 'foldkit/url'
+
+import { deployment } from '../deployment.vibe'
+import { Flags } from '../main.vibe'
+import { ApiReference, Example } from '../page/index.ts'
+import { urlToAppRoute } from '../route.vibe'
+import {
+  invalidRenderUrl,
+  makeRenderContextLoader,
+} from './renderContextPromise.ts'
+
+type SourcesBySlug = Readonly<globalThis.Record<string, Example.ExampleSources>>
+type RenderContext = Readonly<{
+  apiData: ApiReference.ApiData
+  sourcesBySlug: SourcesBySlug
+  baseFlags: typeof Flags.Type
+}>
+
+const loadBaseFlags = effect {
+  const currentYear = DateTime.getPartUtc(try DateTime.now, 'year')
+  const today = try Calendar.today.local
+  return Flags.make({
+    currentYear,
+    today,
+    deployment,
+    maybeApiData: Option.none(),
+    maybeExampleSources: Option.none(),
+  })
+}
+
+const loadApiData = effect {
+  const [parsedApiModule, highlightsModule] = try Effect.promise(() =>
+    Promise.all([
+      import('virtual:parsed-api'),
+      import('virtual:api-highlights'),
+    ])
+  )
+  const parsedApi = try Schema.decodeUnknownEffect(
+    ApiReference.ParsedApiReference,
+  )(parsedApiModule.default)
+  return { parsedApi, highlights: highlightsModule.default }
+}
+
+const loadAllExampleSources: SourcesBySlug!! = effect {
+  const entries = try Effect.promise(() =>
+    Promise.all(Example.runnableExampleSlugs.map(
+      async (slug): Promise<readonly [string, Example.ExampleSources]> => [
+        slug,
+        await Example.loadSourcesForSlug(slug),
+      ],
+    ))
+  )
+  return Record.fromEntries(entries)
+}
+
+// Browser commands load lazily; prerender needs every source before init.
+const prepareRenderContext = effect {
+  return try Effect.all({
+    apiData: loadApiData,
+    sourcesBySlug: loadAllExampleSources,
+    baseFlags: loadBaseFlags,
+  })
+}
+
+// A failed load clears the cache before its caller observes the rejection.
+const loadRenderContext = makeRenderContextLoader(
+  async (): Promise<RenderContext> =>
+    await Effect.runPromise(prepareRenderContext),
+)
+
+const flagsForRequest = (
+  { apiData, sourcesBySlug, baseFlags }: RenderContext,
+  request: Request,
+): typeof Flags.Type => {
+  const route = match (urlFromString(request.url)) {
+    when { _tag: 'None' }: invalidRenderUrl(request.url);
+    when { _tag: 'Some', let value }: urlToAppRoute(value);
+  }
+  return match (route) {
+    when { _tag: 'ApiModule', let moduleSlug }: Flags.make({
+      ...baseFlags,
+      maybeApiData: ApiReference.sliceApiDataToModule(apiData, moduleSlug),
+    });
+    when { _tag: 'ExampleDetail', let exampleSlug }: Flags.make({
+      ...baseFlags,
+      maybeExampleSources: Record.get(sourcesBySlug, exampleSlug),
+    });
+    default: baseFlags;
+  }
+}
+
+export const loadFlagsForRequest = async (
+  request: Request,
+): Promise<typeof Flags.Type> => {
+  const context = await loadRenderContext()
+  return flagsForRequest(context, request)
+}

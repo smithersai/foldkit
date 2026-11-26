@@ -2,7 +2,7 @@ import type { HtmlBuilder } from 'foldkit/html'
 
 import { Animation } from '@foldkit/ui'
 
-import { Message } from '../message'
+import { Message } from '../message.vibe'
 
 // DEMO CONTENT
 

@@ -8,4 +8,4 @@ export {
   isComplete,
   revealErrors,
 } from './entry'
-export { view } from './view'
+export { view } from './view.vibe'

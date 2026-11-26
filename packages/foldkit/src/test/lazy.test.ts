@@ -8,13 +8,13 @@ import {
   createLazy,
   defineView,
   inertHtml as ih,
-} from '../html/index.js'
-import { observeLazyResolutions } from '../html/lazy.js'
+} from '../html/index.vibe'
+import { observeLazyResolutions } from '../html/lazy.vibe'
 import {
   clearRuntime,
   requireDispatch,
   setRuntime,
-} from '../html/runtimeSingleton.js'
+} from '../html/runtimeSingleton.vibe'
 import * as Lazy from './lazy.js'
 
 const Row = Schema.Struct({ id: Schema.String, label: Schema.String })

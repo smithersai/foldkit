@@ -1,0 +1,7 @@
+{
+  "source": "src/rules/no-nonportable-server-globals.vibe",
+  "output": "dist/native/src/rules/no-nonportable-server-globals.js",
+  "rootDir": ".",
+  "outDir": "dist/native",
+  "extension": ".vibe"
+}

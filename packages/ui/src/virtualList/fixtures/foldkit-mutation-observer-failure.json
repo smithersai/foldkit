@@ -1,0 +1,34 @@
+[
+  {
+    "isConstructorFailure": true,
+    "fault": null
+  },
+  {
+    "isConstructorFailure": false,
+    "fault": null
+  },
+  {
+    "isConstructorFailure": true,
+    "fault": {
+      "marker": "constructor"
+    }
+  },
+  {
+    "isConstructorFailure": false,
+    "fault": {
+      "marker": "observe"
+    }
+  },
+  {
+    "isConstructorFailure": true,
+    "fault": false
+  },
+  {
+    "isConstructorFailure": false,
+    "fault": 0
+  },
+  {
+    "isConstructorFailure": false,
+    "fault": ""
+  }
+]

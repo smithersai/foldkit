@@ -12,14 +12,14 @@ import {
 import { describe, expect, it, vi } from 'vitest'
 
 import { defineMessageUnion } from '../message/index.js'
-import { modifyFields } from '../struct/index.js'
+import { modifyFields } from '../struct/index.vibe'
 import {
   type Bridge,
   type CommandRecord,
   type DevToolsStore,
   computeDiff,
   createDevToolsStore,
-} from './store.js'
+} from './store.vibe'
 
 const hasPath = (paths: HashSet.HashSet<string>, path: string) =>
   HashSet.has(paths, path)

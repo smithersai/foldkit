@@ -2,7 +2,7 @@ import { Deferred, Effect, PubSub, Stream } from 'effect'
 import { Mount } from 'foldkit'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 
-import { PlaygroundEditor } from './playground'
+import { PlaygroundEditor } from './playground.vibe'
 
 const monaco = vi.hoisted(() => ({
   addExtraLib: vi.fn(),

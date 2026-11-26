@@ -1,0 +1,93 @@
+import { pipe } from 'effect'
+import { type UserConfig, searchForWorkspaceRoot } from 'vite'
+import { crawlFrameworkPkgs, findDepPkgJsonPath } from 'vitefu'
+
+import { toCrawlRoot, toRealPath } from './foldkitPackages.platform.ts'
+
+const FOLDKIT_SINGLETON_PACKAGES: ReadonlyArray<string> = [
+  'foldkit',
+  '@foldkit/ui',
+  '@foldkit/devtools',
+]
+
+/** Tests whether an import refers to a package that must share Foldkit's
+ * runtime instance.
+ *
+ * @internal
+ */
+export const isFoldkitSingletonPackageSpecifier = (
+  specifier: string,
+): boolean =>
+  Effect.Array.some(
+    FOLDKIT_SINGLETON_PACKAGES,
+    packageName =>
+      specifier === packageName || specifier.startsWith(`${packageName}/`),
+  )
+
+const isFoldkitPackageName = (name: string): boolean =>
+  name === 'foldkit' || name.startsWith('@foldkit/')
+
+const decodeDependencyRecord = Schema.decodeUnknownOption(
+  Schema.Record(Schema.String, Schema.Unknown),
+)
+
+const dependencyNames = (field: unknown): ReadonlyArray<string> => match (decodeDependencyRecord(field)) {
+  when Option.None: [];
+  when Option.Some(let dependencies): Record.keys(dependencies);
+}
+
+const dependsOnFoldkit = (
+  packageJson: globalThis.Record<string, unknown>,
+): boolean =>
+  pipe(
+    [packageJson['dependencies'], packageJson['peerDependencies']],
+    Effect.Array.flatMap(dependencyNames),
+    Effect.Array.some(isFoldkitPackageName),
+  )
+
+/** Finds the installed packages an application's server render must bundle
+ * and the Foldkit packages Vite must deduplicate.
+ *
+ * @internal
+ */
+export const crawlFoldkitPackages = async (
+  root: string,
+  isBuild: boolean,
+  viteUserConfig: UserConfig,
+): Promise<Readonly<{ dedupe: Array<string>; noExternal: Array<string> }>> => {
+  const crawlRoot = toCrawlRoot(
+    root,
+    viteUserConfig.resolve?.preserveSymlinks ?? false,
+  )
+
+  // NOTE: vitefu realpaths each dependency's package.json before comparing it
+  // with workspaceRoot, including when Vite preserves symlinks. The workspace
+  // boundary must use the same form so private workspace packages are found.
+  const workspaceRoot = toRealPath(searchForWorkspaceRoot(crawlRoot))
+
+  const crawl = await crawlFrameworkPkgs({
+    root: crawlRoot,
+    workspaceRoot,
+    isBuild,
+    viteUserConfig,
+    isSemiFrameworkPkgByJson: dependsOnFoldkit,
+  })
+
+  const noExternal = Effect.Array.dedupe([
+    ...FOLDKIT_SINGLETON_PACKAGES,
+    ...crawl.ssr.noExternal,
+  ])
+
+  const maybeResolvableSingletons = await Promise.all(
+    Effect.Array.map(
+      FOLDKIT_SINGLETON_PACKAGES,
+      async packageName =>
+        Option.fromUndefinedOr(
+          await findDepPkgJsonPath(packageName, crawlRoot),
+        ).as(packageName),
+    ),
+  )
+  const dedupe = Effect.Array.getSomes(maybeResolvableSingletons)
+
+  return { dedupe, noExternal }
+}

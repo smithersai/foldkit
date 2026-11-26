@@ -1,0 +1,10 @@
+import * as Shared from '@typing-game/shared'
+
+import * as Rooms from '../roomById.vibe'
+
+export const getRoomById =
+  (roomByIdRef: SubscriptionRef<Shared.RoomById>) =>
+  effect (payload: Rpc.Payload<typeof Shared.getRoomByIdRpc>) => {
+    const roomById = try SubscriptionRef.get(roomByIdRef)
+    return try Rooms.getById(roomById, payload.roomId)
+  }

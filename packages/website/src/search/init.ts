@@ -2,9 +2,9 @@ import { Update } from 'foldkit'
 
 import { Dialog } from '@foldkit/ui'
 
-import type { Message } from './message'
-import type { Model } from './model'
-import { SearchState } from './model'
+import type { Message } from './message.vibe'
+import type { Model } from './model.vibe'
+import { SearchState } from './model.vibe'
 
 export type InitReturn = Update.Return<Model, Message>
 

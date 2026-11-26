@@ -12,7 +12,7 @@ import {
   make,
   toDateLocal,
   unsafeMake,
-} from './calendarDate.js'
+} from './calendarDate.vibe'
 
 describe('isLeapYear', () => {
   it('returns true for years divisible by 4 but not by 100', () => {

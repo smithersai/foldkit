@@ -1,0 +1,62 @@
+import { Command, Http } from 'foldkit'
+
+import { getChart } from './chartHost.vibe'
+import { ChartMode, PackageId, Period, Telemetry } from './domain.vibe'
+import { makeChartOption } from './echarts.vibe'
+import { GitHubApiLive } from './githubApi.vibe'
+import { Message } from './message.vibe'
+import { NpmApiLive } from './npmApi.vibe'
+import { fetchRawTelemetry, transformTelemetry } from './telemetry.vibe'
+
+// COMMAND
+
+export const FetchTelemetry = Command.define('FetchTelemetry', {
+  messages: [Message.SucceededFetchTelemetry, Message.FailedFetchTelemetry],
+  execute: effect {
+    provide Layer.mergeAll(GitHubApiLive, NpmApiLive).pipe(Layer.provide(Http.layer)) {
+      return (effect {
+        const raw = try fetchRawTelemetry
+        const telemetry = transformTelemetry(raw)
+        return Message.SucceededFetchTelemetry({ telemetry })
+      }) catch (error) =>
+        Message.FailedFetchTelemetry({
+          error: error instanceof Error ? error.message : `${error}`,
+        })
+    }
+  },
+})
+
+export const SyncChart = Command.define('SyncChart', {
+  args: {
+    hostId: Schema.String,
+    telemetry: Telemetry,
+    chartMode: ChartMode,
+    selectedPackageId: PackageId,
+    period: Period,
+    maybeSelectedDatumId: Schema.Option(Schema.String),
+  },
+  messages: [Message.SucceededSyncChart, Message.FailedSyncChart],
+  execute: (args) => {
+    const maybeChart = getChart(args.hostId)
+    if (Option.isNone(maybeChart)) {
+      const message = Message.FailedSyncChart({
+        reason: `Could not find a live chart for hostId ${args.hostId}.`,
+      })
+      return effect {
+        return message
+      }
+    }
+    const chart = maybeChart.value
+    const completed = Message.SucceededSyncChart()
+    return effect {
+      return (effect {
+        // Effect.try executes its first argument as plain TypeScript.
+        try Effect.try(() => chart.setOption(makeChartOption(args), true))
+        return completed
+      }) catch (error) =>
+        Message.FailedSyncChart({
+          reason: error instanceof Error ? error.message : `${error}`,
+        })
+    }
+  },
+})

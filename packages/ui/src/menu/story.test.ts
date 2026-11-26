@@ -6,8 +6,8 @@ import { expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import * as Animation from '../animation/index.js'
-import type { Model, ViewInputs } from './index.js'
+import * as Animation from '../animation/index.vibe'
+import type { Model, ViewInputs } from './index.vibe'
 import {
   AnchorMenu,
   ClickItem,
@@ -29,7 +29,7 @@ import {
   init,
   resolveTypeaheadMatch,
   update,
-} from './index.js'
+} from './index.vibe'
 
 const TestMenu = create<string>()
 

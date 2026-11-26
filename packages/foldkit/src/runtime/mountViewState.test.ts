@@ -1,5 +1,6 @@
 import {
   Array,
+  Deferred,
   Effect,
   Exit,
   Fiber,
@@ -13,23 +14,23 @@ import {
 } from 'effect'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { DevToolsStore } from '../devTools/store.js'
-import { INIT_INDEX, latestEntryIndex } from '../devTools/store.js'
+import type { DevToolsStore } from '../devTools/store.vibe'
+import { INIT_INDEX, latestEntryIndex } from '../devTools/store.vibe'
 import {
   type Html,
   Prop,
   __htmlBuilder,
   createLazy,
   defineView,
-} from '../html/index.js'
+} from '../html/index.vibe'
 import { defineMessageUnion } from '../message/index.js'
-import * as Mount from '../mount/index.js'
-import { modifyFields } from '../struct/index.js'
-import * as Subscription from '../subscription/subscription.js'
+import * as Mount from '../mount/index.vibe'
+import { modifyFields } from '../struct/index.vibe'
+import * as Subscription from '../subscription/subscription.vibe'
 import type * as Update from '../update/index.js'
-import { __setDevToolsOverlay } from './devToolsConfig.js'
-import { makeApplication } from './makeApplication.js'
-import { makeElement } from './makeElement.js'
+import { __setDevToolsOverlay } from './devToolsConfig.vibe'
+import { makeApplication } from './makeApplication.vibe'
+import { makeElement } from './makeElement.vibe'
 
 const Message = defineMessageUnion({
   CompletedMountEditor: {},
@@ -364,9 +365,23 @@ describe('Mount view-state awareness', () => {
     const subscriptionMessages = await Effect.runPromise(
       PubSub.unbounded<Message>(),
     )
+    const subscriptionReady = await Effect.runPromise(Deferred.make<void>())
+    const startedAt = performance.now()
+    const timings: globalThis.Array<{ stage: string; elapsedMs: number }> = []
+    const recordTiming = (stage: string) => {
+      timings.push({ stage, elapsedMs: performance.now() - startedAt })
+    }
+    recordTiming('created PubSub')
     const subscriptions = Subscription.make<Model, Message>()(() => ({
       testMessages: Subscription.persistentEntry(
-        Stream.fromPubSub(subscriptionMessages),
+        Stream.unwrap(
+          Effect.gen(function* () {
+            const subscription = yield* PubSub.subscribe(subscriptionMessages)
+            recordTiming('acquired PubSub subscription')
+            yield* Deferred.succeed(subscriptionReady, undefined)
+            return Stream.fromEffectRepeat(PubSub.take(subscription))
+          }),
+        ),
       ),
     }))
     const processedMessages: globalThis.Array<Message> = []
@@ -377,6 +392,7 @@ describe('Mount view-state awareness', () => {
       execute: () =>
         Stream.callback<typeof ChildMessage.CompletedChildMount.Type>(queue =>
           Effect.sync(() => {
+            recordTiming('acquired Mount')
             emitters.push(() =>
               Queue.offerUnsafe(queue, ChildMessage.CompletedChildMount()),
             )
@@ -401,6 +417,7 @@ describe('Mount view-state awareness', () => {
       Model,
       init: () => ({ model: initialModel(true) }),
       update: (model, message) => {
+        recordTiming(`processed ${message._tag}`)
         processedMessages.push(message)
         return update(model, message)
       },
@@ -438,11 +455,25 @@ describe('Mount view-state awareness', () => {
       })
       const store = requireDevToolsStore(maybeStore)
 
+      await vi.waitFor(async () => {
+        expect(
+          await Effect.runPromise(Deferred.isDone(subscriptionReady)),
+        ).toBe(true)
+      })
+      recordTiming('initial Mount and subscription ready')
       clickButton('hide')
       await vi.waitFor(() => {
         expect(document.querySelector('#editor')).toBeNull()
       })
-      PubSub.publishUnsafe(subscriptionMessages, Message.Ticked())
+      recordTiming('editor hidden')
+      recordTiming(
+        `publishing Ticked with ${subscriptionMessages.subscribers.size} waiting subscribers`,
+      )
+      const wasTickPublished = PubSub.publishUnsafe(
+        subscriptionMessages,
+        Message.Ticked(),
+      )
+      recordTiming(`published Ticked: ${wasTickPublished}`)
       await vi.waitFor(() => {
         expect(processedMessages).toContainEqual(Message.Ticked())
       })
@@ -468,6 +499,14 @@ describe('Mount view-state awareness', () => {
       expect(processedMessages).not.toContainEqual(
         Message.GotChildMountResult({ ownerId: 0 }),
       )
+    } catch (error) {
+      console.error('Mount acquisition failure timings', {
+        timings,
+        processedMessages,
+        emitterCount: emitters.length,
+        waitingSubscribers: subscriptionMessages.subscribers.size,
+      })
+      throw error
     } finally {
       await Effect.runPromise(Fiber.interrupt(runtimeFiber))
     }
@@ -985,7 +1024,9 @@ describe('Mount view-state awareness', () => {
       }
       const replayAcquisition = maybeReplayAcquisition.value
       expect(replayAcquisition.entityId).toBe(0)
-      expect(replayAcquisition.observedViewStates).toEqual(['Paused'])
+      await vi.waitFor(() => {
+        expect(replayAcquisition.observedViewStates).toEqual(['Paused'])
+      })
       const replayEditor = requireElement('#editor')
 
       PubSub.publishUnsafe(subscriptionMessages, Message.ShowedEditor())
@@ -1007,7 +1048,9 @@ describe('Mount view-state awareness', () => {
       }
       const liveAcquisition = maybeLiveAcquisition.value
       expect(liveAcquisition.entityId).toBe(1)
-      expect(liveAcquisition.observedViewStates).toEqual(['Paused', 'Live'])
+      await vi.waitFor(() => {
+        expect(liveAcquisition.observedViewStates).toEqual(['Paused', 'Live'])
+      })
 
       replayAcquisition.emit()
       await waitForMountEmission()
@@ -2085,9 +2128,16 @@ describe('Mount view-state awareness', () => {
     const subscriptionMessages = await Effect.runPromise(
       PubSub.unbounded<Message>(),
     )
+    const subscriptionReady = await Effect.runPromise(Deferred.make<void>())
     const subscriptions = Subscription.make<Model, Message>()(() => ({
       testMessages: Subscription.persistentEntry(
-        Stream.fromPubSub(subscriptionMessages),
+        Stream.unwrap(
+          Effect.gen(function* () {
+            const subscription = yield* PubSub.subscribe(subscriptionMessages)
+            yield* Deferred.succeed(subscriptionReady, undefined)
+            return Stream.fromSubscription(subscription)
+          }),
+        ),
       ),
     }))
     const observedViewStates: globalThis.Array<Mount.ViewState> = []
@@ -2136,6 +2186,7 @@ describe('Mount view-state awareness', () => {
       })
       const store = requireDevToolsStore(maybeStore)
 
+      await Effect.runPromise(Deferred.await(subscriptionReady))
       PubSub.publishUnsafe(subscriptionMessages, Message.Ticked())
       await waitForBodyText('ticks:1')
       const firstTickState = await Effect.runPromise(

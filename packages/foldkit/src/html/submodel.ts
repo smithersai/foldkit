@@ -1,4 +1,4 @@
-import { type VNode, memoizedVNodes } from '../vdom.js'
+import { type VNode, memoizedVNodes } from '../vdom.vibe'
 import {
   type BoundaryRegistry,
   type WrapDescriptor,
@@ -9,8 +9,8 @@ import {
   registerBoundaryWrap,
   rollbackBoundaryWrapTransaction,
 } from './boundary.js'
-import { isChildAttribute } from './childAttribute.js'
-import type { HtmlBuilder } from './index.js'
+import { isChildAttribute } from './childAttribute.vibe'
+import type { HtmlBuilder } from './index.vibe'
 import {
   type DispatchSync,
   type Frame,
@@ -18,7 +18,7 @@ import {
   getCurrentFrame,
   pushBoundary,
   pushFrame,
-} from './runtimeSingleton.js'
+} from './runtimeSingleton.vibe'
 
 // NOTE: string key (not Symbol) so SubmodelView types from different
 // module instances (e.g. pnpm hoisting variations) stay structurally

@@ -3,14 +3,14 @@ import { afterEach, expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import { MountTracker } from '../mount/index.js'
+import { MountTracker } from '../mount/index.vibe'
 import { Dispatch } from '../runtime/index.js'
 import {
   type DispatchSync,
   clearRuntime,
   requireDispatch,
   setRuntime,
-} from './runtimeSingleton.js'
+} from './runtimeSingleton.vibe'
 
 const makeContext = (dispatchSync: DispatchSync) =>
   Context.make(

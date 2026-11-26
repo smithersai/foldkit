@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { gotSubmodelMessageName } from '../../src/rules/got-submodel-message-name.ts'
+import { gotSubmodelMessageName } from '../../src/rules/got-submodel-message-name.vibe'
 
 const message = (name: string, fields: unknown = Testing.objectExpr([])) => ({
   key: name,

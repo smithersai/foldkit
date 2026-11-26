@@ -1,0 +1,16 @@
+import { Command } from 'foldkit'
+
+import { Message } from './message.vibe'
+
+// COMMAND
+
+export const SubmitApplication = Command.define('SubmitApplication', {
+  messages: [
+    Message.SucceededSubmitApplication,
+    Message.FailedSubmitApplication,
+  ],
+  execute: effect {
+    try sleep(Duration.millis(1500))
+    return Message.SucceededSubmitApplication()
+  },
+})

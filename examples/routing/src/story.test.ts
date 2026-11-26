@@ -3,14 +3,14 @@ import { Command, given, message, model, story } from 'foldkit/story'
 import { fromString } from 'foldkit/url'
 import { describe, expect, test } from 'vitest'
 
-import { AppRoute, Message, Model, NavigateInternal, update } from './main'
+import { AppRoute, Message, Model, NavigateInternal, update } from './main.vibe'
 import { People } from './page'
 import {
   filesIndexRouter,
   homeRouter,
   nestedRouter,
   peopleRouter,
-} from './route'
+} from './route.vibe'
 
 const peoplePageWith = (searchInput: string) =>
   People.Model.make({

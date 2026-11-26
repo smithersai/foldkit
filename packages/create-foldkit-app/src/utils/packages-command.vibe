@@ -1,0 +1,29 @@
+import { startCommand } from './packages-command.platform.ts'
+
+export const runCommand = (
+  command: string,
+  args: ReadonlyArray<string>,
+  cwd: string,
+  isWindows: boolean,
+): void!Error =>
+  callback<void, Error, [string, ReadonlyArray<string>, string, boolean]>(
+    (command, args, cwd, isWindows, resume) =>
+      startCommand(
+        command,
+        args,
+        cwd,
+        isWindows,
+        error => resume.fail(error),
+        code => {
+          if (code === 0) {
+            resume(undefined)
+          } else {
+            resume.fail(new Error(`${command} exited with code ${code}`))
+          }
+        },
+      ),
+    command,
+    args,
+    cwd,
+    isWindows,
+  )

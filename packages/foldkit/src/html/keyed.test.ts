@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { inertHtml as ih } from './index.js'
+import { inertHtml as ih } from './index.vibe'
 
 describe('keyed', () => {
   it('preserves every PropertyKey without coercion', () => {

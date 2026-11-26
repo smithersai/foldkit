@@ -1,0 +1,9 @@
+{
+  "origin": "foldkit/examples/counter",
+  "pattern": "A native main entry coexists with a root HTML file",
+  "files": {
+    "index.html": "<div id=\"root\"></div>",
+    "src/main.vibe": "export const counter = 0"
+  },
+  "expectedInitialFile": "src/main.vibe"
+}

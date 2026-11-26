@@ -7,7 +7,7 @@ import { modifyFields } from 'foldkit/struct'
 
 import { describe, it } from '@effect/vitest'
 
-import { view } from './index.js'
+import { view } from './index.vibe'
 
 const Message = defineMessageUnion({
   Toggled: { isChecked: Schema.Boolean },

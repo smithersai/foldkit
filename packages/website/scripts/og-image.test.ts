@@ -1,10 +1,14 @@
 import { Array, Option } from 'effect'
 import { describe, expect, it } from 'vitest'
 
-import { maybePostCover } from '../src/page/blog/frontmatter'
-import { AppRoute, routeToCanonicalUrl, routeToUrlPath } from '../src/route'
-import { blogPosts } from './blogPosts'
-import { ORGANIZATION_SCHEMA, injectMetaTags } from './og-image'
+import { maybePostCover } from '../src/page/blog/frontmatter.vibe'
+import {
+  AppRoute,
+  routeToCanonicalUrl,
+  routeToUrlPath,
+} from '../src/route.vibe'
+import { blogPosts } from './blogPosts.vibe'
+import { ORGANIZATION_SCHEMA, injectMetaTags } from './og-image.vibe'
 
 const resolveApiModuleName = (slug: string) => slug
 

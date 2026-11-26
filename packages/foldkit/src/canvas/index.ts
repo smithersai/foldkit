@@ -15,10 +15,10 @@ export {
   Text,
   TextAlign,
   TextBaseline,
-} from './shape.js'
+} from './shape.vibe'
 
-export type { Shape } from './shape.js'
+export type { Shape } from './shape.vibe'
 
-export { view } from './view.js'
+export { view } from './view.vibe'
 
-export type { ViewConfig } from './view.js'
+export type { ViewConfig } from './view.vibe'

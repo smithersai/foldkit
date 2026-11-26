@@ -8,4 +8,4 @@ export {
   isComplete,
   revealErrors,
 } from './entry'
-export { type ViewInputs, view } from './view'
+export { type ViewInputs, view } from './view.vibe'

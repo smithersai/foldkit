@@ -1,0 +1,120 @@
+/** Browser → plugin: the runtime preserves its current Model under a stable id so it can be restored after a full reload. `isReloadFlush` is set by the runtime when flushing on `vite:beforeFullReload` to mark the entry as eligible for restoration; absent or `false` for ordinary debounced preserves. */
+export schema PreserveModelMessage {
+  readonly id: string
+  readonly model: Schema.Unknown
+  readonly isReloadFlush?: boolean
+}
+
+/** Browser → plugin: the runtime requests its previously-preserved Model on startup, scoped by id. */
+export schema RequestModelMessage {
+  readonly id: string
+}
+
+/** Plugin → browser: the plugin returns the preserved Model for a given runtime id. `model` is omitted when nothing is preserved (cold start, manual refresh). */
+export schema RestoreModelMessage {
+  readonly id: string
+  readonly model?: Schema.Unknown
+}
+
+/** The Vite hot context of the module that owns the protocol's listeners. Vite ties a context's listeners to the module that read `import.meta.hot`, so the owner passes its context in and this module never reads one. */
+type HotContext = Readonly<{
+  send(
+    event: 'foldkit:preserve-model' | 'foldkit:request-model',
+    data: unknown,
+  ): void
+  on(event: 'foldkit:restore-model', listener: (message: unknown) => void): void
+  off(
+    event: 'foldkit:restore-model',
+    listener: (message: unknown) => void,
+  ): void
+}>
+
+const encodePreserveModelMessage = Schema.encodeUnknownSync(
+  PreserveModelMessage,
+)
+const encodeRequestModelMessage = Schema.encodeUnknownSync(RequestModelMessage)
+const decodeRestoreModelMessage = Schema.decodeUnknownExit(RestoreModelMessage)
+
+/** Browser → plugin through `hot`, the owning module's Vite hot context: preserves the Model under `id`. */
+export const preserveModelThrough = (
+  hot: HotContext,
+  id: string,
+  encodedModel: unknown,
+  isReloadFlush: boolean,
+): void => {
+  hot.send(
+    'foldkit:preserve-model',
+    encodePreserveModelMessage(
+      PreserveModelMessage.make({ id, model: encodedModel, isReloadFlush }),
+    ),
+  )
+}
+
+const PLUGIN_RESPONSE_TIMEOUT_MS = 500
+
+/** The restore result of a module without a Vite hot context: nothing is preserved. */
+export effect function absentPreservedModel(): unknown!! {
+  return undefined
+}
+
+// NOTE: asks @foldkit/vite-plugin, through `hot`, the owning module's Vite
+// hot context, for a model preserved across the last reload. The plugin only
+// serves a model whose preservation was flushed by a reload, so a host-driven
+// dispose-then-embed remount initializes fresh while a code reload restores
+// state. A reload of the owning module removes the pending restore listener,
+// and the request then expires after the timeout.
+export effect function requestPreservedModel(
+  hot: HotContext,
+  runtimeId: string,
+): unknown!! {
+  return callback<
+    unknown,
+    never,
+    [
+      string,
+      HotContext,
+      typeof decodeRestoreModelMessage,
+      typeof encodeRequestModelMessage,
+    ]
+  >(
+    (runtimeId, hot, decodeRestore, encodeRequest, resume) => {
+      const handler = (message: unknown): void => {
+        Exit.match(decodeRestore(message), {
+          onFailure: () => {},
+          onSuccess: ({ id, model }) => {
+            if (id === runtimeId) {
+              hot.off('foldkit:restore-model', handler)
+              resume(model)
+            }
+          },
+        })
+      }
+      hot.on('foldkit:restore-model', handler)
+      hot.send('foldkit:request-model', encodeRequest({ id: runtimeId }))
+      return () => hot.off('foldkit:restore-model', handler)
+    },
+    runtimeId,
+    hot,
+    decodeRestoreModelMessage,
+    encodeRequestModelMessage,
+  )
+    |> timeout(%, PLUGIN_RESPONSE_TIMEOUT_MS)
+      catch effect () => {
+        try Console.warn(
+          '[foldkit] No response from @foldkit/vite-plugin. Add it to your vite.config.ts for Model preservation across reloads:\n\n'
+            + "  import { foldkit } from '@foldkit/vite-plugin'\n\n"
+            + '  export default defineConfig({ plugins: [foldkit()] })\n\n'
+            + 'Starting without Model preservation.',
+        )
+        return undefined
+      }
+}
+
+/** Browser → plugin: the runtime preserves its current Model under a stable id. */
+export type PreserveModelMessage = typeof PreserveModelMessage.Type
+
+/** Browser → plugin: the runtime requests its previously-preserved Model on startup. */
+export type RequestModelMessage = typeof RequestModelMessage.Type
+
+/** Plugin → browser: the plugin returns the preserved Model for a given runtime id. */
+export type RestoreModelMessage = typeof RestoreModelMessage.Type

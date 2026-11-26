@@ -1,0 +1,40 @@
+import { defineTaggedUnion } from 'foldkit/schema'
+
+import { Menu, Tabs } from '@foldkit/ui'
+
+import { Step } from './domain/index.ts'
+import {
+  Attachments,
+  CoverLetter,
+  Education,
+  PersonalInfo,
+  Skills,
+  WorkHistory,
+} from './step/index.ts'
+
+// SUBMISSION
+
+export const Submission = defineTaggedUnion({
+  NotSubmitted: {},
+  Submitting: {},
+  SubmitSuccess: {},
+  SubmitError: { error: Schema.String },
+})
+export type Submission = typeof Submission.Type
+
+// MODEL
+
+export schema Model {
+  readonly currentStep: Step.Step
+  readonly personalInfo: PersonalInfo.Model
+  readonly workHistory: WorkHistory.Model
+  readonly education: Education.Model
+  readonly skills: Skills.Model
+  readonly coverLetter: CoverLetter.Model
+  readonly attachments: Attachments.Model
+  readonly isPreviewVisible: boolean
+  readonly submission: Submission
+  readonly stepMenu: Menu.Model
+  readonly stepTabs: Tabs.Model
+  readonly isSubmitAttempted: boolean
+}

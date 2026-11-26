@@ -1,0 +1,64 @@
+import { Command, Navigation } from 'foldkit'
+import { defineMessageUnion } from 'foldkit/message'
+
+const Message = defineMessageUnion({
+  CompletedNavigateInternal: {},
+  CompletedReplaceUrl: {},
+  CompletedGoBack: {},
+  CompletedGoForward: {},
+  CompletedLoadExternal: {},
+  CompletedOpenUrl: {},
+})
+type Message = typeof Message.Type
+
+const NavigateInternal = Command.define('NavigateInternal', {
+  args: { url: Schema.String },
+  messages: [Message.CompletedNavigateInternal],
+  execute: effect ({ url }) => {
+    try Navigation.pushUrl(url)
+    return Message.CompletedNavigateInternal()
+  },
+})
+
+const ReplaceUrl = Command.define('ReplaceUrl', {
+  args: { url: Schema.String },
+  messages: [Message.CompletedReplaceUrl],
+  execute: effect ({ url }) => {
+    try Navigation.replaceUrl(url)
+    return Message.CompletedReplaceUrl()
+  },
+})
+
+const GoBack = Command.define('GoBack', {
+  messages: [Message.CompletedGoBack],
+  execute: effect {
+    try Navigation.back()
+    return Message.CompletedGoBack()
+  },
+})
+
+const GoForward = Command.define('GoForward', {
+  messages: [Message.CompletedGoForward],
+  execute: effect {
+    try Navigation.forward()
+    return Message.CompletedGoForward()
+  },
+})
+
+const LoadExternal = Command.define('LoadExternal', {
+  args: { href: Schema.String },
+  messages: [Message.CompletedLoadExternal],
+  execute: effect ({ href }) => {
+    try Navigation.load(href)
+    return Message.CompletedLoadExternal()
+  },
+})
+
+const OpenUrl = Command.define('OpenUrl', {
+  args: { url: Schema.String },
+  messages: [Message.CompletedOpenUrl],
+  execute: effect ({ url }) => {
+    try Navigation.openUrl(url)
+    return Message.CompletedOpenUrl()
+  },
+})

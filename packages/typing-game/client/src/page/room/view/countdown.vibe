@@ -1,0 +1,19 @@
+import { Html, HtmlBuilder } from 'foldkit/html'
+
+import type { Message } from '../message.vibe'
+
+export const countdown = (
+  secondsLeft: number,
+  maybeGameText: Option<string>,
+  h: HtmlBuilder<Message>,
+): Html =>
+  h.div(
+    [h.Class('space-y-6')],
+    [
+      h.h3([h.Class('uppercase')], [`Starting in ${secondsLeft}...`]),
+      match (maybeGameText) {
+        when Option.None: h.empty;
+        when Option.Some(let text): h.div([], [text]);
+      },
+    ],
+  )

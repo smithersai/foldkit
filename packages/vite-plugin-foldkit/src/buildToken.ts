@@ -2,7 +2,7 @@ import MagicString from 'magic-string'
 import { randomUUID } from 'node:crypto'
 import type { Plugin, ResolvedConfig, ViteBuilder } from 'vite'
 
-import { isFoldkitSingletonPackageSpecifier } from './foldkitPackages.js'
+import { isFoldkitSingletonPackageSpecifier } from '#vibelang/emitted/src/foldkitPackages'
 
 // The build id names the deployment a page came from. The server stamps it on
 // the rendered root, the client carries it, and hydration refuses a page whose

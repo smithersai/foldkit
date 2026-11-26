@@ -14,6 +14,7 @@ import {
 import { modifyFields } from 'foldkit/struct'
 import { describe, test } from 'vitest'
 
+import { initialModel, mountedModel } from './main.fixture.vibe'
 import {
   FlyTo,
   Geolocate,
@@ -24,8 +25,7 @@ import {
   UnlockBodyScroll,
   update,
   view,
-} from './main'
-import { initialModel, mountedModel } from './main.fixture'
+} from './main.vibe'
 
 const acknowledgeMapMount = Mount.resolve(
   MountMap,

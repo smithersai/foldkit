@@ -137,7 +137,7 @@ Routing, server rendering, UI components, composition, and browser lifecycles al
 - **Story Testing**: Exercise the update function directly, resolving Commands inline. No mocks, no fake timers.
 - **Scene Testing**: Drive your real view the way a user does, with accessible locators. No browser required.
 - **Slow Warnings**: Development warnings when update, view, patch, or Subscription extraction exceeds its budget.
-- **Live Reload**: Vite plugin with state-preserving reloads. Save a file, the page reloads, and your Model is restored. Change your view, keep your state.
+- **Live Reload**: Vite plugin with state-preserving reloads. Save a file, the page reloads, and your Model is restored. Change your view, keep your state. Import the preservation message schemas from `foldkit/model-preservation` without adding Vite types.
 
 ## AI-Assisted Development
 

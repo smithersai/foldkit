@@ -1,14 +1,14 @@
 import { Effect, Fiber, Option, Schema, Stream } from 'effect'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { __htmlBuilder } from '../html/index.js'
+import { __htmlBuilder } from '../html/index.vibe'
 import * as ManagedResource from '../managedResource/index.js'
 import { defineMessageUnion } from '../message/index.js'
-import * as Mount from '../mount/index.js'
-import { modifyFields } from '../struct/index.js'
-import * as Subscription from '../subscription/subscription.js'
+import * as Mount from '../mount/index.vibe'
+import { modifyFields } from '../struct/index.vibe'
+import * as Subscription from '../subscription/subscription.vibe'
 import type * as Update from '../update/index.js'
-import { makeElement } from './makeElement.js'
+import { makeElement } from './makeElement.vibe'
 
 const Message = defineMessageUnion({
   ActivatedApplication: {},

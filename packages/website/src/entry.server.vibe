@@ -1,0 +1,18 @@
+import { Server } from 'foldkit/experimental'
+
+import { Flags, init, view } from './main.vibe'
+import { loadFlagsForRequest } from './server/flags.vibe'
+
+export const renderPage = async (
+  request: Request,
+): Promise<Server.EntryResult> => {
+  const flags = await loadFlagsForRequest(request)
+  const application = await Effect.runPromise(
+    Server.renderToString(
+      { Flags, routing: {}, init, view },
+      { url: request.url, flags },
+    ),
+  )
+
+  return Server.Rendered(application)
+}

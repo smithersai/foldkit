@@ -1,0 +1,66 @@
+diff --git a/index.js b/index.js
+index 1cc47a95a48e90667a5d4e4dc3c909170f422d7d..3b14342f39e67c1c43b63206766c4ef113db0b44 100644
+--- a/index.js
++++ b/index.js
+@@ -188,11 +188,61 @@ function getDetective(type, options) {
+       return detectiveVue;
+     }
+ 
++    case 'vibe': {
++      return detectiveVibe;
++    }
++
++    case 'vibex': {
++      return detectiveVibe.vibex;
++    }
++
+     default:
+       // nothing
+   }
+ }
+ 
++// VibeLang modules (.vibe, .vibex) are parsed by the VibeLang compiler
++// (`vibelang --estree`), whose ESTree carries typescript-estree's import and
++// export nodes, so the TypeScript detective reads the tree unchanged.
++function vibelangCompiler() {
++  if (process.env.VIBELANG_BINARY) return path.resolve(process.env.VIBELANG_BINARY);
++  const manifest = require.resolve('vibelang/package.json', { paths: [process.cwd(), __dirname] });
++  const packageDir = path.dirname(manifest);
++  const executable = process.platform === 'win32' ? 'vibelang.exe' : 'vibelang';
++  const local = path.join(packageDir, 'native', executable);
++  if (fs.existsSync(local)) return local;
++  const target = `${process.platform}-${process.arch}`;
++  const name = process.platform === 'win32' ? `@vibelang/cli-${target}` : `vibelang-${target}`;
++  const platform = require.resolve(`${name}/package.json`, { paths: [packageDir] });
++  return path.join(path.dirname(platform), 'bin', executable);
++}
++
++function parseVibe(src, fileName) {
++  const { spawnSync } = require('child_process');
++  const result = spawnSync(vibelangCompiler(), ['--estree', fileName], {
++    input: src,
++    encoding: 'utf8',
++    maxBuffer: 1024 * 1024 * 1024
++  });
++  if (result.error) throw new Error(`vibelang --estree: ${result.error.message}`);
++  if (result.status !== 0) throw new Error(`vibelang --estree failed on ${fileName}: ${String(result.stderr).trim()}`);
++  const { ast, error } = JSON.parse(result.stdout);
++  if (error) throw new SyntaxError(`${fileName}: ${error.message}`);
++  return ast;
++}
++
++function vibeDetective(fileName) {
++  const detective = (src, detectiveOptions = {}) => {
++    const ast = typeof src === 'string' ? parseVibe(src, fileName) : src;
++    detective.ast = ast;
++    return detectiveTypeScript(ast, detectiveOptions);
++  };
++  return detective;
++}
++
++const detectiveVibe = vibeDetective('module.vibe');
++detectiveVibe.vibex = vibeDetective('module.vibex');
++
+ function detectiveEs6Cjs(ast, detectiveOptions) {
+   return [
+     ...detectiveEs6(ast, detectiveOptions),

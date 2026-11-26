@@ -1,6 +1,6 @@
 import { Html, HtmlBuilder } from 'foldkit/html'
 
-import { loginRouter } from '../../../route'
+import { loginRouter } from '../../../route.vibe'
 import type { Message } from '../message'
 
 export const view = (h: HtmlBuilder<Message>): Html =>

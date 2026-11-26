@@ -1,0 +1,6 @@
+/** Effect service tag that provides message dispatching to the view layer. */
+export service Dispatch {
+  static readonly key = '@foldkit/Dispatch'
+  readonly dispatchAsync: (message: unknown) => void!!
+  readonly dispatchSync: (message: unknown) => void
+}

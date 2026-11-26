@@ -89,6 +89,8 @@ Story tests the state machine. It does not run the Effect inside a Command.
 
 To test that a Command’s Effect works correctly (for example, that an HTTP request parses the response right), test it separately with `Effect.provide` and a mock service layer:
 
+Keep the native test body outside the explicit registration boundary. Mock HTTP responses use `HttpServerResponse.raw` and `HttpServerResponse.toWeb`, preserving their body and headers without reading a browser global.
+
 ::Snippet{name="testingCommandEffect" label="Command Effect test"}
 
 The two tests cover different contracts. Story checks which Command update returns and what update does with its result Message. The Effect test checks the work the Command executes.

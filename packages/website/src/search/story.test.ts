@@ -3,14 +3,14 @@ import { modifyFields } from 'foldkit/struct'
 import { describe, expect, test } from 'vitest'
 
 import { init } from './init'
-import { Message } from './message'
-import { SearchState } from './model'
+import { Message } from './message.vibe'
+import { SearchState } from './model.vibe'
 import {
   FetchSearchResults,
   NavigateToResult,
   ScrollToResult,
   update,
-} from './update'
+} from './update.vibe'
 
 const init_ = init()
 

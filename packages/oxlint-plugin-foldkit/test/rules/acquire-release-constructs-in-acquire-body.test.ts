@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { acquireReleaseConstructsInAcquireBody } from '../../src/rules/acquire-release-constructs-in-acquire-body.ts'
+import { acquireReleaseConstructsInAcquireBody } from '../../src/rules/acquire-release-constructs-in-acquire-body.vibe'
 
 const acquireRelease = (acquire: unknown) =>
   Testing.callOfMember('Effect', 'acquireRelease', [

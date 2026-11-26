@@ -6,9 +6,9 @@ import { afterEach, describe, expect, it } from 'vitest'
 
 import { NodeServices } from '@effect/platform-node'
 
-import { routeToUrlPath } from '../src/route'
-import { SECTION_ORDER, shouldExportMarkdown } from './markdown'
-import { routeToMetadata } from './metadata'
+import { routeToUrlPath } from '../src/route.vibe'
+import { SECTION_ORDER, shouldExportMarkdown } from './markdown.vibe'
+import { routeToMetadata } from './metadata.vibe'
 import {
   NOT_FOUND_OUTPUT_PATH,
   NOT_FOUND_ROUTE,
@@ -18,7 +18,7 @@ import {
   extractPostArticleHtml,
   readTemplateFrom,
   toFeedArticleHtml,
-} from './prerender'
+} from './prerender.vibe'
 
 describe('enumerateRoutes', () => {
   it('includes all static routes', () => {

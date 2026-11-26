@@ -1,0 +1,58 @@
+import * as Shared from '@typing-game/shared'
+
+type RoomId = string
+type RoomById = HashMap<RoomId, Shared.Room>
+
+export service RoomByIdStore {
+  static readonly key = 'RoomByIdStore'
+  readonly '~effect/SubscriptionRef': SubscriptionRef<
+    RoomById
+  >['~effect/SubscriptionRef']
+  value: SubscriptionRef<RoomById>['value']
+  readonly semaphore: SubscriptionRef<RoomById>['semaphore']
+  readonly pubsub: SubscriptionRef<RoomById>['pubsub']
+  pipe: SubscriptionRef<RoomById>['pipe']
+}
+
+export const RoomByIdStoreLive = Layer.effect(
+  RoomByIdStore,
+  SubscriptionRef.make(HashMap.empty<string, Shared.Room>()),
+)
+
+export type ProgressByGamePlayer = HashMap<
+  Shared.GamePlayer,
+  Shared.PlayerProgress
+>
+
+export service ProgressByGamePlayerStore {
+  static readonly key = 'ProgressByGamePlayerStore'
+  readonly '~effect/SubscriptionRef': SubscriptionRef<
+    ProgressByGamePlayer
+  >['~effect/SubscriptionRef']
+  value: SubscriptionRef<ProgressByGamePlayer>['value']
+  readonly semaphore: SubscriptionRef<ProgressByGamePlayer>['semaphore']
+  readonly pubsub: SubscriptionRef<ProgressByGamePlayer>['pubsub']
+  pipe: SubscriptionRef<ProgressByGamePlayer>['pipe']
+}
+
+export const ProgressByGamePlayerStoreLive = Layer.effect(
+  ProgressByGamePlayerStore,
+  SubscriptionRef.make(
+    HashMap.empty<Shared.GamePlayer, Shared.PlayerProgress>(),
+  ),
+)
+
+type PlayerId = string
+export type PendingCleanupPlayerIds = HashSet<PlayerId>
+
+export service PendingCleanupPlayerIdsStore {
+  static readonly key = 'PendingCleanupPlayerIdsStore'
+  readonly '~effect/Ref': Ref<PendingCleanupPlayerIds>['~effect/Ref']
+  readonly ref: Ref<PendingCleanupPlayerIds>['ref']
+  pipe: Ref<PendingCleanupPlayerIds>['pipe']
+}
+
+export const PendingCleanupPlayerIdsStoreLive = Layer.effect(
+  PendingCleanupPlayerIdsStore,
+  Ref.make(HashSet.empty<string>()),
+)

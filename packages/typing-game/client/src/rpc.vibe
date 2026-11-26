@@ -1,0 +1,34 @@
+import { RoomRpcs } from '@typing-game/shared'
+
+import { ViteEnvConfig, ViteEnvConfigLive } from './config.vibe'
+
+type RoomsRpcClient = RpcClient.FromGroup<
+  typeof RoomRpcs,
+  RpcClientError
+>
+
+export service RoomsClient {
+  static readonly key = 'RoomsClient'
+  readonly createRoom: RoomsRpcClient['createRoom']
+  readonly joinRoom: RoomsRpcClient['joinRoom']
+  readonly getRoomById: RoomsRpcClient['getRoomById']
+  readonly subscribeToRoom: RoomsRpcClient['subscribeToRoom']
+  readonly startGame: RoomsRpcClient['startGame']
+  readonly updatePlayerProgress: RoomsRpcClient['updatePlayerProgress']
+}
+
+const ProtocolLive = Layer.unwrap(
+  effect {
+    const { VITE_SERVER_URL } = try ViteEnvConfig
+    const url = `${VITE_SERVER_URL}/rpc`
+    return RpcClient.layerProtocolHttp({ url })
+  },
+).pipe(
+  Layer.provide(ViteEnvConfigLive),
+  Layer.provide([FetchHttpClient.layer, RpcSerialization.layerNdjson]),
+)
+
+export const RoomsClientLive = Layer.effect(
+  RoomsClient,
+  RpcClient.make(RoomRpcs),
+).pipe(Layer.provide(ProtocolLive))

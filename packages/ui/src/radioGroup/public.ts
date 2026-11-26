@@ -9,7 +9,7 @@ export {
   type FocusedOption,
   FocusOption,
   Orientation,
-} from './index.js'
+} from './index.vibe'
 
 export type {
   InitConfig,
@@ -17,4 +17,4 @@ export type {
   RenderInfo,
   OptionInfo,
   Bundle,
-} from './index.js'
+} from './index.vibe'

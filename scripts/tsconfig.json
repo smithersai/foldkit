@@ -5,8 +5,9 @@
     "moduleResolution": "Bundler",
     "noEmit": true,
     "types": ["node"],
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "rootDir": ".."
   },
-  "include": ["*.ts", "*.mts", "fixtures/**/*.ts"],
+  "include": ["*.ts", "*.mts", "fixtures/**/*.ts", "*.vibe"],
   "exclude": ["fixtures/packed-ssr-consumer"]
 }

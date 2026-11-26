@@ -3,7 +3,7 @@ import { modifyFields } from 'foldkit/struct'
 import { describe, test } from 'vitest'
 
 import { Snake } from './domain'
-import { type Model, update, view } from './main'
+import { type Model, update, view } from './main.vibe'
 
 const baseModel: Model = {
   snake: Snake.create({ x: 10, y: 10 }),

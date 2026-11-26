@@ -1,3 +1,3 @@
-export { serve } from './node.js'
+export { serve } from './node.vibe'
 
-export type { ServeOptions } from './node.js'
+export type { ServeOptions } from './node.vibe'

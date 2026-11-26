@@ -1,7 +1,7 @@
 import { defineMessageUnion } from 'foldkit/message'
 
-import { Session } from '../../domain/session'
-import * as Login from './page/login'
+import { Session } from '../../domain/session.vibe'
+import * as Login from './page/login.vibe'
 
 // MESSAGE
 

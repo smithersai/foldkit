@@ -1,0 +1,15 @@
+import { type Update } from 'foldkit'
+
+import { FocusUsernameInput } from './command.vibe'
+import { Message } from './message.vibe'
+import { HomeStep, Model } from './model.vibe'
+
+export type InitReturn = Update.Return<Model, Message>
+
+export const init = (): InitReturn => ({
+  model: {
+    homeStep: HomeStep.EnterUsername({ username: '' }),
+    formError: Option.none(),
+  },
+  commands: [FocusUsernameInput()],
+})

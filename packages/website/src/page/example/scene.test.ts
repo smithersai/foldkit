@@ -14,11 +14,11 @@ import { describe, test } from 'vitest'
 
 import { Tabs } from '@foldkit/ui'
 
-import { Deployment } from '../../deployment'
-import { init, update, view } from '../../main'
-import { Message } from '../../message'
+import { Deployment } from '../../deployment.vibe'
+import { init, update, view } from '../../main.vibe'
+import { Message } from '../../message.vibe'
 import * as SnippetDisclosure from '../../snippetDisclosure'
-import { type ExampleSources } from './sources'
+import { type ExampleSources } from './sources.vibe'
 
 const longCode = pipe(
   Array.makeBy(16, index => `const value${index} = ${index}`),

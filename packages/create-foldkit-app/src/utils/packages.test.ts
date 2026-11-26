@@ -3,7 +3,7 @@ import { expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import { Scaffold } from '../rendering.js'
+import { Scaffold } from '../rendering.vibe'
 import {
   buildUnresolvedDeps,
   buildUnresolvedDevDeps,
@@ -12,7 +12,7 @@ import {
   foldkitSubtreeRef,
   installCommand,
   scaffoldDevDependencies,
-} from './packages.js'
+} from './packages.vibe'
 
 describe('buildUnresolvedDeps', () => {
   it('keeps third-party versions and defers every workspace package to the CLI release manifest', () => {

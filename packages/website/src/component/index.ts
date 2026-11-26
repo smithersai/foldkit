@@ -1,2 +1,2 @@
-export * as CodeBlock from './codeBlock'
-export * as Shared from './shared'
+export * as CodeBlock from './codeBlock.vibe'
+export * as Shared from './shared.vibe'

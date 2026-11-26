@@ -8,7 +8,7 @@ import {
   lift,
   make,
   tag,
-} from './managedResource.js'
+} from './managedResource.vibe'
 
 // A child Submodel owns a session resource and mounts/unmounts.
 

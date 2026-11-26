@@ -27,8 +27,8 @@ export {
   type ClickedButton,
   type IgnoredMouseClick,
   type SuppressedSpaceScroll,
-} from './index.js'
+} from './index.vibe'
 
-export type { InitConfig, ViewInputs, RenderInfo } from './index.js'
+export type { InitConfig, ViewInputs, RenderInfo } from './index.vibe'
 
 export type { AnchorConfig } from '../anchor/index.js'

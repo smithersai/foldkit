@@ -17,7 +17,7 @@ import {
   Model,
   update,
   view,
-} from './main'
+} from './main.vibe'
 
 const initialModel = Model.make({
   elapsedMs: 0,

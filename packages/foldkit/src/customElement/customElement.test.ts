@@ -4,16 +4,19 @@ import { expect, vi } from 'vitest'
 import { describe, it } from '@effect/vitest'
 
 import { beginRender, createBoundaryRegistry } from '../html/boundary.js'
-import { type ChildAttribute, childAttributes } from '../html/childAttribute.js'
+import {
+  type ChildAttribute,
+  childAttributes,
+} from '../html/childAttribute.vibe'
 import {
   type Html,
   __htmlBuilder,
   __clearRuntime as clearHtmlRuntime,
   __setRuntime as setHtmlRuntime,
-} from '../html/index.js'
+} from '../html/index.vibe'
 import { defineView, submodel as submodelImpl } from '../html/submodel.js'
 import { defineMessageUnion } from '../message/index.js'
-import { MountTracker } from '../mount/index.js'
+import { MountTracker } from '../mount/index.vibe'
 import { propsModule } from '../propsModule.js'
 import { Dispatch } from '../runtime/index.js'
 import {
@@ -25,8 +28,8 @@ import {
   styleModule,
   toVNode,
 } from '../snabbdom/index.js'
-import type { VNode } from '../vdom.js'
-import * as CustomElement from './index.js'
+import type { VNode } from '../vdom.vibe'
+import * as CustomElement from './index.vibe'
 
 const patch = init([
   attributesModule,

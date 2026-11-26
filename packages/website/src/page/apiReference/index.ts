@@ -1,7 +1,12 @@
-export * from './domain'
-export { ApiData, ApiDataAsyncData, Model, sliceApiDataToModule } from './model'
-export type { Disclosures } from './model'
-export { Message } from './message'
-export { boot, init } from './init'
-export { informRouteChanged, update } from './update'
-export { failureView, skeletonView, view } from './view'
+export * from './domain.vibe'
+export {
+  ApiData,
+  ApiDataAsyncData,
+  Model,
+  sliceApiDataToModule,
+} from './model.vibe'
+export type { Disclosures } from './model.vibe'
+export { Message } from './message.vibe'
+export { boot, init } from './init.vibe'
+export { informRouteChanged, update } from './update.vibe'
+export { failureView, skeletonView, view } from './view.vibe'

@@ -3,11 +3,11 @@ import type { Html } from 'foldkit/html'
 
 import { type CodeBlock } from '../../component'
 import { slotDocPage } from '../../markdown'
-import { type RenderHeadingLink, demoContainer } from '../../prose'
+import { type RenderHeadingLink, demoContainer } from '../../prose.vibe'
 import raw from './datePickerPage.md'
-import * as DatePicker from './demo/datePicker'
-import type { Message } from './message'
-import type { Model } from './model'
+import * as DatePicker from './demo/datePicker.vibe'
+import type { Message } from './message.vibe'
+import type { Model } from './model.vibe'
 
 const { tableOfContents, view: renderPage } = slotDocPage<'basic'>(
   raw,

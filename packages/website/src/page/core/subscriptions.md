@@ -118,6 +118,8 @@ The default structural comparison restarts an entry whenever any dependency chan
 
 Auto-scroll during drag and drop is one example. `isDragging` should start and stop the animation loop. `clientY` changes with every pointer movement, but restarting the loop for every pixel would destroy and recreate it continuously.
 
+The animation loop reads the browser window service when it starts. Each frame reads the latest dependencies, and release cancels the last scheduled frame.
+
 ::Snippet{name="subscriptionEquivalence" label="Auto-scroll with live dependencies"}
 
 ### Custom Equivalence

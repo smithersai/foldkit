@@ -1,0 +1,34 @@
+[
+  {
+    "name": "section order wins over callback order",
+    "sections": ["intro", "usage", "api"],
+    "present": ["intro", "usage", "api"],
+    "batches": [
+      [
+        ["api", true],
+        ["usage", true]
+      ],
+      [["intro", true]],
+      [
+        ["intro", false],
+        ["usage", false]
+      ],
+      [["api", false]]
+    ],
+    "expected": ["usage", "intro", "api"]
+  },
+  {
+    "name": "duplicate sections retain observation order",
+    "sections": ["a", "a", "b"],
+    "present": ["a", "b"],
+    "batches": [[["b", true]], [["a", true]], [["a", false]]],
+    "expected": ["b", "a", "b"]
+  },
+  {
+    "name": "missing elements are skipped",
+    "sections": ["gone", "b"],
+    "present": ["b"],
+    "batches": [[["b", true]], [["b", false]]],
+    "expected": ["b"]
+  }
+]

@@ -19,6 +19,8 @@
   },
   "sortPackageJson": false,
   "ignorePatterns": [
+    // Vendored generated grammar; keep its canonical source bytes.
+    "packages/website/scripts/syntax/VibeLang.tmLanguage.json",
     "node_modules",
     "dist",
     "dist-server",

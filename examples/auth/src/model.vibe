@@ -1,0 +1,5 @@
+import { LoggedIn, LoggedOut } from './page/index.ts'
+
+export schema Model = LoggedOut.Model | LoggedIn.Model
+
+export { LoggedOut, LoggedIn }

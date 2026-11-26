@@ -2,6 +2,6 @@ export {
   markdown,
   parseMarkdown,
   parseMarkdownWithFrontmatter,
-} from './vite.js'
-export type { MarkdownPluginOptions, ParsedMarkdown } from './vite.js'
-export type { FrontmatterDefinition } from './frontmatter.js'
+} from './vite.vibe'
+export type { MarkdownPluginOptions, ParsedMarkdown } from './vite.vibe'
+export type { FrontmatterDefinition } from './frontmatter.vibe'

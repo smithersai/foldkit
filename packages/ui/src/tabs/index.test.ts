@@ -17,7 +17,7 @@ import {
   keyToIndex,
   update,
   wrapIndex,
-} from './index.js'
+} from './index.vibe'
 
 const noneDisabled = () => false
 

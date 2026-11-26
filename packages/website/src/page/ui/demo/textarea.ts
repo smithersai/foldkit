@@ -2,8 +2,8 @@ import type { HtmlBuilder } from 'foldkit/html'
 
 import { Textarea } from '@foldkit/ui'
 
-import { Message } from '../message'
-import type { Model } from '../model'
+import { Message } from '../message.vibe'
+import type { Model } from '../model.vibe'
 
 // VIEW
 

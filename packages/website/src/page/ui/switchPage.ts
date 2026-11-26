@@ -3,10 +3,10 @@ import type { Html } from 'foldkit/html'
 
 import { type CodeBlock } from '../../component'
 import { slotDocPage } from '../../markdown'
-import { type RenderHeadingLink, demoContainer } from '../../prose'
+import { type RenderHeadingLink, demoContainer } from '../../prose.vibe'
 import * as Switch from './demo/switch'
-import type { Message } from './message'
-import type { Model } from './model'
+import type { Message } from './message.vibe'
+import type { Model } from './model.vibe'
 import raw from './switchPage.md'
 
 const { tableOfContents, view: renderPage } = slotDocPage<'basic'>(

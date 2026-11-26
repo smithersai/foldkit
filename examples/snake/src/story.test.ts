@@ -3,7 +3,7 @@ import { modifyFields } from 'foldkit/struct'
 import { describe, expect, test } from 'vitest'
 
 import { Snake } from './domain'
-import { GenerateApplePosition, Message, type Model, update } from './main'
+import { GenerateApplePosition, Message, type Model, update } from './main.vibe'
 
 const initialSnake = Snake.create({ x: 10, y: 10 })
 

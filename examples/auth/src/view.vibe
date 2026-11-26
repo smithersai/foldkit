@@ -1,0 +1,32 @@
+import { type Document, HtmlBuilder } from 'foldkit/html'
+
+import { Message } from './message.vibe'
+import { LoggedIn, LoggedOut, Model } from './model.vibe'
+
+const title = (model: Model): string => match (model.route) {
+  when { _tag: 'Home' }: 'Auth';
+  default: `${model.route._tag} | Auth`;
+}
+
+export const view = (model: Model, h: HtmlBuilder<Message>): Document => ({
+  title: title(model),
+  body: h.div(
+    [h.Class('min-h-screen bg-gray-100')],
+    [
+      match (model) {
+        when { _tag: "LoggedOut" } and let loggedOutModel: h.submodel({
+          slotId: 'logged-out',
+          model: loggedOutModel,
+          view: LoggedOut.view,
+          toParentMessage: message => Message.GotLoggedOutMessage({ message }),
+        });
+        when { _tag: "LoggedIn" } and let loggedInModel: h.submodel({
+          slotId: 'logged-in',
+          model: loggedInModel,
+          view: LoggedIn.view,
+          toParentMessage: message => Message.GotLoggedInMessage({ message }),
+        });
+      },
+    ],
+  ),
+})

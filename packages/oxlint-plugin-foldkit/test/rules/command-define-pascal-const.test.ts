@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { commandDefinePascalConst } from '../../src/rules/command-define-pascal-const.ts'
+import { commandDefinePascalConst } from '../../src/rules/command-define-pascal-const.vibe'
 
 const commandDefineCall = (defineArguments: ReadonlyArray<unknown>) =>
   Testing.callOfMember('Command', 'define', defineArguments)

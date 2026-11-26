@@ -1,0 +1,13 @@
+{
+  "key": "foldkit:pagefind-dynamic-import",
+  "moduleSource": "export const search = async query => ({ results: [{ data: async () => ({ url: query, excerpt: query }) }] })",
+  "failures": [
+    null,
+    false,
+    0,
+    "",
+    "import failed",
+    { "message": "import failed" }
+  ],
+  "outcomes": ["success", "throw", "reject"]
+}

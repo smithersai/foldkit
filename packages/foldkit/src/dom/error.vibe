@@ -1,0 +1,4 @@
+/** Error indicating that a DOM element matching the given selector was not found. */
+export error ElementNotFound {
+  selector: string
+}

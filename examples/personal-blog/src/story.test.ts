@@ -4,8 +4,8 @@ import { fromString } from 'foldkit/url'
 import { describe, expect, test } from 'vitest'
 
 import { Counter } from './island'
-import { Message as CounterMessage } from './island/counter'
-import { AppRoute, Message, Model, update } from './main'
+import { Message as CounterMessage } from './island/counter.vibe'
+import { AppRoute, Message, Model, update } from './main.vibe'
 
 const home = Model.make({ route: AppRoute.Home(), counter: Counter.init })
 

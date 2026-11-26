@@ -3,7 +3,7 @@ import { type Html, type HtmlBuilder, inertHtml as ih } from 'foldkit/html'
 import { Popover } from '@foldkit/ui'
 import type { AnchorConfig } from '@foldkit/ui/popover'
 
-import { Message } from '../message'
+import { Message } from '../message.vibe'
 
 // DEMO CONTENT
 

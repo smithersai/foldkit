@@ -9,7 +9,13 @@ import {
 import { describe, expect, test } from 'vitest'
 
 import { products } from '../data/products'
-import { Message, OutMessage, ReplaceSearchUrl, init, update } from './products'
+import {
+  Message,
+  OutMessage,
+  ReplaceSearchUrl,
+  init,
+  update,
+} from './products.vibe'
 
 const apple = { id: '1', name: 'Apple', price: 1.5 }
 

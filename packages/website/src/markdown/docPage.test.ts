@@ -194,11 +194,14 @@ const markdownSources = import.meta.glob('../page/**/*.md', {
   eager: true,
 })
 
-const pageSources = import.meta.glob('../page/**/*.ts', {
-  query: '?raw',
-  import: 'default',
-  eager: true,
-})
+const pageSources = import.meta.glob(
+  ['../page/**/*.{ts,vibe}', '!../page/**/*.d.vibe.ts'],
+  {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+  },
+)
 
 const COMING_FROM_REACT_PATH = '../page/comingFromReact/comingFromReact.md'
 
@@ -290,7 +293,7 @@ describe('demo island registration', () => {
 const SNIPPET_ISLAND_PATTERN = /::Snippet\{[^}]*name="([^"]+)"/g
 const SNIPPET_TITLE_PATTERN = /::Snippet\{[^}]*label="([^"]+)"/g
 
-const SNIPPET_EXTENSION_PATTERN = /\.(?:ts|tsx|elm|json|css|html|sh|txt)$/
+const SNIPPET_EXTENSION_PATTERN = /\.(?:vibe|ts|tsx|elm|json|css|html|sh|txt)$/
 const REDUNDANT_SNIPPET_TITLE_SUFFIX_PATTERN =
   /\s(?:example|examples|code|snippet)$/i
 const SNIPPET_TITLE_START_PATTERN = /^(?:[A-Z]|[❌✅] [A-Z])/u
@@ -335,7 +338,10 @@ describe('snippet island registration', () => {
   const snippetFileNames = new Set(
     Array.filterMap(
       Object.keys(
-        import.meta.glob('../snippet/*.{ts,tsx,elm,json,css,html,sh,txt}'),
+        import.meta.glob([
+          '../snippet/*.{vibe,ts,tsx,elm,json,css,html,sh,txt}',
+          '!../snippet/*.d.vibe.ts',
+        ]),
       ),
       path =>
         Result.fromOption(

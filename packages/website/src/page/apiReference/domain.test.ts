@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { scopedIdBelongsToModule } from './domain'
+import { scopedIdBelongsToModule } from './domain.vibe'
 
 describe('scopedIdBelongsToModule', () => {
   test('claims a plain item id of the module', () => {

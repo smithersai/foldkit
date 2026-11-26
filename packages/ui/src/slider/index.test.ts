@@ -10,7 +10,7 @@ import {
   snapAndClamp,
   update,
   valueFromPointer,
-} from './index.js'
+} from './index.vibe'
 
 const defaultInit = () => init({ id: 'test', min: 0, max: 10, step: 1 })
 

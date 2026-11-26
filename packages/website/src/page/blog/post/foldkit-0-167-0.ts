@@ -3,10 +3,10 @@ import type { Html } from 'foldkit/html'
 
 import { type CodeBlock } from '../../../component'
 import { slotDocPage } from '../../../markdown'
-import { type RenderHeadingLink, demoContainer } from '../../../prose'
-import * as VirtualList from '../../ui/demo/virtualList'
-import type { Message } from '../../ui/message'
-import type { Model } from '../../ui/model'
+import { type RenderHeadingLink, demoContainer } from '../../../prose.vibe'
+import * as VirtualList from '../../ui/demo/virtualList.vibe'
+import type { Message } from '../../ui/message.vibe'
+import type { Model } from '../../ui/model.vibe'
 import raw from './foldkit-0-167-0.md'
 
 const { view: renderPost } = slotDocPage<'chat'>(raw, 'foldkit-0-167-0')

@@ -2,11 +2,11 @@ import { Duration, Effect, Fiber, Predicate, Schema, Stream } from 'effect'
 import { afterEach, describe, expect, expectTypeOf, it } from 'vitest'
 
 import { defineMessageUnion } from '../message/index.js'
-import { make } from '../subscription/subscription.js'
+import { make } from '../subscription/subscription.vibe'
 import {
   type StreamFromKeyBindingsConfig,
   streamFromKeyBindings,
-} from './streamFromKeyBindings.js'
+} from './streamFromKeyBindings.vibe'
 
 const Message = defineMessageUnion({
   PressedKeys: { name: Schema.String },

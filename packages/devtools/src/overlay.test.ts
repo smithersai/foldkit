@@ -12,7 +12,7 @@ import { DEVTOOLS_HOST_ID } from 'foldkit/devtools-host'
 import type { DevToolsStore, StoreState } from 'foldkit/devtools-host'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { CopyPayloadToClipboard, createOverlay } from './overlay.js'
+import { CopyPayloadToClipboard, createOverlay } from './overlay.vibe'
 
 const initialStoreState: StoreState = {
   entries: [],

@@ -2,7 +2,7 @@ import { expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import { Circle, Group, Rect } from './shape.js'
+import { Circle, Group, Rect } from './shape.vibe'
 
 describe('Group', () => {
   it('nests shapes under a transform', () => {

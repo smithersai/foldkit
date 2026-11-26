@@ -7,8 +7,8 @@ import { describe, expect, test } from 'vitest'
 
 import { Dialog } from '@foldkit/ui'
 
-import { AppRoute, Message, type Model, update } from './main'
-import { uiInit } from './ui/init'
+import { AppRoute, Message, type Model, update } from './main.vibe'
+import { uiInit } from './ui/init.vibe'
 
 const today = Calendar.make(2026, 4, 16)
 const uiInit_ = uiInit(today)

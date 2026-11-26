@@ -3,14 +3,14 @@ import { afterEach, beforeEach, expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import { MountTracker } from '../mount/index.js'
+import { MountTracker } from '../mount/index.vibe'
 import { Dispatch } from '../runtime/index.js'
-import { type HtmlBuilder, __htmlBuilder } from './index.js'
+import { type HtmlBuilder, __htmlBuilder } from './index.vibe'
 import {
   type DispatchSync,
   clearRuntime,
   setRuntime,
-} from './runtimeSingleton.js'
+} from './runtimeSingleton.vibe'
 
 const setUpRuntime = (dispatched: Array<unknown>): void => {
   const dispatchSync: DispatchSync = message => {

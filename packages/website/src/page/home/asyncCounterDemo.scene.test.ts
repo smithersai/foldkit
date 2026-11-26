@@ -9,7 +9,7 @@ import {
   init,
   update,
   view,
-} from './asyncCounterDemo'
+} from './asyncCounterDemo.vibe'
 
 const init_ = init()
 

@@ -4,7 +4,7 @@ import { expect } from 'vitest'
 import { describe, it } from '@effect/vitest'
 
 import { defineMessageUnion } from '../message/index.js'
-import * as Command from './index.js'
+import * as Command from './index.vibe'
 import { __CurrentRegistry, __makeRegistry } from './interruptible/index.js'
 
 const Message = defineMessageUnion({

@@ -1,6 +1,6 @@
-export { init, create, Model } from './single.js'
+export { init, create, Model } from './single.vibe'
 
-export { inputId } from './shared.js'
+export { inputId } from './shared.vibe'
 
 export {
   Message,
@@ -38,16 +38,16 @@ export {
   type SuppressedEmptyItemNavigation,
   type UpdatedInputValue,
   type PressedToggleButton,
-} from './shared.js'
+} from './shared.vibe'
 
 export type {
   ActivationTrigger,
   ItemConfig,
   GroupHeading,
   BaseViewInputsCommon,
-} from './shared.js'
+} from './shared.vibe'
 
-export type { Bundle, InitConfig, ViewInputs } from './single.js'
+export type { Bundle, InitConfig, ViewInputs } from './single.vibe'
 
 export type { AnchorConfig } from '../anchor/index.js'
 

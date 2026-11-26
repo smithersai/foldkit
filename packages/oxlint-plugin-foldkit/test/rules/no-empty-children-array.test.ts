@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { noEmptyChildrenArray } from '../../src/rules/no-empty-children-array.ts'
+import { noEmptyChildrenArray } from '../../src/rules/no-empty-children-array.vibe'
 
 const arrayExpr = (elements: ReadonlyArray<unknown> = []) => ({
   type: 'ArrayExpression',

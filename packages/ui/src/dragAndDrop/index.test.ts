@@ -17,7 +17,7 @@ import {
   maybeDropTarget,
   subscriptions,
   update,
-} from './index.js'
+} from './index.vibe'
 import * as DragAndDropTest from './test.js'
 
 const defaultInit = () => init({ id: 'test' })

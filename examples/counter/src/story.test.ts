@@ -1,7 +1,7 @@
 import { Command, given, message, model, story } from 'foldkit/story'
 import { describe, expect, test } from 'vitest'
 
-import { Message, type Model, update } from './main'
+import { Message, type Model, update } from './main.vibe'
 
 const initialModel: Model = { count: 0 }
 

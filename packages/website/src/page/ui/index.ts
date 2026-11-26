@@ -1,8 +1,8 @@
-export { Model } from './model'
-export { Message } from './message'
-export { init } from './init'
-export { update } from './update'
-export { subscriptions } from './subscriptions'
+export { Model } from './model.vibe'
+export { Message } from './message.vibe'
+export { init } from './init.vibe'
+export { update } from './update.vibe'
+export { subscriptions } from './subscriptions.vibe'
 
 export * as OverviewPage from './overviewPage'
 export * as SelectionSubmodelsPage from './selectionSubmodelsPage'

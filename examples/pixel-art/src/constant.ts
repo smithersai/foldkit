@@ -2,7 +2,7 @@ import {
   type HexColor,
   HexColor as HexColorSchema,
   type PaletteIndex,
-} from './model'
+} from './model.vibe'
 
 export const DEFAULT_GRID_SIZE = 16
 export const EMPTY_COLOR: HexColor = HexColorSchema.make('#ffffff')

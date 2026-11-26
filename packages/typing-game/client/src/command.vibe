@@ -1,0 +1,16 @@
+import { Command } from 'foldkit'
+import { pushUrl } from 'foldkit/navigation'
+
+import { Message } from './message.ts'
+import { roomRouter } from './route.vibe'
+
+export const NavigateToRoom = Command.define('NavigateToRoom', {
+  args: { roomId: Schema.String },
+  messages: [Message.CompletedNavigateToRoom],
+  execute: effect ({ roomId }) => {
+    const url = roomRouter({ roomId })
+    const completed = Message.CompletedNavigateToRoom()
+    try pushUrl(url)
+    return completed
+  },
+})

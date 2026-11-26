@@ -4,7 +4,7 @@ import type { Html } from 'foldkit/html'
 import { Button } from '@foldkit/ui'
 
 import * as Entry from './entry'
-import { Message, type Model } from './workHistory'
+import { Message, type Model } from './workHistory.vibe'
 
 export const view = Submodel.defineView<Model, Message>((model, h): Html =>
   h.div(

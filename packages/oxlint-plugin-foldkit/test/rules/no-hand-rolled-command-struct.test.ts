@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { noHandRolledCommandStruct } from '../../src/rules/no-hand-rolled-command-struct.ts'
+import { noHandRolledCommandStruct } from '../../src/rules/no-hand-rolled-command-struct.vibe'
 
 const property = (key: string, value: unknown) => ({
   type: 'Property',

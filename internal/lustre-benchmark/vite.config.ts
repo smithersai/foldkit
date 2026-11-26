@@ -1,3 +1,4 @@
+import vibelang from 'vibelang-vite'
 import { defineConfig } from 'vite'
 
 import { foldkit } from '@foldkit/vite-plugin'
@@ -9,7 +10,7 @@ const isOptimised = variant === 'optimised'
 
 export default defineConfig({
   base: './',
-  plugins: [foldkit()],
+  plugins: [vibelang(), foldkit()],
   resolve: {
     alias: foldkitAliases(__dirname),
   },

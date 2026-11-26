@@ -1,7 +1,7 @@
 import { createServer } from 'vite'
 import { expect, it, onTestFinished } from 'vitest'
 
-import { foldkit } from '../src/index.ts'
+import { foldkit } from '../src/index.vibe'
 import {
   POLL_TIMEOUT,
   announceRuntime,

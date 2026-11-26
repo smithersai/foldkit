@@ -5,12 +5,12 @@ import { describe, expect, test } from 'vitest'
 
 import { DragAndDrop } from '@foldkit/ui'
 
-import { FocusAddCardInput, GenerateCardId, SaveBoard } from './command'
+import { FocusAddCardInput, GenerateCardId, SaveBoard } from './command.vibe'
 import { Column } from './domain'
-import type { Card } from './domain/card'
-import { Message } from './message'
-import type { Model } from './model'
-import { update } from './update'
+import type { Card } from './domain/card.vibe'
+import { Message } from './message.vibe'
+import type { Model } from './model.vibe'
+import { update } from './update.vibe'
 
 const card = (id: string, title: string, sortKey: string): Card => ({
   id,

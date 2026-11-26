@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { noPreventDefaultInStreamOperator } from '../../src/rules/no-prevent-default-in-stream-operator.ts'
+import { noPreventDefaultInStreamOperator } from '../../src/rules/no-prevent-default-in-stream-operator.vibe'
 
 const preventDefaultCall = () => Testing.callOfMember('event', 'preventDefault')
 

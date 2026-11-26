@@ -14,7 +14,7 @@ import {
   SaveDraft,
   init,
   update,
-} from './main'
+} from './main.vibe'
 
 const urlOrThrow = (raw: string) =>
   Option.getOrThrowWith(

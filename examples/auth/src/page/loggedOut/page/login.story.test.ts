@@ -17,7 +17,7 @@ import {
   SimulateAuthRequest,
   initModel,
   update,
-} from './login'
+} from './login.vibe'
 
 const validModel = modifyFields(initModel(), {
   email: () => Valid({ value: 'alice@example.com' }),

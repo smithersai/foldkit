@@ -1,0 +1,49 @@
+import { ExperimentalBrowserDocument } from 'vibelang-runtime/experimental/platform-browser'
+import { Command, Dom, Subscription } from 'foldkit'
+
+import { Api } from './api'
+import { Message } from './message'
+import { Model } from './model'
+
+// A side effect is a Command returned from update. It has a name, shows up
+// in DevTools next to the Message that produced it, and is assertable in
+// tests. Api is an Effect service; Api.Default is its layer.
+const CreateTodo = Command.define('CreateTodo', {
+  args: { text: Schema.String },
+  messages: [SucceededCreateTodo, FailedCreateTodo],
+  execute: effect ({ text }) => {
+    return (effect {
+      provide Api.Default {
+        try Api.createTodo(text)
+        return SucceededCreateTodo()
+      }
+    }) catch () => FailedCreateTodo()
+  },
+})
+
+// Here the global listener becomes a Subscription: an external event source
+// bound to a slice of the Model. The runtime subscribes and unsubscribes as
+// model.isDrawing changes. No addEventListener, no cleanup, no stale closure.
+export const subscriptions = Subscription.make<Model, Message>()(entry => ({
+  mouseRelease: entry(
+    { isDrawing: Schema.Boolean },
+    {
+      modelToDependencies: model => ({ isDrawing: model.isDrawing }),
+      dependenciesToStream: ({ isDrawing }) =>
+        Stream.when(
+          Dom.streamFromEvent({
+            target: Effect.runSync(effect {
+              provide ExperimentalBrowserDocument.layer {
+                return try (try Experimental.Document.Document).current
+              }
+            }),
+            type: 'mouseup',
+            mapEvent: () => ReleasedMouse(),
+          }),
+          effect {
+            return isDrawing
+          },
+        ),
+    },
+  ),
+}))

@@ -13,7 +13,7 @@ import {
   init,
   update,
   view,
-} from './index.js'
+} from './index.vibe'
 
 type DemoItem = Readonly<{ id: number; label: string }>
 

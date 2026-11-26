@@ -21,6 +21,7 @@ on:
       - 'scripts/check-create-foldkit-app-smoke.ts'
       - 'scripts/check-peer-floors.ts'
       - 'scripts/build-examples.ts'
+      - 'scripts/build-examples.vibe'
       - 'scripts/build-public-packages.mjs'
       - 'scripts/check-playground-ssg-build.ts'
       - 'scripts/check-website-release-inputs.mjs'

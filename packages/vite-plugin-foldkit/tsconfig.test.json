@@ -4,6 +4,7 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "allowImportingTsExtensions": true,
+    "customConditions": ["vibelang-source"],
     "noEmit": true,
     "rootDir": ".",
     "types": ["node"]

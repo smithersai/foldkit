@@ -18,7 +18,7 @@ import {
   scrollToKey,
   scrollToOffset,
   update,
-} from './index.js'
+} from './index.vibe'
 
 const defaultInit = (): Model => init({ id: 'test', rowHeightPx: 30 })
 

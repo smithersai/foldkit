@@ -7,6 +7,6 @@ export {
   hasErrors,
   isComplete,
   revealErrors,
-} from './workHistory'
+} from './workHistory.vibe'
 export * as Entry from './entry'
 export { view } from './view'

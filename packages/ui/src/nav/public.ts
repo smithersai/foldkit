@@ -1,3 +1,3 @@
-export { view } from './index.js'
+export { view } from './index.vibe'
 
-export type { ItemInfo, RenderInfo, ViewInputs } from './index.js'
+export type { ItemInfo, RenderInfo, ViewInputs } from './index.vibe'

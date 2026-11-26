@@ -5,25 +5,25 @@
   "type": "module",
   "scripts": {
     "predev": "node ../../internal/api-reference-generator/generate.mjs",
-    "dev": "vite",
+    "dev": "node --import vibelang/register ./node_modules/vite/bin/vite.js --configLoader native --config vite.config.vibe",
     "prebuild": "node ../../internal/api-reference-generator/generate.mjs",
-    "build": "export FOLDKIT_BUILD_ID=\"${FOLDKIT_BUILD_ID:-$(git rev-parse HEAD 2>/dev/null)}\"; vite build",
-    "preview": "vite preview",
+    "build": "export FOLDKIT_BUILD_ID=\"${FOLDKIT_BUILD_ID:-$(git rev-parse HEAD 2>/dev/null)}\"; node --import vibelang/register ./node_modules/vite/bin/vite.js build --configLoader native --config vite.config.vibe",
+    "preview": "node --import vibelang/register ./node_modules/vite/bin/vite.js preview --configLoader native --config vite.config.vibe",
     "pretypecheck": "node ../../internal/api-reference-generator/generate.mjs",
-    "typecheck": "tsc --noEmit",
-    "format": "oxfmt",
-    "test": "vitest run",
-    "openapi": "vite build --config vite.scripts.config.ts --ssr scripts/openApi.ts --outDir dist-scripts && node dist-scripts/openApi.js",
+    "typecheck": "vibelang --noEmit",
+    "format": "(oxfmt) && vibelang-format --write",
+    "test": "node --import vibelang/register ./node_modules/vitest/vitest.mjs run --configLoader native --maxWorkers=1",
+    "openapi": "node --import vibelang/register ./node_modules/vite/bin/vite.js build --configLoader native --config vite.scripts.config.ts --ssr scripts/openApi.ts --outDir dist-scripts && node dist-scripts/openApi.js",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:ui": "playwright test --ui",
-    "preprerender": "export FOLDKIT_BUILD_ID=\"${FOLDKIT_BUILD_ID:-$(git rev-parse HEAD 2>/dev/null)}\"; vite build --ssr src/entry.server.ts --outDir dist-server",
-    "prerender": "vite build --config vite.scripts.config.ts --ssr scripts/prerender.ts --outDir dist-scripts && node dist-scripts/prerender.js",
+    "preprerender": "export FOLDKIT_BUILD_ID=\"${FOLDKIT_BUILD_ID:-$(git rev-parse HEAD 2>/dev/null)}\"; node --import vibelang/register ./node_modules/vite/bin/vite.js build --configLoader native --config vite.config.vibe --ssr src/entry.server.vibe --outDir dist-server",
+    "prerender": "node --import vibelang/register ./node_modules/vite/bin/vite.js build --configLoader native --config vite.scripts.config.ts --ssr scripts/runPrerender.ts --outDir dist-scripts && node dist-scripts/runPrerender.js",
     "postprerender": "pagefind",
-    "preview:search": "pnpm build && pnpm prerender && vite preview"
+    "preview:search": "pnpm build && pnpm prerender && node --import vibelang/register ./node_modules/vite/bin/vite.js preview --configLoader native --config vite.config.vibe"
   },
   "dependencies": {
-    "@effect/platform-browser": "4.0.0",
+    "@effect/platform-browser": "4.1.1",
     "@foldkit/devtools": "workspace:*",
     "@foldkit/markdown": "workspace:*",
     "@foldkit/ui": "workspace:*",
@@ -31,15 +31,16 @@
     "@vercel/speed-insights": "^2.0.0",
     "@webcontainer/api": "^1.6.4",
     "clsx": "^2.1.1",
-    "effect": "4.0.0",
+    "effect": "4.1.1",
     "foldkit": "workspace:*",
     "monaco-editor": "^0.56.0",
     "shiki": "^4.4.3",
-    "tailwind-merge": "^3.7.0"
+    "tailwind-merge": "^3.7.0",
+    "vibelang-runtime": "file:../../.vibelang-toolchain/vibelang-runtime-0.0.13.tgz"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
-    "@effect/platform-node": "4.0.0",
+    "@effect/platform-node": "4.1.1",
     "@foldkit/api-reference-generator": "workspace:*",
     "@foldkit/vite-plugin": "workspace:*",
     "@playwright/test": "^1.63.0",
@@ -54,6 +55,12 @@
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "^8.3.1",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.11",
+    "vibelang": "file:../../.vibelang-toolchain/vibelang-0.0.13.tgz",
+    "vibelang-vite": "file:../../.vibelang-toolchain/vibelang-vite-0.0.13.tgz",
+    "fast-check": "4.10.2",
+    "@effect/atom-react": "4.1.1",
+    "react": "19.3.0",
+    "@types/react": "19.3.0"
   }
 }

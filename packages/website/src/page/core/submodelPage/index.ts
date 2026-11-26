@@ -1,5 +1,5 @@
 export { init } from './init'
-export { Message } from './message'
-export { Model } from './model'
+export { Message } from './message.vibe'
+export { Model } from './model.vibe'
 export { update } from './update'
 export { tableOfContents, type ViewInputs, view } from './view'

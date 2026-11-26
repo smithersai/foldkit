@@ -1,0 +1,4 @@
+import { Effect, Schema } from 'effect'
+export const decode = effect {
+  return try Schema.decodeUnknownEffect(Schema.Number)(1)
+}

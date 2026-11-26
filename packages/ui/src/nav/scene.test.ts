@@ -7,7 +7,7 @@ import { modifyFields } from 'foldkit/struct'
 
 import { describe, it } from '@effect/vitest'
 
-import { view } from './index.js'
+import { view } from './index.vibe'
 
 const Section = Schema.Literals(['Dashboard', 'Projects', 'Settings'])
 type Section = typeof Section.Type

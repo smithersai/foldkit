@@ -2,7 +2,7 @@ import { expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import { modifyFields } from './index.js'
+import { modifyFields } from './index.vibe'
 
 describe('modifyFields', () => {
   it('transforms specified fields', () => {

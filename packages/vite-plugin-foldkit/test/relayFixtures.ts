@@ -11,7 +11,7 @@ import { type RawData, WebSocket } from 'ws'
 
 import { NodeServices } from '@effect/platform-node'
 
-import { readRelayRecords } from '../src/relayRegistry.ts'
+import { readRelayRecords } from '../src/relayRegistry.vibe'
 import { boundPort } from './boundPort.ts'
 
 export const RELAY_DIRECTORY_VARIABLE = 'FOLDKIT_DEVTOOLS_RELAY_DIRECTORY'

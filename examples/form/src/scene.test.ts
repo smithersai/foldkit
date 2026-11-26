@@ -20,7 +20,7 @@ import {
   initialModel,
   update,
   view,
-} from './main'
+} from './main.vibe'
 
 describe('view', () => {
   test('initial view shows all fields and a disabled submit button', () => {

@@ -2,8 +2,8 @@ import { clsx } from 'clsx'
 import { Html, type HtmlBuilder } from 'foldkit/html'
 
 import { Icon } from '../icon'
-import { Message } from '../message'
-import { type Model } from '../model'
+import { Message } from '../message.vibe'
+import { type Model } from '../model.vibe'
 import * as Search from '../search'
 
 const keyboardWarmupSelector = `#${Search.KEYBOARD_WARMUP_INPUT_ID}`

@@ -1,7 +1,7 @@
 import { Effect, Fiber } from 'effect'
 import { afterEach, describe, expect, it } from 'vitest'
 
-import type { Command } from '../../command/index.js'
+import type { Command } from '../../command/index.vibe'
 import { makeApplication } from '../../runtime/index.js'
 import * as App from './crashOnRender.js'
 

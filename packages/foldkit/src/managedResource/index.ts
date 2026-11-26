@@ -1,1 +1,1 @@
-export * from './managedResource.js'
+export * from './managedResource.vibe'

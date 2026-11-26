@@ -1,0 +1,18 @@
+{
+  "seed": 413962,
+  "cases": [
+    { "ended": true, "destroyed": false, "events": [] },
+    { "ended": false, "destroyed": true, "events": [] },
+    { "ended": false, "destroyed": false, "events": ["close", "end"] },
+    {
+      "ended": false,
+      "destroyed": false,
+      "events": ["cleanup", "data", "end", "close"]
+    },
+    {
+      "ended": false,
+      "destroyed": false,
+      "events": ["data", "end", "close", "cleanup"]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
-export { init, create, Model } from './single.js'
+export { init, create, Model } from './single.vibe'
 
-export { buttonId } from './shared.js'
+export { buttonId } from './shared.vibe'
 
 export {
   Message,
@@ -34,7 +34,7 @@ export {
   type IgnoredMouseClick,
   type SuppressedSpaceScroll,
   type SuppressedItemCommit,
-} from './shared.js'
+} from './shared.vibe'
 
 export type {
   ActivationTrigger,
@@ -42,9 +42,9 @@ export type {
   GroupHeading,
   BaseViewInputsCommon,
   ItemToValueInput,
-} from './shared.js'
+} from './shared.vibe'
 
-export type { Bundle, InitConfig, ViewInputs } from './single.js'
+export type { Bundle, InitConfig, ViewInputs } from './single.vibe'
 
 export type { AnchorConfig } from '../anchor/index.js'
 

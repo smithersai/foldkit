@@ -1,0 +1,539 @@
+import type { Cause } from 'effect'
+import {
+  Request,
+  RequestFrame,
+  type Response,
+  type RuntimeInfo,
+} from 'foldkit/devtools-protocol'
+import { WebSocket } from 'ws'
+
+import {
+  computeRelayProof,
+  createRelayChallenge,
+  matchesRelayProof,
+} from './relayCrypto.vibe'
+
+import {
+  type PendingResponses,
+  handleIncomingMessage,
+} from './relayMessages.vibe'
+
+import type { RelayTarget } from './relayLocation.vibe'
+
+const REQUEST_TIMEOUT = Duration.seconds(10)
+const CONNECT_TIMEOUT = Duration.seconds(2)
+const LIST_RUNTIMES_TIMEOUT = Duration.seconds(2)
+
+const NOT_CONNECTED_REASON =
+  'Not connected to a Foldkit dev server. Start your Foldkit Vite dev server and retry the tool call.'
+const NO_RUNTIMES_REASON =
+  'No connected Foldkit runtimes. Open a Foldkit dev page and try again.'
+const INVALID_ADDRESS_REASON = 'the relay address is not a valid URL'
+const UNVERIFIED_RELAY_REASON = 'the relay could not prove its identity'
+const CLOSED_REASON = 'The Foldkit relay client is closed.'
+const RELAY_TOKEN_PARAMETER = 'token'
+const RELAY_CHALLENGE_HEADER = 'X-Foldkit-Relay-Challenge'
+const RELAY_CLIENT_PROOF_HEADER = 'X-Foldkit-Relay-Client-Proof'
+const RELAY_SERVER_PROOF_HEADER = 'x-foldkit-relay-server-proof'
+const RELAY_TOKEN_PATTERN = /^[0-9a-f]{64}$/
+const RELAY_PROOF_PATTERN = /^[0-9a-f]{64}$/
+const RELAY_CHALLENGE_BYTES = 32
+
+const encodeRequestFrameToJson = Schema.encodeUnknownSync(
+  Schema.fromJsonString(RequestFrame),
+)
+
+type RelaySocket = Readonly<{
+  socket: WebSocket
+  target: RelayTarget
+}>
+
+type RelayListing = Readonly<{
+  relaySocket: RelaySocket
+  runtimes: ReadonlyArray<typeof RuntimeInfo.Type>
+}>
+
+type RuntimeRoute = Readonly<{
+  socket: WebSocket
+  connectionId: string
+}>
+
+type Refresh = Deferred<ReadonlyArray<RelaySocket>>
+
+data RefreshTurn {
+  Leader { refresh: Refresh }
+  Follower { refresh: Refresh }
+}
+
+export type ListedRuntime = Readonly<{
+  runtime: typeof RuntimeInfo.Type
+  maybeProjectRoot: Option<string>
+}>
+
+/**
+ * Connects MCP tool calls to the DevTools relays for a project.
+ *
+ * Each call checks the registry, connects to matching relays, and lists their
+ * Runtimes before routing a request. It closes connections to relays that are
+ * no longer published. Concurrent calls share one registry lookup. A dev server
+ * started or restarted after the previous call is reached on the next one.
+ *
+ * `listRuntimes` returns Runtimes from every connected relay, oldest dev server
+ * first. `sendRequest` uses the newest relay that lists the requested Runtime.
+ * Without an id, it uses the most recently connected Runtime of the most
+ * recently started dev server. An id that no relay lists returns an error
+ * without waiting for the request timeout.
+ *
+ * Cancelling one call leaves shared discovery available to other calls. `close`
+ * interrupts discovery, closes the relay connections, and fails pending
+ * requests.
+ */
+export type RelayClient = Readonly<{
+  listRuntimes: ReadonlyArray<ListedRuntime>!Error
+  sendRequest: (
+    request: typeof Request.Type,
+    maybeRuntimeId: Option<string>,
+  ) => typeof Response.Type!(Cause.TimeoutError | Error)
+  close: void!!
+}>
+
+const generateRequestId = (): string =>
+  `req-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
+
+const parseUrl = Option.liftThrowable((url: string) => new URL(url))
+
+const relayUrlForLog = (url: string): string =>
+  match (parseUrl(url)) {
+    when Option.None: Effect.Array.headNonEmpty(Effect.String.split(url, '?'));
+    when Option.Some(let parsed): do {
+      parsed.search = ''
+      parsed.toString()
+    };
+  }
+
+/**
+ * Returns an error message for display. Effect's `TimeoutError` has no
+ * `message`, so its string form is used instead.
+ */
+export const errorReason = (error: Error): string =>
+  error.message ? error.message : globalThis.String(error)
+
+const toError = (description: string) => (cause: unknown): Error =>
+  cause instanceof Error
+    ? cause
+    : new Error(`${description}: ${globalThis.String(cause)}`)
+
+const attemptOpen = effect (url: string): WebSocket!Error => {
+  const parsedUrl = match (parseUrl(url)) {
+    when Option.Some(let parsed): parsed;
+    when Option.None: throw new Error(INVALID_ADDRESS_REASON);
+  }
+  const maybeToken = Option.fromNullishOr(
+    parsedUrl.searchParams.get(RELAY_TOKEN_PARAMETER),
+  )
+  if (
+    Option.isSome(maybeToken)
+    && !RELAY_TOKEN_PATTERN.test(maybeToken.value)
+  ) {
+    throw new Error(INVALID_ADDRESS_REASON)
+  }
+  const maybeChallenge = match (maybeToken) {
+    when Option.None: Option.none<string>();
+    when Option.Some: Option.some(createRelayChallenge(RELAY_CHALLENGE_BYTES));
+  }
+  parsedUrl.searchParams.delete(RELAY_TOKEN_PARAMETER)
+  const setup = {
+    challengeHeader: RELAY_CHALLENGE_HEADER,
+    clientProofHeader: RELAY_CLIENT_PROOF_HEADER,
+    serverProofHeader: RELAY_SERVER_PROOF_HEADER,
+    proofPattern: RELAY_PROOF_PATTERN,
+    unverifiedReason: UNVERIFIED_RELAY_REASON,
+    toError,
+  }
+  return try callback<
+    WebSocket,
+    Error,
+    [URL, Option<string>, Option<string>, typeof setup]
+  >(
+    (parsedUrl, maybeToken, maybeChallenge, setup, resume) => {
+      const constructed = Result.try({
+        try: () =>
+          Option.match(Option.all([maybeToken, maybeChallenge]), {
+            onNone: () => new WebSocket(parsedUrl),
+            onSome: ([token, challenge]) =>
+              new WebSocket(parsedUrl, {
+                headers: {
+                  [setup.challengeHeader]: challenge,
+                  [setup.clientProofHeader]: computeRelayProof(
+                    token,
+                    'client',
+                    challenge,
+                  ),
+                },
+              }),
+          }),
+        catch: setup.toError('Failed to open a connection'),
+      })
+      if (Result.isFailure(constructed)) {
+        resume.fail(constructed.failure)
+        return
+      }
+      const socket = constructed.success
+      let isSettled = false
+      let isVerified = Option.isNone(maybeToken)
+      socket.once('upgrade', response => {
+        if (Option.isNone(maybeToken) || Option.isNone(maybeChallenge)) return
+        const presented = response.headers[setup.serverProofHeader]
+        const expected = computeRelayProof(
+          maybeToken.value,
+          'server',
+          maybeChallenge.value,
+        )
+        const isValidProof = Predicate.isString(presented)
+          && setup.proofPattern.test(presented)
+          && matchesRelayProof(expected, presented)
+        if (isValidProof) {
+          isVerified = true
+        } else {
+          isSettled = true
+          socket.terminate()
+          resume.fail(new Error(setup.unverifiedReason))
+        }
+      })
+      socket.once('open', () => {
+        if (!isVerified) {
+          isSettled = true
+          socket.terminate()
+          resume.fail(new Error(setup.unverifiedReason))
+          return
+        }
+        isSettled = true
+        resume(socket)
+      })
+      socket.on('error', error => {
+        if (!isSettled) {
+          isSettled = true
+          resume.fail(error)
+        }
+      })
+      return () => {
+        isSettled = true
+        socket.terminate()
+      }
+    },
+    parsedUrl,
+    maybeToken,
+    maybeChallenge,
+    setup,
+  )
+}
+
+const isOpen = ({ socket }: RelaySocket): boolean =>
+  socket.readyState === WebSocket.OPEN
+
+export const makeRelayClient = effect <Services>(
+  resolveTargets: ReadonlyArray<RelayTarget>!never!Services,
+): RelayClient!never!Services => {
+  const pendingResponsesRef = try Ref.make<PendingResponses>(HashMap.empty())
+  const socketsRef = try Ref.make(HashMap.empty<string, RelaySocket>())
+  const refreshLock = try Semaphore.make(1)
+  const pendingRefreshRef = try Ref.make<Option<Refresh>>(Option.none())
+  const refreshScope = try Scope.make()
+  const closed = try Deferred.make<void>()
+  const context = try Effect.context<Services>()
+
+  const attachHandlers = (socket: WebSocket): void => {
+    socket.on('message', raw => {
+      Effect.runForkWith(context)(
+        handleIncomingMessage(raw, pendingResponsesRef),
+      )
+    })
+    socket.on('error', error => {
+      runSync(
+        Console.error(`[foldkit-devtools-mcp] socket error: ${error.message}`),
+      )
+    })
+  }
+
+  const openTarget = effect (target: RelayTarget): void!! => {
+    Effect.uninterruptibleMask(effect restore => {
+      const socket = try restore(
+        Effect.timeoutOrElse(attemptOpen(target.url), {
+          duration: CONNECT_TIMEOUT,
+          orElse: effect () => {
+            throw new Error(
+              `no connection within ${Duration.format(CONNECT_TIMEOUT)}`,
+            )
+          },
+        }),
+      )
+      attachHandlers(socket)
+      try Ref.update(socketsRef, HashMap.set(target.key, { socket, target }))
+      try Console.error(
+        `[foldkit-devtools-mcp] connected to ${relayUrlForLog(target.url)}`,
+      )
+    }) catch effect (error) => {
+      try Console.error(
+        `[foldkit-devtools-mcp] connect attempt to ${
+          relayUrlForLog(target.url)
+        } failed: ${errorReason(error)}`,
+      )
+    }
+  }
+
+  const reconcile: ReadonlyArray<RelaySocket>!! = effect {
+    if (try Deferred.isDone(closed)) return []
+    const targets = try Effect.provideContext(resolveTargets, context)
+    const targetKeys = HashSet.fromIterable(
+      Effect.Array.map(targets, ({ key }) => key),
+    )
+    const sockets = try Ref.get(socketsRef)
+    const isKept = (relaySocket: RelaySocket, key: string): boolean =>
+      HashSet.has(targetKeys, key) && isOpen(relaySocket)
+    const keptSockets = HashMap.filter(sockets, isKept)
+    const droppedSockets = HashMap.filter(
+      sockets,
+      (relaySocket, key) => !isKept(relaySocket, key),
+    )
+    try sync((dropped: HashMap<string, RelaySocket>) => {
+      for (const { socket } of HashMap.values(dropped)) socket.terminate()
+    }, droppedSockets)
+    try Ref.set(socketsRef, keptSockets)
+    const missingTargets = Effect.Array.filter(
+      targets,
+      ({ key }) => !HashMap.has(keptSockets, key),
+    )
+    try Effect.forEach(missingTargets, openTarget, {
+      concurrency: 'unbounded',
+      discard: true,
+    })
+    const nextSockets = try Ref.get(socketsRef)
+    return Effect.Array.getSomes(
+      Effect.Array.map(
+        Effect.Array.reverse(targets),
+        ({ key }) => HashMap.get(nextSockets, key),
+      ),
+    )
+  }
+
+  const takeRefreshTurn = (ownRefresh: Refresh): RefreshTurn!! =>
+    Ref.modify(
+      pendingRefreshRef,
+      (pending): readonly [RefreshTurn, Option<Refresh>] => match (pending) {
+        when Option.None: [
+          RefreshTurn.Leader({ refresh: ownRefresh }),
+          Option.some(ownRefresh),
+        ];
+        when Option.Some(let refresh): [
+          RefreshTurn.Follower({ refresh }),
+          pending,
+        ];
+      },
+    )
+
+  const leadRefresh = effect (refresh: Refresh): void!! => {
+    try Deferred.into(
+      refreshLock.withPermits(1)(effect {
+        try Ref.set(pendingRefreshRef, Option.none())
+        return try reconcile
+      }),
+      refresh,
+    )
+  }
+
+  const refreshRelays: ReadonlyArray<RelaySocket>!! = Effect
+    .uninterruptibleMask(effect restore => {
+      if (try Deferred.isDone(closed)) return []
+      const ownRefresh = try Deferred.make<ReadonlyArray<RelaySocket>>()
+      const turn = try takeRefreshTurn(ownRefresh)
+      match (turn) {
+        when { _tag: 'Leader', let refresh }: do {
+          try Effect.forkIn(leadRefresh(refresh), refreshScope, {
+            startImmediately: true,
+          })
+          undefined
+        };
+        when { _tag: 'Follower' }: undefined;
+      }
+      return try restore(Deferred.await(turn.refresh))
+    })
+
+  const exchange = (
+    socket: WebSocket,
+    request: typeof Request.Type,
+    maybeConnectionId: Option<string>,
+    timeout: Duration,
+  ): typeof Response.Type!(Cause.TimeoutError | Error) =>
+    Effect.acquireUseRelease(
+      effect {
+        if (try Deferred.isDone(closed)) throw new Error(CLOSED_REASON)
+        const id = generateRequestId()
+        const deferred = try Deferred.make<typeof Response.Type, Error>()
+        try Ref.update(pendingResponsesRef, HashMap.set(id, deferred))
+        return { id, deferred }
+      },
+      ({ id, deferred }) => {
+        const frame: typeof RequestFrame.Type = {
+          id,
+          maybeConnectionId,
+          request,
+        }
+        const closedError = new Error(CLOSED_REASON)
+        return effect {
+          try Effect.try({
+            try: () => socket.send(encodeRequestFrameToJson(frame)),
+            catch: toError('Failed to send request'),
+          })
+          return try Effect.raceFirst(
+            Effect.timeout(Deferred.await(deferred), timeout),
+            effect {
+              try Deferred.await(closed)
+              throw closedError
+            },
+          )
+        }
+      },
+      ({ id }) => Ref.update(pendingResponsesRef, HashMap.remove(id)),
+    )
+
+  const listRelayRuntimes = ({
+    socket,
+    target,
+  }: RelaySocket): ReadonlyArray<typeof RuntimeInfo.Type>!! => {
+    const request = Request.RequestListRuntimes()
+    const program = exchange(
+      socket,
+      request,
+      Option.none(),
+      LIST_RUNTIMES_TIMEOUT,
+    )
+    const listing = effect {
+      const response = try program
+      return match (response) {
+        when { _tag: 'ResponseRuntimes', let runtimes }: runtimes;
+        when { _tag: 'ResponseError', let reason }: throw new Error(reason);
+        default: throw new Error(`the relay answered ${response._tag}`);
+      }
+    }
+    return effect {
+      return listing catch effect (error) => {
+        try Console.error(
+          `[foldkit-devtools-mcp] listing runtimes at ${
+            relayUrlForLog(target.url)
+          } failed: ${errorReason(error)}`,
+        )
+        return []
+      }
+    }
+  }
+
+  const listRelays: ReadonlyArray<RelayListing>!Error = effect {
+    const relaySockets = try refreshRelays
+    if (Effect.Array.isReadonlyArrayEmpty(relaySockets)) {
+      throw new Error(NOT_CONNECTED_REASON)
+    }
+    return try Effect.forEach(
+      relaySockets,
+      effect relaySocket => {
+        const runtimes = try listRelayRuntimes(relaySocket)
+        return { relaySocket, runtimes }
+      },
+      { concurrency: 'unbounded' },
+    )
+  }
+
+  const listRuntimes: ReadonlyArray<ListedRuntime>!Error = effect {
+    const listings = try listRelays
+    return Effect.Array.flatMap(
+      listings,
+      ({ relaySocket, runtimes }) =>
+        Effect.Array.map(runtimes, runtime => ({
+          runtime,
+          maybeProjectRoot: relaySocket.target.maybeProjectRoot,
+        })),
+    )
+  }
+
+  const sendRequest = effect (
+    request: typeof Request.Type,
+    maybeRuntimeId: Option<string>,
+  ): typeof Response.Type!(Cause.TimeoutError | Error) => {
+    const listings = try listRelays
+    const route = try routeFromListings(listings, maybeRuntimeId)
+    return try exchange(
+      route.socket,
+      request,
+      Option.some(route.connectionId),
+      REQUEST_TIMEOUT,
+    )
+  }
+
+  const close: void!! = Effect.uninterruptible(effect {
+    try Deferred.succeed(closed, undefined)
+    try Scope.close(refreshScope, Exit.void)
+    try refreshLock.withPermits(1)(effect {
+      const sockets = try Ref.getAndSet(socketsRef, HashMap.empty())
+      try sync((sockets: HashMap<string, RelaySocket>) => {
+        for (const { socket } of HashMap.values(sockets)) socket.terminate()
+      }, sockets)
+    })
+  })
+
+  const client: RelayClient = { listRuntimes, sendRequest, close }
+  return client
+}
+
+const routeToRuntime = (
+  listings: ReadonlyArray<RelayListing>,
+  runtimeId: string,
+): RuntimeRoute!Error =>
+  match (Effect.Array.findLast(listings, ({ runtimes }) =>
+      Effect.Array.some(runtimes, ({ connectionId }) =>
+        connectionId === runtimeId))) {
+    when Option.None: do {
+      const error = new Error(
+        `No connected Foldkit Runtime has the id ${runtimeId}. Call foldkit_list_runtimes for the current ids.`,
+      )
+      effect {
+        throw error
+      }
+    };
+    when Option.Some(let listing): do {
+      const route = {
+        socket: listing.relaySocket.socket,
+        connectionId: runtimeId,
+      }
+      effect {
+        return route
+      }
+    };
+  }
+
+const routeToDefaultRuntime = (
+  listings: ReadonlyArray<RelayListing>,
+): RuntimeRoute!Error =>
+  match (Effect.Array.last(
+      Effect.Array.flatMap(listings, ({ relaySocket, runtimes }) =>
+        Effect.Array.map(runtimes, ({ connectionId }) => ({
+          socket: relaySocket.socket,
+          connectionId,
+        }))),
+    )) {
+    when Option.None: do {
+      const error = new Error(NO_RUNTIMES_REASON)
+      effect {
+        throw error
+      }
+    };
+    when Option.Some(let value): effect {
+      return value
+    };
+  }
+
+const routeFromListings = (
+  listings: ReadonlyArray<RelayListing>,
+  maybeRuntimeId: Option<string>,
+): RuntimeRoute!Error => match (maybeRuntimeId) {
+  when Option.None: routeToDefaultRuntime(listings);
+  when Option.Some(let runtimeId): routeToRuntime(listings, runtimeId);
+}

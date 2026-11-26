@@ -1,17 +1,17 @@
 import { Array, Option, Schema, pipe } from 'effect'
 import { describe, expect, expectTypeOf, test } from 'vitest'
 
-import * as CustomElement from '../customElement/index.js'
+import * as CustomElement from '../customElement/index.vibe'
 import {
   type HtmlBuilder,
   __htmlBuilder as attributeHtml,
   inertHtml,
-} from '../html/index.js'
+} from '../html/index.vibe'
 import { defineMessageUnion } from '../message/index.js'
 import * as PublicScene from '../scene/public.js'
 import { h } from '../snabbdom/index.js'
 import type { VNode } from '../snabbdom/index.js'
-import { modifyFields } from '../struct/index.js'
+import { modifyFields } from '../struct/index.vibe'
 import { defineView } from '../submodel/public.js'
 import type * as Update from '../update/index.js'
 import {

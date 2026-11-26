@@ -4,7 +4,7 @@ import { expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import { Message, OutMessage, init, update } from './index.js'
+import { Message, OutMessage, init, update } from './index.vibe'
 
 const makeFile = (name: string, type = 'application/pdf'): File =>
   new globalThis.File(['content'], name, { type })

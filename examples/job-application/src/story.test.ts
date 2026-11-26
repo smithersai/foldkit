@@ -6,10 +6,10 @@ import { describe, expect, test } from 'vitest'
 
 import { FileDrop, Menu, Tabs } from '@foldkit/ui'
 
-import { SubmitApplication } from './command'
-import { completeModel, initialModel } from './main.fixture'
-import { Message } from './message'
-import { Submission } from './model'
+import { SubmitApplication } from './command.vibe'
+import { completeModel, initialModel } from './main.fixture.vibe'
+import { Message } from './message.vibe'
+import { Submission } from './model.vibe'
 import {
   Attachments,
   CoverLetter,
@@ -18,7 +18,7 @@ import {
   Skills,
   WorkHistory,
 } from './step'
-import { update } from './update'
+import { update } from './update.vibe'
 
 const givenInitial = given(initialModel)
 

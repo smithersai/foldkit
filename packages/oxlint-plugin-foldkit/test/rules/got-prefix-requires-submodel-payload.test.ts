@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { gotPrefixRequiresSubmodelPayload } from '../../src/rules/got-prefix-requires-submodel-payload.ts'
+import { gotPrefixRequiresSubmodelPayload } from '../../src/rules/got-prefix-requires-submodel-payload.vibe'
 
 const message = (name: string, fields: unknown = Testing.objectExpr([])) => ({
   key: name,

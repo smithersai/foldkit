@@ -5,10 +5,10 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, test } from 'vitest'
 
-import { BLOG_POST_SLUG_PATTERN } from '../../route'
-import { PostFrontmatter, maybePostCover } from './frontmatter'
-import { byDateThenSlugDescending } from './meta'
-import { findPostBySlug, formatPostDate, posts } from './posts'
+import { BLOG_POST_SLUG_PATTERN } from '../../route.vibe'
+import { PostFrontmatter, maybePostCover } from './frontmatter.vibe'
+import { byDateThenSlugDescending } from './meta.vibe'
+import { findPostBySlug, formatPostDate, posts } from './posts.vibe'
 
 const rawSources = import.meta.glob<string>('./post/*.md', {
   query: '?raw',

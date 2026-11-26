@@ -2,7 +2,7 @@ import type { HtmlBuilder } from 'foldkit/html'
 
 import { Slider } from '@foldkit/ui'
 
-import { Message } from '../message'
+import { Message } from '../message.vibe'
 
 // SHARED STYLES
 

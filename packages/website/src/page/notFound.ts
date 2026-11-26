@@ -1,6 +1,6 @@
 import { type Html, inertHtml as ih } from 'foldkit/html'
 
-import { link, para } from '../prose'
+import { link, para } from '../prose.vibe'
 
 export const view = (path: string, introductionRoute: string): Html =>
   ih.div(

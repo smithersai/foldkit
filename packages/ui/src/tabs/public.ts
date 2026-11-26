@@ -10,7 +10,7 @@ export {
   FocusTab,
   Orientation,
   PanelMount,
-} from './index.js'
+} from './index.vibe'
 
 export type {
   ActivationMode,
@@ -19,4 +19,4 @@ export type {
   RenderInfo,
   TabInfo,
   Bundle,
-} from './index.js'
+} from './index.vibe'

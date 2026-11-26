@@ -2,7 +2,7 @@ import { given, message, model, story } from 'foldkit/story'
 import { describe, expect, test } from 'vitest'
 
 import { init } from './init'
-import { Message } from './message'
+import { Message } from './message.vibe'
 import { update } from './update'
 
 describe('Submodel page', () => {

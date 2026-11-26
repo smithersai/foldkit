@@ -39,7 +39,7 @@ The parent has three jobs: embed the child’s Model, wrap its Messages, and del
 
 ### Embedding the Model
 
-The child’s Model becomes a field in the parent’s Model:
+The child’s Model becomes a field in the parent’s Model. The `schema` declaration defines the parent codec and its Model type together:
 
 ::Snippet{name="submodelParentModel" label="Parent Model"}
 

@@ -31,6 +31,8 @@ DevTools records Models, Message payloads, Command arguments, and Mount argument
 
 A browser may still need to hold a short-lived access token. Wrap it before it enters the Model, keep the `Redacted` value intact in any Message or Command arguments that carry it, and recover the raw value only where the Command constructs the authenticated request. The numbered comments trace the Model-to-request path through the example.
 
+The request reads `FetchHttpClient.Fetch` at execution time. The token stays redacted until the request headers need its raw value.
+
 ::Snippet{name="devtoolsRedacted" label="Redacting a short-lived access token"}
 
 DevTools displays the value as `<redacted:access token>`. This prevents accidental inspection and serialization; it does not encrypt the token or hide it from someone who controls the browser.

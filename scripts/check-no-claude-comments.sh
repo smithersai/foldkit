@@ -5,7 +5,14 @@ set -euo pipefail
 # Searches all tracked (and staged) files, ignoring this script itself and the
 # two documents that describe the convention.
 
-MATCHES=$(git grep -n 'CLAUDE:' -- ':!scripts/check-no-claude-comments.sh' ':!AGENTS.md' ':!CONTRIBUTING.md' || true)
+MATCHES=""
+STATUS=0
+MATCHES=$(git grep -n 'CLAUDE:' -- ':!scripts/check-no-claude-comments.sh' ':!AGENTS.md' ':!CONTRIBUTING.md') || STATUS=$?
+
+if [ "$STATUS" -gt 1 ]; then
+  echo "❌ Failed to scan repository for CLAUDE: comments (git grep exited $STATUS)." >&2
+  exit "$STATUS"
+fi
 
 if [ -n "$MATCHES" ]; then
   echo ""

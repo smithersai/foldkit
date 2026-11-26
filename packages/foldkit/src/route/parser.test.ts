@@ -3,7 +3,7 @@ import { expect } from 'vitest'
 
 import { describe, it } from '@effect/vitest'
 
-import { Url } from '../url/index.js'
+import { Url } from '../url/index.vibe'
 import { defineRouteUnion } from './index.js'
 import {
   __isSingleSegment,
@@ -19,7 +19,7 @@ import {
   schemaSegment,
   slash,
   string,
-} from './parser.js'
+} from './parser.vibe'
 
 const makeUrl = (path: string, search?: string): Url => ({
   protocol: 'https:',

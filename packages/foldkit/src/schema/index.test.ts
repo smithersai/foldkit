@@ -1,7 +1,7 @@
 import { Effect, Option, Schema } from 'effect'
 import { describe, expect, it } from 'vitest'
 
-import { taggedStruct } from './index.js'
+import { taggedStruct } from './index.vibe'
 
 const ClickedReset = taggedStruct('ClickedReset')
 const ClickedItem = taggedStruct('ClickedItem', { id: Schema.String })

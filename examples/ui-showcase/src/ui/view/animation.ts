@@ -3,8 +3,8 @@ import type { Html } from 'foldkit/html'
 
 import { Animation } from '@foldkit/ui'
 
-import { Message as UiMessage } from '../message'
-import type { UiModel } from '../model'
+import { Message as UiMessage } from '../message.vibe'
+import type { UiModel } from '../model.vibe'
 
 const triggerClassName =
   'px-4 py-2 text-base font-normal cursor-pointer transition rounded-lg border border-gray-300 bg-white text-gray-900 hover:bg-gray-200/50 select-none'

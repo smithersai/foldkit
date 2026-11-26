@@ -1,0 +1,80 @@
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index ba218c65facbfb00d51b41e1be2471ed517555b0..c922d6a302004027031105665af05a34cf66c36d 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -688,15 +688,15 @@ interface RuleConfig<Options = undefined> {
+    */
+   readonly options?: Schema.Decoder<Options> | undefined;
+   /**
+-   * The create generator.
++   * The create callback, returning an Effect or a legacy generator.
+    *
+    * Receives decoded options and returns an `EffectVisitor`.
+-   * Runs inside an Effect context where `RuleContext` is available.
++   * Both callback forms run inside an Effect context where `RuleContext` is available.
+    *
+    * May `yield* Ref.make(...)` for state, `yield* RuleContext` for
+    * context access, and return a visitor built with `Visitor.*` helpers.
+    */
+-  readonly create: (options: Options) => Effect.gen.Return<TypedEffectVisitor, never, RuleContext>;
++  readonly create: (options: Options) => Effect.Effect<TypedEffectVisitor, never, RuleContext> | Effect.gen.Return<TypedEffectVisitor, never, RuleContext>;
+ }
+ /**
+  * Define an Effect-first oxlint lint rule.
+diff --git a/dist/index.js b/dist/index.js
+index 2f7364c4bf752e155b9c20c6476ff6d5bfb9368d..e53ea101ce06e234d6476dc838ede59de4f586e8 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -701,7 +701,10 @@ const define = (config) => ({
+ 			return Schema.decodeSync(schema)(oxlintContext.options[0]);
+ 		};
+ 		const options = run(Effect.sync(decodeOptions));
+-		const effectVisitor = run(Effect.gen(() => config.create(options)));
++		const effectVisitor = run(Effect.suspend(() => {
++			const created = config.create(options);
++			return Effect.isEffect(created) ? created : Effect.gen(() => created);
++		}));
+ 		return toOxlintVisitor(effectVisitor, run);
+ 	}
+ });
+diff --git a/src/Rule.ts b/src/Rule.ts
+index a7291edb87dc344d17f08c11222fee457bb4482c..68459af0138ff388fc72fe0ef021b6bb901802df 100644
+--- a/src/Rule.ts
++++ b/src/Rule.ts
+@@ -76,17 +76,19 @@ export interface RuleConfig<Options = undefined> {
+ 	 */
+ 	readonly options?: Schema.Decoder<Options> | undefined;
+ 	/**
+-	 * The create generator.
++	 * The create callback, returning an Effect or a legacy generator.
+ 	 *
+ 	 * Receives decoded options and returns an `EffectVisitor`.
+-	 * Runs inside an Effect context where `RuleContext` is available.
++	 * Both callback forms run inside an Effect context where `RuleContext` is available.
+ 	 *
+ 	 * May `yield* Ref.make(...)` for state, `yield* RuleContext` for
+ 	 * context access, and return a visitor built with `Visitor.*` helpers.
+ 	 */
+ 	readonly create: (
+ 		options: Options
+-	) => Effect.gen.Return<TypedEffectVisitor, never, RuleContext>;
++	) =>
++		| Effect.Effect<TypedEffectVisitor, never, RuleContext>
++		| Effect.gen.Return<TypedEffectVisitor, never, RuleContext>;
+ }
+ 
+ // ---------------------------------------------------------------------------
+@@ -142,7 +144,12 @@ export const define = <Options = undefined>(
+ 		// the same ESTree.Node values. The variance mismatch is safe
+ 		// because oxlint guarantees the node type matches the key.
+ 		const effectVisitor = run(
+-			Effect.gen(() => config.create(options))
++			Effect.suspend(() => {
++				const created = config.create(options);
++				return Effect.isEffect(created)
++					? created
++					: Effect.gen(() => created);
++			})
+ 		) as EffectVisitor;
+ 
+ 		// Wrap each handler: Effect<void> → plain () => void

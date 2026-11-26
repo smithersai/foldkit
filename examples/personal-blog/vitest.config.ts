@@ -1,11 +1,15 @@
+import vibelang from 'vibelang-vite'
 import { defineConfig } from 'vitest/config'
 
 import { markdown } from '@foldkit/markdown/vite'
 
-import { islandAttributes } from './src/island/islandAttributes'
+import { islandAttributes } from './src/island/islandAttributes.vibe'
 
 export default defineConfig({
-  plugins: [markdown({ islands: islandAttributes })],
+  plugins: [
+    vibelang({ register: true }),
+    markdown({ islands: islandAttributes }),
+  ],
   test: {
     environment: 'happy-dom',
     setupFiles: ['./src/vitest-setup.ts'],

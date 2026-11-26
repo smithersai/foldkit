@@ -1,14 +1,16 @@
 import { Effect, Fiber, Option, Schema, Stream } from 'effect'
+import fc from 'fast-check'
 import { describe, expect, expectTypeOf, it } from 'vitest'
 
-import { make } from '../subscription/subscription.js'
+import { make } from '../subscription/subscription.vibe'
+import lazyEventTargetCorpus from './fixtures/foldkit-lazy-event-target.json' with { type: 'json' }
 import {
   type StreamFromEventConfig,
   type TypedEventTarget,
   streamFromEvent,
   streamFromEventFilterMap,
-  streamFromEventFilterMapPreventDefault,
-} from './streamFromEvent.js'
+} from './streamFromEvent.vibe'
+import { streamFromEventFilterMapPreventDefault } from './streamFromEventPreventDefault.js'
 
 type PingEvents = Readonly<{ ping: CustomEvent<string> }>
 
@@ -327,6 +329,64 @@ describe('streamFromEventFilterMapPreventDefault', () => {
     await Effect.runPromise(Fiber.interrupt(fiber))
 
     expect(recordedOptions).toEqual([{ once: true, passive: false }])
+  })
+
+  it('acquires lazy targets and cancels only handled events until interruption', async () => {
+    await fc.assert(
+      fc.asyncProperty(
+        fc.array(fc.record({ value: fc.string(), isHandled: fc.boolean() }), {
+          maxLength: 12,
+        }),
+        async events => {
+          const target: TypedEventTarget<{
+            ping: CustomEvent<Readonly<{ value: string; isHandled: boolean }>>
+          }> = new EventTarget()
+          const received: Array<string> = []
+          let acquisitionCount = 0
+          const stream = streamFromEventFilterMapPreventDefault({
+            target: () => {
+              acquisitionCount++
+              return target
+            },
+            type: 'ping',
+            filterMapEvent: event =>
+              event.detail.isHandled
+                ? Option.some(event.detail.value)
+                : Option.none(),
+          })
+
+          expect(acquisitionCount).toBe(0)
+          const fiber = Effect.runFork(drain(stream, received))
+          try {
+            await tick()
+            expect(acquisitionCount).toBe(1)
+            for (const detail of events) {
+              const event = new CustomEvent('ping', {
+                detail,
+                cancelable: true,
+              })
+              target.dispatchEvent(event)
+              expect(event.defaultPrevented).toBe(detail.isHandled)
+            }
+            await tick()
+            expect(received).toEqual(
+              events.filter(event => event.isHandled).map(event => event.value),
+            )
+          } finally {
+            await Effect.runPromise(Fiber.interrupt(fiber))
+          }
+
+          const event = new CustomEvent('ping', {
+            detail: { value: 'after interruption', isHandled: true },
+            cancelable: true,
+          })
+          target.dispatchEvent(event)
+          expect(event.defaultPrevented).toBe(false)
+          expect(acquisitionCount).toBe(1)
+        },
+      ),
+      { numRuns: 100, examples: [[lazyEventTargetCorpus.events]] },
+    )
   })
 
   it('throws when the config passes passive true explicitly', () => {

@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { noChildMessageConstructionInRoot } from '../../src/rules/no-child-message-construction-in-root.ts'
+import { noChildMessageConstructionInRoot } from '../../src/rules/no-child-message-construction-in-root.vibe'
 
 const callWithCallee = (
   callee: unknown,

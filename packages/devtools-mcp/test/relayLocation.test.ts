@@ -9,7 +9,7 @@ import {
   type Settings,
   loadSettings,
   resolveRelayTargets,
-} from '../src/relayLocation.ts'
+} from '../src/relayLocation.vibe'
 import {
   RELAY_DIRECTORY_VARIABLE,
   makeUncheckedRegistryReader,

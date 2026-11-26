@@ -1,0 +1,30 @@
+import { Server } from 'foldkit/experimental'
+
+import { readCountCookie } from './cookie'
+import { Flags, init, view } from './main'
+
+export const renderDocument = Server.renderDocument
+
+const flagsForRequest = (request: globalThis.Request): Flags => ({
+  initialCount: readCountCookie(request.headers.get('cookie') ?? ''),
+})
+
+export const renderPage = async (
+  request: globalThis.Request,
+): Promise<Server.EntryResult> => {
+  const renderedApplication = await Effect.runPromise(
+    Server.renderToString(
+      { Flags, init, view },
+      {
+        flags: flagsForRequest(request),
+      },
+    ),
+  )
+
+  return Server.Rendered(renderedApplication, {
+    headers: {
+      'cache-control': 'private, no-store',
+      vary: 'cookie',
+    },
+  })
+}

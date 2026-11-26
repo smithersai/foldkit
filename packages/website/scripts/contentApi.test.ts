@@ -1,8 +1,8 @@
 import { Array, Option, Record, pipe } from 'effect'
 import { describe, expect, it } from 'vitest'
 
-import { examples } from '../src/page/example/meta'
-import { blogPosts } from './blogPosts'
+import { examples } from '../src/page/example/meta.vibe'
+import { blogPosts } from './blogPosts.vibe'
 import {
   API_BASE_PATH,
   type ApiPageEntry,
@@ -19,7 +19,7 @@ import {
   buildServiceIndex,
   contentApiDocuments,
   problemPath,
-} from './contentApi'
+} from './contentApi.vibe'
 import { openApiDocument } from './openApi'
 
 // SCHEMA VALIDATION

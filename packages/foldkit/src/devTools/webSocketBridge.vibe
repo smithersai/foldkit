@@ -1,0 +1,715 @@
+import { Array as EffectArray, pipe } from 'effect'
+
+import { OptionExt } from '../effectExtensions/index.js'
+import {
+  collectMatchingEntries,
+  countEntriesByTag,
+  findUnanchoredPattern,
+  formatIndexNotReadable,
+  isIndexReadable,
+  matchesAnyPathPattern,
+  pageMatchingEntries,
+  pathOrder,
+  readSummarizedValueAt,
+} from './historyQuery.vibe'
+import {
+  DiffValue,
+  Event,
+  EventFrame,
+  KeyframeInfo,
+  MAX_DISPATCH_BATCH_SIZE,
+  MessageSchemaResult,
+  Request,
+  RequestFrame,
+  Response,
+  ResponseFrame,
+  RuntimeInfo,
+} from './protocol.vibe'
+import {
+  diagnoseVariantPath,
+  indexMessageSchemaDocument,
+  narrowToVariant,
+  splitVariantPath,
+} from './schemaSummarize.vibe'
+import {
+  toInspectableValue,
+  toSerializedCommand,
+  toSerializedEntry,
+  toSerializedMount,
+} from './serialize.vibe'
+import {
+  type DevToolsStore,
+  INIT_INDEX,
+  computeDiff,
+  latestEntryIndex,
+  nextEntryIndex,
+} from './store.vibe'
+import {
+  type PathResolution,
+  formatPathNotFound,
+  resolvePath,
+  summarizeValue,
+} from './summarize.vibe'
+import {
+  addPageShowListener,
+  currentPageInfo,
+  warnDevTools,
+} from './webSocketBridge.platform.js'
+
+type Hot = NonNullable<ImportMeta['hot']>
+
+const REQUEST_CHANNEL = 'foldkit:devTools:request'
+const RESPONSE_CHANNEL = 'foldkit:devTools:response'
+
+/** HMR channel the bridge announces connection lifecycle events on. */
+export const EVENT_CHANNEL = 'foldkit:devTools:event'
+
+const generateConnectionId = (): string =>
+  `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
+
+const tryDeriveJsonSchemaDocument = (
+  schema: Schema.Codec<any, any>,
+): Option<unknown> => {
+  try {
+    return Option.some(Schema.toJsonSchemaDocument(schema))
+  } catch (error) {
+    warnDevTools(
+      '[foldkit:devTools] Failed to derive JSON Schema from Message Schema; foldkit_get_message_schema will return None.',
+      error,
+    )
+    return Option.none()
+  }
+}
+
+/**
+ * Start the browser-side WebSocket bridge that exposes a Foldkit runtime's
+ * DevToolsStore to an external MCP server (via the Vite plugin relay).
+ *
+ * Emits `EventConnected` on startup so the relay tracks this runtime, and
+ * again when the page is restored from the back/forward cache, whose freeze
+ * closed the socket the relay was tracking it on. Listens on the request
+ * channel for `RequestFrame`s targeted at this connection's id and replies
+ * with the matching `ResponseFrame`. Emits `EventDisconnected` when the
+ * runtime is disposed or its HMR module is replaced, so the relay can remove
+ * this runtime from its connected set. A page that goes away for good takes
+ * its socket with it, and the relay prunes on that close.
+ *
+ * `dispatch` delivers a Message to the runtime; the bridge
+ * uses it to fulfill `RequestDispatchMessage` after decoding the payload
+ * against a JSON-canonical derivation of `maybeMessageSchema` (via
+ * `Schema.toCodecJson`). The derivation reconstructs runtime values like
+ * `Option`, `Date`, `Map`, and `Set` from their JSON-tagged shapes, so
+ * application Message Schemas using stdlib types Just Work over dispatch
+ * without author-side changes. When `maybeMessageSchema` is `None`, dispatch
+ * requests are rejected with an informative error.
+ *
+ * The bridge also derives a JSON Schema document from `maybeMessageSchema`
+ * once at boot (via `Schema.toJsonSchemaDocument`) to fulfill
+ * `RequestGetMessageSchema`, so MCP clients can discover the exact Message
+ * shapes the runtime accepts without reading the application source. A few
+ * AST nodes (symbol-keyed structs, symbol-indexed records, tuples with
+ * post-rest elements) cause `Schema.toJsonSchemaDocument` to throw; the
+ * derivation is guarded so a failure logs a warning and the schema-discovery
+ * tool returns `None` rather than crashing the bridge.
+ *
+ * Production-safe: callers must check `import.meta.hot` is defined before
+ * invoking this. The function assumes a live HMR connection.
+ */
+export const startWebSocketBridge = effect (
+  store: DevToolsStore,
+  hot: Hot,
+  dispatch: (message: unknown) => void!!,
+  maybeMessageSchema: Option<Schema.Codec<any, any>>,
+): void!never!Scope => {
+  const connectionId = generateConnectionId()
+  const capturedContext = try Effect.context<never>()
+
+  const maybeDispatchSchema = Option.map(
+    maybeMessageSchema,
+    Schema.toCodecJson,
+  )
+  const maybeJsonSchemaDocument = Option.flatMap(
+    maybeMessageSchema,
+    tryDeriveJsonSchemaDocument,
+  )
+
+  const encodeEventFrame = Schema.encodeUnknownSync(EventFrame)
+  const encodeResponseFrame = Schema.encodeUnknownSync(ResponseFrame)
+
+  const sendEvent = (event: Event): void => {
+    hot.send(
+      EVENT_CHANNEL,
+      encodeEventFrame({
+        maybeConnectionId: Option.some(connectionId),
+        event,
+      }),
+    )
+  }
+
+  const sendResponse = (id: string, response: Response): void => {
+    hot.send(RESPONSE_CHANNEL, encodeResponseFrame({ id, response }))
+  }
+
+  const announceConnected = (): void => {
+    const page = currentPageInfo()
+    sendEvent(
+      Event.EventConnected({
+        runtime: RuntimeInfo.make({
+          connectionId,
+          url: page.url,
+          title: page.title,
+        }),
+      }),
+    )
+  }
+
+  announceConnected()
+
+  const handleRequest = effect (id: string, request: Request) => {
+    const response = try dispatchRequest(
+      store,
+      dispatch,
+      maybeDispatchSchema,
+      maybeJsonSchemaDocument,
+      request,
+    )
+    sendResponse(id, response)
+  }
+
+  const handleRequestFrame = (frame: unknown): void => {
+    const decoded = Schema.decodeUnknownExit(RequestFrame)(frame)
+    Exit.match(decoded, {
+      onFailure: error => {
+        warnDevTools('[foldkit:devTools] malformed request frame', error)
+      },
+      onSuccess: ({ id, maybeConnectionId, request }) => {
+        const isForUs = Option.exists(
+          maybeConnectionId,
+          targetId => targetId === connectionId,
+        )
+        if (!isForUs) {
+          return
+        }
+        Effect.runForkWith(capturedContext)(handleRequest(id, request))
+      },
+    })
+  }
+
+  try Effect.orDie(
+    Effect.try({
+      try: () => hot.on(REQUEST_CHANNEL, handleRequestFrame),
+      catch: (error) => error,
+    }),
+  )
+
+  let hasEmittedDisconnect = false
+  const emitDisconnect = (): void => {
+    if (hasEmittedDisconnect) {
+      return
+    }
+    hasEmittedDisconnect = true
+    sendEvent(Event.EventDisconnected({ connectionId }))
+  }
+
+  try Effect.orDie(Effect.try({
+    try: () =>
+      hot.dispose(() => {
+        emitDisconnect()
+        hot.off(REQUEST_CHANNEL, handleRequestFrame)
+      }),
+    catch: (error) => error,
+  }))
+
+  // NOTE: a page-lifecycle event is not a disconnect. `beforeunload` fires
+  // for a download-link click and for a navigation the user cancels, and the
+  // runtime survives both, so announcing a disconnect there left the relay
+  // ignoring a live app until the next reload. A page that really goes away
+  // closes its Vite HMR socket, and the plugin prunes the runtime on that
+  // close, so the relay learns it from a signal the page cannot survive.
+  //
+  // Freezing the page into the back/forward cache closes that socket too,
+  // which prunes a runtime that is only suspended. The runtime itself
+  // survives the freeze, so the restore has to announce it again.
+  const announceOnRestore = ({ persisted }: PageTransitionEvent): void => {
+    if (persisted) {
+      announceConnected()
+    }
+  }
+
+  const removePageShowListener = addPageShowListener(announceOnRestore)
+
+  // NOTE: a disposed runtime must disconnect from the relay and stop
+  // answering requests. Without this finalizer, every embed/dispose cycle
+  // would leave a ghost connection that keeps responding with the dead
+  // runtime's state.
+  try Effect.addFinalizer(() =>
+    Effect.sync(() => {
+      emitDisconnect()
+      hot.off(REQUEST_CHANNEL, handleRequestFrame)
+      removePageShowListener()
+    })
+  )
+}
+
+const presentResolution = (
+  resolution: PathResolution,
+  expand: boolean,
+): Response => match (resolution) {
+  when { _tag: 'Found', let value, let atPath }: Response.ResponseModel({
+    value: expand ? value : summarizeValue(value),
+    atPath,
+    summarized: !expand,
+  });
+  when let notFound: Response.ResponseError({
+    reason: formatPathNotFound(notFound),
+  });
+}
+
+const readModelResponse = (
+  store: DevToolsStore,
+  index: number,
+  maybePath: Option<string>,
+  expand: boolean,
+): Response!! =>
+  (effect {
+    const model = try store.getModelAtIndex(index)
+    const path = Option.getOrElse(maybePath, () => 'root')
+    return presentResolution(
+      resolvePath(toInspectableValue(model), path),
+      expand,
+    )
+  })
+  |> Effect.catchCause(%, cause =>
+    Effect.succeed(
+      Response.ResponseError({
+        reason: `Failed to read Model at index ${index}: ${
+          Cause.pretty(cause)
+        }`,
+      }),
+    ))
+
+const maybePatternError = (
+  maybeChangedPathsMatch: Option<ReadonlyArray<string>>,
+): Option<Response> =>
+  maybeChangedPathsMatch
+    .flatMap(findUnanchoredPattern)
+    .map(pattern =>
+      Response.ResponseError({
+        reason:
+          `Invalid changed_paths_match pattern '${pattern}': patterns must start with 'root' or '*', matching the changedPaths alphabet (e.g. 'root.grid', 'root.cards.*.title').`,
+      })
+    )
+
+const toDiffValue = (maybeValue: Option<unknown>): DiffValue => match (maybeValue) {
+  when Option.None: DiffValue.Absent();
+  when Option.Some(let value): DiffValue.Present({ value: value ?? null });
+}
+
+const indexResponse = (document: unknown): Response => match (indexMessageSchemaDocument(document)) {
+  when Option.None: Response.ResponseError({
+    reason:
+      "Could not index Message Schema: the top-level shape is not a discriminated union of '_tag'-keyed structs. Open an issue if you see this against an Effect Schema released after foldkit's last sync.",
+  });
+  when Option.Some(let variants): Response.ResponseMessageSchema({
+    maybeResult: Option.some(
+      MessageSchemaResult.MessageSchemaIndexResult({ index: { variants } }),
+    ),
+  });
+}
+
+const narrowResponse = (document: unknown, variantPath: string): Response => match (narrowToVariant(document, variantPath)) {
+  when Option.None: formatUnknownVariantError(document, variantPath);
+  when Option.Some(let narrowed): Response.ResponseMessageSchema({
+    maybeResult: Option.some(
+      MessageSchemaResult.MessageSchemaDocumentResult({
+        document: narrowed,
+      }),
+    ),
+  });
+}
+
+const buildMessageSchemaResponse = (
+  maybeJsonSchemaDocument: Option<unknown>,
+  maybeVariantTag: Option<string>,
+): Response => match (maybeJsonSchemaDocument) {
+  when Option.None: Response.ResponseMessageSchema({
+    maybeResult: Option.none(),
+  });
+  when Option.Some(let document): match (maybeVariantTag) {
+    when Option.None: indexResponse(document);
+    when Option.Some(let variantTag): narrowResponse(document, variantTag);
+  };
+}
+
+const formatUnknownVariantError = (
+  document: unknown,
+  variantPath: string,
+): Response => {
+  const segments = splitVariantPath(variantPath)
+  return match (diagnoseVariantPath(document, segments)) {
+    when Option.None: Response.ResponseError({
+      reason:
+        `No Message variant at path '${variantPath}'. The runtime's Message Schema is not a discriminated union of '_tag'-keyed structs.`,
+    });
+    when Option.Some(let diagnosis): do {
+      const { prefix, failingSegment, available } = diagnosis
+      const prefixLabel = EffectArray.isReadonlyArrayNonEmpty(prefix)
+        ? prefix.join('.')
+        : '<top level>'
+      const failingIsKnownTag = Option.exists(
+        failingSegment,
+        tag => available.includes(tag),
+      )
+      const failingTag = Option.getOrElse(failingSegment, () => '')
+      const reason = failingIsKnownTag
+        ? `No further structure to drill into at path '${variantPath}'. The variant '${failingTag}' at ${prefixLabel} does not carry exactly one tagged-union payload field, which is what the walker steps through. Idiomatic Foldkit Messages have at most one tagged-union field per variant (the 'message' field on Submodel wrappers, or a single value-type union); state surrounding a Submodel call belongs as an argument to the child's update/view, not as a sibling field on the parent Message.`
+        : `No Message variant at path '${variantPath}'. Available variants at ${prefixLabel}: ${
+          available.join(', ')
+        }.`
+      Response.ResponseError({ reason })
+    };
+  }
+}
+
+const missingMessageSchemaResponse = Response.ResponseError({
+  reason:
+    'Cannot dispatch: DevToolsConfig.Message not configured. Pass your Message Schema to enable dispatch.',
+})
+
+const formatInvalidMessageReason = (error: unknown, message: unknown): string =>
+  `${
+    error instanceof Error ? error.message : String(error)
+  }\n\nReceived (typeof ${typeof message}): ${JSON.stringify(message)}`
+
+/**
+ * Fulfill one bridge Request against the DevTools store. `startWebSocketBridge`
+ * wires this to the HMR request channel; exported so tests can drive request
+ * handling without a live HMR connection.
+ */
+export const dispatchRequest = (
+  store: DevToolsStore,
+  dispatch: (message: unknown) => void!!,
+  maybeDispatchSchema: Option<Schema.Codec<any, any>>,
+  maybeJsonSchemaDocument: Option<unknown>,
+  request: Request,
+): Response!! =>
+  Request.match<Response!!>(request, {
+    RequestGetModel: ({ maybePath, expand }) =>
+      effect {
+        const state = try SubscriptionRef.get(store.stateRef)
+        const index = latestEntryIndex(state)
+        return try readModelResponse(store, index, maybePath, expand)
+      },
+
+    RequestGetModelAt: ({ index, maybePath, expand }) =>
+      effect {
+        const state = try SubscriptionRef.get(store.stateRef)
+        if (!isIndexReadable(state, index)) {
+          return Response.ResponseError({
+            reason: formatIndexNotReadable(state, index),
+          })
+        }
+        return try readModelResponse(store, index, maybePath, expand)
+      },
+
+    RequestListMessages: ({
+      limit,
+      maybeSinceIndex,
+      maybeChangedPathsMatch,
+      fromEnd,
+    }) =>
+      effect {
+        if (fromEnd && Option.isSome(maybeSinceIndex)) {
+          return Response.ResponseError({
+            reason:
+              'from_end cannot be combined with since_index. Use from_end alone to read the latest entries, or since_index to page forward.',
+          })
+        }
+        const maybeInvalidPattern = maybePatternError(maybeChangedPathsMatch)
+        if (Option.isSome(maybeInvalidPattern)) {
+          return maybeInvalidPattern.value
+        }
+
+        const state = try SubscriptionRef.get(store.stateRef)
+        const candidates = collectMatchingEntries(
+          state,
+          maybeSinceIndex,
+          maybeChangedPathsMatch,
+        )
+        const { page, maybeNextIndex } = pageMatchingEntries(
+          candidates,
+          limit,
+          fromEnd,
+        )
+        const entries = EffectArray.map(
+          page,
+          ({ entry, index }) => toSerializedEntry(entry, index),
+        )
+
+        return Response.ResponseMessages({ entries, maybeNextIndex })
+      },
+
+    RequestCountMessagesByTag: ({ maybeSinceIndex, maybeChangedPathsMatch }) =>
+      effect {
+        const maybeInvalidPattern = maybePatternError(maybeChangedPathsMatch)
+        if (Option.isSome(maybeInvalidPattern)) {
+          return maybeInvalidPattern.value
+        }
+
+        const state = try SubscriptionRef.get(store.stateRef)
+        const candidates = collectMatchingEntries(
+          state,
+          maybeSinceIndex,
+          maybeChangedPathsMatch,
+        )
+        const scannedFromIndex = Math.max(
+          Option.getOrElse(maybeSinceIndex, () => state.startIndex),
+          state.startIndex,
+        )
+        return Response.ResponseMessageCounts({
+          counts: countEntriesByTag(candidates),
+          totalCount: candidates.length,
+          scannedFromIndex,
+          scannedToIndex: latestEntryIndex(state),
+        })
+      },
+
+    RequestDiffModels: ({ fromIndex, toIndex, maybeChangedPathsMatch }) =>
+      (effect {
+        const maybeInvalidPattern = maybePatternError(maybeChangedPathsMatch)
+        if (Option.isSome(maybeInvalidPattern)) {
+          return maybeInvalidPattern.value
+        }
+
+        const state = try SubscriptionRef.get(store.stateRef)
+        const maybeUnreadableIndex = EffectArray.findFirst(
+          [fromIndex, toIndex],
+          index => !isIndexReadable(state, index),
+        )
+        if (Option.isSome(maybeUnreadableIndex)) {
+          return Response.ResponseError({
+            reason: formatIndexNotReadable(state, maybeUnreadableIndex.value),
+          })
+        }
+
+        const beforeModel = try store.getModelAtIndex(fromIndex)
+        const afterModel = try store.getModelAtIndex(toIndex)
+        // NOTE: the diff must walk the same trees the paths are resolved
+        // against. toInspectableValue converts Date/File/Blob/URL instances
+        // to plain data, so diffing the transformed trees keeps every
+        // emitted path resolvable and lets instance-typed fields (whose raw
+        // forms have no enumerable keys) surface as value changes.
+        const diff = computeDiff(
+          toInspectableValue(beforeModel),
+          toInspectableValue(afterModel),
+        )
+        const maybePatterns = Option.filter(
+          maybeChangedPathsMatch,
+          EffectArray.isReadonlyArrayNonEmpty,
+        )
+
+        const changes = pipe(
+          diff.changedPaths,
+          EffectArray.fromIterable,
+          EffectArray.filter(path => match (maybePatterns) {
+            when Option.None: true;
+            when Option.Some(let patterns): matchesAnyPathPattern(
+              path,
+              patterns,
+            );
+          }),
+          EffectArray.sort(pathOrder),
+          EffectArray.map(path => ({
+            path,
+            before: toDiffValue(readSummarizedValueAt(beforeModel, path)),
+            after: toDiffValue(readSummarizedValueAt(afterModel, path)),
+          })),
+        )
+
+        return Response.ResponseModelDiff({ fromIndex, toIndex, changes })
+      })
+      |> Effect.catchCause(%, cause =>
+        Effect.succeed(
+          Response.ResponseError({
+            reason:
+              `Failed to diff Models between ${fromIndex} and ${toIndex}: ${
+                Cause.pretty(cause)
+              }`,
+          }),
+        )),
+
+    RequestGetMessage: ({ index }) =>
+      effect {
+        const state = try SubscriptionRef.get(store.stateRef)
+        const relative = index - state.startIndex
+        const maybeEntry = EffectArray.get(state.entries, relative)
+
+        return match (maybeEntry) {
+          when Option.None: Response.ResponseError({
+            reason: `No entry at index ${index} (have ${state.startIndex} to ${
+              state.startIndex + state.entries.length - 1
+            })`,
+          });
+          when Option.Some(let entry): Response.ResponseMessage({
+            entry: toSerializedEntry(entry, index),
+          });
+        }
+      },
+
+    RequestListKeyframes: effect () => {
+      const state = try SubscriptionRef.get(store.stateRef)
+      const sortedKeyframeIndices = pipe(
+        state.keyframes,
+        HashMap.keys,
+        EffectArray.fromIterable,
+        EffectArray.sort(Order.Number),
+      )
+      const indicesWithInit = match (state.maybeInitModel) {
+        when Option.None: sortedKeyframeIndices;
+        when Option.Some: [INIT_INDEX, ...sortedKeyframeIndices];
+      }
+      const keyframes = indicesWithInit.map(index =>
+        KeyframeInfo.make({ index })
+      )
+      return Response.ResponseKeyframes({ keyframes })
+    },
+
+    RequestReplayToKeyframe: ({ keyframeIndex }) =>
+      (effect {
+        const state = try SubscriptionRef.get(store.stateRef)
+        if (!isIndexReadable(state, keyframeIndex)) {
+          return Response.ResponseError({
+            reason: formatIndexNotReadable(state, keyframeIndex),
+          })
+        }
+        try store.jumpTo(keyframeIndex)
+        const model = try store.getModelAtIndex(keyframeIndex)
+        return Response.ResponseReplayed({
+          model: toInspectableValue(model),
+        })
+      })
+      |> Effect.catchCause(%, cause =>
+        Effect.succeed(
+          Response.ResponseError({
+            reason: `Failed to replay to keyframe ${keyframeIndex}: ${
+              Cause.pretty(cause)
+            }`,
+          }),
+        )),
+
+    RequestResume: () =>
+      (effect {
+        try store.resume
+        return Response.ResponseResumed()
+      })
+      |> Effect.catchCause(%, cause =>
+        Effect.succeed(
+          Response.ResponseError({
+            reason: `Failed to resume: ${Cause.pretty(cause)}`,
+          }),
+        )),
+
+    RequestDispatchMessage: ({ message }) => match (maybeDispatchSchema) {
+      when Option.None: Effect.succeed(missingMessageSchemaResponse);
+      when Option.Some(let dispatchSchema): (effect {
+        const decodedMessage = try Schema.decodeUnknownEffect(dispatchSchema)(
+          message,
+        )
+        const stateBefore = try SubscriptionRef.get(store.stateRef)
+        const acceptedAtIndex = nextEntryIndex(stateBefore)
+        try dispatch(decodedMessage)
+        return Response.ResponseDispatched({ acceptedAtIndex })
+      })
+        |> Effect.catch(%, error =>
+          Effect.succeed(
+            Response.ResponseError({
+              reason: `Invalid Message: ${
+                formatInvalidMessageReason(error, message)
+              }`,
+            }),
+          ));
+    },
+
+    RequestDispatchMessages: ({ messages }) => {
+      if (messages.length > MAX_DISPATCH_BATCH_SIZE) {
+        return Effect.succeed(
+          Response.ResponseError({
+            reason:
+              `Batch too large: ${messages.length} Messages exceeds the limit of ${MAX_DISPATCH_BATCH_SIZE}. No Messages from the batch were dispatched.`,
+          }),
+        )
+      }
+
+      return match (maybeDispatchSchema) {
+        when Option.None: Effect.succeed(missingMessageSchemaResponse);
+        when Option.Some(let dispatchSchema): (effect {
+          const decodeMessage = Schema.decodeUnknownEffect(dispatchSchema)
+          const decodedMessages = try forEach(
+            messages,
+            (message, position) =>
+              Effect.mapError(
+                decodeMessage(message),
+                error =>
+                  new Error(
+                    `Invalid Message at zero-based batch position ${position}: ${
+                      formatInvalidMessageReason(error, message)
+                    }\n\nNo Messages from the batch were dispatched.`,
+                  ),
+              ),
+          )
+          const stateBefore = try SubscriptionRef.get(store.stateRef)
+          const firstAcceptedIndex = nextEntryIndex(stateBefore)
+          try forEach(decodedMessages, dispatch)
+          const acceptedAtIndices = EffectArray.map(
+            decodedMessages,
+            (_decodedMessage, offset) => firstAcceptedIndex + offset,
+          )
+          return Response.ResponseDispatchedBatch({ acceptedAtIndices })
+        })
+          |> Effect.catch(%, error =>
+            Effect.succeed(
+              Response.ResponseError({
+                reason: error instanceof Error ? error.message : String(error),
+              }),
+            ));
+      }
+    },
+
+    RequestGetMessageSchema: ({ maybeVariantTag }) =>
+      Effect.succeed(
+        buildMessageSchemaResponse(maybeJsonSchemaDocument, maybeVariantTag),
+      ),
+
+    RequestListRuntimes: () =>
+      Effect.succeed(
+        Response.ResponseError({
+          reason:
+            'RequestListRuntimes is plugin-handled and should not reach the runtime bridge',
+        }),
+      ),
+
+    RequestGetInit: effect () => {
+      const state = try SubscriptionRef.get(store.stateRef)
+      return Response.ResponseInit({
+        maybeModel: Option.map(state.maybeInitModel, toInspectableValue),
+        commands: EffectArray.map(state.initCommands, toSerializedCommand),
+        mountStarts: EffectArray.map(state.initMountStarts, toSerializedMount),
+      })
+    },
+
+    RequestGetRuntimeState: effect () => {
+      const state = try SubscriptionRef.get(store.stateRef)
+      const currentIndex = latestEntryIndex(state)
+      return Response.ResponseRuntimeState({
+        currentIndex,
+        startIndex: state.startIndex,
+        totalEntries: state.entries.length,
+        isPaused: state.isPaused,
+        maybePausedAtIndex: OptionExt.when(
+          state.isPaused,
+          state.pausedAtIndex,
+        ),
+        hasInitModel: Option.isSome(state.maybeInitModel),
+      })
+    },
+  })

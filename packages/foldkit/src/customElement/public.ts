@@ -1,4 +1,4 @@
-export { define } from './index.js'
+export { define } from './index.vibe'
 
 export type {
   Builder,
@@ -6,4 +6,4 @@ export type {
   CustomElementSpec,
   ElementBuilder,
   EventSchema,
-} from './index.js'
+} from './index.vibe'

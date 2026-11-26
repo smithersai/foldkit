@@ -617,7 +617,11 @@ const assertPortIsFree = async (port: number): Promise<void> => {
 
 const assertNormalExampleHasNoParityResponses = async (): Promise<void> => {
   const origin = `http://localhost:${String(NORMAL_BUILT_PORT)}`
-  const host = startHost('node', ['scripts/serve.ts'], NORMAL_BUILT_PORT)
+  const host = startHost(
+    'node',
+    ['--import', 'vibelang/register', 'scripts/serve.vibe'],
+    NORMAL_BUILT_PORT,
+  )
   try {
     await waitForOrigin(origin)
     const echo = await ask(origin, {
@@ -749,7 +753,11 @@ const main = async (): Promise<void> => {
       variant.port,
     ),
   }))
-  const builtHost = startHost('node', ['scripts/serve.ts'], BUILT_PORT)
+  const builtHost = startHost(
+    'node',
+    ['--import', 'vibelang/register', 'scripts/serve.vibe'],
+    BUILT_PORT,
+  )
   const builtOrigin = `http://localhost:${BUILT_PORT}`
 
   try {

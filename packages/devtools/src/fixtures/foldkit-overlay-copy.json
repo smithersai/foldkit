@@ -1,0 +1,6 @@
+{
+  "seed": 413972,
+  "runs": 500,
+  "origin": "foldkit DevTools overlay payload serialization and browser clipboard service migration",
+  "oracle": "Original serialization is JSON.stringify(toInspectableValue(payload), null, 2); an undefined result, stringify exception or clipboard rejection returns the original failure Message with unchanged targetId/requestId; constructing a command writes nothing."
+}

@@ -1,0 +1,9 @@
+[
+  ["scripts/build-examples.ts"],
+  ["scripts/build-examples.vibe"],
+  ["scripts/check-dom-state-parity.mts"],
+  ["scripts/check-dom-state-parity.vibe"],
+  ["scripts/build-examples.d.vibe.ts"],
+  ["scripts/check-dom-state-parity.d.vibe.ts"],
+  ["scripts/build-examples.vibe", "scripts/check-dom-state-parity.vibe"]
+]

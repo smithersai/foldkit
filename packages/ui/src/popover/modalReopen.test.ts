@@ -5,7 +5,7 @@ import { defineMessageUnion } from 'foldkit/message'
 import { modifyFields } from 'foldkit/struct'
 import { afterEach, expect, it, vi } from 'vitest'
 
-import * as Popover from './index.js'
+import * as Popover from './index.vibe'
 
 const PORTAL_ROOT_ID = 'foldkit-portal-root'
 const POPOVER_ID = 'sort'

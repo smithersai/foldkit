@@ -1,0 +1,8 @@
+{
+  "repo": "foldkit",
+  "pattern": "type-only JS re-export of native UI definitions",
+  "files": {
+    "foldkit-ui-typeonly-js-reexport.ts": "export type { InitConfig, DraggableConfig, DraggableMessage } from './index.js'\n",
+    "index.vibe": "export type InitConfig = Readonly<{ id: string }>\nexport type DraggableConfig = Readonly<{ item: string }>\nexport type DraggableMessage = Readonly<{ _tag: 'Dragged' }>\n"
+  }
+}

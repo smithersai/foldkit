@@ -3,8 +3,8 @@ import { Calendar, Url } from 'foldkit'
 import { expect, given, role, scene, selector, type } from 'foldkit/scene'
 import { describe, test } from 'vitest'
 
-import { Deployment } from '../../deployment'
-import { init, update, view } from '../../main'
+import { Deployment } from '../../deployment.vibe'
+import { init, update, view } from '../../main.vibe'
 
 const url = pipe(
   Url.fromString('https://foldkit.dev/newsletter'),

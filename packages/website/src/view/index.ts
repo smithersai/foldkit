@@ -1,5 +1,5 @@
-export * as HeaderNav from './headerNav'
+export * as HeaderNav from './headerNav.vibe'
 export * as Search from './search'
-export * as Sidebar from './sidebar'
-export * as TableOfContents from './tableOfContents'
+export * as Sidebar from './sidebar.vibe'
+export * as TableOfContents from './tableOfContents.vibe'
 export * as ThemeSelector from './themeSelector'

@@ -1,0 +1,1153 @@
+import { clsx } from 'clsx'
+import { AsyncData } from 'foldkit'
+import {
+  Html,
+  type HtmlBuilder,
+  createLazy,
+  inertHtml as ih,
+} from 'foldkit/html'
+
+import { type CodeBlock, Shared } from '../component/index.ts'
+import { pageNeighbors } from '../docsNav.vibe'
+import { Icon } from '../icon/index.ts'
+import { Link } from '../link.ts'
+import { Message } from '../message.vibe'
+import { type Model } from '../model.vibe'
+import {
+  About,
+  AiMcp,
+  AiOverview,
+  AiSkills,
+  ApiReference,
+  AsyncData as AsyncDataPage,
+  BestPractices,
+  ComingFromReact,
+  ComingFromTanStackQuery,
+  Contact,
+  ContentApi,
+  Core,
+  EffectAtomComparison,
+  ElmComparison,
+  Example,
+  Examples,
+  FieldValidation,
+  GetStarted,
+  NotFound,
+  Patterns,
+  Performance,
+  Privacy,
+  ProjectOrganization,
+  ReactComparison,
+  Roadmap,
+  Routing,
+  Testing,
+  TestingScene,
+  TestingStory,
+  ToolingLinting,
+  TypingTerminal,
+  Ui,
+  WhyFoldkit,
+} from '../page/index.ts'
+import * as Prose from '../prose.vibe'
+import { AppRoute, type DocsRoute, homeRouter } from '../route.vibe'
+import * as SnippetCopy from '../snippetCopy/index.ts'
+import * as SnippetDisclosure from '../snippetDisclosure/index.ts'
+import { type TableOfContentsEntry } from '../tableOfContentsEntry.ts'
+import {
+  HeaderNav,
+  Search,
+  Sidebar,
+  TableOfContents,
+  ThemeSelector,
+} from '../view/index.ts'
+
+const PagefindBody = ih.DataAttribute('pagefind-body', '')
+const PagefindIgnore = ih.DataAttribute('pagefind-ignore', '')
+const LlmIgnore = ih.DataAttribute('llm-ignore', '')
+
+// DOCS HEADER
+
+export const headerView = (model: Model, h: HtmlBuilder<Message>) =>
+  h.header(
+    [
+      h.Class(
+        'fixed top-0 inset-x-0 z-50 h-[var(--header-height)] pt-[env(safe-area-inset-top,0px)] bg-cream dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 transform-gpu',
+      ),
+    ],
+    [
+      h.div(
+        [
+          h.Class(
+            'docs-shell h-full px-4 md:px-6 flex items-center justify-between',
+          ),
+        ],
+        [
+          h.div(
+            [h.Class('flex items-center gap-12')],
+            [
+              h.a(
+                [h.Href(homeRouter()), h.Class('flex items-center gap-2')],
+                [
+                  h.img([
+                    h.Src('/logo.svg'),
+                    h.Alt('Foldkit'),
+                    h.Width('801'),
+                    h.Height('200'),
+                    h.Class('h-6 md:h-8 w-auto dark:invert'),
+                  ]),
+                  Shared.betaTag,
+                ],
+              ),
+              HeaderNav.view(
+                model.route,
+                'hidden md:flex items-center gap-6',
+                h,
+              ),
+            ],
+          ),
+          h.div(
+            [h.Class('flex items-center gap-1')],
+            [
+              Search.triggerView('hidden md:flex', h),
+              Shared.headerGroupDivider('hidden md:block mx-3'),
+              h.div(
+                [h.Class('hidden md:flex items-center gap-3')],
+                [
+                  Shared.iconLink(
+                    Link.github,
+                    'GitHub',
+                    Icon.github('w-5 h-5'),
+                  ),
+                  Shared.iconLink(
+                    Link.discord,
+                    'Discord',
+                    Icon.discord('w-5 h-5'),
+                  ),
+                  Shared.iconLink(Link.xSocial, 'X', Icon.xSocial('w-5 h-5')),
+                  Shared.iconLink(Link.npm, 'npm', Icon.npm('w-6 h-6')),
+                ],
+              ),
+              Shared.headerGroupDivider('hidden md:block mx-3'),
+              Search.compactTriggerView('inline-flex md:hidden', h),
+              ThemeSelector.view(
+                model.themeMenu,
+                model.maybeThemePreference,
+                h,
+              ),
+              Shared.headerGroupDivider('mx-2 md:hidden'),
+              h.button(
+                [
+                  h.Class(
+                    'md:hidden -mr-2 inline-flex size-8 items-center justify-center rounded-md text-gray-600 transition hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-600 dark:focus-visible:outline-accent-400',
+                  ),
+                  h.AriaExpanded(model.mobileMenuDialog.isOpen),
+                  h.AriaLabel('Toggle menu'),
+                  h.OnClick(Message.ClickedOpenMobileMenu()),
+                ],
+                [Icon.menu('w-6 h-6')],
+              ),
+            ],
+          ),
+        ],
+      ),
+    ],
+  )
+
+// DOCS FOOTER
+
+export const footerView = (model: Model, h: HtmlBuilder<Message>): Html =>
+  h.footer(
+    [
+      h.Class(
+        'px-6 pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] md:px-8 xl:px-12 mt-6 border-t border-gray-200 dark:border-gray-800',
+      ),
+    ],
+    [
+      h.p(
+        [h.Class('text-base font-normal text-gray-900 dark:text-white mb-1')],
+        ['Stay in the update loop.'],
+      ),
+      h.p(
+        [h.Class('text-sm text-gray-700 dark:text-gray-300 mb-4')],
+        ['New releases, patterns, and the occasional deep dive.'],
+      ),
+      Shared.emailForm(
+        model.newsletterEmail,
+        (value) => Message.UpdatedNewsletterEmail({ value }),
+        h,
+      ),
+      h.hr([
+        h.Class(
+          'my-6 -mx-6 md:-mx-8 xl:-mx-12 border-t border-gray-200 dark:border-gray-800',
+        ),
+      ]),
+      h.div(
+        [h.Class('text-sm text-gray-600 dark:text-gray-400')],
+        [
+          h.p(
+            [],
+            [
+              'Built with ',
+              h.a(
+                [
+                  h.Href(`${Link.websiteSource}/src/main.ts`),
+                  h.Class('link-accent'),
+                ],
+                ['Foldkit'],
+              ),
+              '.',
+            ],
+          ),
+          h.p([h.Class('mt-1')], [`© ${model.currentYear} Devin Jameson`]),
+          Shared.siteLinks,
+        ],
+      ),
+    ],
+  )
+
+// PAGE NAVIGATION
+
+type NavPage = Readonly<{ href: string; label: string }>
+
+const neighborLink = (
+  config: Readonly<{
+    page: NavPage
+    direction: 'Previous' | 'Next'
+  }>,
+  h: HtmlBuilder<Message>,
+) =>
+  h.a(
+    [
+      h.Href(config.page.href),
+      h.Class(
+        clsx('group flex flex-col gap-1', {
+          'items-start text-left': config.direction === 'Previous',
+          'items-end text-right ml-auto': config.direction === 'Next',
+        }),
+      ),
+    ],
+    [
+      h.span(
+        [
+          h.Class(
+            'text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider',
+          ),
+        ],
+        [config.direction],
+      ),
+      h.span(
+        [
+          h.Class(
+            'text-sm font-medium text-accent-700 dark:text-accent-400 group-hover:underline',
+          ),
+        ],
+        config.direction === 'Previous'
+          ? [
+            h.span([h.Class('mr-1'), h.AriaHidden(true)], ['←']),
+            config.page.label,
+          ]
+          : [
+            config.page.label,
+            h.span([h.Class('ml-1'), h.AriaHidden(true)], ['→']),
+          ],
+      ),
+    ],
+  )
+
+const pageNavigationView = (tag: string, h: HtmlBuilder<Message>) => {
+  const { maybePrevious, maybeNext } = pageNeighbors(tag)
+
+  if (Option.isNone(maybePrevious) && Option.isNone(maybeNext)) {
+    return h.empty
+  }
+
+  return h.nav(
+    [
+      h.AriaLabel('Page navigation'),
+      h.Class(
+        'flex items-stretch justify-between gap-4 mt-12 pt-6 border-t border-gray-200 dark:border-gray-800',
+      ),
+    ],
+    [
+      match (maybePrevious) {
+        when { _tag: "None" }: h.empty;
+        when { _tag: "Some", value: let page }: neighborLink({
+          page,
+          direction: 'Previous',
+        }, h);
+      },
+      match (maybeNext) {
+        when { _tag: "None" }: h.empty;
+        when { _tag: "Some", value: let page }: neighborLink({
+          page,
+          direction: 'Next',
+        }, h);
+      },
+    ],
+  )
+}
+
+// SEARCH WEIGHT
+
+export const searchWeight = (tag: string): string => match (tag) {
+  when let value and if (value.startsWith('Core')): '10';
+  when 'GetStarted' or 'WhyFoldkit': '8';
+  when let value and if (value.startsWith('Patterns') || value.startsWith('BestPractices') || value.startsWith('Tooling')):
+    '7';
+  when 'RoutingAndNavigation' or 'FieldValidation' or 'ProjectOrganization' or 'ComingFromReact' or 'ComingFromTanStackQuery' or 'ReactComparison' or 'EffectAtomComparison' or 'ElmComparison' or 'Performance' or 'Roadmap':
+    '6';
+  when let value and if (value.startsWith('Testing')): '6';
+  when let value and if (value.startsWith('Ui') || value.startsWith('Ai')): '5';
+  when 'ApiModule': '3';
+  when 'Examples' or 'ExampleDetail' or 'TypingTerminal': '2';
+  default: '4';
+}
+
+// CONTENT WIDTH
+
+const isWideContentRoute = AppRoute.isAnyOf(['Examples', 'ExampleDetail'])
+
+// CONTENT ROUTING
+
+type DocsPageView = Readonly<{
+  content: Html
+  tableOfContents: Option<ReadonlyArray<TableOfContentsEntry>>
+}>
+
+const withTableOfContents = (
+  content: Html,
+  tableOfContents: ReadonlyArray<TableOfContentsEntry>,
+): DocsPageView => ({
+  content,
+  tableOfContents: Option.some(tableOfContents),
+})
+
+const withoutTableOfContents = (content: Html): DocsPageView => ({
+  content,
+  tableOfContents: Option.none(),
+})
+
+const toApiReferenceMessage = (message: ApiReference.Message): Message =>
+  Message.GotApiReferenceMessage({ message })
+
+const toUiPageMessage = (message: Ui.Message): Message =>
+  Message.GotUiPageMessage({ message })
+
+const renderApiReference = (
+  apiReference: ApiReference.Model,
+  module: ApiReference.ApiModule,
+  highlights: ApiReference.ApiData['highlights'],
+  h: HtmlBuilder<Message>,
+): Html =>
+  h.submodel({
+    slotId: `api-reference-${module.name}`,
+    model: apiReference,
+    view: ApiReference.view,
+    viewInputs: {
+      module,
+      highlights,
+      renderHeadingLink: Prose.renderHeadingLink(
+        (hash) => Message.ClickedCopyLink({ hash }),
+        h,
+      ),
+    },
+    toParentMessage: toApiReferenceMessage,
+  })
+
+type DocPageView = (
+  renderCopyButton: CodeBlock.RenderCopyButton,
+  renderSnippet: CodeBlock.RenderSnippet,
+  renderHeadingLink: Prose.RenderHeadingLink,
+) => Html
+
+type ProseDocPageView = (renderHeadingLink: Prose.RenderHeadingLink) => Html
+
+const renderDocContent = (
+  pageView: DocPageView,
+  snippetCopy: SnippetCopy.Model,
+  snippetDisclosure: SnippetDisclosure.Model,
+  h: HtmlBuilder<Message>,
+): Html => {
+  const renderCopyButton = SnippetCopy.renderer(
+    snippetCopy,
+    (message) => Message.GotSnippetCopyMessage({ message }),
+    h,
+  )
+
+  return pageView(
+    renderCopyButton,
+    SnippetDisclosure.renderer(
+      snippetDisclosure,
+      (message) => Message.GotSnippetDisclosureMessage({ message }),
+      renderCopyButton,
+      h,
+    ),
+    Prose.renderHeadingLink(
+      (hash) => Message.ClickedCopyLink({ hash }),
+      h,
+    ),
+  )
+}
+
+const renderProseContent = (
+  pageView: ProseDocPageView,
+  h: HtmlBuilder<Message>,
+): Html =>
+  pageView(
+    Prose.renderHeadingLink(
+      (hash) => Message.ClickedCopyLink({ hash }),
+      h,
+    ),
+  )
+
+const memoizedDocContent = createLazy()
+const memoizedProseContent = createLazy()
+
+type DocContentArgs = readonly [
+  SnippetCopy.Model,
+  SnippetDisclosure.Model,
+  HtmlBuilder<Message>,
+]
+
+const lazyDocsContent = (view: DocPageView, args: DocContentArgs): Html =>
+  memoizedDocContent(renderDocContent, [view, ...args])
+
+const lazyProseContent = (
+  view: ProseDocPageView,
+  args: readonly [HtmlBuilder<Message>],
+): Html => memoizedProseContent(renderProseContent, [view, ...args])
+
+const lazyApiReference = createLazy()
+const lazyApiReferenceSkeleton = createLazy()
+
+// VIEW
+
+export const view = (
+  model: Model,
+  docsRoute: DocsRoute,
+  h: HtmlBuilder<Message>,
+) => {
+  const renderCopyButton = SnippetCopy.renderer(
+    model.snippetCopy,
+    (message) => Message.GotSnippetCopyMessage({ message }),
+    h,
+  )
+  const renderSnippet = SnippetDisclosure.renderer(
+    model.snippetDisclosure,
+    (message) => Message.GotSnippetDisclosureMessage({ message }),
+    renderCopyButton,
+    h,
+  )
+  const renderHeadingLink = Prose.renderHeadingLink(
+    (hash) => Message.ClickedCopyLink({ hash }),
+    h,
+  )
+  const docContentArgs: DocContentArgs = [
+    model.snippetCopy,
+    model.snippetDisclosure,
+    h,
+  ]
+
+  const {
+    content,
+    tableOfContents: currentPageTableOfContents,
+  }: DocsPageView = match (docsRoute) {
+    when { _tag: "WhyFoldkit" }: withTableOfContents(
+      WhyFoldkit.view(renderHeadingLink),
+      WhyFoldkit.tableOfContents,
+    );
+    when { _tag: "Roadmap" }: withTableOfContents(
+      Roadmap.view(renderHeadingLink),
+      Roadmap.tableOfContents,
+    );
+    when { _tag: "Performance" }: withTableOfContents(
+      Performance.view(renderHeadingLink),
+      Performance.tableOfContents,
+    );
+    when { _tag: "ComingFromReact" }: withTableOfContents(
+      h.submodel({
+        slotId: 'coming-from-react',
+        model: model.comingFromReact,
+        view: ComingFromReact.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: (message) =>
+          Message.GotComingFromReactMessage({ message }),
+      }),
+      ComingFromReact.tableOfContents,
+    );
+    when { _tag: "ComingFromTanStackQuery" }: withTableOfContents(
+      lazyDocsContent(ComingFromTanStackQuery.view, docContentArgs),
+      ComingFromTanStackQuery.tableOfContents,
+    );
+    when { _tag: "ReactComparison" }: withTableOfContents(
+      lazyDocsContent(ReactComparison.view, docContentArgs),
+      ReactComparison.tableOfContents,
+    );
+    when { _tag: "EffectAtomComparison" }: withTableOfContents(
+      lazyDocsContent(EffectAtomComparison.view, docContentArgs),
+      EffectAtomComparison.tableOfContents,
+    );
+    when { _tag: "ElmComparison" }: withTableOfContents(
+      lazyDocsContent(ElmComparison.view, docContentArgs),
+      ElmComparison.tableOfContents,
+    );
+    when { _tag: "GetStarted" }: withTableOfContents(
+      lazyDocsContent(GetStarted.view, docContentArgs),
+      GetStarted.tableOfContents,
+    );
+    when { _tag: "RoutingAndNavigation" }: withTableOfContents(
+      lazyDocsContent(Routing.view, docContentArgs),
+      Routing.tableOfContents,
+    );
+    when { _tag: "FieldValidation" }: withTableOfContents(
+      lazyDocsContent(FieldValidation.view, docContentArgs),
+      FieldValidation.tableOfContents,
+    );
+    when { _tag: "Testing" }: withTableOfContents(
+      lazyDocsContent(Testing.view, docContentArgs),
+      Testing.tableOfContents,
+    );
+    when { _tag: "TestingStory" }: withTableOfContents(
+      lazyDocsContent(TestingStory.view, docContentArgs),
+      TestingStory.tableOfContents,
+    );
+    when { _tag: "TestingScene" }: withTableOfContents(
+      lazyDocsContent(TestingScene.view, docContentArgs),
+      TestingScene.tableOfContents,
+    );
+    when { _tag: "Examples" }: withoutTableOfContents(Examples.view());
+    when { _tag: "TypingTerminal" }: withTableOfContents(
+      TypingTerminal.view(renderHeadingLink),
+      TypingTerminal.tableOfContents,
+    );
+    when { _tag: "ExampleDetail", let exampleSlug }: withoutTableOfContents(
+      h.submodel({
+        slotId: `example-detail-${exampleSlug}`,
+        model: model.exampleDetail,
+        view: Example.ExampleDetail.view,
+        viewInputs: {
+          slug: exampleSlug,
+          isNarrowViewport: model.isNarrowViewport,
+          renderSnippet,
+        },
+        toParentMessage: (message) =>
+          Message.GotExampleDetailMessage({ message }),
+      }),
+    );
+    when { _tag: "BestPracticesSideEffects" }: withTableOfContents(
+      lazyDocsContent(
+        BestPractices.SideEffectsAndPurity.view,
+        docContentArgs,
+      ),
+      BestPractices.SideEffectsAndPurity.tableOfContents,
+    );
+    when { _tag: "BestPracticesMessages" }: withTableOfContents(
+      BestPractices.Messages.view(renderHeadingLink),
+      BestPractices.Messages.tableOfContents,
+    );
+    when { _tag: "BestPracticesKeying" }: withTableOfContents(
+      lazyDocsContent(BestPractices.Keying.view, docContentArgs),
+      BestPractices.Keying.tableOfContents,
+    );
+    when { _tag: "BestPracticesImmutability" }: withTableOfContents(
+      lazyDocsContent(BestPractices.Immutability.view, docContentArgs),
+      BestPractices.Immutability.tableOfContents,
+    );
+    when { _tag: "ProjectOrganization" }: withTableOfContents(
+      lazyDocsContent(ProjectOrganization.view, docContentArgs),
+      ProjectOrganization.tableOfContents,
+    );
+    when { _tag: "ToolingLinting" }: withTableOfContents(
+      lazyDocsContent(ToolingLinting.view, docContentArgs),
+      ToolingLinting.tableOfContents,
+    );
+    when { _tag: "ApiModule", let moduleSlug }: AsyncData.matchData(
+      model.apiReference.apiData,
+      {
+        onData: (data) => match (ApiReference.resolveModule(data.parsedApi, moduleSlug)) {
+          when { _tag: "None" }: withoutTableOfContents(
+            NotFound.view(moduleSlug, homeRouter()),
+          );
+          when { _tag: "Some", value: let module }: ({
+            content: lazyApiReference(renderApiReference, [
+              model.apiReference,
+              module,
+              data.highlights,
+              h,
+            ]),
+            tableOfContents: Option.some(
+              ApiReference.toModuleTableOfContents(module),
+            ),
+          });
+        },
+        onFailure: (error) =>
+          withoutTableOfContents(ApiReference.failureView(error)),
+        onEmpty: () =>
+          withoutTableOfContents(
+            lazyApiReferenceSkeleton(ApiReference.skeletonView, []),
+          ),
+      },
+    );
+    when { _tag: "CoreArchitecture" }: withTableOfContents(
+      Core.Architecture.view(renderHeadingLink),
+      Core.Architecture.tableOfContents,
+    );
+    when { _tag: "CoreCounterExample" }: withTableOfContents(
+      lazyDocsContent(Core.CounterExample.view, docContentArgs),
+      Core.CounterExample.tableOfContents,
+    );
+    when { _tag: "CoreModel" }: withTableOfContents(
+      lazyDocsContent(Core.CoreModel.view, docContentArgs),
+      Core.CoreModel.tableOfContents,
+    );
+    when { _tag: "CoreMessages" }: withTableOfContents(
+      lazyDocsContent(Core.Messages.view, docContentArgs),
+      Core.Messages.tableOfContents,
+    );
+    when { _tag: "CoreUpdate" }: withTableOfContents(
+      lazyDocsContent(Core.CoreUpdate.view, docContentArgs),
+      Core.CoreUpdate.tableOfContents,
+    );
+    when { _tag: "CoreView" }: withTableOfContents(
+      lazyDocsContent(Core.CoreView.view, docContentArgs),
+      Core.CoreView.tableOfContents,
+    );
+    when { _tag: "CoreCommands" }: withTableOfContents(
+      lazyDocsContent(Core.Commands.view, docContentArgs),
+      Core.Commands.tableOfContents,
+    );
+    when { _tag: "CoreMount" }: withTableOfContents(
+      lazyDocsContent(Core.Mount.view, docContentArgs),
+      Core.Mount.tableOfContents,
+    );
+    when { _tag: "CoreCustomElement" }: withTableOfContents(
+      lazyDocsContent(Core.CustomElement.view, docContentArgs),
+      Core.CustomElement.tableOfContents,
+    );
+    when { _tag: "CoreSubscriptions" }: withTableOfContents(
+      lazyDocsContent(Core.Subscriptions.view, docContentArgs),
+      Core.Subscriptions.tableOfContents,
+    );
+    when { _tag: "CoreInitAndFlags" }: withTableOfContents(
+      lazyDocsContent(Core.InitAndFlags.view, docContentArgs),
+      Core.InitAndFlags.tableOfContents,
+    );
+    when { _tag: "CoreDom" }: withTableOfContents(
+      lazyDocsContent(Core.CoreDom.view, docContentArgs),
+      Core.CoreDom.tableOfContents,
+    );
+    when { _tag: "CoreRender" }: withTableOfContents(
+      lazyDocsContent(Core.CoreRender.view, docContentArgs),
+      Core.CoreRender.tableOfContents,
+    );
+    when { _tag: "CoreFile" }: withTableOfContents(
+      lazyDocsContent(Core.CoreFile.view, docContentArgs),
+      Core.CoreFile.tableOfContents,
+    );
+    when { _tag: "CoreHttp" }: withTableOfContents(
+      lazyDocsContent(Core.CoreHttp.view, docContentArgs),
+      Core.CoreHttp.tableOfContents,
+    );
+    when { _tag: "CoreQuery" }: withTableOfContents(
+      lazyDocsContent(Core.CoreQuery.view, docContentArgs),
+      Core.CoreQuery.tableOfContents,
+    );
+    when { _tag: "CoreCanvas" }: withTableOfContents(
+      lazyDocsContent(Core.CoreCanvas.view, docContentArgs),
+      Core.CoreCanvas.tableOfContents,
+    );
+    when { _tag: "CoreRuntime" }: withTableOfContents(
+      lazyDocsContent(Core.Runtime.view, docContentArgs),
+      Core.Runtime.tableOfContents,
+    );
+    when { _tag: "CoreServerRendering" }: withTableOfContents(
+      lazyDocsContent(Core.CoreServerRendering.view, docContentArgs),
+      Core.CoreServerRendering.tableOfContents,
+    );
+    when { _tag: "CoreResources" }: withTableOfContents(
+      lazyDocsContent(Core.Resources.view, docContentArgs),
+      Core.Resources.tableOfContents,
+    );
+    when { _tag: "CoreManagedResources" }: withTableOfContents(
+      lazyDocsContent(Core.ManagedResources.view, docContentArgs),
+      Core.ManagedResources.tableOfContents,
+    );
+    when { _tag: "CoreDevTools" }: withTableOfContents(
+      lazyDocsContent(Core.DevTools.view, docContentArgs),
+      Core.DevTools.tableOfContents,
+    );
+    when { _tag: "CoreCrashView" }: withTableOfContents(
+      lazyDocsContent(Core.CrashView.view, docContentArgs),
+      Core.CrashView.tableOfContents,
+    );
+    when { _tag: "CoreViewTransitions" }: withTableOfContents(
+      lazyDocsContent(Core.ViewTransitions.view, docContentArgs),
+      Core.ViewTransitions.tableOfContents,
+    );
+    when { _tag: "CoreSlowWarnings" }: withTableOfContents(
+      lazyDocsContent(Core.Slow.view, docContentArgs),
+      Core.Slow.tableOfContents,
+    );
+    when { _tag: "CoreFreezeModel" }: withTableOfContents(
+      lazyProseContent(Core.FreezeModel.view, [h]),
+      Core.FreezeModel.tableOfContents,
+    );
+    when { _tag: "CorePreserveScroll" }: withTableOfContents(
+      lazyProseContent(Core.PreserveScroll.view, [h]),
+      Core.PreserveScroll.tableOfContents,
+    );
+    when { _tag: "CoreSubmodel" }: withTableOfContents(
+      h.submodel({
+        slotId: 'core-submodel-page',
+        model: model.coreSubmodelPage,
+        view: Core.SubmodelPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: (message) =>
+          Message.GotCoreSubmodelPageMessage({ message }),
+      }),
+      Core.SubmodelPage.tableOfContents,
+    );
+    when { _tag: "CoreMachine" }: withTableOfContents(
+      lazyDocsContent(Core.Machine.view, docContentArgs),
+      Core.Machine.tableOfContents,
+    );
+    when { _tag: "AsyncData" }: withTableOfContents(
+      lazyDocsContent(AsyncDataPage.view, docContentArgs),
+      AsyncDataPage.tableOfContents,
+    );
+    when { _tag: "PatternsAntiPatterns" }: withTableOfContents(
+      lazyDocsContent(Patterns.AntiPatterns.view, docContentArgs),
+      Patterns.AntiPatterns.tableOfContents,
+    );
+    when { _tag: "PatternsInformingSubmodels" }: withTableOfContents(
+      lazyDocsContent(Patterns.InformingSubmodels.view, docContentArgs),
+      Patterns.InformingSubmodels.tableOfContents,
+    );
+    when { _tag: "PatternsSubscriptionOrganization" }: withTableOfContents(
+      lazyDocsContent(
+        Patterns.SubscriptionOrganization.view,
+        docContentArgs,
+      ),
+      Patterns.SubscriptionOrganization.tableOfContents,
+    );
+    when { _tag: "CoreViewMemoization" }: withTableOfContents(
+      lazyDocsContent(Core.ViewMemoization.view, docContentArgs),
+      Core.ViewMemoization.tableOfContents,
+    );
+    when { _tag: "CoreEmbedding" }: withTableOfContents(
+      lazyDocsContent(Core.Embedding.view, docContentArgs),
+      Core.Embedding.tableOfContents,
+    );
+    when { _tag: "UiOverview" }: withTableOfContents(
+      lazyDocsContent(Ui.OverviewPage.view, docContentArgs),
+      Ui.OverviewPage.tableOfContents,
+    );
+    when { _tag: "UiSelectionSubmodels" }: withTableOfContents(
+      lazyDocsContent(Ui.SelectionSubmodelsPage.view, docContentArgs),
+      Ui.SelectionSubmodelsPage.tableOfContents,
+    );
+    when { _tag: "UiAnchor" }: withTableOfContents(
+      lazyDocsContent(Ui.AnchorPage.view, docContentArgs),
+      Ui.AnchorPage.tableOfContents,
+    );
+    when { _tag: "UiHoverIntent" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-HoverIntent',
+        model: model.uiPages,
+        view: Ui.HoverIntentPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.HoverIntentPage.tableOfContents,
+    );
+    when { _tag: "UiButton" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-Button',
+        model: model.uiPages,
+        view: Ui.ButtonPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.ButtonPage.tableOfContents,
+    );
+    when { _tag: "UiTabs" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-Tabs',
+        model: model.uiPages,
+        view: Ui.TabsPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.TabsPage.tableOfContents,
+    );
+    when { _tag: "UiNav" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-Nav',
+        model: model.uiPages,
+        view: Ui.NavPage.view,
+        viewInputs: {
+          renderCopyButton,
+          renderSnippet,
+          renderHeadingLink,
+          url: model.url,
+        },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.NavPage.tableOfContents,
+    );
+    when { _tag: "UiDisclosure" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-Disclosure',
+        model: model.uiPages,
+        view: Ui.DisclosurePage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.DisclosurePage.tableOfContents,
+    );
+    when { _tag: "UiDialog" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-Dialog',
+        model: model.uiPages,
+        view: Ui.DialogPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.DialogPage.tableOfContents,
+    );
+    when { _tag: "UiMenu" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-Menu',
+        model: model.uiPages,
+        view: Ui.MenuPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.MenuPage.tableOfContents,
+    );
+    when { _tag: "UiPopover" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-Popover',
+        model: model.uiPages,
+        view: Ui.PopoverPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.PopoverPage.tableOfContents,
+    );
+    when { _tag: "UiTooltip" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-Tooltip',
+        model: model.uiPages,
+        view: Ui.TooltipPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.TooltipPage.tableOfContents,
+    );
+    when { _tag: "UiToast" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-Toast',
+        model: model.uiPages,
+        view: Ui.ToastPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.ToastPage.tableOfContents,
+    );
+    when { _tag: "UiListbox" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-Listbox',
+        model: model.uiPages,
+        view: Ui.ListboxPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.ListboxPage.tableOfContents,
+    );
+    when { _tag: "UiRadioGroup" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-RadioGroup',
+        model: model.uiPages,
+        view: Ui.RadioGroupPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.RadioGroupPage.tableOfContents,
+    );
+    when { _tag: "UiSlider" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-Slider',
+        model: model.uiPages,
+        view: Ui.SliderPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.SliderPage.tableOfContents,
+    );
+    when { _tag: "UiMeter" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-Meter',
+        model: model.uiPages,
+        view: Ui.MeterPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.MeterPage.tableOfContents,
+    );
+    when { _tag: "UiProgress" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-Progress',
+        model: model.uiPages,
+        view: Ui.ProgressPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.ProgressPage.tableOfContents,
+    );
+    when { _tag: "UiSwitch" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-Switch',
+        model: model.uiPages,
+        view: Ui.SwitchPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.SwitchPage.tableOfContents,
+    );
+    when { _tag: "UiCalendar" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-Calendar',
+        model: model.uiPages,
+        view: Ui.CalendarPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.CalendarPage.tableOfContents,
+    );
+    when { _tag: "UiDatePicker" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-DatePicker',
+        model: model.uiPages,
+        view: Ui.DatePickerPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.DatePickerPage.tableOfContents,
+    );
+    when { _tag: "UiCheckbox" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-Checkbox',
+        model: model.uiPages,
+        view: Ui.CheckboxPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.CheckboxPage.tableOfContents,
+    );
+    when { _tag: "UiCombobox" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-Combobox',
+        model: model.uiPages,
+        view: Ui.ComboboxPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.ComboboxPage.tableOfContents,
+    );
+    when { _tag: "UiInput" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-Input',
+        model: model.uiPages,
+        view: Ui.InputPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.InputPage.tableOfContents,
+    );
+    when { _tag: "UiTextarea" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-Textarea',
+        model: model.uiPages,
+        view: Ui.TextareaPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.TextareaPage.tableOfContents,
+    );
+    when { _tag: "UiFieldset" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-Fieldset',
+        model: model.uiPages,
+        view: Ui.FieldsetPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.FieldsetPage.tableOfContents,
+    );
+    when { _tag: "UiSelect" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-Select',
+        model: model.uiPages,
+        view: Ui.SelectPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.SelectPage.tableOfContents,
+    );
+    when { _tag: "UiDragAndDrop" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-DragAndDrop',
+        model: model.uiPages,
+        view: Ui.DragAndDropPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.DragAndDropPage.tableOfContents,
+    );
+    when { _tag: "UiFileDrop" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-FileDrop',
+        model: model.uiPages,
+        view: Ui.FileDropPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.FileDropPage.tableOfContents,
+    );
+    when { _tag: "UiAnimation" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-Animation',
+        model: model.uiPages,
+        view: Ui.AnimationPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.AnimationPage.tableOfContents,
+    );
+    when { _tag: "UiVirtualList" }: withTableOfContents(
+      h.submodel({
+        slotId: 'ui-VirtualList',
+        model: model.uiPages,
+        view: Ui.VirtualListPage.view,
+        viewInputs: { renderCopyButton, renderSnippet, renderHeadingLink },
+        toParentMessage: toUiPageMessage,
+      }),
+      Ui.VirtualListPage.tableOfContents,
+    );
+    when { _tag: "AiOverview" }: withTableOfContents(
+      lazyDocsContent(AiOverview.view, docContentArgs),
+      AiOverview.tableOfContents,
+    );
+    when { _tag: "AiSkills" }: withTableOfContents(
+      lazyDocsContent(AiSkills.view, docContentArgs),
+      AiSkills.tableOfContents,
+    );
+    when { _tag: "AiMcp" }: withTableOfContents(
+      lazyDocsContent(AiMcp.view, docContentArgs),
+      AiMcp.tableOfContents,
+    );
+    when { _tag: "ContentApi" }: withTableOfContents(
+      lazyDocsContent(ContentApi.view, docContentArgs),
+      ContentApi.tableOfContents,
+    );
+    when { _tag: "About" }: withTableOfContents(
+      About.view(renderHeadingLink),
+      About.tableOfContents,
+    );
+    when { _tag: "Contact" }: withTableOfContents(
+      Contact.view(renderHeadingLink),
+      Contact.tableOfContents,
+    );
+    when { _tag: "Privacy" }: withTableOfContents(
+      Privacy.view(renderHeadingLink),
+      Privacy.tableOfContents,
+    );
+    when { _tag: "NotFound", let path }: withoutTableOfContents(
+      NotFound.view(path, homeRouter()),
+    );
+  }
+
+  return h.div(
+    [
+      h.Class('flex flex-col min-h-screen'),
+      ...(Option.isSome(model.maybeIsPlaygroundSupported)
+        ? [h.DataAttribute('browser-environment-loaded', '')]
+        : []),
+    ],
+    [
+      Shared.skipNavLink,
+      headerView(model, h),
+      Search.dialogView(model, h),
+      h.div(
+        [
+          h.Class(
+            clsx('docs-shell flex flex-1 pt-[var(--header-height)] md:pl-64', {
+              'xl:pr-64': Option.isSome(currentPageTableOfContents),
+            }),
+          ),
+        ],
+        [
+          Sidebar.view(model, h),
+          Sidebar.mobileView(model, h),
+          h.main(
+            [
+              h.Id('main-content'),
+              h.Class(
+                clsx('flex-1 min-w-0 flex flex-col bg-cream dark:bg-gray-900', {
+                  'pt-[var(--mobile-toc-height)]': Option.isSome(
+                    currentPageTableOfContents,
+                  ),
+                }),
+              ),
+            ],
+            [
+              match (currentPageTableOfContents) {
+                when { _tag: "None" }: h.empty;
+                when { _tag: "Some", value: let tableOfContents }:
+                  TableOfContents.mobileView(
+                    tableOfContents,
+                    model.activeSection,
+                    model.isMobileTableOfContentsOpen,
+                    h,
+                  );
+              },
+              h.keyed('div')(
+                match (docsRoute) {
+                  when { _tag: 'ApiModule', moduleSlug: let moduleSlug }:
+                    `ApiModule-${moduleSlug}`;
+                  when let other: other._tag;
+                },
+                [
+                  PagefindBody,
+                  h.DataAttribute(
+                    'pagefind-weight',
+                    searchWeight(docsRoute._tag),
+                  ),
+                  h.Class(
+                    clsx('docs-content flex-1', {
+                      'max-w-5xl': isWideContentRoute(docsRoute),
+                    }),
+                  ),
+                ],
+                [
+                  content,
+                  h.div(
+                    [PagefindIgnore, LlmIgnore],
+                    [pageNavigationView(docsRoute._tag, h)],
+                  ),
+                ],
+              ),
+              h.div([PagefindIgnore], [footerView(model, h)]),
+            ],
+          ),
+          match (currentPageTableOfContents) {
+            when { _tag: "None" }: h.empty;
+            when { _tag: "Some", value: let tableOfContents }: TableOfContents
+              .view(tableOfContents, model.activeSection, h);
+          },
+        ],
+      ),
+    ],
+  )
+}

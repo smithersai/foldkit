@@ -1,0 +1,86 @@
+import { Experimental } from 'vibelang-runtime'
+import { ExperimentalBrowserWindow } from 'vibelang-runtime/experimental/platform-browser'
+
+import { urlChangeEvent } from './navigation.platform.ts'
+
+export { UrlRequest } from './urlRequest.vibe'
+
+/** Pushes a new URL to browser history and triggers Foldkit's URL change handling. */
+export const pushUrl = effect (url: string): void!! => {
+  provide ExperimentalBrowserWindow.layer {
+    const browser = try Experimental.Window.Window
+    const window = try browser.current
+    try sync(
+      (window: Window, url: string) => window.history.pushState({}, '', url),
+      window,
+      url,
+    )
+    try sync(
+      (window: Window) => window.dispatchEvent(urlChangeEvent()),
+      window,
+    )
+  }
+}
+
+/** Replaces the current URL in browser history and triggers Foldkit's URL change handling. */
+export const replaceUrl = effect (url: string): void!! => {
+  provide ExperimentalBrowserWindow.layer {
+    const browser = try Experimental.Window.Window
+    const window = try browser.current
+    try sync(
+      (window: Window, url: string) => window.history.replaceState({}, '', url),
+      window,
+      url,
+    )
+    try sync(
+      (window: Window) => window.dispatchEvent(urlChangeEvent()),
+      window,
+    )
+  }
+}
+
+/** Navigates back in browser history. */
+export const back = effect (): void!! => {
+  provide ExperimentalBrowserWindow.layer {
+    const browser = try Experimental.Window.Window
+    const window = try browser.current
+    try sync((window: Window) => window.history.back(), window)
+  }
+}
+
+/** Navigates forward in browser history. */
+export const forward = effect (): void!! => {
+  provide ExperimentalBrowserWindow.layer {
+    const browser = try Experimental.Window.Window
+    const window = try browser.current
+    try sync((window: Window) => window.history.forward(), window)
+  }
+}
+
+/** Performs a full page navigation to the given href. */
+export const load = effect (href: string): void!! => {
+  provide ExperimentalBrowserWindow.layer {
+    const browser = try Experimental.Window.Window
+    const window = try browser.current
+    try sync(
+      (window: Window, href: string) => window.location.assign(href),
+      window,
+      href,
+    )
+  }
+}
+
+/** Opens the given href in a new browsing context (tab or window, at the browser's discretion).
+ *  The current page is unchanged. Subject to popup blockers when not called from a user-gesture handler. */
+export const openUrl = effect (href: string): void!! => {
+  provide ExperimentalBrowserWindow.layer {
+    const browser = try Experimental.Window.Window
+    const window = try browser.current
+    try sync(
+      (window: Window, href: string) =>
+        window.open(href, '_blank', 'noopener,noreferrer'),
+      window,
+      href,
+    )
+  }
+}

@@ -1,19 +1,19 @@
-export type { RoutingConfig } from './browserListeners.js'
+export type { RoutingConfig } from './browserListeners.vibe'
 
 export type {
   CrashConfig,
   CrashContext,
   ElementCrashConfig,
-} from './crashUI.js'
+} from './crashUI.vibe'
 
 export type {
   DevToolsConfig,
   DevToolsMode,
   DevToolsModeConfig,
   DevToolsPosition,
-} from './devToolsConfig.js'
+} from './devToolsConfig.vibe'
 
-export { Dispatch } from './dispatch.js'
+export { Dispatch } from './dispatch.vibe'
 
 export type {
   EmbedHandle,
@@ -22,9 +22,9 @@ export type {
   OutboundPortHandle,
   OutboundPortHandles,
   PortHandles,
-} from './hostConnector.js'
+} from './hostConnector.vibe'
 
-export { makeApplication } from './makeApplication.js'
+export { makeApplication } from './makeApplication.vibe'
 
 export type {
   ApplicationConfig,
@@ -33,19 +33,19 @@ export type {
   RoutingApplicationConfig,
   RoutingApplicationConfigWithFlags,
   RoutingApplicationInit,
-} from './makeApplication.js'
+} from './makeApplication.vibe'
 
-export { makeElement } from './makeElement.js'
+export { makeElement } from './makeElement.vibe'
 
 export type {
   ElementConfig,
   ElementConfigWithFlags,
   ElementInit,
-} from './makeElement.js'
+} from './makeElement.vibe'
 
-export type { MakeRuntimeReturn } from './runtime.js'
+export type { MakeRuntimeReturn } from './runtime.vibe'
 
-export { SlowPhase, defaultSlowCallback } from './slowPhase.js'
+export { SlowPhase, defaultSlowCallback } from './slowPhase.vibe'
 
 export type {
   SlowConfig,
@@ -55,16 +55,16 @@ export type {
   SlowThresholdOverrides,
   SlowUpdateContext,
   SlowViewContext,
-} from './slowPhase.js'
+} from './slowPhase.vibe'
 
-export { embed, hydrate, run } from './start.js'
+export { embed, hydrate, run } from './start.vibe'
 
-export type { HydrateOptions, RunOptions } from './start.js'
+export type { HydrateOptions, RunOptions } from './start.vibe'
 
 export type {
   ViewTransitionConfig,
   ViewTransitionContext,
   ViewTransitionDecision,
-} from './viewTransition.js'
+} from './viewTransition.vibe'
 
-export type { Visibility } from './visibility.js'
+export type { Visibility } from './visibility.vibe'

@@ -11,7 +11,7 @@ import {
   PROBLEMS,
   buildProblemDocument,
   buildServiceIndex,
-} from './contentApi'
+} from './contentApi.vibe'
 import { serializeOpenApiDocument } from './openApi'
 
 const WEBSITE_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..')

@@ -1,0 +1,20 @@
+import { ExperimentalBrowserDocument } from 'vibelang-runtime/experimental/platform-browser'
+import { Dom } from 'foldkit'
+import { defineMessageUnion } from 'foldkit/message'
+
+const Message = defineMessageUnion({
+  PressedEscape: {},
+})
+
+const escapePresses = Dom.streamFromEventFilterMap({
+  target: Effect.runSync(effect {
+    provide ExperimentalBrowserDocument.layer {
+      return try (try Experimental.Document.Document).current
+    }
+  }),
+  type: 'keydown',
+  filterMapEvent: event =>
+    event.key === 'Escape'
+      ? Option.some(Message.PressedEscape())
+      : Option.none(),
+})

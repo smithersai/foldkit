@@ -58,9 +58,48 @@ jobs:
       - name: Block unresolved Claude comments
         run: pnpm check:no-claude-comments
 
+      # The migration pull request merges as a squash. When its body carries the
+      # squash message between `<!-- squash-message -->` and
+      # `<!-- /squash-message -->`, this gate checks that message, as the one
+      # commit the merge creates: a synthetic commit of the merge tree over the
+      # base, checked by the unchanged script. Without the block it checks the
+      # branch's commits as before. The body only ever travels through `env`.
       - name: Check commit message line length
         if: github.event_name == 'pull_request'
-        run: pnpm check:commit-message-line-length
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          BASE_SHA: ${{ steps.range.outputs.base_sha }}
+        run: |
+          if ! printf '%s\n' "$PR_BODY" | grep -qF -- '<!-- squash-message -->'; then
+            exec pnpm check:commit-message-line-length
+          fi
+          if ! printf '%s\n' "$PR_BODY" | grep -qF -- '<!-- /squash-message -->'; then
+            echo "The squash-message block in the pull request body is not closed." >&2
+            exit 1
+          fi
+          message=$(mktemp)
+          printf '%s\n' "$PR_BODY" | tr -d '\r' | awk '
+            index($0, "<!-- /squash-message -->") { exit }
+            inside { print }
+            index($0, "<!-- squash-message -->") { inside = 1 }
+          ' > "$message"
+          if ! grep -q '[^[:space:]]' "$message"; then
+            echo "The squash-message block in the pull request body is empty." >&2
+            exit 1
+          fi
+          previous_sha=$(git rev-parse HEAD)
+          previous_ref=$(git symbolic-ref -q HEAD || true)
+          squash=$(git -c user.name=ci -c user.email=ci@foldkit.invalid \
+            commit-tree 'HEAD^{tree}' -p "$BASE_SHA" -F "$message")
+          git checkout --quiet --detach "$squash"
+          status=0
+          pnpm check:commit-message-line-length "$BASE_SHA" || status=$?
+          if [ -n "$previous_ref" ]; then
+            git checkout --quiet "${previous_ref#refs/heads/}"
+          else
+            git checkout --quiet --detach "$previous_sha"
+          fi
+          exit "$status"
 
       - name: Check formatting
         run: pnpm format:check

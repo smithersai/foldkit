@@ -1,3 +1,3 @@
-export { view, descriptionId } from './index.js'
+export { view, descriptionId } from './index.vibe'
 
-export type { ViewConfig, TextareaAttributes } from './index.js'
+export type { ViewConfig, TextareaAttributes } from './index.vibe'

@@ -13,7 +13,7 @@ import {
   show,
   toggle,
   update,
-} from './index.js'
+} from './index.vibe'
 
 const INITIAL_TRANSITION_GENERATION = 0
 const FIRST_TRANSITION_GENERATION = 1

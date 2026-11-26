@@ -1,0 +1,5 @@
+// MODEL
+
+schema Model {
+  readonly count: number
+}

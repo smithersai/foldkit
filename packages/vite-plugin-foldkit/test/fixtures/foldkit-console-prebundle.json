@@ -1,0 +1,9 @@
+{
+  "repo": "foldkit",
+  "pattern": "implicit-Console-runtime-prebundle",
+  "seed": 413951,
+  "numRuns": 100,
+  "source": "export const report = effect (message: string): void!! => { try Console.log(message) }\n",
+  "environments": ["browser_preview", "server_renderer", "my_worker"],
+  "contract": "Native emitted Console imports are prebundled wherever browser consumption, discovery, or explicit includes enable optimization; disabled server optimization stays disabled."
+}

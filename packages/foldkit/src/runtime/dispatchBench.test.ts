@@ -1,11 +1,11 @@
 import { Effect, Number, Predicate, Schema } from 'effect'
 import { describe, it } from 'vitest'
 
-import { Document, __htmlBuilder, __requireDispatch } from '../html/index.js'
+import { Document, __htmlBuilder, __requireDispatch } from '../html/index.vibe'
 import { defineMessageUnion } from '../message/index.js'
-import { modifyFields } from '../struct/index.js'
+import { modifyFields } from '../struct/index.vibe'
 import type * as Update from '../update/index.js'
-import { makeApplication } from './makeApplication.js'
+import { makeApplication } from './makeApplication.vibe'
 
 /**
  * Internal dispatch-throughput benchmark. Skipped by default to keep CI

@@ -1,1 +1,1 @@
-export * from './interruptible.js'
+export * from './interruptible.vibe'

@@ -3,8 +3,8 @@ import { chmod, readdir, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { expect, it } from 'vitest'
 
-import type { RelayClient } from '../src/relayClient.ts'
-import { buildTools } from '../src/tools.ts'
+import type { RelayClient } from '../src/relayClient.vibe'
+import { buildTools } from '../src/tools.vibe'
 import {
   NOT_CONNECTED,
   POLL_TIMEOUT,

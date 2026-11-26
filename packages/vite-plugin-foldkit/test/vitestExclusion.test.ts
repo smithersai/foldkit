@@ -7,7 +7,7 @@ import {
 } from 'vite'
 import { describe, expect, it, onTestFinished } from 'vitest'
 
-import { type FoldkitPluginOptions, foldkit } from '../src/index.ts'
+import { type FoldkitPluginOptions, foldkit } from '../src/index.vibe'
 import {
   findFreePort,
   isListenAttemptedOn,

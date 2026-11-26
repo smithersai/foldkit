@@ -17,7 +17,9 @@ const webServerCommand = (slug: string): string => {
   } else if (slug === 'ssg') {
     return `pnpm -C ../../examples/ssg build && pnpm -C ../../examples/ssg exec vite preview --outDir dist/client --port ${PORT} --strictPort`
   } else {
-    return `pnpm -C ../../examples/${slug} exec vite --port ${PORT} --strictPort`
+    // The example's own dev script: a native Vite config needs the Node
+    // register hook and loader the script carries, which `vite` alone lacks.
+    return `pnpm -C ../../examples/${slug} run dev --port ${PORT} --strictPort`
   }
 }
 

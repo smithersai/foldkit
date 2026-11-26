@@ -7,14 +7,14 @@ import * as Update from 'foldkit/update'
 
 import { describe, it } from '@effect/vitest'
 
-import type { Model as RadioGroupModel, ViewInputs } from './index.js'
+import type { Model as RadioGroupModel, ViewInputs } from './index.vibe'
 import {
   FocusOption,
   Message as RadioGroupMessage,
   OutMessage as RadioGroupOutMessage,
   create,
   init,
-} from './index.js'
+} from './index.vibe'
 
 const RADIO_ID = 'test'
 const options: ReadonlyArray<string> = ['Brush', 'Fill', 'Eraser']

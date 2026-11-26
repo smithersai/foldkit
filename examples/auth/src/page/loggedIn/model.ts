@@ -1,7 +1,7 @@
 import { taggedStruct } from 'foldkit/schema'
 
-import { Session } from '../../domain/session'
-import { LoggedInRoute } from '../../route'
+import { Session } from '../../domain/session.vibe'
+import { LoggedInRoute } from '../../route.vibe'
 
 // MODEL
 

@@ -1,6 +1,6 @@
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { defineConfig } from 'vite'
+import { type Plugin, defineConfig } from 'vite'
 
 import { foldkitAliases } from '../../../examples/vite.aliases'
 
@@ -16,12 +16,21 @@ const SERVER_ENTRY = resolve(
 const PLUGIN_URL = pathToFileURL(
   resolve(EXAMPLE_DIR, 'node_modules/@foldkit/vite-plugin/dist/index.js'),
 ).href
+// NOTE: foldkit's source includes .vibe modules, which only the VibeLang
+// plugin compiles; it is loaded from the example like the Foldkit plugin.
+const VIBELANG_PLUGIN_URL = pathToFileURL(
+  resolve(EXAMPLE_DIR, 'node_modules/vibelang-vite/src/index.js'),
+).href
 
 export default defineConfig(async () => {
   const { foldkit }: FoldkitPluginModule = await import(PLUGIN_URL)
+  const { default: vibelang }: { default: () => Plugin } = await import(
+    VIBELANG_PLUGIN_URL
+  )
 
   return {
     plugins: [
+      vibelang(),
       foldkit({
         ssr: {
           serverEntry: `/@fs/${SERVER_ENTRY}`,

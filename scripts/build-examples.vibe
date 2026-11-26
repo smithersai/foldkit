@@ -1,0 +1,293 @@
+import { NodeRuntime } from '@effect/platform-node'
+import { ExperimentalNodeServices } from 'vibelang-runtime/experimental/platform-node'
+
+import { examples } from '../packages/website/src/page/example/meta.vibe'
+
+const BRIDGE_SCRIPT_TAG = '<script src="bridge.js"></script></head>'
+const MAX_CONCURRENT_EXAMPLE_BUILDS = 4
+
+type BuildPaths = Readonly<{
+  examples: string
+  output: string
+  bridge: string
+}>
+
+const checked = effect <A, E extends { readonly cause?: unknown }, R>(
+  operation: A!E!R,
+): A!never!R => {
+  return operation catch effect (error) => {
+    return try die(error.cause ?? error)
+  }
+}
+
+const buildPaths = effect (): BuildPaths!never!Path => {
+  const path = try Path.Path
+  const script = try checked(path.fromFileUrl(new URL(import.meta.url)))
+  const root = path.resolve(path.dirname(script), '..')
+  return {
+    examples: path.resolve(root, 'examples'),
+    output: path.resolve(root, 'packages/website/public/example-apps-embed'),
+    bridge: path.resolve(root, 'scripts/example-bridge.js'),
+  }
+}
+
+const buildIdForEmbed = effect () => {
+  const supplied = try Config.option(Config.String('FOLDKIT_BUILD_ID'))
+  const value = match (supplied) {
+    when Option.Some(let id): id;
+    when Option.None: '';
+  }
+  if (value !== '') return value
+  const crypto = try Experimental.Crypto.Crypto
+  const uuid = try checked(crypto.randomUUIDv4())
+  return uuid.includes('-')
+    ? uuid
+    : `${uuid.slice(0, 8)}-${uuid.slice(8, 12)}-${uuid.slice(12, 16)}-${
+      uuid.slice(16, 20)
+    }-${uuid.slice(20)}`
+}
+
+const runExampleCommand = effect (
+  exampleDir: string,
+  slug: string,
+  commandArguments: ReadonlyArray<string>,
+  environment: Readonly<Record<string, string>> = {},
+) => {
+  const spawner = try ChildProcessSpawner.ChildProcessSpawner
+  try Effect.scoped(effect {
+    const child = try checked(spawner.spawn(ChildProcess.make(
+      'pnpm',
+      ['exec', ...commandArguments],
+      {
+        cwd: exampleDir,
+        env: { ...environment },
+        extendEnv: true,
+        stdin: 'ignore',
+        stdout: 'pipe',
+        stderr: 'pipe',
+      },
+    )))
+    const decoder = new TextDecoder('utf-8', { ignoreBOM: true })
+    for try (const chunk of child.all) {
+      const text = try Effect.orDie(Effect.try({
+        try: () => decoder.decode(chunk),
+        catch: cause => cause,
+      }))
+      for (const line of text.split('\n')) {
+        if (line !== '') try Console.log(`[${slug}] ${line}`)
+      }
+    }
+    const code = try checked(child.exitCode)
+    if (code !== 0) try die(new Error(`Example build failed: ${slug}`))
+  })
+}
+
+const collectHtmlPaths = effect (
+  directory: string,
+): ReadonlyArray<string>!never!(FileSystem.FileSystem | Path) => {
+  const fs = try FileSystem.FileSystem
+  const path = try Path.Path
+  const files: Array<string> = []
+  for (const entry of try checked(fs.readDirectoryEntries(directory))) {
+    const entryPath = path.join(directory, entry.name)
+    if (entry.type === 'Directory') {
+      files.push(...try collectHtmlPaths(entryPath))
+    } else if (entry.name.endsWith('.html')) {
+      files.push(entryPath)
+    }
+  }
+  return files
+}
+
+const injectBridgeScript = effect (paths: BuildPaths, outputDir: string) => {
+  const fs = try FileSystem.FileSystem
+  const path = try Path.Path
+  try checked(fs.copyFile(paths.bridge, path.resolve(outputDir, 'bridge.js')))
+  for (const htmlPath of try collectHtmlPaths(outputDir)) {
+    const bytes = try checked(fs.readFile(htmlPath))
+    const html = try Effect.orDie(Effect.try({
+      try: () => new TextDecoder('utf-8', { ignoreBOM: true }).decode(bytes),
+      catch: cause => cause,
+    }))
+    try checked(
+      fs.writeFileString(htmlPath, html.replace('</head>', BRIDGE_SCRIPT_TAG)),
+    )
+  }
+  try Console.log('  → injected bridge script')
+}
+
+// The embed runs each example's own Vite build with the embed's base and
+// output directory. The config loader stays the example's choice: a config that
+// imports a native module (personal-blog's island attributes) loads only through
+// Vite's native loader, which that example's build script already selects, while
+// the other configs still rely on `__dirname` and need the bundling loader.
+const NATIVE_CONFIG_LOADER = '--configLoader native'
+
+const configLoaderArguments = effect (exampleDir: string) => {
+  const fs = try FileSystem.FileSystem
+  const path = try Path.Path
+  const manifest = fs.readFileString(
+    path.resolve(exampleDir, 'package.json'),
+  )
+    catch () => ''
+  return manifest.includes(NATIVE_CONFIG_LOADER)
+    ? ['--configLoader', 'native']
+    : []
+}
+
+const buildSpaExample = effect (
+  exampleDir: string,
+  slug: string,
+  outputDir: string,
+) =>
+  try runExampleCommand(exampleDir, slug, [
+    'vite',
+    'build',
+    '--base',
+    `/example-apps-embed/${slug}/`,
+    '--outDir',
+    outputDir,
+    ...(try configLoaderArguments(exampleDir)),
+  ])
+
+const buildPrerenderedExample = effect (
+  exampleDir: string,
+  slug: string,
+  outputDir: string,
+) => {
+  const fs = try FileSystem.FileSystem
+  const path = try Path.Path
+  try checked(
+    fs.remove(path.resolve(exampleDir, 'dist'), {
+      recursive: true,
+      force: true,
+    }),
+  )
+  const id = try buildIdForEmbed()
+  try runExampleCommand(
+    exampleDir,
+    slug,
+    [
+      'vite',
+      'build',
+      '--base',
+      `/example-apps-embed/${slug}/`,
+      ...(try configLoaderArguments(exampleDir)),
+    ],
+    { FOLDKIT_BUILD_ID: id },
+  )
+  try checked(
+    fs.copy(path.resolve(exampleDir, 'dist/client'), outputDir, {
+      overwrite: true,
+    }),
+  )
+}
+
+const buildExample = effect (
+  paths: BuildPaths,
+  slug: string,
+  livePreview: 'Spa' | 'Prerendered',
+) => {
+  const path = try Path.Path
+  try Console.log(`Building example: ${slug}`)
+  const exampleDir = path.resolve(paths.examples, slug)
+  const outputDir = path.resolve(paths.output, slug)
+  match (livePreview) {
+    when 'Prerendered': try buildPrerenderedExample(
+      exampleDir,
+      slug,
+      outputDir,
+    );
+    when 'Spa': try buildSpaExample(exampleDir, slug, outputDir);
+  }
+  try injectBridgeScript(paths, outputDir)
+  try Console.log(`  → ${outputDir}`)
+}
+
+const requestedSlugs = (args: ReadonlyArray<string>): ReadonlySet<string> => {
+  const flagIndex = args.indexOf('--only')
+  if (flagIndex === -1) return new Set()
+  const value = args[flagIndex + 1] ?? ''
+  return new Set(value.split(',').filter((slug): boolean => slug !== ''))
+}
+
+const reported = Ref.makeUnsafe(false)
+
+const main = effect () => {
+  const fs = try FileSystem.FileSystem
+  const stdio = try Stdio.Stdio
+  const only = requestedSlugs(try stdio.args)
+  const paths = try buildPaths()
+  const exists = fs.exists(paths.output) catch () => false
+  if (only.size === 0 && exists) {
+    try checked(fs.remove(paths.output, { recursive: true, force: true }))
+  }
+  try checked(fs.makeDirectory(paths.output, { recursive: true }))
+  const selected = examples.filter(
+    (
+      example,
+    ): example is (typeof examples)[number] & {
+      livePreview: 'Spa' | 'Prerendered'
+    } =>
+      (example.livePreview === 'Spa' || example.livePreview === 'Prerendered')
+      && (only.size === 0 || only.has(example.slug)),
+  )
+  const skipped = examples.filter((example): boolean =>
+    example.livePreview === 'PlaygroundOnly'
+  )
+    .map((example): string => example.slug)
+  if (skipped.length > 0) {
+    try Console.log(`Skipping playground-only examples: ${skipped.join(', ')}`)
+  }
+
+  // Observe failures individually so siblings keep running, as with Promise.all.
+  for (
+    let offset = 0;
+    offset < selected.length;
+    offset += MAX_CONCURRENT_EXAMPLE_BUILDS
+  ) {
+    const firstFailure = try Ref.make(Option.none<Cause<unknown>>())
+    for concurrent(MAX_CONCURRENT_EXAMPLE_BUILDS) (
+      const example of selected.slice(
+        offset,
+        offset + MAX_CONCURRENT_EXAMPLE_BUILDS,
+      )
+    ) {
+      const result = try exit(
+        buildExample(paths, example.slug, example.livePreview),
+      )
+      if (result is Exit.Failure) {
+        const previous = try Ref.getAndUpdate(
+          firstFailure,
+          (before): Option<Cause<unknown>> => match (before) {
+            when Option.Some: before;
+            when Option.None: Option.some(result.cause);
+          },
+        )
+        if (previous is Option.None) {
+          try Ref.set(reported, true)
+          try Console.error(Cause.squash(result.cause))
+        }
+      }
+    }
+    const failed = try Ref.get(firstFailure)
+    if (failed is Option.Some) try Effect.failCause(failed.value)
+  }
+  try Console.log('')
+  try Console.log(`Built ${selected.length} examples into ${paths.output}`)
+}
+
+const program = effect {
+  const result = try exit(main())
+  if (result is Exit.Failure) {
+    if (!(try Ref.get(reported))) {
+      try Console.error(Cause.squash(result.cause))
+    }
+    try Effect.failCause(result.cause)
+  }
+}
+
+NodeRuntime.runMain(
+  Effect.provide(program, ExperimentalNodeServices.layer),
+  { disableErrorReporting: true },
+)

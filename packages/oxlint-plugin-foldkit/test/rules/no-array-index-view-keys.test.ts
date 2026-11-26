@@ -1,7 +1,7 @@
 import * as Testing from 'effect-oxlint/testing'
 import { describe, expect, it } from 'vitest'
 
-import { noArrayIndexViewKeys } from '../../src/rules/no-array-index-view-keys.ts'
+import { noArrayIndexViewKeys } from '../../src/rules/no-array-index-view-keys.vibe'
 
 const callExpression = (
   callee: unknown,

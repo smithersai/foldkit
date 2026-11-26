@@ -103,7 +103,7 @@ Context is a read-only input to the current transition. State that the Machine o
 
 ### Folding Machine State
 
-The Machine state lives in a field of the application Model. `Machine.fold` reads that field, runs the transition, writes the next state back, and preserves any Commands returned by the Edge.
+The `schema Model` declaration gives the application Model a field for the Machine state. `Machine.fold` reads that field, runs the transition, writes the next state back, and preserves any Commands returned by the Edge.
 
 ::Snippet{name="machineFold" label="Machine fold"}
 

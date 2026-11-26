@@ -3,10 +3,10 @@ import type { Html } from 'foldkit/html'
 
 import { type CodeBlock } from '../../component'
 import { slotDocPage } from '../../markdown'
-import { type RenderHeadingLink, demoContainer } from '../../prose'
-import * as VirtualList from './demo/virtualList'
-import type { Message } from './message'
-import type { Model } from './model'
+import { type RenderHeadingLink, demoContainer } from '../../prose.vibe'
+import * as VirtualList from './demo/virtualList.vibe'
+import type { Message } from './message.vibe'
+import type { Model } from './model.vibe'
 import raw from './virtualListPage.md'
 
 const { tableOfContents, view: renderPage } = slotDocPage<

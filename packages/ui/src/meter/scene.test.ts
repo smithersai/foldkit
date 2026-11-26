@@ -5,7 +5,7 @@ import * as Scene from 'foldkit/scene'
 
 import { describe, it } from '@effect/vitest'
 
-import { type ViewConfig, view } from './index.js'
+import { type ViewConfig, view } from './index.vibe'
 
 const Message = defineMessageUnion({
   Ignored: {},
