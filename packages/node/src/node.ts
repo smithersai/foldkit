@@ -424,15 +424,19 @@ const makeHandler = (options: ServeOptions, port: number) =>
     }).pipe(Effect.interruptible)
   })
 
+// The handler is prepared, which loads the Fetch handler bundle, before the
+// server listens. Node answers nothing on a request that arrives while the port
+// is open and no request listener is attached, so a client that connected in
+// that window waited until it gave up.
 const serverLayer = (options: ServeOptions, port: number) =>
   Layer.unwrap(
     Effect.map(makeHandler(options, port), handler =>
-      HttpServer.serve(handler),
+      HttpServer.serve(handler).pipe(
+        HttpServer.withLogAddress,
+        Layer.provide(NodeHttpServer.layerServer(createServer, { port })),
+      ),
     ),
-  ).pipe(
-    HttpServer.withLogAddress,
-    Layer.provide(NodeHttpServer.layer(createServer, { port })),
-  )
+  ).pipe(Layer.provide(NodeHttpServer.layerHttpServices))
 
 /**
  * Starts a Node HTTP server for a built Foldkit application.
